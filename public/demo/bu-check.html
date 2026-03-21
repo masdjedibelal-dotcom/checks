@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="color-scheme" content="light"/>
+  <title>BU-Karriere-Check — CheckKit Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --accent:#7c3aed; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Geist',system-ui,sans-serif;background:#fafaf8;color:#0d0d0d;min-height:100vh;padding:20px 16px 48px;-webkit-font-smoothing:antialiased;}
+    .back{display:inline-flex;font-size:13px;color:rgba(0,0,0,.45);text-decoration:none;margin-bottom:16px;}
+    .back:hover{color:#0d0d0d;}
+    .wrap{max-width:400px;margin:0 auto;}
+    .shell{background:#fff;border-radius:20px;border:1px solid rgba(0,0,0,.08);box-shadow:0 12px 40px rgba(0,0,0,.08);overflow:hidden;}
+    .ribbon{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;text-align:center;padding:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);}
+    .inner{padding:22px;}
+    .ey{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+    .ttl{font-size:17px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px;}
+    .sub{font-size:12px;color:rgba(0,0,0,.45);line-height:1.5;margin-bottom:18px;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;}
+    .opt{padding:12px 8px;border-radius:10px;border:1px solid rgba(0,0,0,.1);font-size:12px;font-weight:500;text-align:center;cursor:pointer;background:#fafaf8;transition:.18s;}
+    .opt.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,#fff);font-weight:600;}
+    .field{margin-bottom:12px;}
+    .field label{display:block;font-size:11px;font-weight:600;margin-bottom:6px;color:rgba(0,0,0,.45);}
+    .field input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,.1);font-size:14px;}
+    .out{margin-top:16px;padding:14px;border-radius:12px;background:#f5f3ff;font-size:12px;line-height:1.55;color:#5b21b6;}
+    .out strong{display:block;font-size:13px;margin-bottom:6px;color:#4c1d95;}
+    .cta{width:100%;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;margin-top:14px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/templates">← Zur Template-Galerie</a>
+    <div class="shell">
+      <div class="ribbon">Interaktive Demo · BU-Karriere-Check</div>
+      <div class="inner">
+        <div class="ey">Anlass</div>
+        <h1 class="ttl">Was hat sich verändert?</h1>
+        <p class="sub">Mehrfachauswahl — wir schätzen den Nachversicherungsbedarf grob (Demo).</p>
+        <div class="grid" id="evt">
+          <button type="button" class="opt on" data-toggle>📈 Gehalt</button>
+          <button type="button" class="opt" data-toggle>💼 Jobwechsel</button>
+          <button type="button" class="opt" data-toggle>👶 Kind</button>
+          <button type="button" class="opt" data-toggle>🚀 Selbstständig</button>
+        </div>
+        <div class="field">
+          <label for="brutto">Neues Brutto/Jahr (€)</label>
+          <input type="number" id="brutto" value="72000" step="1000"/>
+        </div>
+        <div class="field">
+          <label for="rente">Aktuelle BU-Rente (€/Monat, Netto)</label>
+          <input type="number" id="rente" value="2400" step="100"/>
+        </div>
+        <div class="out" id="out"></div>
+        <button type="button" class="cta">Ergebnis →</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    function calc(){
+      var b=+document.getElementById('brutto').value||0;
+      var r=+document.getElementById('rente').value||0;
+      var rough=Math.round((b/12)*0.75*0.7);
+      var gap=Math.max(0,rough-r);
+      var n=document.querySelectorAll('#evt .opt.on').length;
+      var txt=n?('Ausgewählt: '+n+' Anlass'+(n>1?'e':'')+'. '):'';
+      document.getElementById('out').innerHTML='<strong>Demo-Einschätzung</strong> '+txt+'Bei ca. 75 % Netto und 70 % Absicherungsquote rechnerisch ~ '+rough.toLocaleString('de-DE')+' €/Monat Zielrente. Ihre Deckung: '+r.toLocaleString('de-DE')+' €. '+(gap>0?'<span style="color:#dc2626;font-weight:700">Mögliche Lücke: ca. '+gap.toLocaleString('de-DE')+' €/Monat</span>':'<span style="color:var(--accent);font-weight:700">Grobo: Rente passt zur Demo-Annahme</span>')+'.';
+    }
+    document.querySelectorAll('#evt [data-toggle]').forEach(function(b){
+      b.addEventListener('click',function(){b.classList.toggle('on');calc();});
+    });
+    document.getElementById('brutto').addEventListener('input',calc);
+    document.getElementById('rente').addEventListener('input',calc);
+    calc();
+  </script>
+</body>
+</html>

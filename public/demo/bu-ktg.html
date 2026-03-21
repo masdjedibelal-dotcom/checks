@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="color-scheme" content="light"/>
+  <title>BU + KTG Zeitstrahl — CheckKit Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --accent:#7c3aed; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Geist',system-ui,sans-serif;background:#fafaf8;color:#0d0d0d;min-height:100vh;padding:20px 16px 48px;-webkit-font-smoothing:antialiased;}
+    .back{display:inline-flex;font-size:13px;color:rgba(0,0,0,.45);text-decoration:none;margin-bottom:16px;}
+    .back:hover{color:#0d0d0d;}
+    .wrap{max-width:400px;margin:0 auto;}
+    .shell{background:#fff;border-radius:20px;border:1px solid rgba(0,0,0,.08);box-shadow:0 12px 40px rgba(0,0,0,.08);overflow:hidden;}
+    .ribbon{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;text-align:center;padding:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);}
+    .inner{padding:22px;}
+    .ey{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+    .ttl{font-size:17px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px;}
+    .sub{font-size:12px;color:rgba(0,0,0,.45);line-height:1.5;margin-bottom:18px;}
+    .block{margin-bottom:14px;}
+    .lab{font-size:10px;font-weight:600;color:rgba(0,0,0,.38);margin-bottom:6px;}
+    .lane{display:flex;align-items:center;gap:8px;}
+    .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .bar{flex:1;height:6px;border-radius:4px;background:rgba(0,0,0,.06);overflow:hidden;}
+    .bar>div{height:100%;border-radius:4px;transition:width .4s;}
+    .pct{font-size:10px;font-weight:700;width:34px;text-align:right;flex-shrink:0;}
+    select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(0,0,0,.1);font-family:inherit;font-size:13px;background:#fafaf8;margin-bottom:18px;}
+    .cta{width:100%;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/templates">← Zur Template-Galerie</a>
+    <div class="shell">
+      <div class="ribbon">Interaktive Demo · BU + KTG Zeitstrahl</div>
+      <div class="inner">
+        <div class="ey">Einkommensschutz</div>
+        <h1 class="ttl">Ihr Einkommensverlauf</h1>
+        <p class="sub">Lohnfortzahlung → Krankengeld → Wartezeit → BU-Rente (vereinfachte Demo).</p>
+        <label class="lab" for="sz">Szenario</label>
+        <select id="sz">
+          <option value="0">Standard (ohne KTG-Ausgleich)</option>
+          <option value="1">Mit KTG</option>
+          <option value="2">Lange Krankheit — Lücke</option>
+        </select>
+        <div id="lanes"></div>
+        <button type="button" class="cta">Lücke schließen →</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    var COL={g:'#059669',o:'#d97706',r:'#dc2626',v:'#7c3aed'};
+    var scenarios=[
+      [{l:'Lohnfortzahlung',c:'g',w:30,p:'100%'},{l:'Krankengeld',c:'o',w:20,p:'67%'},{l:'Nach Wartezeit',c:'r',w:4,p:'0%'},{l:'BU-Rente',c:'v',w:18,p:'45%'}],
+      [{l:'Lohnfortzahlung',c:'g',w:30,p:'100%'},{l:'Krankengeld',c:'o',w:28,p:'90%'},{l:'Nach Wartezeit',c:'r',w:6,p:'10%'},{l:'BU-Rente',c:'v',w:22,p:'55%'}],
+      [{l:'Lohnfortzahlung',c:'g',w:22,p:'80%'},{l:'Krankengeld',c:'o',w:15,p:'50%'},{l:'Nach Wartezeit',c:'r',w:12,p:'0%'},{l:'BU-Rente',c:'v',w:25,p:'38%'}]
+    ];
+    var lanes=document.getElementById('lanes');
+    function paint(i){
+      lanes.innerHTML='';
+      scenarios[i].forEach(function(row){
+        var hex=COL[row.c];
+        var b=document.createElement('div');
+        b.className='block';
+        b.innerHTML='<div class="lab">'+row.l+'</div><div class="lane"><div class="dot" style="background:'+hex+'"></div><div class="bar"><div style="width:'+row.w+'%;background:'+hex+'"></div></div><span class="pct" style="color:'+hex+'">'+row.p+'</span></div>';
+        lanes.appendChild(b);
+      });
+    }
+    document.getElementById('sz').onchange=function(){paint(+this.value);};
+    paint(0);
+  </script>
+</body>
+</html>

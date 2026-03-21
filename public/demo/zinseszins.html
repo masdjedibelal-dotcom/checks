@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="color-scheme" content="light"/>
+  <title>Zinseszins-Visualisierer — CheckKit Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --accent:#059669; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Geist',system-ui,sans-serif;background:#fafaf8;color:#0d0d0d;min-height:100vh;padding:20px 16px 48px;-webkit-font-smoothing:antialiased;}
+    .back{display:inline-flex;font-size:13px;color:rgba(0,0,0,.45);text-decoration:none;margin-bottom:16px;}
+    .back:hover{color:#0d0d0d;}
+    .wrap{max-width:400px;margin:0 auto;}
+    .shell{background:#fff;border-radius:20px;border:1px solid rgba(0,0,0,.08);box-shadow:0 12px 40px rgba(0,0,0,.08);overflow:hidden;}
+    .ribbon{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;text-align:center;padding:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);}
+    .inner{padding:22px;}
+    .ey{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+    .ttl{font-size:17px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px;}
+    .sub{font-size:12px;color:rgba(0,0,0,.45);line-height:1.5;margin-bottom:18px;}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:11px;font-weight:600;margin-bottom:6px;color:rgba(0,0,0,.45);}
+    .field input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,.1);font-size:14px;}
+    .row{margin-bottom:16px;}
+    .row h3{font-size:11px;font-weight:700;color:rgba(0,0,0,.45);margin-bottom:8px;}
+    .bars{display:flex;align-items:flex-end;gap:4px;height:120px;padding:6px;border-radius:12px;background:#f5f4f0;}
+    .bar{flex:1;border-radius:3px 3px 0 0;min-height:6px;transition:height .35s;}
+    .sum{font-size:12px;line-height:1.55;margin-top:14px;padding:14px;border-radius:12px;background:#ecfdf5;}
+    .sum strong{color:#065f46;}
+    .diff{color:#dc2626;font-weight:700;}
+    .cta{width:100%;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;margin-top:14px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/templates">← Zur Template-Galerie</a>
+    <div class="shell">
+      <div class="ribbon">Interaktive Demo · Zinseszins</div>
+      <div class="inner">
+        <div class="ey">Früh vs. spät</div>
+        <h1 class="ttl">35 vs. 25 Jahre sparen</h1>
+        <p class="sub">Gleiche monatliche Rate, 5 % p.a. Demo-Zins — Endkapital nach Laufzeit.</p>
+        <div class="field">
+          <label for="rate">Monatliche Sparrate (€)</label>
+          <input type="number" id="rate" value="250" min="1" step="10"/>
+        </div>
+        <div class="row">
+          <h3>Früh starten — 35 Jahre (5 Balken à 7 Jahre)</h3>
+          <div class="bars" id="early"></div>
+        </div>
+        <div class="row">
+          <h3>Später starten — 25 Jahre (gestrichelt: fehlende Jahre)</h3>
+          <div class="bars" id="late"></div>
+        </div>
+        <div class="sum" id="sum"></div>
+        <button type="button" class="cta">Unterschied sehen</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    var R=0.05/12;
+    function fv(pmt,years){
+      var n=years*12;
+      return pmt*((Math.pow(1+R,n)-1)/R);
+    }
+    function relHeights(vals,max){
+      return vals.map(function(v){return Math.max(6,Math.round((v/max)*100));});
+    }
+    function paint(){
+      var pmt=+document.getElementById('rate').value||250;
+      var seg=7;
+      var earlyVals=[];
+      for(var k=1;k<=5;k++)earlyVals.push(fv(pmt,k*seg));
+      var lateVals=[];
+      for(var j=1;j<=5;j++)lateVals.push(fv(pmt,Math.min(j*seg,25)));
+      var end35=fv(pmt,35), end25=fv(pmt,25);
+      var max=Math.max(end35,end25,1);
+      var eh=relHeights(earlyVals,max);
+      var lh=relHeights(lateVals,max);
+      function fill(el,heights,colors,dashedFrom){
+        el.innerHTML='';
+        heights.forEach(function(h,i){
+          var b=document.createElement('div');
+          b.className='bar';
+          b.style.height=h+'%';
+          b.style.background=colors[i];
+          if(dashedFrom!=null&&i>=dashedFrom){b.style.border='1px dashed #059669';b.style.background='#d1fae5';}
+          el.appendChild(b);
+        });
+      }
+      var greens=['#d1fae5','#6ee7b7','#34d399','#10b981','#059669'];
+      fill(document.getElementById('early'),eh,greens,null);
+      fill(document.getElementById('late'),lh,greens,3);
+      var diff=end35-end25;
+      document.getElementById('sum').innerHTML='<strong>Endwert 35 J.:</strong> ca. '+Math.round(end35).toLocaleString('de-DE')+' €<br/><strong>Endwert 25 J.:</strong> ca. '+Math.round(end25).toLocaleString('de-DE')+' €<br/><span class="diff">ca. '+Math.round(diff).toLocaleString('de-DE')+' € weniger bei spätem Start</span>';
+    }
+    document.getElementById('rate').addEventListener('input',paint);
+    paint();
+  </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="color-scheme" content="light"/>
+  <title>Elternzeit-Rechner — CheckKit Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --accent:#be185d; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Geist',system-ui,sans-serif;background:#fafaf8;color:#0d0d0d;min-height:100vh;padding:20px 16px 48px;-webkit-font-smoothing:antialiased;}
+    .back{display:inline-flex;font-size:13px;color:rgba(0,0,0,.45);text-decoration:none;margin-bottom:16px;}
+    .back:hover{color:#0d0d0d;}
+    .wrap{max-width:400px;margin:0 auto;}
+    .shell{background:#fff;border-radius:20px;border:1px solid rgba(0,0,0,.08);box-shadow:0 12px 40px rgba(0,0,0,.08);overflow:hidden;}
+    .ribbon{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;text-align:center;padding:9px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);}
+    .inner{padding:22px;}
+    .ey{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+    .ttl{font-size:17px;font-weight:800;letter-spacing:-.4px;margin-bottom:6px;}
+    .sub{font-size:12px;color:rgba(0,0,0,.45);line-height:1.5;margin-bottom:18px;}
+    .field{margin-bottom:12px;}
+    .field label{display:block;font-size:11px;font-weight:600;margin-bottom:6px;color:rgba(0,0,0,.45);}
+    .field input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,.1);font-size:14px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0;}
+    .cell{border-radius:12px;padding:14px;text-align:center;}
+    .cn{font-size:10px;color:rgba(0,0,0,.35);margin-bottom:6px;}
+    .cv{font-size:18px;font-weight:800;}
+    .gap{font-size:12px;font-weight:700;color:var(--accent);text-align:center;margin-bottom:14px;}
+    .cta{width:100%;padding:12px;border-radius:10px;border:none;font-size:13px;font-weight:700;background:var(--accent);color:#fff;cursor:pointer;}
+    .note{font-size:11px;color:rgba(0,0,0,.4);margin-top:14px;line-height:1.45;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/templates">← Zur Template-Galerie</a>
+    <div class="shell">
+      <div class="ribbon">Interaktive Demo · Elternzeit</div>
+      <div class="inner">
+        <div class="ey">Familie</div>
+        <h1 class="ttl">Was bleibt übrig?</h1>
+        <p class="sub">Haushaltseinkommen vorher vs. während Elternzeit (Demo mit pauschalem Elterngeld-Anteil).</p>
+        <div class="field">
+          <label for="v1">Einkommen Partner 1 / Monat (netto, €)</label>
+          <input type="number" id="v1" value="3200" step="100"/>
+        </div>
+        <div class="field">
+          <label for="v2">Einkommen Partner 2 / Monat (netto, €)</label>
+          <input type="number" id="v2" value="2000" step="100"/>
+        </div>
+        <div class="field">
+          <label for="eg">Geschätztes Elterngeld gesamt / Monat (€)</label>
+          <input type="number" id="eg" value="1500" step="50"/>
+        </div>
+        <div class="grid2">
+          <div class="cell" style="background:rgba(0,0,0,.05);"><div class="cn">Vorher</div><div class="cv" id="vor">—</div></div>
+          <div class="cell" style="background:color-mix(in srgb,var(--accent) 10%,#fff);"><div class="cn">Während EZ</div><div class="cv" id="waeh" style="color:var(--accent);">—</div></div>
+        </div>
+        <p class="gap" id="luecke"></p>
+        <button type="button" class="cta">Absichern →</button>
+        <p class="note">Vollversion: Kinderfreibeträge, Teilzeit, Bezugsmonate, Krankenversicherung — im CheckKit-Template.</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    function fmt(n){return Math.round(n).toLocaleString('de-DE')+' €';}
+    function go(){
+      var a=+document.getElementById('v1').value||0;
+      var b=+document.getElementById('v2').value||0;
+      var e=+document.getElementById('eg').value||0;
+      var vor=a+b;
+      var waeh=Math.max(0,a*0.65+e);
+      document.getElementById('vor').textContent=fmt(vor);
+      document.getElementById('waeh').textContent=fmt(waeh);
+      var g=vor-waeh;
+      document.getElementById('luecke').textContent=(g>=0?'−':'')+Math.abs(Math.round(g)).toLocaleString('de-DE')+' €/Monat '+ (g>=0?'Lücke':'Überschuss')+' (Demo)';
+    }
+    ['v1','v2','eg'].forEach(function(id){
+      document.getElementById(id).addEventListener('input',go);
+    });
+    go();
+  </script>
+</body>
+</html>
