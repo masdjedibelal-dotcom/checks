@@ -1,7 +1,9 @@
+"use client";
+
 import { useState } from "react";
-(() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
+(() => { if (typeof document === "undefined") return; const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 const MAKLER={name:"Max Mustermann",firma:"Mustermann Versicherungen",email:"kontakt@mustermann-versicherungen.de",telefon:"089 123 456 78",primaryColor:"#1a3a5c"};
-const C=MAKLER.primaryColor,WARN="#c0392b",OK="#059669";
+const C=MAKLER.primaryColor,OK="#059669";
 const fmt=(n)=>Math.round(Math.abs(n)).toLocaleString("de-DE")+" €";
 function berechne(p){
   const{brutto,alter,kinder,partner,beruf,gesundheit}=p;
@@ -32,11 +34,11 @@ export default function GKVPKVRechner(){
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[p,setP]=useState({brutto:4500,alter:32,kinder:0,partner:false,beruf:"angestellt",gesundheit:"gut"});
   const set=(k,v)=>setP(x=>({...x,[k]:v}));const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
-  const R=berechne(p);const TOTAL=2;
+  const R=berechne(p);
   const FAKTOREN=[
     {l:"Kinder vorhanden",gkv:"Beitragsfrei mitversichert",pkv:"Eigener Beitrag je Kind",fav:p.kinder>0?"gkv":"neutral"},
     {l:"Gesundheitszustand",gkv:"Irrelevant für Beitrag",pkv:"Risikoaufschlag bei Vorerkrankungen",fav:p.gesundheit==="gut"?"pkv":"gkv"},
-    {l:"Alter",gkv:"Steigerung mit Einkommen",pkv:alter<35?"Günstig einsteigen":"Steigende Altersrückstellungen",fav:p.alter<35?"pkv":"gkv"},
+    {l:"Alter",gkv:"Steigerung mit Einkommen",pkv:p.alter<35?"Günstig einsteigen":"Steigende Altersrückstellungen",fav:p.alter<35?"pkv":"gkv"},
     {l:"Beruf",gkv:p.beruf==="beamter"?"Freiwillig möglich":"Pflichtversicherung",pkv:p.beruf==="beamter"?"Beihilfe 50-70%":p.beruf==="selbst"?"Keine Mindestbemessungsgrundlage":"Nur über Einkommensgrenze",fav:p.beruf==="beamter"?"pkv":"neutral"},
     {l:"Beitrag aktuell",gkv:fmt(R.gkvBeitrag)+"/Mon.",pkv:fmt(R.pkv)+"/Mon.",fav:R.gkvBeitrag<R.pkv?"gkv":"pkv"},
   ];
@@ -52,7 +54,6 @@ export default function GKVPKVRechner(){
   );
   if(phase===2){
     const valid=fd.name.trim()&&fd.email.trim();
-    const empfColor=R.empfehlung==="GKV"?OK:C;
     return(
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
         <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>GKV vs. PKV</span></div>

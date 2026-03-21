@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-(() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
+(() => { if (typeof document === "undefined") return; const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
 const MAKLER={name:"Max Mustermann",firma:"Mustermann Versicherungen",email:"kontakt@mustermann-versicherungen.de",telefon:"089 123 456 78",primaryColor:"#1a3a5c"};
 const C=MAKLER.primaryColor,WARN="#c0392b";
 
@@ -44,11 +46,10 @@ export default function JahresCheck(){
   const toggleEv=(id)=>setEvents(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const toggleOffen=(id)=>setOffene(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
-  const TOTAL=3;
   const empf=()=>{
     const b=[],n=[];
     for(const eid of events){const m=MATRIX[eid];if(!m)continue;const el=EREIGNISSE.find(e=>e.id===eid)?.l||eid;(m.b||[]).forEach(i=>b.push({...i,ereignis:el}));(m.n||[]).forEach(i=>n.push({...i,ereignis:el}));}
-    return{b:b.sort((a,x)=>a.h?-1:1),n};
+    return{b:b.sort((a)=>a.h?-1:1),n};
   };
   const E=empf();
 

@@ -1,7 +1,10 @@
+"use client";
+
 import { useState } from "react";
 
 // ─── GLOBAL SETUP ────────────────────────────────────────────────────────────
 (() => {
+  if (typeof document === "undefined") return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
@@ -42,7 +45,6 @@ const MAKLER = {
 };
 const C = MAKLER.primaryColor;
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
-const pct = (n) => Math.round(n) + " %";
 
 // ─── SZENARIEN ────────────────────────────────────────────────────────────────
 const SZENARIEN = [

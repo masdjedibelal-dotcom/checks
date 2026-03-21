@@ -1,6 +1,9 @@
+"use client";
+
 import { useState } from "react";
 
 (() => {
+  if (typeof document === "undefined") return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
@@ -26,7 +29,6 @@ const MAKLER = { name: "Max Mustermann", firma: "Mustermann Versicherungen", ema
 const C = MAKLER.primaryColor;
 const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n >= 1000 ? (Math.round(n / 1000) * 1000).toLocaleString("de-DE") + " €" : fmt(n);
-const alpha = (hex, a) => { const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; };
 
 const S1 = "#0369a1", S2 = "#7c3aed", S3 = "#059669", WARN = "#c0392b";
 

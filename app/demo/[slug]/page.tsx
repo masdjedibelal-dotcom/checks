@@ -5,12 +5,12 @@ import Bedarfscheck from "@/components/checks/Bedarfscheck";
 import JahresCheck from "@/components/checks/JahresCheck";
 import BUKTGRechner from "@/components/checks/BUKTGRechner";
 import RentenRechner from "@/components/checks/RentenRechner";
-import RisikolebenRechner from "@/components/checks/RisikolebenRechner";
+import RisikolebenRechner from "@/components/checks/Risikoleben_Rechner";
 import ZinseszinsVisualisierer from "@/components/checks/ZinseszinsVisualisierer";
 import GKVPKVRechner from "@/components/checks/GKVPKVRechner";
-import AnschlussfinanzierungRechner from "@/components/checks/AnschlussfinanzierungRechner";
+import AnschlussfinanzierungRechner from "@/components/checks/AnschlussfinanzierungRecher";
 import ProduktCheckBu from "@/components/checks/ProduktCheckBu";
-import ElternzeitRechner from "@/components/checks/ElternzeitRechner";
+import ElternzeitRechner from "@/components/checks/Elternzeit_Rechner_v2";
 import ProduktCheckRiester from "@/components/checks/ProduktCheckRiester";
 
 const MAP: Record<string, ComponentType> = {
