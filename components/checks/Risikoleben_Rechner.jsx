@@ -105,6 +105,7 @@ export default function RisikolebenRechner() {
   const goTo = (ph) => { setAk(k=>k+1); setPhase(ph); window.scrollTo({top:0}); };
   const R = berechne(p);
   const TOTAL = 3;
+  const isDemo = !new URLSearchParams(window.location.search).get("domain");
 
   if (danke) return <div style={{...T.page,"--accent":C}}><Header phase={TOTAL} total={TOTAL} badge="Risikoleben"/><DankeScreen name={name} onBack={()=>{setDanke(false);setPhase(1);}}/></div>;
 
@@ -122,22 +123,40 @@ export default function RisikolebenRechner() {
               <div><div style={{ fontSize:"18px",fontWeight:"700",color:R.deckung>70?C:WARN,letterSpacing:"-0.5px" }}>{R.deckung}%</div><div style={{ fontSize:"11px",color:"#999",marginTop:"2px" }}>Deckungsgrad</div></div>
             </div>
           </div>
-          <CheckKontaktLeadLine />
-          <div style={T.card}>
-            {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
-              <div key={k} style={i<arr.length-1?T.row:T.rowLast}>
-                <label style={T.fldLbl}>{l}{req?" *":""}</label>
-                <input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"6px"}}/>
+          {isDemo && (
+            <div style={{...T.infoBox,marginBottom:"14px",background:"#f0f0f0",color:"#666"}}>
+              <strong style={{color:"#111"}}>Live-Vorschau</strong> — so sieht Ihr Kunde den Check. Im echten Einsatz erscheint hier das Kontaktformular.
+            </div>
+          )}
+          {!isDemo && <CheckKontaktLeadLine />}
+          {!isDemo && (
+            <>
+              <div style={T.card}>
+                {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
+                  <div key={k} style={i<arr.length-1?T.row:T.rowLast}>
+                    <label style={T.fldLbl}>{l}{req?" *":""}</label>
+                    <input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"6px"}}/>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div style={{ marginTop:"14px" }}>
-            <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
-          </div>
+              <div style={{ marginTop:"14px" }}>
+                <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
+              </div>
+            </>
+          )}
         </div>
         <div style={T.footer}>
-          <button style={T.btnPrim(!valid)} onClick={()=>{if(valid){setName(fd.name);setDanke(true);}}} disabled={!valid}>Gespräch anfragen</button>
-          <button style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
+          {isDemo ? (
+            <>
+              <button style={T.btnPrim(false)} onClick={()=>window.parent.postMessage({type:"openConfig",slug:"risikoleben"},"*")}>Anpassen &amp; kaufen</button>
+              <button style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
+            </>
+          ) : (
+            <>
+              <button style={T.btnPrim(!valid)} onClick={()=>{if(valid){setName(fd.name);setDanke(true);}}} disabled={!valid}>Gespräch anfragen</button>
+              <button style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
+            </>
+          )}
         </div>
       </div>
     );

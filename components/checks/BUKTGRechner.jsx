@@ -168,10 +168,32 @@ function Footer({ onNext, onBack, nextLabel = "Weiter", disabled = false }) {
   );
 }
 
-function ContactForm({ onSubmit, onBack, summary }) {
+function ContactForm({ onSubmit, onBack, summary, isDemo }) {
   const [fd, setFd] = useState({ name: "", email: "", tel: "" });
   const [consent, setConsent] = useState(false);
   const valid = fd.name.trim() && fd.email.trim() && consent;
+  if (isDemo) {
+    return (
+      <div style={{ paddingBottom: "120px" }}>
+        {summary && <div style={{ ...T.section }}><div style={T.infoBox}>{summary}</div></div>}
+        <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
+          <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
+            Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.
+          </div>
+          <button
+            type="button"
+            style={{ ...T.btnPrim(false) }}
+            onClick={() => window.parent.postMessage({ type: "openConfig" }, "*")}
+          >
+            Anpassen & kaufen
+          </button>
+        </div>
+        <div style={T.footer}>
+          <button type="button" style={T.btnSec} onClick={onBack}>Zurück</button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{ paddingBottom: "120px" }}>
       {summary && <div style={{ ...T.section }}><div style={T.infoBox}>{summary}</div></div>}
@@ -247,6 +269,7 @@ export default function BUKTGRechner() {
   const [ak, setAk] = useState(0);
   const [danke, setDanke] = useState(false);
   const [name, setName] = useState("");
+  const isDemo = !new URLSearchParams(window.location.search).get("domain");
 
   const [p, setP] = useState({
     brutto:   4000,
@@ -280,6 +303,7 @@ export default function BUKTGRechner() {
         <div style={T.body}>Wir bereiten das Gespräch mit Ihrer Analyse vor.</div>
       </div>
       <ContactForm
+        isDemo={isDemo}
         onSubmit={n => { setName(n); setDanke(true); }}
         onBack={() => goTo(2)}
         summary={

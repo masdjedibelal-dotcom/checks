@@ -4,6 +4,11 @@ import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { DemoSlug } from "@/lib/demoCheckMap";
 
+/**
+ * gkv-pkv → GKVPKVRechner.jsx
+ * risikoleben → Risikoleben_Rechner.jsx
+ * (einheitliches Layout: DM Sans, Header 52px, sticky Footer, SliderCard aus CheckComponents)
+ */
 const CHECKS: Record<DemoSlug, ComponentType> = {
   bedarfscheck: dynamic(() => import("@/components/checks/Bedarfscheck"), {
     ssr: false,
@@ -16,7 +21,6 @@ const CHECKS: Record<DemoSlug, ComponentType> = {
     () => import("@/components/checks/BUKTGRechner"),
     { ssr: false },
   ),
-  /** Datei: `components/checks/GKVPKVRechner.jsx` — default export `GKVPKVRechner` */
   "gkv-pkv": dynamic(() => import("@/components/checks/GKVPKVRechner"), {
     ssr: false,
   }),
@@ -24,7 +28,6 @@ const CHECKS: Record<DemoSlug, ComponentType> = {
     () => import("@/components/checks/RentenRechner"),
     { ssr: false },
   ),
-  /** Datei: `components/checks/Risikoleben_Rechner.jsx` — default export */
   risikoleben: dynamic(
     () => import("@/components/checks/Risikoleben_Rechner"),
     { ssr: false },

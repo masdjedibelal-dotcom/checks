@@ -2,6 +2,7 @@
 // Generiert den personalisierten iFrame-Code für Makler nach dem Kauf
 
 import { demoPagePath } from "./demoPaths";
+import { publicAppUrl } from "./licenseUtils";
 
 export type IFrameConfig = {
   slug:   string;
@@ -12,8 +13,6 @@ export type IFrameConfig = {
   farbe:  string;  // ohne #
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_URL ?? 'https://checkkit.de';
-
 // ─── URL mit Parametern ───────────────────────────────────────────────────────
 export function buildDemoUrl(config: IFrameConfig): string {
   const params = new URLSearchParams({
@@ -23,7 +22,8 @@ export function buildDemoUrl(config: IFrameConfig): string {
     farbe: config.farbe.replace('#', ''),
     ...(config.tel ? { tel: config.tel } : {}),
   });
-  return `${BASE_URL.replace(/\/$/, "")}${demoPagePath(config.slug)}?${params.toString()}`;
+  const base = publicAppUrl();
+  return `${base}${demoPagePath(config.slug)}?${params.toString()}`;
 }
 
 // ─── Fertiger iFrame-Code ─────────────────────────────────────────────────────

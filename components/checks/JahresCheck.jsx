@@ -179,6 +179,7 @@ const T={page:{minHeight:"100vh",background:"#fff",fontFamily:"'DM Sans',system-
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 
 export default function JahresCheck(){
+  const isDemo = !new URLSearchParams(window.location.search).get("domain");
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);
   const[prods,setProds]=useState([]);const[events,setEvents]=useState([]);
   const[kontaktConsent,setKontaktConsent]=useState(false);
@@ -211,6 +212,24 @@ export default function JahresCheck(){
       <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Jahresgespräch</span></div>
       <div style={T.prog}><div style={T.progFil(100)}/></div>
       <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={T.h1}>Wir bereiten alles vor</div><div style={T.body}>Ihr Ergebnis wird mit dem Gesprächstermin verknüpft — so können wir direkt loslegen.</div></div>
+      {isDemo ? (
+        <>
+          <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
+            <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
+              Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.
+            </div>
+            <button
+              type="button"
+              style={{ ...T.btnPrim(false) }}
+              onClick={() => window.parent.postMessage({ type: "openConfig" }, "*")}
+            >
+              Anpassen & kaufen
+            </button>
+          </div>
+          <div style={T.footer}><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+        </>
+      ) : (
+      <>
       <div style={T.section}>
         <CheckKontaktLeadLine />
         <div style={T.card}>
@@ -223,6 +242,8 @@ export default function JahresCheck(){
         </div>
       </div>
       <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={()=>{if(valid)setDanke(true);}} disabled={!valid}>Termin vereinbaren</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      </>
+      )}
     </div>);
   }
 

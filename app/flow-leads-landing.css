@@ -334,7 +334,7 @@ html {
   margin: 0 0 10px;
   line-height: 1.2;
 }
-.flow-leads-landing .why-flowleads-swipe-hint{
+.flow-leads-landing .why-flowleads-scroll-hint{
   display: none;
   text-align: center;
   font-size: 11px;
@@ -423,7 +423,7 @@ html {
   }
 }
 @media (max-width: 959px) {
-  .flow-leads-landing .why-flowleads-swipe-hint{
+  .flow-leads-landing .why-flowleads-scroll-hint{
     display: block;
   }
 }
@@ -475,151 +475,6 @@ html {
   }
 }
 
-/* ─── MECHANIK: Story-Cards, horizontal + Snap auf Mobile ───────────────── */
-.flow-leads-landing .mechanic-section .inner{
-  max-width: 1180px;
-}
-.flow-leads-landing .mechanic-h2{
-  font-size: clamp(24px, 3.5vw, 34px);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.15;
-  color: var(--ink);
-  max-width: 720px;
-  margin-top: 0;
-}
-.flow-leads-landing .mechanic-swipe-hint{
-  display: none;
-  text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mid);
-  margin: 20px 0 12px;
-  opacity: 0.75;
-}
-.flow-leads-landing .mechanic-cards-row{
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 0;
-  margin-top: 40px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 0 18px;
-  -webkit-overflow-scrolling: touch;
-  margin-left: -18px;
-  margin-right: -18px;
-  padding: 4px 18px 14px;
-  scrollbar-width: thin;
-}
-.flow-leads-landing .mechanic-cards-row::-webkit-scrollbar{
-  height: 6px;
-}
-.flow-leads-landing .mechanic-cards-row::-webkit-scrollbar-thumb{
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 3px;
-}
-.flow-leads-landing .mechanic-step{
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-}
-.flow-leads-landing .mechanic-card{
-  flex: 0 0 min(300px, 88vw);
-  background: var(--surface);
-  border: 1px solid var(--border-mid);
-  border-radius: 18px;
-  padding: 22px 22px 20px;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  min-height: 100%;
-}
-.flow-leads-landing .mechanic-card-top{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 14px;
-  gap: 12px;
-}
-.flow-leads-landing .mechanic-story{
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-.flow-leads-landing .mechanic-card-ico{
-  color: var(--ink);
-  opacity: 0.82;
-  flex-shrink: 0;
-}
-.flow-leads-landing .mechanic-card-title{
-  font-size: clamp(16px, 2vw, 18px);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  line-height: 1.3;
-  margin: 0 0 12px;
-}
-.flow-leads-landing .mechanic-card-body{
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--mid);
-  line-height: 1.6;
-  margin: 0 0 14px;
-  white-space: pre-line;
-}
-.flow-leads-landing .mechanic-card-highlight{
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gold);
-  line-height: 1.45;
-  margin: auto 0 0;
-  padding-top: 6px;
-}
-.flow-leads-landing .mechanic-arrow{
-  display: none;
-  align-items: center;
-  align-self: center;
-  padding: 0 10px;
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-@media (min-width: 1100px) {
-  .flow-leads-landing .mechanic-cards-row{
-    overflow-x: visible;
-    flex-wrap: nowrap;
-    justify-content: center;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-    padding-right: 0;
-  }
-  .flow-leads-landing .mechanic-card{
-    flex: 1 1 0;
-    min-width: 0;
-    max-width: 248px;
-  }
-  .flow-leads-landing .mechanic-arrow{
-    display: flex;
-  }
-}
-@media (max-width: 1099px) {
-  .flow-leads-landing .mechanic-swipe-hint{
-    display: block;
-  }
-}
-
 /* ─── HOW: Step-Flow Cards + Killer-Zeile + Mini-Band ─────────────────────── */
 @keyframes flow-leads-micro-pulse {
   0%,
@@ -659,47 +514,27 @@ html {
   max-width: 560px;
   margin: 14px 0 0;
 }
-.flow-leads-landing .how-flow-swipe-hint{
-  display: none;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--mid);
-  margin: 22px 0 10px;
-  opacity: 0.75;
-}
 .flow-leads-landing .how-flow-cards-row{
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: stretch;
   gap: 0;
   margin-top: 40px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 0 18px;
-  -webkit-overflow-scrolling: touch;
-  margin-left: -18px;
-  margin-right: -18px;
-  padding: 4px 18px 14px;
-  scrollbar-width: thin;
-}
-.flow-leads-landing .how-flow-cards-row::-webkit-scrollbar{
-  height: 6px;
-}
-.flow-leads-landing .how-flow-cards-row::-webkit-scrollbar-thumb{
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 3px;
+  overflow-x: visible;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 4px 0 14px;
 }
 .flow-leads-landing .how-flow-step{
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: stretch;
-  flex: 0 0 auto;
-  scroll-snap-align: start;
+  width: 100%;
 }
 .flow-leads-landing .how-flow-card{
-  flex: 0 0 min(280px, 88vw);
+  width: 100%;
+  max-width: none;
+  flex: none;
   background: #fff;
   border: 1px solid var(--border-mid);
   border-radius: 18px;
@@ -709,7 +544,7 @@ html {
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
-  min-height: 100%;
+  min-height: 0;
 }
 .flow-leads-landing .how-flow-card-top{
   display: flex;
@@ -776,89 +611,43 @@ html {
   padding-top: 6px;
 }
 .flow-leads-landing .how-flow-arrow{
-  display: none;
+  display: flex;
   align-items: center;
+  justify-content: center;
   align-self: center;
-  padding: 0 8px;
-  font-size: 20px;
+  padding: 10px 0 14px;
+  font-size: 18px;
   font-weight: 500;
   color: var(--muted);
   flex-shrink: 0;
-}
-.flow-leads-landing .how-flow-killer{
-  font-size: clamp(17px, 2.4vw, 20px);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  line-height: 1.5;
-  text-align: center;
-  max-width: 640px;
-  margin: 48px auto 0;
-  padding: 28px 24px;
-  background: var(--gold-light);
-  border: 1px solid var(--gold-mid);
-  border-radius: 16px;
-}
-.flow-leads-landing .how-flow-mini{
-  margin-top: 36px;
-  padding-top: 28px;
-  border-top: 1px solid var(--border-mid);
-  text-align: center;
-}
-.flow-leads-landing .how-flow-mini-head{
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  margin: 0 0 14px;
-}
-.flow-leads-landing .how-flow-mini-list{
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--mid);
-}
-.flow-leads-landing .how-flow-mini-list li{
-  position: relative;
-  padding-left: 14px;
-}
-.flow-leads-landing .how-flow-mini-list li::before{
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.55em;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--gold);
-  opacity: 0.85;
+  transform: rotate(90deg);
 }
 @media (min-width: 1100px) {
   .flow-leads-landing .how-flow-cards-row{
-    overflow-x: visible;
+    flex-direction: row;
     flex-wrap: nowrap;
     justify-content: center;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-    padding-right: 0;
+    align-items: stretch;
+    padding: 4px 0 14px;
+  }
+  .flow-leads-landing .how-flow-step{
+    flex-direction: row;
+    flex: 0 0 auto;
+    align-items: stretch;
+    width: auto;
   }
   .flow-leads-landing .how-flow-card{
     flex: 1 1 0;
     min-width: 0;
     max-width: 232px;
+    width: auto;
+    min-height: 100%;
   }
   .flow-leads-landing .how-flow-arrow{
-    display: flex;
-  }
-}
-@media (max-width: 1099px) {
-  .flow-leads-landing .how-flow-swipe-hint{
-    display: block;
+    align-self: center;
+    padding: 0 8px;
+    font-size: 20px;
+    transform: none;
   }
 }
 

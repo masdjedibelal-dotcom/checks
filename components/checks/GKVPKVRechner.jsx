@@ -33,6 +33,7 @@ function berechne(p){
 const T={page:{minHeight:"100vh",background:"#fff",fontFamily:"'DM Sans',system-ui,sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?(c||C):"#e8e8e8"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"})};
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 export default function GKVPKVRechner(){
+  const isDemo = !new URLSearchParams(window.location.search).get("domain");
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[kontaktConsent,setKontaktConsent]=useState(false);
@@ -40,6 +41,10 @@ export default function GKVPKVRechner(){
   const set=(k,v)=>setP(x=>({...x,[k]:v}));
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
   const R=berechne(p);
+  /** Unter JAEG ist PKV für Angestellte nicht wählbar — Anzeige immer GKV, unabhängig vom Score. */
+  const tendenzAnzeige=R.unterGrenze?"GKV":R.empfehlung;
+  const gkvHervorgehoben=R.empfehlung==="GKV"||R.unterGrenze;
+  const pkvHervorgehoben=R.empfehlung==="PKV"&&!R.unterGrenze;
 
   const FAKTOREN=[
     {l:"Kinder",gkv:p.kinder>0?"Beitragsfrei mitversichert (unter Voraussetzungen)":"Kein Unterschied",pkv:p.kinder>0?"Eigener Beitrag je Kind (~100–250 €/Mon.)":"Kein Unterschied",fav:p.kinder>0?"gkv":"neutral"},
@@ -97,10 +102,25 @@ export default function GKVPKVRechner(){
         <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={T.h1}>Individuelle Tarif­prüfung</div><div style={T.body}>Wir bereiten eine konkrete Gegenüberstellung auf Basis Ihrer Situation vor.</div></div>
         <div style={T.section}>
           <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",padding:"12px 14px",background:"#fafafa",marginBottom:"16px",display:"flex",gap:"20px"}}>
-            <div><div style={{fontSize:"15px",fontWeight:"700",color:C,letterSpacing:"-0.3px"}}>{R.empfehlung}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>Tendenz</div></div>
+            <div><div style={{fontSize:"15px",fontWeight:"700",color:C,letterSpacing:"-0.3px"}}>{tendenzAnzeige}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>Tendenz{R.unterGrenze?" (GKV-pflichtig)":""}</div></div>
             <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.gkvBeitrag)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>GKV Ø/Mon.</div></div>
             <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.pkv)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>PKV Schätzung</div></div>
           </div>
+          {isDemo ? (
+            <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
+              <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
+                Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.
+              </div>
+              <button
+                type="button"
+                style={{ ...T.btnPrim(false) }}
+                onClick={() => window.parent.postMessage({ type: "openConfig" }, "*")}
+              >
+                Anpassen & kaufen
+              </button>
+            </div>
+          ) : (
+          <>
           <CheckKontaktLeadLine />
           <div style={T.card}>
             {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
@@ -110,8 +130,16 @@ export default function GKVPKVRechner(){
           <div style={{marginTop:"14px",marginBottom:"100px"}}>
             <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
           </div>
+          </>
+          )}
         </div>
-        <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={()=>{if(valid)setDanke(true);}} disabled={!valid}>Gespräch anfragen</button><button style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></div>
+        <div style={T.footer}>
+          {isDemo ? (
+            <button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
+          ) : (
+            <><button type="button" style={T.btnPrim(!valid)} onClick={()=>{if(valid)setDanke(true);}} disabled={!valid}>Gespräch anfragen</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
+          )}
+        </div>
       </div>
     );
   }
@@ -156,8 +184,8 @@ export default function GKVPKVRechner(){
           <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Beitragsvergleich</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"8px"}}>
             {[
-              {label:"GKV",beitrag:R.gkvBeitrag,sub:"Ø-Zusatzbeitrag 2026",empf:R.empfehlung==="GKV"},
-              {label:"PKV",beitrag:R.pkv,sub:"Faustschätzung nach Alter",empf:R.empfehlung==="PKV"&&!R.unterGrenze},
+              {label:"GKV",beitrag:R.gkvBeitrag,sub:"Ø-Zusatzbeitrag 2026",empf:gkvHervorgehoben},
+              {label:"PKV",beitrag:R.pkv,sub:"Faustschätzung nach Alter",empf:pkvHervorgehoben},
             ].map(({label,beitrag,sub,empf},i)=>(
               <div key={i} style={{border:`2px solid ${empf?C:"#e8e8e8"}`,borderRadius:"10px",padding:"14px",background:empf?`${C}06`:"#fff"}}>
                 <div style={{fontSize:"11px",fontWeight:"700",color:empf?C:"#aaa",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>{empf?"Tendenz · ":""}{label}</div>

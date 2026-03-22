@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { KATALOG, type Template } from "@/lib/katalog";
 import { CHECK_FLOW_META, CheckFlowPhoneMock } from "./check-flow-checks";
@@ -105,84 +105,6 @@ const WHY_FLOWLEADS_CARDS: {
   },
 ];
 
-const MECHANIC_BLOCKS: {
-  story: string;
-  title: string;
-  body: string;
-  highlight: string;
-  icon: ReactNode;
-}[] = [
-  {
-    story: "Input",
-    title: "Der Kunde wird geführt – nicht allein gelassen",
-    body:
-      "Statt sich durch Texte zu kämpfen, wird der Kunde Schritt für Schritt durch seine Situation geführt.\n\nEr beantwortet einfache Fragen und merkt dabei selbst:",
-    highlight: "„Hier passt etwas nicht.“",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path
-          d="M8 6h13M8 12h13M8 18h9"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-        <circle cx="5" cy="6" r="1.5" fill="currentColor" />
-        <circle cx="5" cy="12" r="1.5" fill="currentColor" />
-        <circle cx="5" cy="18" r="1.5" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    story: "Ergebnis",
-    title: "Der Kunde erkennt sein Problem selbst",
-    body:
-      "Keine Produktlisten.\nKeine Tarifvergleiche.\n\nStattdessen:\n\nklare Einordnung\nkonkrete Zahlen\nverständliche Ergebnisse",
-    highlight: "Der Kunde sieht seine Lücke – nicht deine Produkte.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path d="M4 19V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M4 15l4-4 4 4 5-6 5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    story: "Anfrage",
-    title: "Die Anfrage entsteht von selbst",
-    body:
-      "Am Ende steht keine Erklärung mehr nötig.\n\nDer Kunde hat verstanden, warum er handeln sollte\nund stellt aktiv die Anfrage.",
-    highlight: "Du überzeugst nicht mehr – du bestätigst.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path
-          d="M22 12h-4l-3 9L9 3l-3 9H2"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    story: "Gespräch",
-    title: "Der Kunde kommt vorbereitet ins Gespräch",
-    body:
-      "Er kennt seine Situation bereits.\n\nDas Gespräch startet nicht bei Null,\nsondern mitten im Thema.",
-    highlight: "Weniger erklären. Mehr abschließen.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path
-          d="M5 6.5a2 2 0 012-2h10a2 2 0 012 2v7a2 2 0 01-2 2h-3.5L9 18.5V15.5H7a2 2 0 01-2-2v-7z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path d="M9 10h.01M12 10h.01M15 10h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-];
-
 const HOW_FLOW_STEPS: {
   step: string;
   micro?: string;
@@ -242,6 +164,29 @@ export default function LandingHome() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [demoT, setDemoT] = useState<Template | null>(null);
   const [buyT, setBuyT] = useState<Template | null>(null);
+  const demoTRef = useRef<Template | null>(null);
+  demoTRef.current = demoT;
+
+  useEffect(() => {
+    const closeDemoModal = () => {
+      setDemoT(null);
+    };
+    const openConfig = (slug: unknown) => {
+      const fromSlug =
+        typeof slug === "string" && slug.trim()
+          ? KATALOG.find((t) => t.slug === slug)
+          : null;
+      const tmpl = fromSlug ?? demoTRef.current;
+      if (tmpl) setBuyT(tmpl);
+    };
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type !== "openConfig") return;
+      closeDemoModal();
+      openConfig(e.data.slug);
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, []);
 
   async function handleCheckout(form: KonfiguratorForm, template: Template) {
     try {
@@ -313,9 +258,8 @@ export default function LandingHome() {
           </span>
         </div>
         <div className="nav-links">
-          <a href="#feature">So entstehen Anfragen</a>
+          <a href="#how">So funktioniert&apos;s</a>
           <a href="#checks">Checks</a>
-          <a href="#how">Setup</a>
           <a href="#faq">FAQ</a>
         </div>
         <div className="nav-right">
@@ -376,15 +320,15 @@ export default function LandingHome() {
                 />
               </svg>
             </a>
-            <a href="#feature" className="btn-demo-lg">
+            <a href="#how" className="btn-demo-lg">
               So funktioniert&apos;s
             </a>
           </div>
 
           <div className="why-flowleads au d4">
             <h2 className="why-flowleads-title">Warum FlowLeads funktioniert</h2>
-            <p className="why-flowleads-swipe-hint" aria-hidden>
-              Swipe →
+            <p className="why-flowleads-scroll-hint" aria-hidden>
+              Weiter →
             </p>
             <div className="why-cards-scroll">
               {WHY_FLOWLEADS_CARDS.map((card) => (
@@ -402,46 +346,11 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="feature" className="s mechanic-section" style={{ background: "var(--bg)" }}>
-        <div className="inner">
-          <div className="s-label">Mechanik</div>
-          <h2 className="mechanic-h2">Wie FlowLeads aus Besuchern Anfragen macht</h2>
-          <p className="mechanic-swipe-hint" aria-hidden>
-            Swipe →
-          </p>
-          <div className="mechanic-cards-row">
-            {MECHANIC_BLOCKS.map((block, i) => (
-              <div key={block.title} className="mechanic-step">
-                <div className="mechanic-card">
-                  <div className="mechanic-card-top">
-                    <span className="mechanic-story">{block.story}</span>
-                    <span className="mechanic-card-ico" aria-hidden>
-                      {block.icon}
-                    </span>
-                  </div>
-                  <h3 className="mechanic-card-title">{block.title}</h3>
-                  <p className="mechanic-card-body">{block.body}</p>
-                  <p className="mechanic-card-highlight">👉 {block.highlight}</p>
-                </div>
-                {i < MECHANIC_BLOCKS.length - 1 ? (
-                  <span className="mechanic-arrow" aria-hidden>
-                    →
-                  </span>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section id="how" className="s how-flow-section" style={{ background: "var(--surface)" }}>
         <div className="inner">
           <div className="s-label">So funktioniert&apos;s</div>
           <h2 className="how-flow-h2">In wenigen Minuten auf Ihrer Website – ohne Technikstress</h2>
           <p className="how-flow-sub">Kein Entwickler. Kein Projekt. Kein Setup-Chaos.</p>
-          <p className="how-flow-swipe-hint" aria-hidden>
-            Swipe →
-          </p>
           <div className="how-flow-cards-row">
             {HOW_FLOW_STEPS.map((row, i) => (
               <div key={row.step} className="how-flow-step">
@@ -465,19 +374,6 @@ export default function LandingHome() {
                 ) : null}
               </div>
             ))}
-          </div>
-          <p className="how-flow-killer">
-            Der Kunde kommt nicht zufällig auf Sie zu –
-            <br />
-            er hat bereits verstanden, warum er handeln sollte.
-          </p>
-          <div className="how-flow-mini">
-            <p className="how-flow-mini-head">Technisch einfach. Vertrieblich stark.</p>
-            <ul className="how-flow-mini-list">
-              <li>iFrame auf jeder Seite</li>
-              <li>keine Programmierung</li>
-              <li>sofort einsatzbereit</li>
-            </ul>
           </div>
         </div>
       </section>

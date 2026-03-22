@@ -141,6 +141,7 @@ function DankeScreen({ name, onBack }) {
 }
 
 export default function RentenRechner() {
+  const isDemo = !new URLSearchParams(window.location.search).get("domain");
   const [phase, setPhase] = useState(1);
   const [ak, setAk] = useState(0);
   const [danke, setDanke] = useState(false);
@@ -171,6 +172,21 @@ export default function RentenRechner() {
               <div><div style={{ fontSize:"18px",fontWeight:"700",color:"#111",letterSpacing:"-0.5px" }}>{R.jahreBis} J.</div><div style={{ fontSize:"11px",color:"#999",marginTop:"2px" }}>bis Rente</div></div>
             </div>
           </div>
+          {isDemo ? (
+            <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
+              <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
+                Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.
+              </div>
+              <button
+                type="button"
+                style={{ ...T.btnPrim(false) }}
+                onClick={() => window.parent.postMessage({ type: "openConfig" }, "*")}
+              >
+                Anpassen & kaufen
+              </button>
+            </div>
+          ) : (
+          <>
           <CheckKontaktLeadLine />
           <div style={T.card}>
             {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
@@ -183,8 +199,14 @@ export default function RentenRechner() {
           <div style={{ marginTop:"14px" }}>
             <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
           </div>
+          </>
+          )}
         </div>
+        {isDemo ? (
+          <div style={T.footer}><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></div>
+        ) : (
         <Footer onNext={()=>{if(valid){setName(fd.name);setDanke(true);}}} onBack={()=>goTo(2)} label="Gespräch anfragen" disabled={!valid}/>
+        )}
       </div>
     );
   }

@@ -9,7 +9,45 @@ const fmt=(n)=>Math.round(Math.abs(n)).toLocaleString("de-DE")+" €";
 const fmtK=(n)=>n>=1000000?(n/1000000).toFixed(2)+" Mio. €":n>=10000?Math.round(n/1000).toLocaleString("de-DE")+".000 €":fmt(n);
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 const T={page:{minHeight:"100vh",background:"#fff",fontFamily:"'DM Sans',system-ui,sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?C:"#e8e8e8"}`,background:a?C:"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"})};
-function Danke({name,onBack}){return(<div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{name?`Danke, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir melden uns innerhalb von 24 Stunden.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={onBack} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div>);}function KontaktForm({fd,setFd,onSubmit,onBack}){const[consent,setConsent]=useState(false);const valid=fd.name.trim()&&fd.email.trim()&&consent;return(<><div style={{...T.section,marginBottom:"0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px"}}>Gespräch anfragen</div><CheckKontaktLeadLine /><div style={T.card}>{[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(<div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"6px"}}/></div>))}</div><div style={{marginTop:"14px",marginBottom:"100px"}}><CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={consent} onConsentChange={setConsent} /></div></div><div style={T.footer}><button style={T.btnPrim(!valid)} onClick={()=>{if(valid)onSubmit();}} disabled={!valid}>Gespräch anfragen</button><button style={T.btnSec} onClick={onBack}>Zurück</button></div></>);}
+function Danke({name,onBack}){return(<div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{name?`Danke, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir melden uns innerhalb von 24 Stunden.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={onBack} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div>);}
+function KontaktForm({fd,setFd,onSubmit,onBack,isDemo}){
+  const[consent,setConsent]=useState(false);
+  const valid=fd.name.trim()&&fd.email.trim()&&consent;
+  if(isDemo){
+    return(
+      <>
+        <div style={{textAlign:"center",padding:"24px 0 8px"}}>
+          <div style={{fontSize:"13px",color:"#999",marginBottom:"16px"}}>Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.</div>
+          <button type="button" style={{...T.btnPrim(false)}} onClick={()=>window.parent.postMessage({type:"openConfig"},"*")}>Anpassen & kaufen</button>
+        </div>
+        <div style={T.footer}><button type="button" style={T.btnSec} onClick={onBack}>Zurück</button></div>
+      </>
+    );
+  }
+  return(
+    <>
+      <div style={{...T.section,marginBottom:"0"}}>
+        <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px"}}>Gespräch anfragen</div>
+        <CheckKontaktLeadLine />
+        <div style={T.card}>
+          {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
+            <div key={k} style={i<arr.length-1?T.row:T.rowLast}>
+              <label style={T.fldLbl}>{l}{req?" *":""}</label>
+              <input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"6px"}}/>
+            </div>
+          ))}
+        </div>
+        <div style={{marginTop:"14px",marginBottom:"100px"}}>
+          <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={consent} onConsentChange={setConsent} />
+        </div>
+      </div>
+      <div style={T.footer}>
+        <button type="button" style={T.btnPrim(!valid)} onClick={()=>{if(valid)onSubmit();}} disabled={!valid}>Gespräch anfragen</button>
+        <button type="button" style={T.btnSec} onClick={onBack}>Zurück</button>
+      </div>
+    </>
+  );
+}
 function berechne(p){
   const leistStationaer=[0,770,1262,1775,2005,2005][p.pflegegrad]||0;
   const heimkosten=[0,2800,3200,3600,4000,4400][p.pflegegrad]||3600;
@@ -21,6 +59,7 @@ function berechne(p){
   return{leistStationaer,heimkosten,eigenStationaer,leistAmbulant,eigenAmbulant,dauer,gesamtEigen};
 }
 export default function PflegekostenplanungRechner(){
+  const isDemo = !new URLSearchParams(window.location.search).get("domain");
   const[phase,setPhase]=useState(1);
   const[ak,setAk]=useState(0);
   const[danke,setDanke]=useState(false);
@@ -160,7 +199,7 @@ export default function PflegekostenplanungRechner(){
           <div><div style={{fontSize:"16px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmtK(R.gesamtEigen)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>Gesamt Ø</div></div>
         </div>
       </div>
-      <KontaktForm fd={fd} setFd={setFd} onSubmit={()=>setDanke(true)} onBack={()=>goTo(2)}/>
+      <KontaktForm fd={fd} setFd={setFd} isDemo={isDemo} onSubmit={()=>setDanke(true)} onBack={()=>goTo(2)}/>
     </div>);
   }
 

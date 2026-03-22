@@ -132,6 +132,7 @@ function AbsicherungBlock({modul}){
 
 // ─── HAUPTKOMPONENTE ──────────────────────────────────────────────────────────
 export default function ImmobilienCheck(){
+  const isDemo = !new URLSearchParams(window.location.search).get("domain");
   const[phase,setPhase]=useState(1);
   const[ak,setAk]=useState(0);
   const[danke,setDanke]=useState(false);
@@ -159,6 +160,24 @@ export default function ImmobilienCheck(){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
     return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
       <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={T.h1}>Wir bereiten alles vor</div><div style={T.body}>Ihr Ergebnis wird mit dem Gespräch verknüpft — so können wir direkt loslegen.</div></div>
+      {isDemo ? (
+        <>
+          <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
+            <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
+              Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.
+            </div>
+            <button
+              type="button"
+              style={{ ...T.btnPrim(false) }}
+              onClick={() => window.parent.postMessage({ type: "openConfig" }, "*")}
+            >
+              Anpassen & kaufen
+            </button>
+          </div>
+          <div style={T.footer}><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+        </>
+      ) : (
+      <>
       <div style={T.section}>
         <CheckKontaktLeadLine />
         <div style={T.card}>
@@ -170,7 +189,9 @@ export default function ImmobilienCheck(){
           <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
         </div>
       </div>
-      <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={()=>{if(valid)setDanke(true);}} disabled={!valid}>Gespräch anfragen</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      <div style={T.footer}><button type="button" style={T.btnPrim(!valid)} onClick={()=>{if(valid)setDanke(true);}} disabled={!valid}>Gespräch anfragen</button><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      </>
+      )}
     </div>);
   }
 

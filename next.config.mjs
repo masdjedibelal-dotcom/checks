@@ -10,19 +10,9 @@ const nextConfig = {
     }
     return config;
   },
-  async headers() {
-    return [
-      {
-        source: "/demo/:slug*",
-        headers: [
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
-          },
-        ],
-      },
-    ];
-  },
+  // Kein X-Frame-Options: SAMEORIGIN auf /demo/* — sonst laden eingebettete Checks
+  // auf Kundenwebsites (fremde Origin) im Browser gar nicht (Makler-iFrame nach Kauf).
+  // Zugriff steuert middleware.ts (Token / Referer).
 };
 
 export default nextConfig;

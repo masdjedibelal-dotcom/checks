@@ -381,12 +381,30 @@ function Phase3({result,onCTA,onReset}){
   </div>);}
 
 // Phase 4: Kontakt
-function Phase4({selectedRec,onAbsenden,onZurueck}){
+function Phase4({selectedRec,onAbsenden,onZurueck,isDemo}){
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[consent,setConsent]=useState(false);
   const valid=fd.name.trim()&&fd.email.trim()&&consent;
   return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={100}/>
     <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={T.h1}>Über <span style={{color:C}}>{selectedRec?.name}</span> sprechen</div><div style={T.body}>Wir bereiten ein persönliches Angebot auf Basis Ihres Ergebnisses vor.</div></div>
+    {isDemo ? (
+      <>
+        <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
+          <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
+            Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.
+          </div>
+          <button
+            type="button"
+            style={{ ...T.btnPrim(false) }}
+            onClick={() => window.parent.postMessage({ type: "openConfig" }, "*")}
+          >
+            Anpassen & kaufen
+          </button>
+        </div>
+        <div style={T.footer}><button type="button" style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
+      </>
+    ) : (
+    <>
     <div style={T.section}>
       <CheckKontaktLeadLine />
       <div style={T.card}>
@@ -399,6 +417,8 @@ function Phase4({selectedRec,onAbsenden,onZurueck}){
     </div>
     </div>
     <div style={T.footer}><button style={T.btnPrim(!valid)} disabled={!valid} onClick={()=>valid&&onAbsenden(fd)}>Gespräch anfragen</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
+    </>
+    )}
   </div>);}
 
 // Danke
@@ -414,6 +434,7 @@ function DankeScreen({name,onReset}){
 
 // Root
 export default function Bedarfscheck(){
+  const isDemo = !new URLSearchParams(window.location.search).get("domain");
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[selectedRec,setSelectedRec]=useState(null);const[kontaktName,setKontaktName]=useState("");
   const[profil,setProfil]=useState({age:"",employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:""});
   const[existing,setExisting]=useState([]);
@@ -424,7 +445,7 @@ export default function Bedarfscheck(){
   const profilReady=profil.age&&profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus&&profil.healthStatus;
   const result=profilReady?runScoringEngine(profil,existing):null;
   if(danke)return <DankeScreen name={kontaktName} onReset={reset}/>;
-  if(phase===4)return <Phase4 key={ak} selectedRec={selectedRec} onAbsenden={(fd)=>{setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)}/>;
+  if(phase===4)return <Phase4 key={ak} isDemo={isDemo} selectedRec={selectedRec} onAbsenden={(fd)=>{setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)}/>;
   if(phase===3&&result)return <Phase3 key={ak} result={result} onCTA={(rec)=>{setSelectedRec(rec);goTo(4);}} onReset={reset}/>;
   if(phase===2)return <Phase2 key={ak} existing={existing} toggle={toggle} onWeiter={()=>goTo(3)} onZurueck={()=>goTo(1)}/>;
   return <Phase1 key={ak} profil={profil} set={set} onWeiter={()=>goTo(2)}/>;
