@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>CheckKit — Vorlagen-Demos</title>
+  <style>
+    * { box-sizing: border-box; }
+    html {
+      height: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+    body {
+      margin: 0;
+      min-height: 100%;
+      min-height: 100dvh;
+      font-family: system-ui, sans-serif;
+      background: #fafafa;
+      color: #111;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    header {
+      flex-shrink: 0;
+      padding: 12px 16px;
+      padding-top: max(12px, env(safe-area-inset-top, 12px));
+      border-bottom: 1px solid #eee;
+      background: #fff;
+    }
+    h1 { margin: 0; font-size: clamp(15px, 4vw, 18px); line-height: 1.25; }
+    h1 code { font-size: 0.85em; word-break: break-all; }
+
+    /* Slugs: eine Zeile, horizontal wischen — auf dem Phone lesbar */
+    .slug-scroll {
+      flex-shrink: 0;
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      padding: 12px 16px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      border-bottom: 1px solid #f0f0f0;
+      background: #fff;
+    }
+    .slug-scroll::-webkit-scrollbar { height: 4px; }
+    .slug-scroll::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+    .slug-scroll button {
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 999px;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      touch-action: manipulation;
+    }
+    .slug-scroll button:hover,
+    .slug-scroll button:active { border-color: #111; }
+
+    .frame-wrap {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      margin: 0 12px 12px;
+      margin-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+      border: 1px solid #e8e8e8;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      /* Kein fixes min-height: sonst Mini-Bildschirm + riesiger Leerraum */
+      min-height: 0;
+      min-height: 260px;
+      min-height: min(360px, 45dvh);
+    }
+    #demoTitle {
+      flex-shrink: 0;
+      font-size: 12px;
+      color: #666;
+      padding: 10px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      line-height: 1.35;
+    }
+    .iframe-outer {
+      flex: 1 1 auto;
+      position: relative;
+      /* Konkrete Höhe nötig für iOS-iframes; svh = stabiler bei mobiler Browser-UI */
+      height: calc(100vh - 168px);
+      height: calc(100svh - 168px);
+      min-height: 380px;
+      min-height: min(420px, 62svh);
+    }
+    @media (max-width: 480px) {
+      .iframe-outer {
+        height: calc(100vh - 152px);
+        height: calc(100svh - 152px);
+        min-height: 320px;
+        min-height: min(380px, 68svh);
+      }
+    }
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Live-Demos (Next.js <code>/demo/[slug]</code>)</h1>
+  </header>
+  <div class="slug-scroll" role="toolbar" aria-label="Checks auswählen">
+    <button type="button" onclick="openDemo('bedarfscheck', 'Versicherungs-Check')">bedarfscheck</button>
+    <button type="button" onclick="openDemo('lebenssituations-check', 'Lebenssituations-Check')">lebenssituations-check</button>
+    <button type="button" onclick="openDemo('einkommens-check', 'Einkommens-Check')">einkommens-check</button>
+    <button type="button" onclick="openDemo('gkv-pkv', 'GKV vs. PKV')">gkv-pkv</button>
+    <button type="button" onclick="openDemo('vorsorge-check', 'Vorsorge-Check')">vorsorge-check</button>
+    <button type="button" onclick="openDemo('risikoleben', 'Risikoleben')">risikoleben</button>
+    <button type="button" onclick="openDemo('pflege-check', 'Pflege-Check')">pflege-check</button>
+    <button type="button" onclick="openDemo('immobilien-check', 'Immobilien-Check')">immobilien-check</button>
+  </div>
+  <div class="frame-wrap">
+    <div id="demoTitle">Demo auswählen</div>
+    <div class="iframe-outer">
+      <iframe id="demoFrame" title="Demo" src="about:blank"></iframe>
+    </div>
+  </div>
+  <script>
+    function g(id) { return document.getElementById(id); }
+    function openDemo(slug, title) {
+      g('demoTitle').textContent = title + ' (' + slug + ')';
+      const demoUrl = `/demo/${slug}`;
+      g('demoFrame').src = demoUrl;
+    }
+  </script>
+</body>
+</html>
