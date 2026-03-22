@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import type { Template } from "@/lib/katalog";
+import { demoPagePath } from "@/lib/demoPaths";
 
 export type DemoModalProps = {
   template: Template | null;
@@ -31,7 +32,7 @@ export default function DemoModal({
 
   if (!template) return null;
 
-  const src = `/demo/${template.slug}`;
+  const src = demoPagePath(template.slug);
 
   return (
     <div
