@@ -1,7 +1,9 @@
 import { Suspense } from "react";
+import { flowleadsContactEmail } from "@/lib/flowleadsMailConfig";
 import SuccessClient from "./SuccessClient";
 
 export default function SuccessPage() {
+  const contactEmail = flowleadsContactEmail();
   return (
     <Suspense
       fallback={
@@ -21,7 +23,7 @@ export default function SuccessPage() {
         </div>
       }
     >
-      <SuccessClient />
+      <SuccessClient contactEmail={contactEmail} />
     </Suspense>
   );
 }

@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import crypto from "crypto";
 import { buildOnboardingEmailHtml, onboardingEmailSubject } from "@/lib/flowleadsOnboardingEmail";
+import { flowleadsContactEmail, formatResendFrom } from "@/lib/flowleadsMailConfig";
 import { normalizeDomainHost } from "@/lib/licenseUtils";
 import { getSupabaseServiceRole } from "@/lib/supabaseService";
 
@@ -97,12 +98,13 @@ export async function POST(req: NextRequest) {
   }
 
   const resendKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
-  if (resendKey && from) {
+  const from = formatResendFrom(process.env.RESEND_FROM_EMAIL);
+  if (resendKey && process.env.RESEND_FROM_EMAIL?.trim()) {
     const resend = new Resend(resendKey);
     const { error: mailErr } = await resend.emails.send({
       from,
       to: meta.email.trim(),
+      replyTo: flowleadsContactEmail(),
       subject: onboardingEmailSubject(meta.slug.trim()),
       html: buildOnboardingEmailHtml({
         name: meta.name.trim(),

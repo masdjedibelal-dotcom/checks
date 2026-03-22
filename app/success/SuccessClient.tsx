@@ -12,7 +12,11 @@ type PurchaseData = {
   domain: string;
 };
 
-export default function SuccessClient() {
+type SuccessClientProps = {
+  contactEmail: string;
+};
+
+export default function SuccessClient({ contactEmail }: SuccessClientProps) {
   const params = useSearchParams();
   const sessionId = params.get("session_id");
   const [data, setData] = useState<PurchaseData | null>(null);
@@ -307,8 +311,8 @@ export default function SuccessClient() {
             Einbindung auf anderen Domains ist nicht gestattet.
             <br />
             Bei Fragen:{" "}
-            <a href="mailto:support@flowleads.de" style={{ color: "#b8884a" }}>
-              support@flowleads.de
+            <a href={`mailto:${contactEmail}`} style={{ color: "#b8884a" }}>
+              {contactEmail}
             </a>
           </div>
         )}

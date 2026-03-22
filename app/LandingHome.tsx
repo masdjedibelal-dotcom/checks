@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { KATALOG, type Template } from "@/lib/katalog";
+import DemoModal from "@/components/ui/DemoModal";
+import KonfiguratorOverlay, {
+  type KonfiguratorForm,
+} from "@/components/ui/KonfiguratorOverlay";
 
 const FAQ_ITEMS = [
   {
@@ -32,52 +38,142 @@ const FAQ_ITEMS = [
 
 const CHECK_CARDS = [
   {
+    slug: "bedarfscheck" as const,
     tag: "Neukunden",
     name: "Versicherungs-Check",
     desc: "Für Erstgespräche — zeigt sofort, was fehlt",
+    longDesc:
+      "Der Kunde markiert, was er bereits abgesichert hat und wo Lücken sind. Daraus werden drei nachvollziehbare Pakete mit kurzer Begründung — perfekt, um vor dem Erstgespräch Gesprächsbedarf zu erzeugen, ohne ins Tarifdetail zu gehen.",
     price: "79",
   },
   {
+    slug: "lebenssituations-check" as const,
     tag: "Bestandskunden",
     name: "Lebenssituations-Check",
     desc: "Nachwuchs, Jobwechsel — macht Anpassungsbedarf sichtbar",
+    longDesc:
+      "Lebensereignisse wie Heirat, Kind, Umzug oder Jobwechsel werden strukturiert erfasst und mit dem bestehenden Schutz abgeglichen. So wird sichtbar, wo Verträge nachgezogen oder angepasst werden sollten — ideal für Bestandskunden-Mails und Jahresgespräche.",
     price: "79",
   },
   {
+    slug: "einkommens-check" as const,
     tag: "BU & KTG",
     name: "Einkommens-Check",
     desc: "Zeigt Einbruch bei Krankheit Monat für Monat",
+    longDesc:
+      "Krankentagegeld und BU werden auf einer Zeitleiste dargestellt: wie lange reicht das Geld, wo entsteht die Lücke, was wäre sinnvoll? Inklusive Einordnung und grober Richtung — ohne konkrete Tarifempfehlung im Tool.",
     price: "59",
   },
   {
+    slug: "gkv-pkv" as const,
     tag: "PKV-Wechsel",
     name: "GKV vs. PKV",
     desc: "Klare Einordnung statt Tarifvergleich",
+    longDesc:
+      "Prüfung der Wechselvoraussetzungen (u. a. Jahresarbeitsentgeltgrenze), Beitragslogik und Familienfälle. Der Kunde bekommt eine verständliche Einordnung, ob ein Wechsel grundsätzlich in Frage kommt — ohne Vergleichsrechner und ohne Produktliste.",
     price: "49",
   },
   {
+    slug: "vorsorge-check" as const,
     tag: "Altersvorsorge",
     name: "Vorsorge-Check",
     desc: "Rentenlücke + Riester + 3 Strategien",
+    longDesc:
+      "Renteninformation, gewünschter Standard und Sparverhalten fließen ein. Es entstehen Rentenlücke, grobe Deckung und drei Strategien (Basis, ausgewogen, ambitioniert) mit Riester-Hinweis wo sinnvoll — alles als Orientierung für das spätere Beratungsgespräch.",
     price: "59",
   },
   {
+    slug: "risikoleben" as const,
     tag: "Familie & Kredit",
     name: "Risikoleben-Check",
     desc: "Versorgungslücke → empfohlene Summe",
+    longDesc:
+      "Aus Einkommen, Verbindlichkeiten und Familienstand wird die Versorgungslücke bei Todesfall grob beziffert — in Abgrenzung zu gesetzlicher Witwen- und Waisenrente. Ergebnis: eine einordnende Empfehlungssumme, kein Produktvergleich.",
     price: "59",
   },
   {
+    slug: "pflege-check" as const,
     tag: "Pflegevorsorge",
     name: "Pflege-Check",
     desc: "Eigenanteil nach Pflegegrad greifbar machen",
+    longDesc:
+      "Pflegegrad und gewünschter Lebensstandard führen zu einem nachvollziehbaren Eigenanteil und einer Einordnung der Kosten. Zusätzlich Überblick über typische Absicherungsbausteine — damit der Kunde das Thema nicht mehr abstrakt, sondern in Euro sieht.",
     price: "49",
   },
   {
+    slug: "immobilien-check" as const,
     tag: "Immobilien",
     name: "Immobilien-Check",
     desc: "Kaufen vs. Mieten, Anschluss & Wohngebäude",
+    longDesc:
+      "Drei Module: Mieten versus Kaufen (mit grober Sensitivität), Anschlussfinanzierung nach Ablauf der Zinsbindung sowie Wohngebäude-Risiko. Strukturierte Fragen, klare Zwischenergebnisse — geeignet für Immobilien- und Finanzierungsseiten.",
     price: "59",
+  },
+] as const;
+
+const TRUST_ITEMS: { label: string; icon: ReactNode }[] = [
+  {
+    label: "iFrame auf jeder Website",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3 8h18" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M7 16h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    label: "Mobile-first",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="7" y="2" width="10" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M10 18h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    label: "Leads direkt an Sie",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3 7l9 6 9-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    label: "Einmalig kaufen",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M4 7h3l1-2h8l1 2h3v12H4V7z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+];
+
+const FEATURE_ITEMS = [
+  {
+    kicker: "Kundenerlebnis",
+    title: "Vom Besucher zur Beratungsanfrage",
+    body:
+      "In klaren Schritten führen die Checks durch Situation, Bedarf und nächsten Schritt — ohne Fachjargon und ohne Tarifvergleich. Ihre Besucher verstehen das Problem, bevor Sie ins Gespräch kommen.",
+  },
+  {
+    kicker: "Ergebnis",
+    title: "Klare Zahlen statt Tarifdschungel",
+    body:
+      "Am Ende stehen konkrete Kennzahlen und Einordnungen: Lücken, Deckungsgrade, empfohlene Richtungen. Der Kunde sieht Handlungsbedarf in Prozent und Euro — nicht in Produktlisten.",
+  },
+  {
+    kicker: "Setup",
+    title: "In Minuten live — ohne Entwickler",
+    body:
+      "Check wählen, Name, Farbe und Kontaktdaten eintragen, iFrame-Code erhalten und auf Ihrer Website einfügen. Keine Programmierung und kein eigenes Hosting-Projekt — Sie bleiben Makler, wir liefern das Werkzeug.",
   },
 ] as const;
 
@@ -90,6 +186,14 @@ function LogoMark({ size = 12 }: { size?: number }) {
       <rect x="6.8" y="6.8" width="4.2" height="4.2" rx=".8" fill="white" />
     </svg>
   );
+}
+
+/** Modals an `document.body` — nicht von `.flow-leads-landing` (overflow/z-index) eingeschränkt */
+function LandingModalsPortal({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return createPortal(children, document.body);
 }
 
 function LogoMarkSm() {
@@ -105,6 +209,42 @@ function LogoMarkSm() {
 
 export default function LandingHome() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [demoT, setDemoT] = useState<Template | null>(null);
+  const [buyT, setBuyT] = useState<Template | null>(null);
+
+  async function handleCheckout(form: KonfiguratorForm, template: Template) {
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: template.slug,
+          email: form.email,
+          name: form.name,
+          firma: form.firma,
+          domain: form.website,
+          accentColor: form.akzentfarbe,
+          templateName: template.name,
+          headline: form.headline,
+          unterzeile: form.unterzeile,
+          cta: form.cta,
+          danke: form.danke,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Checkout fehlgeschlagen");
+        return;
+      }
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      alert("Keine Checkout-URL erhalten.");
+    } catch {
+      alert("Netzwerkfehler beim Checkout.");
+    }
+  }
 
   return (
     <div className="flow-leads-landing">
@@ -125,9 +265,9 @@ export default function LandingHome() {
           <a href="#faq" className="btn-ghost">
             Fragen?
           </a>
-          <Link href="/templates" className="btn-cta">
+          <a href="#checks" className="btn-cta">
             Checks ansehen →
-          </Link>
+          </a>
         </div>
       </nav>
 
@@ -167,7 +307,7 @@ export default function LandingHome() {
           </p>
 
           <div className="hero-btns au d4">
-            <Link href="/templates" className="btn-primary-lg">
+            <a href="#checks" className="btn-primary-lg">
               Checks ansehen
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
                 <path
@@ -178,66 +318,24 @@ export default function LandingHome() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </Link>
+            </a>
             <a href="#feature" className="btn-demo-lg">
               So funktioniert&apos;s
             </a>
           </div>
 
           <div className="trust au d4">
-            {["iFrame auf jeder Website", "Mobile-first", "Leads direkt an Sie", "Einmalig kaufen"].map(
-              (label) => (
-                <div key={label} className="trust-pill">
-                  <div className="trust-check">
-                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none" aria-hidden>
-                      <path
-                        d="M1 3l2 2L7 1"
-                        stroke="#16a34a"
-                        strokeWidth="1.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  {label}
-                </div>
-              ),
-            )}
+            {TRUST_ITEMS.map((item) => (
+              <div key={item.label} className="trust-item">
+                <span className="trust-ico" aria-hidden>
+                  {item.icon}
+                </span>
+                <span className="trust-label">{item.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
-
-      <div className="partners">
-        <div className="partners-inner">
-          <div className="partners-label">Einsetzbar auf</div>
-          <div className="marquee-wrap">
-            <div className="marquee-track">
-            {[
-              "WordPress",
-              "Jimdo",
-              "Squarespace",
-              "Wix",
-              "Webflow",
-              "HTML-Seiten",
-              "Landingpages",
-              "Jede Website",
-              "WordPress",
-              "Jimdo",
-              "Squarespace",
-              "Wix",
-              "Webflow",
-              "HTML-Seiten",
-              "Landingpages",
-              "Jede Website",
-            ].map((name, i) => (
-              <span key={`${name}-${i}`} className="m-item">
-                {name}
-              </span>
-            ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
       <section id="feature" className="s" style={{ background: "var(--bg)" }}>
         <div className="inner">
@@ -248,132 +346,14 @@ export default function LandingHome() {
             um Anfragen zu erzeugen
           </h2>
 
-          <div className="bento">
-            <div className="bento-card">
-              <div className="bento-body">
-                <div className="bento-tag">Kundenerlebnis</div>
-                <h3>Vom Besucher zur Beratungsanfrage</h3>
-                <p>In 3 Schritten — ohne Fachchinesisch, ohne Tarifvergleich.</p>
+          <div className="feature-grid">
+            {FEATURE_ITEMS.map((f) => (
+              <div key={f.title} className="feature-card">
+                <div className="feature-kicker">{f.kicker}</div>
+                <h3>{f.title}</h3>
+                <p className="feature-body">{f.body}</p>
               </div>
-              <div className="bento-mock" style={{ padding: "20px 20px 0" }}>
-                <div className="mini-phone" style={{ maxWidth: "100%", margin: 0 }}>
-                  <div className="mp-bar" />
-                  <div className="mp-hd">
-                    <div className="mp-logo">
-                      <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden>
-                        <rect x=".5" y=".5" width="3" height="3" rx=".5" fill="white" />
-                        <rect x="5.5" y=".5" width="3" height="3" rx=".5" fill="white" opacity=".5" />
-                        <rect x=".5" y="5.5" width="3" height="3" rx=".5" fill="white" opacity=".5" />
-                        <rect x="5.5" y="5.5" width="3" height="3" rx=".5" fill="white" />
-                      </svg>
-                    </div>
-                    <span className="mp-lbl">Vorsorge-Check</span>
-                  </div>
-                  <div className="mp-body">
-                    <div className="mp-ey">Ihre Rentenanalyse</div>
-                    <div className="mp-h">520 €/Mon. fehlen</div>
-                    <div className="mp-s">ab Rentenbeginn mit 67</div>
-                  </div>
-                  <div className="mp-kpis">
-                    <div className="mp-k">
-                      <div className="mp-kv r">520 €</div>
-                      <div className="mp-kl">Lücke/Mon.</div>
-                    </div>
-                    <div className="mp-k">
-                      <div className="mp-kv">64 %</div>
-                      <div className="mp-kl">Deckung</div>
-                    </div>
-                    <div className="mp-k">
-                      <div className="mp-kv">32 J.</div>
-                      <div className="mp-kl">bis Rente</div>
-                    </div>
-                  </div>
-                  <div className="mp-btn">Strategie besprechen →</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bento-card">
-              <div className="bento-body">
-                <div className="bento-tag">Ergebnis</div>
-                <h3>Klare Zahlen statt Tarifdschungel</h3>
-                <p>Der Kunde sieht sofort, wo Handlungsbedarf besteht.</p>
-              </div>
-              <div className="bento-mock" style={{ margin: "0 20px 0" }}>
-                <div className="result-rows">
-                  <div className="result-row">
-                    <span className="rr-label">Monatliche Rentenlücke</span>
-                    <span className="rr-val red">
-                      − 520 € <span className="rr-badge badge-red">Kritisch</span>
-                    </span>
-                  </div>
-                  <div className="result-row">
-                    <span className="rr-label">Deckungsgrad</span>
-                    <span className="rr-val">64 %</span>
-                  </div>
-                  <div className="result-row">
-                    <span className="rr-label">Empfohlene Strategie</span>
-                    <span className="rr-val gold">
-                      Hybrid <span className="rr-badge badge-green">Empfohlen</span>
-                    </span>
-                  </div>
-                  <div className="result-row">
-                    <span className="rr-label">Monatlicher Beitrag</span>
-                    <span className="rr-val">ab 184 €</span>
-                  </div>
-                  <div className="result-row">
-                    <span className="rr-label">Steuerersparnis/Jahr</span>
-                    <span className="rr-val">~660 €</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bento-card wide">
-              <div className="bento-wide-grid">
-                <div className="bento-body">
-                  <div className="bento-tag">Setup</div>
-                  <h3>
-                    In Minuten live —
-                    <br />
-                    ohne Entwickler
-                  </h3>
-                  <p>Check auswählen, anpassen, per iFrame einbinden. Fertig.</p>
-                </div>
-                <div style={{ padding: "32px 24px 0" }}>
-                  <div className="step-list">
-                    {[
-                      { n: "done", t: "Check auswählen", s: "8 Checks für jeden Anlass", done: true },
-                      { n: "done", t: "Anpassen", s: "Name, Farbe, Kontakt", done: true },
-                      { n: "3", t: "Per iFrame einbinden", s: "Code kopieren & einfügen", done: false },
-                      { n: "4", t: "Leads erhalten", s: "Direkt an Ihre E-Mail", done: false },
-                    ].map((step) => (
-                      <div key={step.t} className="step-item">
-                        <div className={`step-n ${step.done ? "done" : ""}`}>
-                          {step.done ? (
-                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden>
-                              <path
-                                d="M1 4l3 3 5-6"
-                                stroke="#16a34a"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          ) : (
-                            step.n
-                          )}
-                        </div>
-                        <div>
-                          <div className="step-t">{step.t}</div>
-                          <div className="step-s">{step.s}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -420,53 +400,53 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="checks" className="s" style={{ background: "var(--bg)" }}>
+      <section id="checks" className="s checks-section" style={{ background: "var(--bg)" }}>
         <div className="inner">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-end",
-              flexWrap: "wrap",
-              gap: "16px",
-              marginBottom: 0,
-            }}
-          >
-            <div>
-              <div className="s-label">Die 8 Checks</div>
-              <h2>
-                Ein System,
-                <br />
-                das Anfragen erzeugt
-              </h2>
-            </div>
-            <Link href="/templates" className="btn-primary-lg" style={{ alignSelf: "flex-end" }}>
-              Alle ansehen →
-            </Link>
+          <div>
+            <div className="s-label">Die 8 Checks</div>
+            <h2>
+              Ein System,
+              <br />
+              das Anfragen erzeugt
+            </h2>
           </div>
           <div className="checks-grid">
-            {CHECK_CARDS.map((c) => (
-              <div key={c.name} className="c-card">
-                <div className="c-top">
-                  <div className="c-tag">{c.tag}</div>
-                  <div className="c-name">{c.name}</div>
-                  <div className="c-desc">{c.desc}</div>
-                </div>
-                <div className="c-foot">
-                  <div className="c-price">
-                    {c.price} € <small>einmalig</small>
+            {CHECK_CARDS.map((c) => {
+              const tmpl = KATALOG.find((t) => t.slug === c.slug);
+              return (
+                <div key={c.slug} className="c-card">
+                  <div className="c-top">
+                    <div className="c-tag">{c.tag}</div>
+                    <div className="c-name">{c.name}</div>
+                    <div className="c-desc">{c.desc}</div>
+                    <p className="c-long">{c.longDesc}</p>
                   </div>
-                  <div className="c-btns">
-                    <Link href="/templates" className="c-demo">
-                      Demo
-                    </Link>
-                    <Link href="/templates" className="c-buy">
-                      Kaufen
-                    </Link>
+                  <div className="c-foot">
+                    <div className="c-price">
+                      {c.price} € <small>einmalig</small>
+                    </div>
+                    <div className="c-btns">
+                      <button
+                        type="button"
+                        className="c-demo"
+                        disabled={!tmpl}
+                        onClick={() => tmpl && setDemoT(tmpl)}
+                      >
+                        Demo
+                      </button>
+                      <button
+                        type="button"
+                        className="c-buy"
+                        disabled={!tmpl}
+                        onClick={() => tmpl && setBuyT(tmpl)}
+                      >
+                        Kaufen
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -594,10 +574,6 @@ export default function LandingHome() {
               </p>
             </div>
           </div>
-          <div className="legal-note">
-            <strong>Hinweis:</strong> Vor dem Livegang sollten alle Texte von einem Anwalt geprüft werden — die
-            dargestellte Einordnung ist eine fundierte Basis, kein Rechtsrat.
-          </div>
         </div>
       </section>
 
@@ -649,10 +625,10 @@ export default function LandingHome() {
           <p>Verwandeln Sie Website-Besucher in echte Anfragen. Einmalig kaufen, dauerhaft nutzen.</p>
         </div>
         <div className="cta-right">
-          <Link href="/templates" className="btn-gold">
+          <a href="#checks" className="btn-gold">
             Checks ansehen →
-          </Link>
-          <a href="#feature" className="btn-wh">
+          </a>
+          <a href="#checks" className="btn-wh">
             Demo ansehen
           </a>
         </div>
@@ -667,7 +643,7 @@ export default function LandingHome() {
         </div>
         <div className="footer-links">
           <Link href="/">Startseite</Link>
-          <Link href="/templates">Checks</Link>
+          <a href="#checks">Checks</a>
           <a href="#how">Setup</a>
           <a href="#faq">FAQ</a>
           <a href="#">Kontakt</a>
@@ -677,6 +653,26 @@ export default function LandingHome() {
         </div>
         <span className="footer-copy">© 2026 FlowLeads</span>
       </footer>
+
+      <LandingModalsPortal>
+        <DemoModal
+          template={demoT}
+          onClose={() => setDemoT(null)}
+          onBuy={(t) => {
+            setDemoT(null);
+            setBuyT(t);
+          }}
+        />
+
+        <KonfiguratorOverlay
+          template={buyT}
+          onClose={() => setBuyT(null)}
+          onCheckout={(form) => {
+            if (!buyT) return;
+            void handleCheckout(form, buyT);
+          }}
+        />
+      </LandingModalsPortal>
     </div>
   );
 }
