@@ -23,6 +23,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [pollKey, setPollKey] = useState(0);
 
   useEffect(() => {
     if (!sessionId) {
@@ -33,8 +34,8 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
     const purchaseId: string = sessionId;
 
     let cancelled = false;
-    const maxAttempts = 8;
-    const delayMs = 1200;
+    const maxAttempts = 25;
+    const delayMs = 2000;
 
     async function poll(attempt: number) {
       try {
@@ -44,7 +45,12 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           if (!cancelled) {
             setData(d);
             setLoading(false);
+            setNotFound(false);
           }
+          return;
+        }
+        if (r.status === 500 && attempt < maxAttempts) {
+          setTimeout(() => poll(attempt + 1), delayMs);
           return;
         }
         if (r.status === 404 && attempt < maxAttempts) {
@@ -56,6 +62,10 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           setLoading(false);
         }
       } catch {
+        if (attempt < maxAttempts && !cancelled) {
+          setTimeout(() => poll(attempt + 1), delayMs);
+          return;
+        }
         if (!cancelled) {
           setNotFound(true);
           setLoading(false);
@@ -67,7 +77,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
     return () => {
       cancelled = true;
     };
-  }, [sessionId]);
+  }, [sessionId, pollKey]);
 
   const iframeCode = data
     ? buildLicensedIframeCode(data.slug, data.token, data.domain)
@@ -112,13 +122,41 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           fontFamily: "DM Sans, system-ui, sans-serif",
         }}
       >
-        <div style={{ maxWidth: 420, textAlign: "center", color: "#6b7280", fontSize: 14 }}>
-          <p style={{ marginBottom: 16 }}>
-            Die Bestellung wurde noch nicht gefunden oder die Session-ID fehlt. Bitte prüfen Sie Ihre E-Mail —
-            sobald die Zahlung bestätigt ist, erhalten Sie den Code auch dort.
+        <div style={{ maxWidth: 460, textAlign: "center", color: "#6b7280", fontSize: 14, lineHeight: 1.65 }}>
+          <p style={{ marginBottom: 12 }}>
+            {sessionId
+              ? "Ihre Zahlung kann schon durch sein, der Eintrag erscheint erst, wenn Stripe den Webhook an diese Seite geschickt hat (meist unter einer Minute)."
+              : "In der Adresszeile fehlt die Session-ID (z. B. nach manuellem Aufruf von /success). Nutzen Sie den Link aus der Stripe-Weiterleitung oder die E-Mail."}
           </p>
-          <a href="/templates" style={{ color: "#b8884a", fontWeight: 600 }}>
-            Zurück zu den Checks
+          <p style={{ marginBottom: 16 }}>
+            Bitte prüfen Sie auch Ihre E-Mail — dort steht der iFrame-Code, sobald der Versand geklappt hat.
+          </p>
+          {sessionId ? (
+            <button
+              type="button"
+              onClick={() => {
+                setNotFound(false);
+                setLoading(true);
+                setPollKey((k) => k + 1);
+              }}
+              style={{
+                display: "block",
+                margin: "0 auto 16px",
+                fontSize: 13,
+                fontWeight: 600,
+                padding: "10px 20px",
+                borderRadius: 10,
+                background: "#1a1a1a",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Erneut laden
+            </button>
+          ) : null}
+          <a href="/" style={{ color: "#b8884a", fontWeight: 600 }}>
+            Zurück zur Startseite
           </a>
         </div>
       </div>

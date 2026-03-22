@@ -22,7 +22,12 @@ export async function GET(req: NextRequest) {
     .eq("stripe_session_id", sessionId.trim())
     .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
+    console.error("purchase lookup:", error);
+    return NextResponse.json({ error: "Datenbankfehler" }, { status: 500 });
+  }
+
+  if (!data) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

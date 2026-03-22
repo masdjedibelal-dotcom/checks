@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { normalizeDomainHost } from "@/lib/licenseUtils";
 
-/** Katalog-Slugs → Stripe Price IDs (Versicherungs-Check = bedarfscheck im Katalog) */
-const PRICE_IDS: Record<string, string> = {
+/**
+ * Fallback-Price-IDs (historisch). Wenn Stripe „No such price“ meldet, passen sie nicht zu
+ * STRIPE_SECRET_KEY — dann auf Netlify `STRIPE_PRICE_IDS_JSON` setzen (Slug → price_…).
+ */
+const DEFAULT_STRIPE_PRICE_IDS: Record<string, string> = {
   bedarfscheck: "price_1TDlFRCWQbLUwqOtPni0DcmM",
   "lebenssituations-check": "price_1TDlFqCWQbLUwqOt5AirEA3x",
   "einkommens-check": "price_1TDlG6CWQbLUwqOtLDMljOen",
@@ -13,6 +16,27 @@ const PRICE_IDS: Record<string, string> = {
   "pflege-check": "price_1TDlH4CWQbLUwqOtmW6laQsr",
   "immobilien-check": "price_1TDlHICWQbLUwqOtFct53MTA",
 };
+
+function parseStripePriceOverrides(): Record<string, string> {
+  const raw = process.env.STRIPE_PRICE_IDS_JSON?.trim();
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (typeof v === "string" && v.startsWith("price_")) out[k] = v;
+    }
+    return out;
+  } catch (e) {
+    console.error("STRIPE_PRICE_IDS_JSON ungültig:", e);
+    return {};
+  }
+}
+
+function resolvedStripePriceIds(): Record<string, string> {
+  return { ...DEFAULT_STRIPE_PRICE_IDS, ...parseStripePriceOverrides() };
+}
 
 export async function POST(req: NextRequest) {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -35,7 +59,7 @@ export async function POST(req: NextRequest) {
   const emailNew = typeof body.email === "string" ? body.email : undefined;
   const nameNew = typeof body.name === "string" ? body.name : undefined;
 
-  /** Altes Format (Konfigurator / TemplatesClient vor Migration) */
+  /** Altes Format (Legacy-Konfigurator) */
   const slugLegacy =
     typeof body.templateSlug === "string" ? body.templateSlug : undefined;
   const emailLegacy =
@@ -76,7 +100,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const priceId = PRICE_IDS[slug];
+  const priceIds = resolvedStripePriceIds();
+  const priceId = priceIds[slug];
   if (!priceId) {
     return NextResponse.json({ error: "Ungültiger Check" }, { status: 400 });
   }
@@ -90,27 +115,52 @@ export async function POST(req: NextRequest) {
     apiVersion: "2026-02-25.clover",
   });
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    payment_method_types: ["card"],
-    line_items: [{ price: priceId, quantity: 1 }],
-    customer_email: email,
-    success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/templates`,
-    metadata: {
-      slug,
-      name,
-      firma: firma || "",
-      domain,
-      accent_color: accentColor,
-      email,
-      template_name: templateName,
-      headline,
-      unterzeile,
-      cta,
-      danke,
-    },
-  });
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      line_items: [{ price: priceId, quantity: 1 }],
+      customer_email: email,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/`,
+      metadata: {
+        slug,
+        name,
+        firma: firma || "",
+        domain,
+        accent_color: accentColor,
+        email,
+        template_name: templateName,
+        headline,
+        unterzeile,
+        cta,
+        danke,
+      },
+    });
 
-  return NextResponse.json({ url: session.url });
+    if (!session.url) {
+      return NextResponse.json(
+        { error: "Stripe hat keine Checkout-URL geliefert." },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    console.error("Stripe checkout.sessions.create:", err);
+    if (err instanceof Stripe.errors.StripeError) {
+      return NextResponse.json(
+        {
+          error: err.message,
+          stripeType: err.type,
+          stripeCode: err.code ?? undefined,
+        },
+        { status: 502 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Checkout fehlgeschlagen (Server)." },
+      { status: 500 }
+    );
+  }
 }

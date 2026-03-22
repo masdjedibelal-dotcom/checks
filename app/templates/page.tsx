@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
-import TemplatesClient from "./TemplatesClient";
+import { permanentRedirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Templates — CheckKit",
-  description: "Interaktive Checks und Rechner für Versicherungsmakler",
-};
-
+/** Öffentliche Vorlagen-Galerie — nicht verlinkt; Nutzer sollen nur die FlowLeads-Startseite nutzen. */
 export default function TemplatesPage() {
-  return <TemplatesClient />;
+  permanentRedirect("/");
 }

@@ -41,7 +41,7 @@ export default function DemoCTA({ slug }: Props) {
           Ihrer Farbe, Ihrem Namen und Logo.
         </div>
         <a
-          href={`/templates?slug=${encodeURIComponent(slug)}`}
+          href="/#checks"
           style={{
             display: 'block',
             width: '100%',
