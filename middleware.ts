@@ -39,6 +39,10 @@ function domainMatchesReferer(dbDomain: string, refererHost: string): boolean {
   return false;
 }
 
+function normalizeRequestHost(hostname: string): string {
+  return hostname.replace(/^www\./i, "").toLowerCase();
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -55,15 +59,24 @@ export async function middleware(req: NextRequest) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const isDev = process.env.NODE_ENV === "development";
   const appHost = appHostname();
+  const requestHost = normalizeRequestHost(req.nextUrl.hostname);
   const referer = req.headers.get("referer") || "";
   const refererHost = referer ? hostFromReferer(referer) : "";
+  const secFetchSite = (req.headers.get("sec-fetch-site") || "").toLowerCase();
 
   const token = req.nextUrl.searchParams.get("token");
 
-  // Ohne Token: nur lokale Entwicklung oder eingebettete Vorschau auf der eigenen App
+  /** Öffentliche Vorlagen-Demos auf derselben Deployment-Domain (z. B. Netlify-Staging), unabhängig von NEXT_PUBLIC_APP_URL */
+  const isPublicDemoOnThisHost =
+    (refererHost && refererHost === requestHost) ||
+    /** iFrame von derselben Origin; Referer fehlt z. T. auf Mobile Safari */
+    secFetchSite === "same-origin";
+
+  // Ohne Token: Dev, konfigurierte App-URL, oder Same-Host-Demo (Marketing-Galerie)
   if (!token?.trim()) {
     if (isDev) return NextResponse.next();
     if (appHost && refererHost === appHost) return NextResponse.next();
+    if (isPublicDemoOnThisHost) return NextResponse.next();
     return new NextResponse("Zugriff nicht autorisiert.", { status: 403 });
   }
 
@@ -92,7 +105,10 @@ export async function middleware(req: NextRequest) {
     return new NextResponse("Referer erforderlich.", { status: 403 });
   }
 
-  const fromOurApp = appHost ? refererHost === appHost : false;
+  const fromOurApp =
+    (appHost ? refererHost === appHost : false) ||
+    refererHost === requestHost ||
+    secFetchSite === "same-origin";
   const fromCustomer = domainMatchesReferer(dbDomain, refererHost);
 
   if (!fromOurApp && !fromCustomer) {
