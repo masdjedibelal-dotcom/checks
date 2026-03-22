@@ -349,6 +349,101 @@ html {
   background: #fff;
 }
 
+/* ─── WARUM FLOWLEADS (im Hero) ─────────────────────────────────────────── */
+.flow-leads-landing .why-flowleads{
+  margin-top: 52px;
+  padding-top: 44px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.flow-leads-landing .why-flowleads-title{
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(22px, 3.2vw, 34px);
+  font-weight: 400;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+  margin: 0 0 6px;
+  line-height: 1.15;
+}
+.flow-leads-landing .why-flowleads-scroll-hint{
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gold);
+  margin: 0 0 14px;
+}
+.flow-leads-landing .why-cards-scroll{
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 6px 2px 18px;
+  margin: 0 -6px;
+  text-align: left;
+}
+.flow-leads-landing .why-cards-scroll::-webkit-scrollbar{
+  height: 5px;
+}
+.flow-leads-landing .why-cards-scroll::-webkit-scrollbar-thumb{
+  background: var(--border);
+  border-radius: 4px;
+}
+.flow-leads-landing .why-card{
+  flex: 0 0 min(292px, 82vw);
+  scroll-snap-align: start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 18px 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+.flow-leads-landing .why-card-ico{
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: rgba(201, 169, 110, 0.12);
+  border: 1px solid rgba(201, 169, 110, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.flow-leads-landing .why-card-ico svg{
+  width: 20px;
+  height: 20px;
+}
+.flow-leads-landing .why-card-headline{
+  font-family: "DM Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.35;
+  margin: 0 0 8px;
+  letter-spacing: -0.2px;
+}
+.flow-leads-landing .why-card-desc{
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mid);
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+.flow-leads-landing .why-card-highlight{
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.45;
+  margin: 0;
+}
+
 /* trust pills */
 .flow-leads-landing .trust{
   display: flex;
@@ -467,6 +562,536 @@ html {
 @media (max-width: 680px) {
   .flow-leads-landing .s{
     padding: 64px 18px;
+  }
+}
+
+/* ─── HOW FLOW (So funktioniert's) ───────────────────────────────────────── */
+.flow-leads-landing .how-flow-h2{
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight: 400;
+  letter-spacing: -0.3px;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0 0 12px;
+  max-width: 640px;
+}
+.flow-leads-landing .how-flow-sub{
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--mid);
+  line-height: 1.65;
+  max-width: 520px;
+  margin: 0 0 36px;
+}
+.flow-leads-landing .how-flow-cards-row{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  width: 100%;
+}
+.flow-leads-landing .how-flow-step{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 280px;
+}
+.flow-leads-landing .how-flow-card{
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 16px 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.flow-leads-landing .how-flow-card-top{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.flow-leads-landing .how-flow-num{
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  line-height: 1;
+}
+.flow-leads-landing .how-flow-micro{
+  font-family: "DM Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: rgba(201, 169, 110, 0.14);
+  border: 1px solid rgba(201, 169, 110, 0.28);
+  line-height: 1;
+}
+.flow-leads-landing .how-flow-micro--pulse{
+  animation: howFlowMicroPulse 2.5s ease-in-out infinite;
+}
+@keyframes howFlowMicroPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+.flow-leads-landing .how-flow-micro--i0{
+  animation-delay: 0s;
+}
+.flow-leads-landing .how-flow-micro--i1{
+  animation-delay: 0.25s;
+}
+.flow-leads-landing .how-flow-micro--i2{
+  animation-delay: 0.5s;
+}
+.flow-leads-landing .how-flow-title{
+  font-family: "DM Sans", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.35;
+  margin: 0 0 10px;
+  letter-spacing: -0.2px;
+}
+.flow-leads-landing .how-flow-body{
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mid);
+  line-height: 1.6;
+  margin: 0 0 12px;
+  white-space: pre-line;
+}
+.flow-leads-landing .how-flow-highlight{
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 0;
+}
+.flow-leads-landing .how-flow-arrow{
+  flex-shrink: 0;
+  font-size: 16px;
+  color: var(--gold-mid);
+  padding: 0 6px;
+  line-height: 1;
+  user-select: none;
+}
+@media (max-width: 960px) {
+  .flow-leads-landing .how-flow-cards-row{
+    flex-direction: column;
+    align-items: stretch;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+  .flow-leads-landing .how-flow-step{
+    flex-direction: column;
+    max-width: none;
+    flex: none;
+    width: 100%;
+  }
+  .flow-leads-landing .how-flow-card{
+    width: 100%;
+  }
+  .flow-leads-landing .how-flow-arrow{
+    transform: rotate(90deg);
+    padding: 8px 0 4px;
+  }
+}
+
+/* ─── CHECK-FLOW PHONE MOCK (8 Checks Vorschau) ───────────────────────────── */
+.flow-leads-landing .ck-phone-wrap{
+  width: 100%;
+  max-width: 210px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+  font-family: "DM Sans", sans-serif;
+}
+.flow-leads-landing .ph-bar{
+  height: 3px;
+  width: 100%;
+}
+.flow-leads-landing .ph-hd{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 9px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.flow-leads-landing .ph-logo{
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flow-leads-landing .ph-firm{
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--ink);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.flow-leads-landing .ph-badge{
+  font-size: 6px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+.flow-leads-landing .ph-body{
+  padding: 9px 9px 11px;
+}
+.flow-leads-landing .ph-ey{
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.flow-leads-landing .ph-ttl{
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 2px;
+  letter-spacing: -0.15px;
+}
+.flow-leads-landing .ph-sub{
+  font-size: 8px;
+  color: var(--mid);
+  line-height: 1.35;
+  margin-bottom: 7px;
+}
+.flow-leads-landing .ph-items{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.flow-leads-landing .ph-item{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.flow-leads-landing .ph-dot{
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.flow-leads-landing .ph-itxt{
+  font-size: 8px;
+  color: #444;
+  line-height: 1.3;
+}
+.flow-leads-landing .ph-opts{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+.flow-leads-landing .ph-opt{
+  font-size: 7px;
+  padding: 3px 5px;
+  border-radius: 5px;
+  border: 1px solid #e8e8e8;
+  background: #fafafa;
+  line-height: 1.2;
+}
+.flow-leads-landing .ph-opt.on{
+  border-color: transparent;
+}
+.flow-leads-landing .ph-tl{
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.flow-leads-landing .ph-tlr{
+  display: grid;
+  grid-template-columns: 5px 1fr auto;
+  gap: 5px;
+  align-items: center;
+}
+.flow-leads-landing .ph-tld{
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.flow-leads-landing .ph-tlb{
+  height: 2px;
+  border-radius: 2px;
+  min-width: 0;
+}
+.flow-leads-landing .ph-tlv{
+  font-size: 7px;
+  font-weight: 700;
+}
+.flow-leads-landing .ph-2col{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.flow-leads-landing .ph-cell{
+  border-radius: 7px;
+  padding: 5px 6px;
+  text-align: center;
+}
+.flow-leads-landing .ph-cn{
+  font-size: 6px;
+  font-weight: 600;
+  color: var(--mid);
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+  margin-bottom: 2px;
+}
+.flow-leads-landing .ph-cv{
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.25px;
+  line-height: 1.2;
+}
+.flow-leads-landing .ph-big{
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+.flow-leads-landing .ph-btn{
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 8px;
+  font-weight: 700;
+  color: #fff;
+  padding: 7px 8px;
+  border-radius: 7px;
+  margin-top: 2px;
+  border: none;
+  cursor: default;
+}
+
+/* ─── CHECKS SECTION (Die 8 Checks, ck-*) ───────────────────────────────── */
+.flow-leads-landing .checks-section-headline{
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(26px, 3.2vw, 42px);
+  font-weight: 400;
+  letter-spacing: -0.3px;
+  line-height: 1.12;
+  color: var(--ink);
+  margin: 0 0 12px;
+  max-width: 580px;
+}
+.flow-leads-landing .checks-section-tagline{
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--mid);
+  line-height: 1.65;
+  max-width: 540px;
+  margin: 0 0 32px;
+}
+.flow-leads-landing .ck-cards{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.flow-leads-landing .ck-card{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.flow-leads-landing .ck-card-preview{
+  flex: 0 0 200px;
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 12px;
+  background: linear-gradient(165deg, #faf8f5 0%, #f0ebe3 100%);
+  border-right: 1px solid var(--border);
+}
+.flow-leads-landing .ck-card-right{
+  flex: 1 1 280px;
+  min-width: 0;
+  padding: 22px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+.flow-leads-landing .ck-card-cat{
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.flow-leads-landing .ck-cat-neu{
+  background: rgba(22, 101, 52, 0.12);
+  color: #166534;
+}
+.flow-leads-landing .ck-cat-schutz{
+  background: rgba(124, 58, 237, 0.1);
+  color: #6d28d9;
+}
+.flow-leads-landing .ck-cat-entscheidung{
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+}
+.flow-leads-landing .ck-cat-vorsorge{
+  background: rgba(5, 150, 105, 0.12);
+  color: #047857;
+}
+.flow-leads-landing .ck-cat-familie{
+  background: rgba(190, 24, 93, 0.1);
+  color: #9d174d;
+}
+.flow-leads-landing .ck-cat-pflege{
+  background: rgba(3, 105, 161, 0.1);
+  color: #0369a1;
+}
+.flow-leads-landing .ck-cat-immobilien{
+  background: rgba(180, 83, 9, 0.12);
+  color: #b45309;
+}
+.flow-leads-landing .ck-card-name{
+  font-family: "Instrument Serif", serif;
+  font-size: 21px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+  margin-bottom: 5px;
+  line-height: 1.2;
+}
+.flow-leads-landing .ck-card-context{
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  line-height: 1.35;
+}
+.flow-leads-landing .ck-card-erlebnis{
+  font-size: 14px;
+  color: var(--mid);
+  line-height: 1.65;
+  margin: 0;
+}
+.flow-leads-landing .ck-card-foot{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+}
+.flow-leads-landing .ck-card-price{
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.45px;
+  color: var(--ink);
+}
+.flow-leads-landing .ck-card-price small{
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.flow-leads-landing .ck-card-btns{
+  display: flex;
+  gap: 8px;
+}
+.flow-leads-landing .ck-demo{
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.flow-leads-landing .ck-demo:hover:not(:disabled){
+  border-color: var(--gold-mid);
+  background: rgba(201, 169, 110, 0.08);
+}
+.flow-leads-landing .ck-demo:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.flow-leads-landing .ck-buy{
+  font-family: "DM Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.flow-leads-landing .ck-buy:hover:not(:disabled){
+  background: var(--gold);
+}
+.flow-leads-landing .ck-buy:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (max-width: 720px) {
+  .flow-leads-landing .ck-card{
+    flex-direction: column;
+  }
+  .flow-leads-landing .ck-card-preview{
+    flex: none;
+    width: 100%;
+    min-height: 220px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
   }
 }
 
