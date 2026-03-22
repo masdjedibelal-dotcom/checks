@@ -1,0 +1,8 @@
+# Next.js-App liegt in checkkit/ — Build & npm install dort ausführen,
+# sonst fehlen Dependencies (z. B. @supabase/supabase-js) im Netlify-Build.
+[build]
+  base = "checkkit"
+  command = "npm ci && npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
