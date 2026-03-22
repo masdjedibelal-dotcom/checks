@@ -1,6 +1,6 @@
 // app/embed-test/page.tsx
 // Einfache Testseite für Makler: zeigt den iFrame-Code und eine Live-Vorschau
-// URL: /embed-test?slug=bu-ktg&name=Anna+Berger&firma=Berger+Versicherung&farbe=c0392b
+// URL: /embed-test?slug=einkommens-check&name=Anna+Berger&firma=Berger+Versicherung&farbe=c0392b
 
 'use client';
 

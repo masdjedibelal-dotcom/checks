@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { MAKLER } from "@/lib/config";
 import type { Template } from "@/lib/katalog";
+import { normalizeDomainHost } from "@/lib/licenseUtils";
 import { alpha } from "@/lib/utils";
 
 export type KonfiguratorForm = {
   name: string;
   firma: string;
   email: string;
+  /** Optionale Website-Domain für Metadaten (Checkout / Fulfillment) */
+  website: string;
   akzentfarbe: string;
   headline: string;
   unterzeile: string;
@@ -43,6 +46,7 @@ export default function KonfiguratorOverlay({
     name: "",
     firma: MAKLER.firma,
     email: "",
+    website: "",
     akzentfarbe: template?.accentColor ?? MAKLER.primaryColor,
     headline: "Was haben Sie bereits?",
     unterzeile: "Tippen Sie an was vorhanden ist.",
@@ -77,11 +81,13 @@ export default function KonfiguratorOverlay({
   }, [form.name]);
 
   const err = useMemo(() => {
+    const domainOk = Boolean(normalizeDomainHost(form.website));
     return {
       name: !form.name.trim(),
       email: !form.email.trim(),
+      website: !domainOk,
     };
-  }, [form.name, form.email]);
+  }, [form.name, form.email, form.website]);
 
   if (!template) return null;
 
@@ -149,6 +155,16 @@ export default function KonfiguratorOverlay({
                 err={err.email}
                 type="email"
               />
+              <Field
+                label="Ihre Website-Domain *"
+                value={form.website}
+                onChange={(v) => set("website", v)}
+                err={err.website}
+                placeholder="mustermann-versicherungen.de"
+              />
+              <p className="-mt-1 mb-3 text-[10px] leading-snug text-[#999]">
+                Ohne https:// — der eingebettete Check ist nur auf dieser Domain freigeschaltet.
+              </p>
               <div className="mb-3">
                 <label className="mb-1.5 block text-[11px] font-semibold text-[#555]">
                   Akzentfarbe
@@ -314,9 +330,9 @@ export default function KonfiguratorOverlay({
             <div className="text-[11px] text-[#bbb]">einmalig · zzgl. MwSt.</div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {(err.name || err.email) && (
+            {(err.name || err.email || err.website) && (
               <span className="text-[11px] text-[#e53e3e]">
-                Name und E-Mail nötig
+                Name, E-Mail und Website-Domain nötig
               </span>
             )}
             <button
@@ -330,7 +346,7 @@ export default function KonfiguratorOverlay({
               type="button"
               className="flex items-center gap-1.5 rounded-lg bg-[#111] px-[22px] py-2.5 text-[13px] font-bold text-white transition hover:bg-[#c9a96e]"
               onClick={() => {
-                if (err.name || err.email) return;
+                if (err.name || err.email || err.website) return;
                 onCheckout(form);
               }}
             >
@@ -349,12 +365,14 @@ function Field({
   onChange,
   err,
   type = "text",
+  placeholder,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   err?: boolean;
   type?: string;
+  placeholder?: string;
 }) {
   return (
     <div className="mb-3">
@@ -364,6 +382,7 @@ function Field({
       <input
         type={type}
         value={value}
+        placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border-[1.5px] border-[#ebebeb] bg-[#fafafa] px-3 py-2.5 text-[13px] text-[#111] outline-none transition-colors focus:border-[#c9a96e] focus:bg-white"
         style={{ borderColor: err ? "#dc2626" : undefined }}

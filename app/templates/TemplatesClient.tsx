@@ -19,11 +19,17 @@ export default function TemplatesClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateSlug: template.slug,
+          slug: template.slug,
+          email: form.email,
+          name: form.name,
+          firma: form.firma,
+          domain: form.website,
+          accentColor: form.akzentfarbe,
           templateName: template.name,
-          preis: template.preis,
-          maklerEmail: form.email,
-          maklerName: form.name,
+          headline: form.headline,
+          unterzeile: form.unterzeile,
+          cta: form.cta,
+          danke: form.danke,
         }),
       });
       const data = await res.json();

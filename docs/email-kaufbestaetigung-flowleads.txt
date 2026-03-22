@@ -1,0 +1,24 @@
+Betreff: Ihr FlowLeads-Check ist bereit — wichtiger Hinweis zur Einbindung
+
+Guten Tag [NAME],
+
+Ihr personalisierter Check-Code ist bereit. Anbei finden Sie den iFrame-Code
+zur Einbindung auf Ihrer Website.
+
+Wichtiger Hinweis:
+
+Mit der Einbindung des Checks auf Ihrer Website übernehmen Sie die
+Verantwortung für die Einbindung und die Verarbeitung der Kundendaten.
+Bitte stellen Sie sicher, dass:
+
+— die Nutzung in Ihrer Datenschutzerklärung erwähnt ist
+— Ihre Kunden über die Datenverarbeitung informiert werden
+— Sie über eine gültige Erlaubnis nach § 34d GewO verfügen
+
+Der Check dient der unverbindlichen Orientierung Ihrer Kunden
+und ersetzt keine individuelle Beratung.
+
+Bei Fragen stehen wir gerne zur Verfügung.
+
+Mit freundlichen Grüßen
+FlowLeads

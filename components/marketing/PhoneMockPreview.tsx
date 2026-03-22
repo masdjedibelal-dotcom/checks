@@ -5,16 +5,14 @@ import { alpha } from "@/lib/utils";
 /** Hintergrund der Karten-Preview wie in der statischen HTML-Vorlage */
 const PREVIEW_BG: Record<string, string> = {
   bedarfscheck: "linear-gradient(160deg,#fdf8ee 0%,#f0e8cc 100%)",
-  jahrescheck: "linear-gradient(160deg,#edf7ed 0%,#c8e6c8 100%)",
-  "bu-ktg": "linear-gradient(160deg,#f0ecff 0%,#d9d0ff 100%)",
-  rente: "linear-gradient(160deg,#ecfdf5 0%,#bbf7d0 100%)",
+  "lebenssituations-check":
+    "linear-gradient(160deg,#edf7ed 0%,#c8e6c8 100%)",
+  "einkommens-check": "linear-gradient(160deg,#f0ecff 0%,#d9d0ff 100%)",
+  "vorsorge-check": "linear-gradient(160deg,#ecfdf5 0%,#bbf7d0 100%)",
   risikoleben: "linear-gradient(160deg,#fdf2f8 0%,#f5c6e8 100%)",
-  zinseszins: "linear-gradient(160deg,#ecfdf5 0%,#bbf7d0 100%)",
   "gkv-pkv": "linear-gradient(160deg,#fff5f5 0%,#ffc9c9 100%)",
-  anschluss: "linear-gradient(160deg,#fffbeb 0%,#fde68a 100%)",
-  "bu-check": "linear-gradient(160deg,#f0ecff 0%,#d9d0ff 100%)",
-  elternzeit: "linear-gradient(160deg,#fdf2f8 0%,#f5c6e8 100%)",
-  riester: "linear-gradient(160deg,#fffbeb 0%,#fde68a 100%)",
+  "pflege-check": "linear-gradient(160deg,#e0f2fe 0%,#bae6fd 100%)",
+  "immobilien-check": "linear-gradient(160deg,#fffbeb 0%,#fde68a 100%)",
 };
 
 function PhoneShell({
@@ -106,14 +104,14 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
           <CtaBtn c={c}>Weiter →</CtaBtn>
         </>
       );
-    case "jahrescheck":
+    case "lebenssituations-check":
       return (
         <>
           <div
             className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
             style={{ color: c }}
           >
-            Jahrescheck 2025
+            Lebenssituations-Check
           </div>
           <div className="mb-0.5 text-[11px] font-extrabold leading-tight text-[#111]">
             Was haben Sie bereits?
@@ -154,7 +152,7 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
           <CtaBtn c={c}>Weiter →</CtaBtn>
         </>
       );
-    case "bu-ktg":
+    case "einkommens-check":
       return (
         <>
           <div
@@ -198,14 +196,14 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
           <CtaBtn c={c}>Lücke schließen →</CtaBtn>
         </>
       );
-    case "rente":
+    case "vorsorge-check":
       return (
         <>
           <div
             className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
             style={{ color: c }}
           >
-            Rentenlücke
+            Vorsorge-Check
           </div>
           <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
             Wie groß ist meine Rentenlücke?
@@ -254,7 +252,10 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
               borderColor: alpha(c, 0.2),
             }}
           >
-            <div className="text-[15px] font-black tracking-tight" style={{ color: c }}>
+            <div
+              className="text-[15px] font-black tracking-tight"
+              style={{ color: c }}
+            >
               285.000 €
             </div>
             <div className="mt-0.5 text-[8px] text-[#aaa]">
@@ -265,51 +266,6 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
             Witwen-/Waisenrente eingerechnet
           </div>
           <CtaBtn c={c}>Lücke schließen</CtaBtn>
-        </>
-      );
-    case "zinseszins":
-      return (
-        <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Früh vs. Spät
-          </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Was kostet 10 Jahre warten?
-          </div>
-          <div className="mb-2 flex h-[30px] items-end gap-0.5">
-            <div
-              className="flex-1 rounded-t-[2px] bg-[#d1fae5]"
-              style={{ height: "20%" }}
-            />
-            <div
-              className="flex-1 rounded-t-[2px] bg-[#6ee7b7]"
-              style={{ height: "36%" }}
-            />
-            <div
-              className="flex-1 rounded-t-[2px] bg-[#34d399]"
-              style={{ height: "55%" }}
-            />
-            <div
-              className="flex-1 rounded-t-[2px] bg-[#10b981]"
-              style={{ height: "72%" }}
-            />
-            <div
-              className="flex-1 rounded-t-[2px] bg-[#059669]"
-              style={{ height: "90%" }}
-            />
-            <div
-              className="flex-1 rounded-t-[2px] border border-dashed border-[#059669] bg-[#d1fae5]"
-              style={{ height: "36%" }}
-            />
-            <div
-              className="flex-1 rounded-t-[2px] bg-[#a7f3d0]"
-              style={{ height: "55%" }}
-            />
-          </div>
-          <CtaBtn c={c}>Unterschied sehen</CtaBtn>
         </>
       );
     case "gkv-pkv":
@@ -338,125 +294,65 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
           <CtaBtn c={c}>Gespräch anfragen</CtaBtn>
         </>
       );
-    case "anschluss":
+    case "pflege-check":
       return (
         <>
           <div
             className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
             style={{ color: c }}
           >
-            Anschlussfinanzierung
+            Pflege-Check
           </div>
           <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Neue Rate ab 2026
+            Eigenanteil nach Pflegegrad
           </div>
-          <div className="mb-1.5 grid grid-cols-2 gap-[3px]">
-            <div className="rounded bg-black/[0.05] p-1 text-center">
-              <div className="text-[7px] text-[#aaa]">Aktuell</div>
-              <div className="text-[10px] font-extrabold">987 €</div>
+          <div
+            className="mb-1.5 rounded-md border p-1.5"
+            style={{
+              background: alpha(c, 0.08),
+              borderColor: alpha(c, 0.25),
+            }}
+          >
+            <div className="text-[15px] font-black" style={{ color: c }}>
+              ca. 1.850 €
             </div>
-            <div className="rounded bg-[#fee2e2] p-1 text-center">
-              <div className="text-[7px] text-[#aaa]">Neu</div>
-              <div className="text-[10px] font-extrabold text-[#dc2626]">
-                1.312 €
-              </div>
+            <div className="mt-0.5 text-[8px] text-[#aaa]">
+              Ø monatlicher Eigenanteil (PG 3)
             </div>
           </div>
-          <div className="mb-1.5 text-[8px] font-bold text-[#dc2626]">
-            +325 €/Monat mehr
-          </div>
-          <CtaBtn c={c}>Optimieren →</CtaBtn>
+          <CtaBtn c={c}>Produkte ansehen</CtaBtn>
         </>
       );
-    case "bu-check":
+    case "immobilien-check":
       return (
         <>
           <div
             className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
             style={{ color: c }}
           >
-            BU-Karriere-Check
+            Immobilien-Check
           </div>
           <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Was hat sich verändert?
+            Kaufen · Finanzieren · Absichern
           </div>
-          <div className="mb-2 grid grid-cols-2 gap-[3px]">
-            <div
-              className="rounded px-1 py-1 text-center text-[8px] font-bold"
-              style={{ background: alpha(c, 0.15), color: c }}
-            >
-              📈 Gehalt
-            </div>
-            <div className="rounded bg-black/[0.05] px-1 py-1 text-center text-[8px] text-[#666]">
-              💼 Jobwechsel
+          <div className="mb-1.5 grid grid-cols-3 gap-[2px] text-center">
+            <div className="rounded bg-black/[0.06] px-0.5 py-1 text-[7px] font-bold text-[#444]">
+              Miete
             </div>
             <div
-              className="rounded px-1 py-1 text-center text-[8px] font-bold"
-              style={{ background: alpha(c, 0.15), color: c }}
+              className="rounded px-0.5 py-1 text-[7px] font-bold text-white"
+              style={{ background: c }}
             >
-              👶 Kind
+              Anschluss
             </div>
-            <div className="rounded bg-black/[0.05] px-1 py-1 text-center text-[8px] text-[#666]">
-              🚀 Selbst.
-            </div>
-          </div>
-          <CtaBtn c={c}>Ergebnis →</CtaBtn>
-        </>
-      );
-    case "elternzeit":
-      return (
-        <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Elternzeit
-          </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Was bleibt übrig?
-          </div>
-          <div className="mb-1.5 grid grid-cols-2 gap-[3px]">
-            <div className="rounded bg-black/[0.05] p-1 text-center">
-              <div className="text-[7px] text-[#aaa]">Vorher</div>
-              <div className="text-[10px] font-extrabold">5.200 €</div>
-            </div>
-            <div
-              className="rounded p-1 text-center"
-              style={{ background: alpha(c, 0.08) }}
-            >
-              <div className="text-[7px] text-[#aaa]">Während EZ</div>
-              <div className="text-[10px] font-extrabold" style={{ color: c }}>
-                3.370 €
-              </div>
+            <div className="rounded bg-black/[0.06] px-0.5 py-1 text-[7px] font-bold text-[#444]">
+              Gebäude
             </div>
           </div>
-          <div className="mb-1.5 text-[8px] font-bold" style={{ color: c }}>
-            −1.830 €/Monat Lücke
+          <div className="mb-1.5 text-[8px] text-[#888]">
+            Neue Rate vs. alte Rate — in einem Flow
           </div>
-          <CtaBtn c={c}>Absichern →</CtaBtn>
-        </>
-      );
-    case "riester":
-      return (
-        <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Riester-Check
-          </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Alle Zulagen beantragt?
-          </div>
-          <div className="mb-1.5 rounded border border-[#fca5a5] bg-[#fee2e2] p-1.5">
-            <div className="text-[8px] font-bold text-[#dc2626]">
-              ⚠ Kinderzulage fehlt!
-            </div>
-            <div className="text-[11px] font-black text-[#dc2626]">
-              300 €/Jahr
-            </div>
-          </div>
-          <CtaBtn c={c}>Jetzt regeln →</CtaBtn>
+          <CtaBtn c={c}>Modul wählen →</CtaBtn>
         </>
       );
     default:

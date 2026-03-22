@@ -22,13 +22,11 @@ export default function TemplateGalerie({ onDemo, onBuy }: Props) {
       "alle-kunden",
       "luecken",
       "finanzen",
-      "anlass",
     ];
     const labels: Record<TemplateKategorie, string> = {
       "alle-kunden": "Für alle Kunden",
       luecken: "Lücken aufdecken",
       finanzen: "Finanzentscheidungen",
-      anlass: "Anlassbezogen versenden",
     };
     if (filter !== "alle") {
       const cat = filter;

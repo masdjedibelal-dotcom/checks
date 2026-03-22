@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MaklerContext, MAKLER_DEFAULT, type MaklerConfig } from './MaklerContext';
 
 // ─── Hex-Validierung (Security: kein Script-Injection via Farbe) ───────────────
@@ -28,38 +28,84 @@ type ShellWrapperProps = {
   slug?:       string;
 };
 
+type LicensedMakler = {
+  name: string;
+  firma: string;
+  email: string;
+  primaryColor: string;
+};
+
 export default function ShellWrapper({
   children,
   isDemoMode: isDemoRoute = false,
   slug = '',
 }: ShellWrapperProps) {
   const params = useSearchParams();
+  const token = params.get('token')?.trim() ?? '';
 
-  /** iFrame-URLs tragen name/firma/email/farbe/tel — dann echtes Kontaktformular, kein Kauf-CTA. */
+  const [licensed, setLicensed] = useState<LicensedMakler | null>(null);
+
+  useEffect(() => {
+    if (!token) {
+      setLicensed(null);
+      return;
+    }
+    let cancelled = false;
+    void fetch(`/api/embed-config?token=${encodeURIComponent(token)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: LicensedMakler | null) => {
+        if (cancelled || !j?.email) return;
+        setLicensed({
+          name: sanitize(j.name, 80) || MAKLER_DEFAULT.name,
+          firma: sanitize(j.firma, 80) || MAKLER_DEFAULT.firma,
+          email: sanitize(j.email, 120) || MAKLER_DEFAULT.email,
+          primaryColor: validateHex(j.primaryColor ?? null),
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  /** Query-Params ODER gültiger Kauf-Token → personalisiertes Embed, kein Kauf-CTA. */
   const embedPersonalized = useMemo(() => {
     const keys = ['name', 'firma', 'email', 'farbe', 'tel'] as const;
-    return keys.some((k) => Boolean(params.get(k)?.trim()));
-  }, [params]);
+    const fromQuery = keys.some((k) => Boolean(params.get(k)?.trim()));
+    return fromQuery || Boolean(token);
+  }, [params, token]);
 
   const isDemoMode = isDemoRoute && !embedPersonalized;
 
   const makler = useMemo<MaklerConfig>(() => {
-    const name   = sanitize(params.get('name'));
-    const firma  = sanitize(params.get('firma'));
-    const email  = sanitize(params.get('email'), 120);
-    const tel    = sanitize(params.get('tel'), 30);
-    const farbe  = validateHex(params.get('farbe'));
+    if (licensed) {
+      return {
+        name: licensed.name,
+        firma: licensed.firma,
+        email: licensed.email,
+        telefon: MAKLER_DEFAULT.telefon,
+        primaryColor: licensed.primaryColor,
+        isDemoMode: false,
+        slug,
+      };
+    }
+
+    const name = sanitize(params.get('name'));
+    const firma = sanitize(params.get('firma'));
+    const email = sanitize(params.get('email'), 120);
+    const tel = sanitize(params.get('tel'), 30);
+    const farbe = validateHex(params.get('farbe'));
 
     return {
-      name:         name  || MAKLER_DEFAULT.name,
-      firma:        firma || MAKLER_DEFAULT.firma,
-      email:        email || MAKLER_DEFAULT.email,
-      telefon:      tel   || MAKLER_DEFAULT.telefon,
+      name: name || MAKLER_DEFAULT.name,
+      firma: firma || MAKLER_DEFAULT.firma,
+      email: email || MAKLER_DEFAULT.email,
+      telefon: tel || MAKLER_DEFAULT.telefon,
       primaryColor: farbe,
       isDemoMode,
       slug,
     };
-  }, [params, isDemoMode, slug]);
+  }, [params, isDemoMode, slug, licensed]);
 
   return (
     <MaklerContext.Provider value={makler}>

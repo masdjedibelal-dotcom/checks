@@ -1,8 +1,10 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { useState } from "react";
 import DemoCTA from "@/components/ui/DemoCTA";
 import { useMakler } from "@/components/ui/MaklerContext";
+import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import type { CheckTheme } from "./checkStandardT";
 
 type FormData = { name: string; email: string; tel: string };
@@ -17,11 +19,12 @@ type Props = {
 
 export default function CheckKitKontaktForm({ fd, setFd, onSubmit, onBack, T }: Props) {
   const MAKLER = useMakler();
+  const [consent, setConsent] = useState(false);
   if (MAKLER.isDemoMode) {
     return <DemoCTA slug={MAKLER.slug} />;
   }
 
-  const valid = Boolean(fd.name.trim() && fd.email.trim());
+  const valid = Boolean(fd.name.trim() && fd.email.trim() && consent);
   const fields = [
     { k: "name" as const, l: "Name", t: "text" as const, ph: "Max Mustermann", req: true },
     { k: "email" as const, l: "E-Mail", t: "email" as const, ph: "max@beispiel.de", req: true },
@@ -43,6 +46,7 @@ export default function CheckKitKontaktForm({ fd, setFd, onSubmit, onBack, T }: 
         >
           Gespräch anfragen
         </div>
+        <CheckKontaktLeadLine />
         <div style={T.card}>
           {fields.map(({ k, l, t, ph, req }, i, arr) => (
             <div key={k} style={i < arr.length - 1 ? T.row : T.rowLast}>
@@ -60,8 +64,12 @@ export default function CheckKitKontaktForm({ fd, setFd, onSubmit, onBack, T }: 
             </div>
           ))}
         </div>
-        <div style={{ fontSize: "11px", color: "#ccc", marginTop: "10px", marginBottom: "100px" }}>
-          Vertraulich behandelt.
+        <div style={{ marginTop: "14px", marginBottom: "100px" }}>
+          <CheckKontaktBeforeSubmitBlock
+            maklerName={MAKLER.name}
+            consent={consent}
+            onConsentChange={setConsent}
+          />
         </div>
       </div>
       <div style={T.footer}>

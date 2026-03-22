@@ -1,11 +1,9 @@
-"use client";
-
 import { useState } from "react";
-import DemoCTA from "@/components/ui/DemoCTA";
-import { useMakler } from "@/components/ui/MaklerContext";
+import { SliderCard } from "@/components/ui/CheckComponents";
+import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 
 (() => {
-  if (typeof document === "undefined") return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
@@ -70,35 +68,6 @@ function Header({ phase, total, badge }) {
   return (<><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{ fontSize:"13px",fontWeight:"600",color:"#111",letterSpacing:"-0.1px" }}>{MAKLER.firma}</span></div><span style={T.badge}>{badge}</span></div><div style={T.prog}><div style={T.progFil((phase/total)*100)}/></div></>);
 }
 
-function SliderField({ label, value, min, max, step, onChange, display, hint, unit="" }) {
-  const [inputVal, setInputVal] = useState(String(value));
-  const [focused, setFocused] = useState(false);
-  const handleSlider = (v) => { onChange(v); if(!focused) setInputVal(String(v)); };
-  const handleBlur = () => {
-    setFocused(false);
-    const raw = parseFloat(inputVal.replace(/[^\d.-]/g,""));
-    if(!isNaN(raw)) { const c=Math.min(max,Math.max(min,Math.round(raw/step)*step)); onChange(c); setInputVal(String(c)); }
-    else setInputVal(String(value));
-  };
-  return (
-    <div style={{ marginBottom:"22px" }}>
-      <div style={{ display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:"8px" }}>
-        <label style={T.fldLbl}>{label}</label>
-        <div style={{ display:"flex",alignItems:"center",gap:"4px" }}>
-          <input type="text" inputMode="numeric" value={focused?inputVal:String(value)} placeholder={focused?"":String(value)}
-            onFocus={()=>{setFocused(true);setInputVal(String(value));}} onBlur={handleBlur} onChange={e=>setInputVal(e.target.value)}
-            style={{ width:"90px",padding:"5px 8px",border:`1px solid ${focused?C:"#e8e8e8"}`,borderRadius:"5px",fontSize:"14px",fontWeight:"600",color:focused?"#111":C,textAlign:"right",outline:"none",background:focused?"#fff":`${C}08`,fontFamily:"'DM Sans',system-ui,sans-serif" }}/>
-          {unit && <span style={{ fontSize:"12px",color:"#999",flexShrink:0 }}>{unit}</span>}
-        </div>
-      </div>
-      {!focused && display && <div style={{ fontSize:"12px",color:"#888",marginBottom:"8px" }}>{display}</div>}
-      <input type="range" min={min} max={max} step={step} value={value} onChange={e=>handleSlider(+e.target.value)} style={{ width:"100%","--accent":C }}/>
-      <div style={{ display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#ccc",marginTop:"4px" }}><span>{min}{unit?" "+unit:""}</span><span>{max}{unit?" "+unit:""}</span></div>
-      {hint && <div style={T.fldHint}>{hint}</div>}
-    </div>
-  );
-}
-
 function DankeScreen({ name, onBack }) {
   return (
     <div style={{ padding:"48px 24px",textAlign:"center" }} className="fade-in">
@@ -124,12 +93,13 @@ function DankeScreen({ name, onBack }) {
 }
 
 export default function RisikoLebenRechner() {
-  const demoCtx = useMakler();
   const [phase, setPhase] = useState(1);
   const [ak, setAk] = useState(0);
   const [danke, setDanke] = useState(false);
   const [name, setName] = useState("");
   const [fd, setFd] = useState({ name:"",email:"",tel:"" });
+  const [kontaktConsent, setKontaktConsent] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [p, setP] = useState({ monatsBedarf:2500, jahre:20, kredite:0, witwerRente:600, waisenRenten:200, partnerEinkommen:0, vorhandeneVS:0 });
   const set = (k,v) => setP(x=>({...x,[k]:v}));
   const goTo = (ph) => { setAk(k=>k+1); setPhase(ph); window.scrollTo({top:0}); };
@@ -139,7 +109,7 @@ export default function RisikoLebenRechner() {
   if (danke) return <div style={{...T.page,"--accent":C}}><Header phase={TOTAL} total={TOTAL} badge="Risikoleben"/><DankeScreen name={name} onBack={()=>{setDanke(false);setPhase(1);}}/></div>;
 
   if (phase === 3) {
-    const valid = fd.name.trim() && fd.email.trim();
+    const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
     return (
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
         <Header phase={3} total={TOTAL} badge="Risikoleben"/>
@@ -152,10 +122,7 @@ export default function RisikoLebenRechner() {
               <div><div style={{ fontSize:"18px",fontWeight:"700",color:R.deckung>70?C:WARN,letterSpacing:"-0.5px" }}>{R.deckung}%</div><div style={{ fontSize:"11px",color:"#999",marginTop:"2px" }}>Deckungsgrad</div></div>
             </div>
           </div>
-          {demoCtx.isDemoMode ? (
-            <DemoCTA slug={demoCtx.slug} />
-          ) : (
-          <>
+          <CheckKontaktLeadLine />
           <div style={T.card}>
             {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
               <div key={k} style={i<arr.length-1?T.row:T.rowLast}>
@@ -164,90 +131,177 @@ export default function RisikoLebenRechner() {
               </div>
             ))}
           </div>
-          <div style={{ fontSize:"11px",color:"#ccc",marginTop:"10px" }}>Vertraulich behandelt.</div>
-          </>
-          )}
+          <div style={{ marginTop:"14px" }}>
+            <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
+          </div>
         </div>
-        {!demoCtx.isDemoMode && (
         <div style={T.footer}>
           <button style={T.btnPrim(!valid)} onClick={()=>{if(valid){setName(fd.name);setDanke(true);}}} disabled={!valid}>Gespräch anfragen</button>
           <button style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
         </div>
-        )}
       </div>
     );
   }
 
+  // ── Phase 2: Ergebnis ────────────────────────────────────────────────────
   if (phase === 2) {
+    const hatKredite = p.kredite > 0;
+    const hatLuecke  = R.luecke > 0;
+    const gutAbgesichert = R.luecke <= 0;
+
+    // Emotionaler Kontexttext
+    const kontextText = () => {
+      const parts = [];
+      parts.push(`Für ${p.jahre} Jahre Absicherungszeitraum braucht deine Familie monatlich ${fmt(R.eigenBedarf)} aus der Versicherung.`);
+      if (hatKredite) parts.push(`Dazu kommen ${fmtK(p.kredite)} laufende Kredite, die im Ernstfall sofort abgelöst werden müssen.`);
+      if (p.waisenRenten > 0) parts.push(`Gesetzliche Witwen- und Waisenrente wurden bereits abgezogen.`);
+      return parts.join(' ');
+    };
+
     const items = [
-      { l:"Monatlicher Finanzbedarf",    v:fmt(p.monatsBedarf)+"/Mon.", sub:`${p.jahre} Jahre = ${fmtK(p.monatsBedarf*12*p.jahre)}` },
-      { l:"Gesetzliche Witwen-/Waisenrente", v:fmt(R.gesGesetzl)+"/Mon.", sub:"Witwen 55% + Waisen je 10% der Rentenanwartschaft", ok:true },
-      { l:"Partnereinkommen",            v:p.partnerEinkommen>0?fmt(p.partnerEinkommen)+"/Mon.":"Nicht vorhanden", ok:p.partnerEinkommen>0 },
-      { l:"Verbleibender Eigenbedarf",   v:fmt(R.eigenBedarf)+"/Mon.", hl:R.eigenBedarf > 0 },
-      { l:"Kapitalbedarf gesamt",        v:fmtK(R.kapBedarf), hl:true },
-      { l:"Bestehende Kredite",          v:fmtK(p.kredite), sub:"Müssen im Todesfall abgelöst werden" },
-      { l:"Gesamtbedarf",               v:fmtK(R.gesamtBedarf), hl:true },
-      { l:"Vorhandene Versicherungssumme", v:fmtK(p.vorhandeneVS), ok:p.vorhandeneVS>0 },
-      { l:"Fehlende Absicherung",        v:fmtK(R.luecke), hl:R.luecke>0 },
+      { l:"Monatlicher Finanzbedarf",       v:fmt(p.monatsBedarf)+"/Mon.", sub:`${p.jahre} Jahre = ${fmtK(p.monatsBedarf*12*p.jahre)}` },
+      { l:"Gesetzliche Witwen-/Waisenrente",v:fmt(R.gesGesetzl)+"/Mon.",   sub:"Witwen 55% + Waisen je 10%", ok:true },
+      { l:"Partnereinkommen",               v:p.partnerEinkommen>0?fmt(p.partnerEinkommen)+"/Mon.":"Nicht vorhanden", ok:p.partnerEinkommen>0 },
+      { l:"Verbleibender Eigenbedarf",      v:fmt(R.eigenBedarf)+"/Mon.",   hl:R.eigenBedarf>0 },
+      { l:"Kapitalbedarf gesamt",           v:fmtK(R.kapBedarf),            hl:true },
+      { l:"Bestehende Kredite",             v:fmtK(p.kredite) },
+      { l:"Gesamtbedarf",                   v:fmtK(R.gesamtBedarf),         hl:true },
+      { l:"Vorhandene Versicherungssumme",  v:fmtK(p.vorhandeneVS),         ok:p.vorhandeneVS>0 },
+      { l:"Fehlende Absicherung",           v:fmtK(R.luecke),               hl:R.luecke>0 },
     ];
+
     return (
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
         <Header phase={2} total={TOTAL} badge="Risikoleben"/>
+
+        {/* Hero: Klare Empfehlung */}
         <div style={T.hero}>
-          <div style={T.eyebrow}>Ihre Analyse</div>
-          <div style={T.h1}>{R.luecke>0?`${fmtK(R.luecke)} fehlen`:"Familie vollständig abgesichert"}</div>
-          <div style={T.body}>Deckungsgrad: {R.deckung}% · Absicherungszeitraum: {p.jahre} Jahre</div>
+          <div style={T.eyebrow}>Empfehlung für Ihre Familie</div>
+          <div style={T.h1}>
+            {gutAbgesichert
+              ? "Ihre Familie ist gut abgesichert"
+              : `${fmtK(R.gesamtBedarf)} empfohlene Absicherung`}
+          </div>
+          <div style={T.body}>
+            {gutAbgesichert
+              ? `Ihre Versicherungssumme deckt den Bedarf Ihrer Familie für ${p.jahre} Jahre vollständig ab.`
+              : `Um Ihre Familie für die nächsten ${p.jahre} Jahre abzusichern, sollten Sie eine Versicherungssumme von rund ${fmtK(R.gesamtBedarf)} einplanen.`}
+          </div>
         </div>
+
+        {/* Block 1: Absicherung im Überblick */}
         <div style={T.section}>
-          <div style={T.card}>
-            {items.map(({l,v,sub,hl,ok},i,arr)=>(
-              <div key={i} style={{ ...T.detRow, borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none", padding:"10px 16px" }}>
-                <div><span style={T.detLbl}>{l}</span>{sub&&<div style={{ fontSize:"11px",color:"#aaa",marginTop:"2px" }}>{sub}</div>}</div>
-                <span style={{ fontSize:"13px",fontWeight:"600",color:hl?WARN:ok?C:"#111",flexShrink:0,marginLeft:"12px" }}>{v}</span>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px"}}>
+            {[
+              {l:"Empfohlen",  v:fmtK(R.gesamtBedarf), warn:false,  accent:true},
+              {l:"Vorhanden",  v:fmtK(p.vorhandeneVS),  warn:false,  accent:false},
+              {l:"Lücke",      v:hatLuecke?fmtK(R.luecke):"Keine", warn:hatLuecke, accent:false},
+            ].map(({l,v,warn,accent},i)=>(
+              <div key={i} style={{border:`1px solid ${warn?"#c0392b33":accent?C+"33":"#e8e8e8"}`,borderRadius:"10px",padding:"12px 10px",background:warn?"#fff5f5":accent?`${C}06`:"#fff",textAlign:"center"}}>
+                <div style={{fontSize:"14px",fontWeight:"700",color:warn?WARN:accent?C:"#111",letterSpacing:"-0.3px",lineHeight:1.2}}>{v}</div>
+                <div style={{fontSize:"10px",color:"#aaa",marginTop:"3px",fontWeight:"500"}}>{l}</div>
               </div>
             ))}
           </div>
         </div>
-        <div style={{ ...T.section, marginBottom:"120px" }}>
-          <div style={T.infoBox}>Witwen-/Waisenrente basiert auf der Rentenanwartschaft des Verstorbenen. Für eine präzise Berechnung empfehlen wir ein persönliches Gespräch.</div>
+
+        {/* Emotionaler Kontext */}
+        {hatLuecke && (
+          <div style={T.section}>
+            <div style={{border:`1px solid ${WARN}33`,borderRadius:"10px",padding:"14px 16px",background:`${WARN}04`,borderLeft:`3px solid ${WARN}`}}>
+              <div style={{fontSize:"13px",fontWeight:"600",color:WARN,marginBottom:"6px"}}>
+                Monatliche Versorgungslücke: {fmt(R.eigenBedarf)}
+              </div>
+              <div style={{fontSize:"12px",color:"#555",lineHeight:1.65}}>{kontextText()}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Block 2: Bedarfszusammensetzung */}
+        <div style={T.section}>
+          <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>So setzt sich der Bedarf zusammen</div>
+          <div style={T.card}>
+            {[
+              {l:"Monatlicher Finanzbedarf",       v:fmt(p.monatsBedarf)+"/Mon.",           sub:`über ${p.jahre} Jahre`},
+              {l:"− Gesetzliche Leistungen",        v:"− "+fmt(R.gesGesetzl)+"/Mon.",        ok:true, sub:"Witwen- + Waisenrente"},
+              {l:"− Partnereinkommen",              v:p.partnerEinkommen>0?"− "+fmt(p.partnerEinkommen)+"/Mon.":"−",ok:p.partnerEinkommen>0},
+              {l:"= Monatlicher Eigenbedarf",       v:fmt(R.eigenBedarf)+"/Mon.",            hl:true},
+              {l:"Kapitalbedarf ("+p.jahre+"J.)",  v:fmtK(R.kapBedarf)},
+              ...(p.kredite>0?[{l:"+ Kredite / Darlehen", v:fmtK(p.kredite), sub:"Müssen sofort abgelöst werden"}]:[]),
+              {l:"Gesamtbedarf",                    v:fmtK(R.gesamtBedarf),                 hl:true},
+            ].map(({l,v,sub,hl,ok},i,arr)=>(
+              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"10px 16px",borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none",background:hl?`${C}04`:"#fff"}}>
+                <div><div style={{fontSize:"13px",color:"#555",fontWeight:hl?"600":"400"}}>{l}</div>{sub&&<div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>{sub}</div>}</div>
+                <span style={{fontSize:"13px",fontWeight:"600",color:hl?C:ok?"#059669":"#111",flexShrink:0,marginLeft:"10px"}}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Block 3: Details einklappbar */}
+        <div style={T.section}>
+          <button onClick={()=>setDetailsOpen(x=>!x)} style={{display:"flex",alignItems:"center",gap:"6px",fontSize:"12px",color:"#aaa",cursor:"pointer",marginBottom:"8px"}}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{transition:"transform 0.2s",transform:detailsOpen?"rotate(90deg)":"none"}}><path d="M4 2l4 4-4 4" stroke="#aaa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Vollständige Berechnung {detailsOpen?"ausblenden":"anzeigen"}
+          </button>
+          {detailsOpen&&(
+            <div style={T.card}>
+              {items.map(({l,v,sub,hl,ok},i,arr)=>(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"9px 16px",borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
+                  <div><div style={{fontSize:"12px",color:"#666"}}>{l}</div>{sub&&<div style={{fontSize:"11px",color:"#bbb",marginTop:"1px"}}>{sub}</div>}</div>
+                  <span style={{fontSize:"12px",fontWeight:"600",color:hl?WARN:ok?C:"#111",flexShrink:0,marginLeft:"10px"}}>{v}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div style={{...T.section,marginBottom:"120px"}}>
+          <div style={T.infoBox}>Näherungswerte. Witwen-/Waisenrente basiert auf der Rentenanwartschaft. Für ein verbindliches Angebot empfehlen wir ein persönliches Gespräch.</div>
+          <div style={{ ...T.infoBox, marginTop:"10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
         <div style={T.footer}>
-          <button style={T.btnPrim(false)} onClick={()=>goTo(3)}>Absicherung einrichten — Gespräch anfragen</button>
+          <button style={T.btnPrim(false)} onClick={()=>goTo(3)}>Absicherung einrichten</button>
           <button style={T.btnSec} onClick={()=>goTo(1)}>Zurück</button>
         </div>
       </div>
     );
   }
 
+  // ── Phase 1: Eingabe (kompakter) ────────────────────────────────────────
   return (
     <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
       <Header phase={1} total={TOTAL} badge="Risikoleben"/>
-      <div style={T.hero}><div style={T.eyebrow}>Schritt 1 von 2 · Familienbedarf</div><div style={T.h1}>Ist Ihre Familie wirklich abgesichert?</div><div style={T.body}>Gesetzliche Witwen-/Waisenrente eingerechnet — die echte Versorgungslücke Ihrer Familie.</div></div>
+      <div style={T.hero}>
+        <div style={T.eyebrow}>Schritt 1 von 2 · Familienbedarf</div>
+        <div style={T.h1}>Ist Ihre Familie wirklich abgesichert?</div>
+        <div style={T.body}>Gesetzliche Witwen-/Waisenrente eingerechnet — die echte Versorgungslücke Ihrer Familie.</div>
+      </div>
+
+      {/* Block 1: Bedarf */}
       <div style={T.section}>
+        <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Bedarf Ihrer Familie</div>
         <div style={T.card}>
-          <div style={T.row}><SliderField label="Monatlicher Finanzbedarf" value={p.monatsBedarf} min={500} max={6000} step={100} unit="€/Mon" hint="Miete/Kredit + Lebenshaltung + Kinderkosten" onChange={v=>set("monatsBedarf",v)}/></div>
-          <div style={T.row}><SliderField label="Absicherungszeitraum" value={p.jahre} min={5} max={30} step={1} unit="Jahre" hint="Bis jüngstes Kind 25 ist oder bis Rentenalter" onChange={v=>set("jahre",v)}/></div>
-          <div style={T.rowLast}><SliderField label="Bestehende Kredite / Schulden" value={p.kredite} min={0} max={600000} step={5000} unit="€" hint="Müssen im Todesfall vollständig abgelöst werden" onChange={v=>set("kredite",v)}/></div>
+          <div style={T.row}><SliderCard label="Monatlicher Finanzbedarf" value={p.monatsBedarf} min={500} max={6000} step={100} unit="€/Mon" hint="Miete/Kredit + Lebenshaltung + Kinderkosten" accent={C} onChange={v=>set("monatsBedarf",v)}/></div>
+          <div style={T.row}><SliderCard label="Absicherungszeitraum" value={p.jahre} min={5} max={30} step={1} unit="Jahre" hint="Bis jüngstes Kind 25 ist oder bis Rentenalter" accent={C} onChange={v=>set("jahre",v)}/></div>
+          <div style={T.rowLast}><SliderCard label="Bestehende Kredite / Schulden" value={p.kredite} min={0} max={600000} step={5000} unit="€" hint="Müssen im Todesfall vollständig abgelöst werden" accent={C} onChange={v=>set("kredite",v)}/></div>
         </div>
       </div>
-      <div style={T.divider}/>
+
+      {/* Block 2: Bereits vorhanden */}
       <div style={T.section}>
-        <div style={{ fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px" }}>Gesetzliche Leistungen (werden abgezogen)</div>
+        <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Was bereits vorhanden ist</div>
         <div style={T.card}>
-          <div style={T.row}><SliderField label="Witwen-/Witwerrente (geschätzt)" value={p.witwerRente} min={0} max={2000} step={50} unit="€/Mon" hint="Ca. 55% der gesetzlichen Rentenanwartschaft des Verstorbenen" onChange={v=>set("witwerRente",v)}/></div>
-          <div style={T.row}><SliderField label="Waisenrenten gesamt" value={p.waisenRenten} min={0} max={1000} step={50} unit="€/Mon" hint="Je 10% (Halbwaise) bzw. 20% (Vollwaise) der Rentenanwartschaft" onChange={v=>set("waisenRenten",v)}/></div>
-          <div style={T.rowLast}><SliderField label="Eigenes Einkommen des Partners" value={p.partnerEinkommen} min={0} max={4000} step={100} unit="€/Mon" hint="Nettoeinkommen des überlebenden Partners" onChange={v=>set("partnerEinkommen",v)}/></div>
+          <div style={T.row}><SliderCard label="Witwen-/Witwerrente (geschätzt)" value={p.witwerRente} min={0} max={2000} step={50} unit="€/Mon" hint="Ca. 55% der gesetzlichen Rentenanwartschaft" accent={C} onChange={v=>set("witwerRente",v)}/></div>
+          <div style={T.row}><SliderCard label="Waisenrenten gesamt" value={p.waisenRenten} min={0} max={1000} step={50} unit="€/Mon" hint="Je 10% (Halbwaise) der Rentenanwartschaft" accent={C} onChange={v=>set("waisenRenten",v)}/></div>
+          <div style={T.row}><SliderCard label="Einkommen des Partners" value={p.partnerEinkommen} min={0} max={4000} step={100} unit="€/Mon" hint="Nettoeinkommen des überlebenden Partners" accent={C} onChange={v=>set("partnerEinkommen",v)}/></div>
+          <div style={T.rowLast}><SliderCard label="Vorhandene Versicherungssumme" value={p.vorhandeneVS} min={0} max={1000000} step={10000} unit="€" hint="Aktuelle Risikolebensversicherung" accent={C} onChange={v=>set("vorhandeneVS",v)}/></div>
         </div>
       </div>
-      <div style={T.divider}/>
-      <div style={T.section}>
-        <div style={{ fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px" }}>Bestehende Absicherung</div>
-        <div style={T.card}>
-          <div style={T.rowLast}><SliderField label="Vorhandene Versicherungssumme" value={p.vorhandeneVS} min={0} max={1000000} step={10000} unit="€" hint="Aktuelle Risikolebensversicherung" onChange={v=>set("vorhandeneVS",v)}/></div>
-        </div>
-      </div>
+
+      <div style={{height:"120px"}}/>
       <div style={T.footer}>
-        <button style={T.btnPrim(false)} onClick={()=>goTo(2)}>Lücke berechnen</button>
+        <button style={T.btnPrim(false)} onClick={()=>goTo(2)}>Versorgungslücke berechnen</button>
       </div>
     </div>
   );

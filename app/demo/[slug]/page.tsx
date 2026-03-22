@@ -1,13 +1,14 @@
 /**
- * Demo-Route: Welche Komponente zu welchem Slug gehört, steht zentral in
- * `lib/demoCheckMap.ts` (entspricht dem CHECKS-Mapping aus dem Projekt-Setup).
+ * Demo-Route: Lazy geladene Checks (`ssr: false`) für iframe / Einbettung.
+ * Die eigentlichen `dynamic()`-Imports liegen in `DemoCheckClient.tsx` (Client Boundary).
  */
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ShellWrapper from "@/components/ui/ShellWrapper";
 import { KATALOG } from "@/lib/katalog";
-import { getDemoCheck, templateForDemoSlug } from "@/lib/demoCheckMap";
+import { isKnownDemoSlug, templateForDemoSlug } from "@/lib/demoCheckMap";
+import DemoCheckClient from "./DemoCheckClient";
 
 type Props = { params: { slug: string } };
 
@@ -18,14 +19,13 @@ export function generateStaticParams() {
 export default function DemoPage({ params }: Props) {
   const t = KATALOG.find((x) => x.slug === params.slug);
   if (!t) notFound();
-  const Check = getDemoCheck(params.slug);
-  if (!Check) notFound();
+  if (!isKnownDemoSlug(params.slug)) notFound();
 
   return (
     <Suspense fallback={<div className="h-[100dvh] bg-[#f5f4f0]" />}>
       <ShellWrapper isDemoMode slug={params.slug}>
         <div className="min-h-[100dvh] bg-[#f5f4f0]">
-          <Check />
+          <DemoCheckClient slug={params.slug} />
         </div>
       </ShellWrapper>
     </Suspense>
@@ -33,10 +33,10 @@ export default function DemoPage({ params }: Props) {
 }
 
 export function generateMetadata({ params }: Props): Metadata {
-  const t = templateForDemoSlug(params.slug);
+  const tmpl = templateForDemoSlug(params.slug);
   return {
-    title: t ? `${t.name} — CheckKit` : "CheckKit",
-    description: t?.desc,
+    title: tmpl ? `${tmpl.name} — CheckKit` : "CheckKit",
+    description: tmpl?.desc,
     robots: { index: false, follow: false },
   };
 }

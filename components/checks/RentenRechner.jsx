@@ -1,9 +1,9 @@
-"use client";
-
 import { useState } from "react";
+import { SliderCard, SelectionCard, SectionHeader } from "@/components/ui/CheckComponents";
+import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 
 (() => {
-  if (typeof document === "undefined") return;
   const link = document.createElement("link");
   link.rel = "stylesheet";
   link.href = "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
@@ -55,9 +55,10 @@ function berechne(p) {
   const schichten = [
     { label: "Schicht 1", sub: "Gesetzl. Rente + Rürup", farbe: S1, betrag: gesRente + schicht1, anteil: ziel>0?Math.min(100,Math.round(((gesRente+schicht1)/ziel)*100)):0 },
     { label: "Schicht 2", sub: "bAV + Riester",           farbe: S2, betrag: schicht2, anteil: ziel>0?Math.min(100,Math.round((schicht2/ziel)*100)):0 },
-    { label: "Schicht 3", sub: "Privat + ETF",            farbe: S3, betrag: schicht3, anteil: ziel>0?Math.min(100,Math.round((schicht3/ziel)*100)):0 },
+    { label: "Schicht 3", sub: "Privat + Fonds",            farbe: S3, betrag: schicht3, anteil: ziel>0?Math.min(100,Math.round((schicht3/ziel)*100)):0 },
   ];
-  return { jahreBis, renteDauer, ziel, vorhanden, luecke, deckung, rateA, nettoA, stVorteil, rateB, rateC, kapBedarf, depotLeer, schichten, lebenserw };
+  const kapitalBedarf = kapBedarf;
+  return { jahreBis, renteDauer, ziel, vorhanden, luecke, deckung, rateA, nettoA, stVorteil, rateB, rateC, kapBedarf, kapitalBedarf, depotLeer, schichten, lebenserw };
 }
 
 const T = {
@@ -106,36 +107,6 @@ function Header({ phase, total, badge }) {
   );
 }
 
-function SliderField({ label, value, min, max, step, onChange, display, hint, unit="" }) {
-  const [inputVal, setInputVal] = useState(String(value));
-  const [focused, setFocused] = useState(false);
-  const handleSlider = (v) => { onChange(v); if(!focused) setInputVal(String(v)); };
-  const handleBlur = () => {
-    setFocused(false);
-    const raw = parseFloat(inputVal.replace(/[^\d.-]/g,""));
-    if(!isNaN(raw)) { const c=Math.min(max,Math.max(min,Math.round(raw/step)*step)); onChange(c); setInputVal(String(c)); }
-    else setInputVal(String(value));
-  };
-  return (
-    <div style={{ marginBottom: "22px" }}>
-      <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", marginBottom:"8px" }}>
-        <label style={{ ...T.fldLbl }}>{label}</label>
-        <div style={{ display:"flex", alignItems:"center", gap:"4px" }}>
-          <input type="text" inputMode="numeric" value={focused?inputVal:String(value)} placeholder={focused?"":String(value)}
-            onFocus={()=>{setFocused(true);setInputVal(String(value));}} onBlur={handleBlur}
-            onChange={e=>setInputVal(e.target.value)}
-            style={{ width:"90px",padding:"5px 8px",border:`1px solid ${focused?C:"#e8e8e8"}`,borderRadius:"5px",fontSize:"14px",fontWeight:"600",color:focused?"#111":C,textAlign:"right",outline:"none",background:focused?"#fff":`${C}08`,fontFamily:"'DM Sans',system-ui,sans-serif" }}/>
-          {unit && <span style={{ fontSize:"12px",color:"#999",flexShrink:0 }}>{unit}</span>}
-        </div>
-      </div>
-      {!focused && display && <div style={{ fontSize:"12px",color:"#888",marginBottom:"8px" }}>{display}</div>}
-      <input type="range" min={min} max={max} step={step} value={value} onChange={e=>handleSlider(+e.target.value)} style={{ width:"100%","--accent":C }}/>
-      <div style={{ display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#ccc",marginTop:"4px" }}><span>{min}{unit?" "+unit:""}</span><span>{max}{unit?" "+unit:""}</span></div>
-      {hint && <div style={T.fldHint}>{hint}</div>}
-    </div>
-  );
-}
-
 function Footer({ onNext, onBack, label="Weiter", disabled=false }) {
   return (
     <div style={T.footer}>
@@ -176,20 +147,21 @@ export default function RentenRechner() {
   const [name, setName] = useState("");
   const [showStrat, setShowStrat] = useState(null);
   const [fd, setFd] = useState({ name:"", email:"", tel:"" });
+  const [kontaktConsent, setKontaktConsent] = useState(false);
   const [p, setP] = useState({ alter:35, rentenAlter:67, netto:2800, zielProzent:80, gesRente:1200, schicht1:0, schicht2:0, schicht3:0, beruf:"angestellt" });
   const set = (k,v) => setP(x=>({...x,[k]:v}));
   const goTo = (ph) => { setAk(k=>k+1); setPhase(ph); window.scrollTo({top:0}); };
   const R = berechne(p);
-  const TOTAL = 4;
+  const TOTAL = 3;
 
   if (danke) return <div style={{...T.page,"--accent":C}}><Header phase={TOTAL} total={TOTAL} badge="Renten-Rechner"/><DankeScreen name={name} onBack={()=>{setDanke(false);setPhase(1);}}/></div>;
 
-  // Phase 4: Kontakt
-  if (phase === 4) {
-    const valid = fd.name.trim() && fd.email.trim();
+  // Phase 3: Kontakt
+  if (phase === 3) {
+    const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
     return (
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-        <Header phase={4} total={TOTAL} badge="Renten-Rechner"/>
+        <Header phase={3} total={TOTAL} badge="Renten-Rechner"/>
         <div style={T.hero}><div style={T.eyebrow}>Beratungsgespräch</div><div style={T.h1}>Rentenplan besprechen</div><div style={T.body}>Wir erstellen einen konkreten Sparplan mit echten Tarifen.</div></div>
         <div style={T.section}>
           <div style={{ ...T.infoBox, marginBottom:"16px" }}>
@@ -199,6 +171,7 @@ export default function RentenRechner() {
               <div><div style={{ fontSize:"18px",fontWeight:"700",color:"#111",letterSpacing:"-0.5px" }}>{R.jahreBis} J.</div><div style={{ fontSize:"11px",color:"#999",marginTop:"2px" }}>bis Rente</div></div>
             </div>
           </div>
+          <CheckKontaktLeadLine />
           <div style={T.card}>
             {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
               <div key={k} style={i<arr.length-1?T.row:T.rowLast}>
@@ -207,9 +180,11 @@ export default function RentenRechner() {
               </div>
             ))}
           </div>
-          <div style={{ fontSize:"11px",color:"#ccc",marginTop:"10px" }}>Vertraulich behandelt.</div>
+          <div style={{ marginTop:"14px" }}>
+            <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
+          </div>
         </div>
-        <Footer onNext={()=>{if(valid){setName(fd.name);setDanke(true);}}} onBack={()=>goTo(3)} label="Gespräch anfragen" disabled={!valid}/>
+        <Footer onNext={()=>{if(valid){setName(fd.name);setDanke(true);}}} onBack={()=>goTo(2)} label="Gespräch anfragen" disabled={!valid}/>
       </div>
     );
   }
@@ -218,8 +193,8 @@ export default function RentenRechner() {
   if (phase === 3) {
     const strategien = [
       { id:"rente", label:"Nur Rente", sub:"Rürup / private Rentenversicherung", rate:R.rateA, hinweis:p.beruf==="selbst"?`Steuerersparnis ca. ${fmt(R.stVorteil)}/Jahr — Nettorate ${fmt(R.nettoA)}/Monat`:`Mit Steuerförderung ca. ${fmt(R.nettoA)}/Monat Netto`, pro:["Lebenslange Zahlung","Kein Kapitalmarktrisiko"], con:["Keine Flexibilität","Kein Kapital für Erben"] },
-      { id:"etf",   label:"Nur ETF-Depot", sub:"Vermögensaufbau + Entnahmeplan 3,5%", rate:R.rateB, hinweis:`Kapitalziel: ${fmtK(R.kapitalBedarf)} — Depot reicht ca. ${R.depotLeer} Jahre`, pro:["Höchste Rendite (Ø 6%)","Kapital vererbbar","Flexibel"], con:[`Depot leer nach ${R.depotLeer} Jahren`,"Kapitalmarktrisiko"] },
-      { id:"hybrid",label:"Hybrid (empfohlen)", sub:"50% Rente + 50% ETF", rate:R.rateC, hinweis:`${fmt(R.rateC/2)}/Mon. Rente + ${fmt(R.rateC/2)}/Mon. ETF`, pro:["Fixkosten lebenslang gesichert","Flexibilität durch ETF-Anteil","Risiko halbiert"], con:["Zwei Verträge zu pflegen"], highlight:true },
+      { id:"etf",   label:"Flexible Anlagestrategie", sub:"Vermögensaufbau + Entnahmeplan 3,5%", rate:R.rateB, hinweis:`Kapitalziel: ${fmtK(R.kapitalBedarf)} — Fondsanlage reicht ca. ${R.depotLeer} Jahre`, pro:["Höchste Rendite (Ø 6%)","Kapital vererbbar","Flexibel"], con:[`Fondskapital aufgebraucht nach ${R.depotLeer} Jahren`,"Kapitalmarktrisiko"] },
+      { id:"hybrid",label:"Hybrid (empfohlen)", sub:"50% Rente + 50% Fondsanlage", rate:R.rateC, hinweis:`${fmt(R.rateC/2)}/Mon. Rente + ${fmt(R.rateC/2)}/Mon. Fondsanlage`, pro:["Fixkosten lebenslang gesichert","Flexibilität durch Fondsanteil","Risiko halbiert"], con:["Zwei Verträge zu pflegen"], highlight:true },
     ];
     return (
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
@@ -304,60 +279,245 @@ export default function RentenRechner() {
     );
   }
 
-  // Phase 2: Vorhandene Vorsorge
+  // ── Phase 1+2: Eingabe (zusammengelegt) ────────────────────────────────────
+  // Phase 3: Ergebnis
   if (phase === 2) {
-    const SchichtHeader = ({farbe, label}) => (
-      <div style={{ display:"flex",alignItems:"center",gap:"8px",padding:"8px 4px 6px" }}>
-        <div style={{ width:"8px",height:"8px",borderRadius:"50%",background:farbe,flexShrink:0 }}/>
-        <span style={{ fontSize:"11px",fontWeight:"600",color:farbe,letterSpacing:"0.5px",textTransform:"uppercase" }}>{label}</span>
-      </div>
-    );
+    const lueckeSchwelle = 100; // < 100 €/Mon = gut aufgestellt
+    const gutAufgestellt = R.luecke < lueckeSchwelle;
+
+    // Wartekosten: was kostet es, 5 Jahre zu warten?
+    const jahreBis5 = Math.max(1, R.jahreBis - 5);
+    const ansparA5  = ((Math.pow(1.03,jahreBis5)-1)/0.03)*Math.pow(1.03,jahreBis5);
+    const renteFak5 = (1-Math.pow(1.03,-R.renteDauer))/0.03;
+    const rateA5    = R.luecke > 0 ? (R.luecke*12*renteFak5)/ansparA5 : 0;
+    const mehrKosten = Math.max(0, Math.round(rateA5 - R.rateA));
+
+    const strategien = [
+      {
+        id:"steuer", label:"Steuerfokus", sub:"Rürup / private Rentenversicherung",
+        rate:R.rateA, nettoRate:R.nettoA,
+        einordnung:"Ideal für Steuersparer — der Staat beteiligt sich an Ihrem Aufbau.",
+        pro:["Lebenslange Rentenzahlung","Steuerersparnis sofort spürbar"],
+        con:"Keine Flexibilität — Kapital nicht abrufbar",
+        fuerWen:"Selbstständige, Gutverdiener und alle mit hohem Grenzsteuersatz.",
+        highlight:false,
+      },
+      {
+        id:"hybrid", label:"Ausgewogene Lösung", sub:"50% Rentenvertrag + 50% Fondsanlage",
+        rate:R.rateC, nettoRate:R.rateC,
+        einordnung:"Die meistempfohlene Kombination — sicher und flexibel zugleich.",
+        pro:["Existenzkosten lebenslang gesichert","Flexibler Puffer durch Fondsanteil"],
+        con:"Zwei Verträge zu verwalten",
+        fuerWen:"Die meisten Arbeitnehmer und Familien — ausgewogenes Risiko.",
+        highlight:true,
+      },
+      {
+        id:"etf", label:"Flexibilitätsfokus", sub:"Fondsbasierte Anlage + Entnahmeplan (3,5%)",
+        rate:R.rateB, nettoRate:R.rateB,
+        einordnung:"Maximale Rendite und Kontrolle — für Disziplinierte.",
+        pro:["Hohe Ø-Rendite über Fonds (Ø 6%)","Kapital vererbbar und flexibel verfügbar"],
+        con:`Fondsanlage reicht ca. ${R.depotLeer} Jahre — kein lebenslanger Schutz`,
+        fuerWen:"Für Anleger mit Freude an flexiblen Lösungen und ausreichend Puffer.",
+        highlight:false,
+      },
+    ];
+
     return (
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
         <Header phase={2} total={TOTAL} badge="Renten-Rechner"/>
-        <div style={T.hero}><div style={T.eyebrow}>Schritt 2 von 3 · Vorhandene Vorsorge</div><div style={T.h1}>Was haben Sie bereits?</div><div style={T.body}>Prognostizierte monatliche Rentenleistungen aus Ihren Verträgen.</div></div>
+
+        {/* Block 1: Rentenlücke */}
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihre Rentenanalyse</div>
+          <div style={T.h1}>{gutAufgestellt ? "Sie sind gut aufgestellt" : `${fmt(R.luecke)}/Monat fehlen ab ${p.rentenAlter}`}</div>
+          <div style={T.body}>{R.deckung}% gedeckt · {R.jahreBis} Jahre Ansparzeit · Zielrente {fmt(R.ziel)}/Monat</div>
+        </div>
+
         <div style={T.section}>
-          <SchichtHeader farbe={S1} label="Schicht 1 — Basisversorgung"/>
-          <div style={T.card}>
-            <div style={T.row}><SliderField label="Gesetzliche Rente" value={p.gesRente} min={0} max={3000} step={50} unit="€/Mon" hint="Aus dem jährlichen Rentenbescheid der DRV" onChange={v=>set("gesRente",v)}/></div>
-            <div style={T.rowLast}><SliderField label="Rürup-Rente / Direktzusage" value={p.schicht1} min={0} max={2000} step={50} unit="€/Mon" onChange={v=>set("schicht1",v)}/></div>
-          </div>
-          <SchichtHeader farbe={S2} label="Schicht 2 — Zusatzversorgung"/>
-          <div style={T.card}>
-            <div style={T.rowLast}><SliderField label="bAV + Riester" value={p.schicht2} min={0} max={1500} step={25} unit="€/Mon" hint="Aus Jahresbescheinigungen Ihrer Verträge" onChange={v=>set("schicht2",v)}/></div>
-          </div>
-          <SchichtHeader farbe={S3} label="Schicht 3 — Privatvorsorge"/>
-          <div style={T.card}>
-            <div style={T.rowLast}><SliderField label="Private Rente + ETF-Entnahme" value={p.schicht3} min={0} max={3000} step={50} unit="€/Mon" onChange={v=>set("schicht3",v)}/></div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",marginBottom:"4px"}}>
+            {[
+              {l:"Rentenlücke", v:gutAufgestellt?"Keine":fmt(R.luecke)+"/Mon.", warn:!gutAufgestellt},
+              {l:"Deckungsgrad", v:R.deckung+"%", warn:R.deckung<70},
+              {l:"Bis zur Rente", v:R.jahreBis+" Jahre", warn:false},
+            ].map(({l,v,warn},i)=>(
+              <div key={i} style={{border:`1px solid ${warn?"#c0392b33":"#e8e8e8"}`,borderRadius:"10px",padding:"12px 10px",background:warn?"#fff5f5":"#fff",textAlign:"center"}}>
+                <div style={{fontSize:"15px",fontWeight:"700",color:warn?WARN:C,letterSpacing:"-0.3px"}}>{v}</div>
+                <div style={{fontSize:"10px",color:"#aaa",marginTop:"2px",fontWeight:"500"}}>{l}</div>
+              </div>
+            ))}
           </div>
         </div>
-        <Footer onNext={()=>goTo(3)} onBack={()=>goTo(1)} label="Rentenlücke berechnen"/>
+
+        {/* Block 2: Schichten-Balken */}
+        <div style={T.section}>
+          <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px"}}>Ihre heutige Vorsorge</div>
+          <div style={T.card}>
+            <div style={{padding:"14px 16px 8px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px"}}>
+                <span style={{fontSize:"12px",color:"#aaa"}}>Zielrente</span>
+                <span style={{fontSize:"13px",fontWeight:"700",color:"#111"}}>{fmt(R.ziel)}/Monat</span>
+              </div>
+              <div style={{height:"8px",background:"#f0f0f0",borderRadius:"4px",overflow:"hidden",display:"flex",marginBottom:"12px"}}>
+                {R.schichten.map((s,i)=><div key={i} style={{width:`${s.anteil}%`,background:s.farbe,transition:"width 0.6s ease",minWidth:s.betrag>0?"2px":"0"}}/>)}
+                {R.luecke>0&&<div style={{flex:1,background:"#fee2e2",minWidth:"2px"}}/>}
+              </div>
+              {[...R.schichten,...(R.luecke>0?[{label:"Lücke",sub:"Nicht gedeckt",farbe:WARN,betrag:R.luecke,anteil:100-R.deckung}]:[])].map((s,i,arr)=>(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+                    <div style={{width:"8px",height:"8px",borderRadius:"50%",background:s.farbe,flexShrink:0}}/>
+                    <div><div style={{fontSize:"12px",fontWeight:"500",color:"#333"}}>{s.label}</div><div style={{fontSize:"11px",color:"#aaa"}}>{s.sub}</div></div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:"13px",fontWeight:"600",color:s.farbe}}>{fmt(s.betrag)}/Mon.</div>
+                    <div style={{fontSize:"11px",color:"#aaa"}}>{s.anteil}%</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Block 3: Strategien oder positives Ergebnis */}
+        {gutAufgestellt ? (
+          <div style={T.section}>
+            <div style={{border:"1px solid #d1fae5",borderRadius:"10px",padding:"14px 16px",background:"#f0fdf4"}}>
+              <div style={{fontSize:"13px",fontWeight:"600",color:"#059669",marginBottom:"4px"}}>Gut aufgestellt</div>
+              <div style={{fontSize:"12px",color:"#065f46",lineHeight:1.6}}>Ihre Vorsorge deckt die Zielrente weitgehend ab. Beim Jahresgespräch prüfen wir ob Rendite, Inflation und Laufzeiten optimal abgestimmt sind.</div>
+            </div>
+          </div>
+        ) : (
+          <div style={T.section}>
+            <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px"}}>So können Sie die Lücke schließen</div>
+            <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+              {strategien.map(st=>(
+                <div key={st.id} style={{border:`1.5px solid ${st.highlight?C:"#e8e8e8"}`,borderRadius:"12px",overflow:"hidden",boxShadow:st.highlight?`0 4px 16px ${C}20`:"none"}}>
+                  {st.highlight&&<div style={{background:C,padding:"5px 14px",fontSize:"11px",fontWeight:"700",color:"#fff",letterSpacing:"0.5px"}}>Empfohlene Strategie</div>}
+                  <div style={{padding:"14px 16px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"8px"}}>
+                      <div>
+                        <div style={{fontSize:"14px",fontWeight:"700",color:"#111"}}>{st.label}</div>
+                        <div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>{st.sub}</div>
+                      </div>
+                      <div style={{textAlign:"right",flexShrink:0,marginLeft:"12px"}}>
+                        <div style={{fontSize:"22px",fontWeight:"700",color:st.highlight?C:"#111",letterSpacing:"-0.5px"}}>{fmt(st.rate)}</div>
+                        <div style={{fontSize:"11px",color:"#aaa"}}>/Monat</div>
+                      </div>
+                    </div>
+                    <div style={{fontSize:"12px",color:"#555",padding:"8px 10px",background:"#f7f7f7",borderRadius:"7px",marginBottom:"10px",lineHeight:1.55}}>{st.einordnung}</div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px",marginBottom:"8px"}}>
+                      {st.pro.map((v,i)=>(
+                        <div key={i} style={{display:"flex",alignItems:"flex-start",gap:"6px"}}>
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{marginTop:"1px",flexShrink:0}}><circle cx="6" cy="6" r="5" fill="#d1fae5"/><path d="M3.5 6l1.8 1.8L8.5 4" stroke="#059669" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          <span style={{fontSize:"11px",color:"#444",lineHeight:1.4}}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{display:"flex",alignItems:"flex-start",gap:"6px",marginBottom:"8px"}}>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{marginTop:"1px",flexShrink:0}}><circle cx="6" cy="6" r="5" fill="#fee2e2"/><path d="M4 4l4 4M8 4l-4 4" stroke="#c0392b" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                      <span style={{fontSize:"11px",color:"#666",lineHeight:1.4}}>{st.con}</span>
+                    </div>
+                    <div style={{fontSize:"11px",color:"#888",padding:"6px 10px",background:"#f0f4f8",borderRadius:"6px"}}><strong>Für wen: </strong>{st.fuerWen}</div>
+                    {st.id==="steuer"&&p.beruf==="selbst"&&<div style={{marginTop:"8px",fontSize:"11px",color:"#059669",fontWeight:"500"}}>Steuerersparnis ca. {fmt(R.stVorteil)}/Jahr → Nettorate {fmt(R.nettoA)}/Mon.</div>}
+                    {st.id==="etf"&&<div style={{marginTop:"8px",fontSize:"11px",color:"#888"}}>Kapitalziel: {fmtK(R.kapitalBedarf)} — aufgebaut über fondsbasierte Anlage</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Block 4: Wartekosten */}
+        {!gutAufgestellt && mehrKosten > 10 && (
+          <div style={T.section}>
+            <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"}}>
+              <div style={{padding:"10px 16px",background:"#fffbf0",borderBottom:"1px solid #f0f0f0"}}>
+                <div style={{fontSize:"11px",fontWeight:"700",color:"#92400e",letterSpacing:"0.5px",textTransform:"uppercase"}}>Was 5 Jahre Warten kosten</div>
+              </div>
+              <div style={{padding:"14px 16px",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
+                <div style={{textAlign:"center",padding:"10px",background:"#f0fdf4",borderRadius:"8px"}}>
+                  <div style={{fontSize:"18px",fontWeight:"700",color:"#059669",letterSpacing:"-0.3px"}}>{fmt(R.rateA)}</div>
+                  <div style={{fontSize:"11px",color:"#888",marginTop:"2px"}}>Heute starten</div>
+                </div>
+                <div style={{textAlign:"center",padding:"10px",background:"#fff5f5",borderRadius:"8px"}}>
+                  <div style={{fontSize:"18px",fontWeight:"700",color:WARN,letterSpacing:"-0.3px"}}>{fmt(rateA5)}</div>
+                  <div style={{fontSize:"11px",color:"#888",marginTop:"2px"}}>In 5 Jahren starten</div>
+                </div>
+              </div>
+              <div style={{padding:"0 16px 14px",fontSize:"12px",color:"#666"}}>
+                Warten kostet ca. <strong style={{color:WARN}}>{fmt(mehrKosten)}/Monat mehr</strong> — bei gleicher Zielrente.
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div style={{...T.section,marginBottom:"120px"}}>
+          <div style={T.infoBox}>Näherungswerte auf Basis von Ø-Renditen. Für einen verbindlichen Sparplan empfehlen wir ein persönliches Gespräch.</div>
+          <div style={{ ...T.infoBox, marginTop:"10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+        </div>
+        <div style={T.footer}>
+          <button style={T.btnPrim(false)} onClick={()=>goTo(3)}>Strategie besprechen</button>
+          <button style={T.btnSec} onClick={()=>goTo(1)}>Zurück</button>
+        </div>
       </div>
     );
   }
 
-  // Phase 1: Basisdaten
+  // Phase 1: Basisdaten + Vorsorge (zusammengelegt)
   return (
     <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
       <Header phase={1} total={TOTAL} badge="Renten-Rechner"/>
-      <div style={T.hero}><div style={T.eyebrow}>Schritt 1 von 3 · Ihre Situation</div><div style={T.h1}>Wie sieht Ihre Rente aus?</div><div style={T.body}>Wir berechnen Ihre Rentenlücke und zeigen drei Strategien zum Lückenschluss.</div></div>
+      <div style={T.hero}>
+        <div style={T.eyebrow}>Schritt 1 von 2 · Ihre Situation</div>
+        <div style={T.h1}>Wie sieht Ihre Rente aus?</div>
+        <div style={T.body}>Rentenlücke berechnen und drei Strategien zum Schließen erhalten.</div>
+      </div>
+
+      {/* Basisdaten */}
       <div style={T.section}>
         <div style={T.card}>
-          <div style={T.row}><SliderField label="Aktuelles Nettoeinkommen" value={p.netto} min={1000} max={8000} step={100} unit="€/Mon" onChange={v=>set("netto",v)}/></div>
-          <div style={T.row}><SliderField label="Aktuelles Alter" value={p.alter} min={20} max={60} step={1} unit="Jahre" display={`noch ${R.jahreBis} Jahre bis zur Rente`} onChange={v=>set("alter",v)}/></div>
-          <div style={T.row}><SliderField label="Gewünschtes Rentenalter" value={p.rentenAlter} min={60} max={70} step={1} unit="Jahre" display={`Rentenphase ca. ${R.renteDauer} Jahre (Ø Lebenserwartung ${R.lebenserw})`} onChange={v=>set("rentenAlter",v)}/></div>
-          <div style={T.row}><SliderField label="Gewünschtes Rentenniveau" value={p.zielProzent} min={50} max={100} step={5} unit="%" display={`= ${fmt(R.ziel)}/Monat Zielrente`} onChange={v=>set("zielProzent",v)}/></div>
+          <div style={T.row}><SliderCard label="Aktuelles Nettoeinkommen" value={p.netto} min={1000} max={8000} step={100} unit="€/Mon" accent={C} onChange={v=>set("netto",v)}/></div>
+          <div style={T.row}><SliderCard label="Aktuelles Alter" value={p.alter} min={20} max={60} step={1} unit="Jahre" display={`noch ${R.jahreBis} Jahre bis zur Rente`} accent={C} onChange={v=>set("alter",v)}/></div>
+          <div style={T.row}><SliderCard label="Gewünschtes Rentenalter" value={p.rentenAlter} min={60} max={70} step={1} unit="Jahre" display={`Rentenphase ca. ${R.renteDauer} Jahre`} accent={C} onChange={v=>set("rentenAlter",v)}/></div>
+          <div style={T.row}><SliderCard label="Gewünschtes Rentenniveau" value={p.zielProzent} min={50} max={100} step={5} unit="%" display={`= ${fmt(R.ziel)}/Monat Zielrente`} accent={C} onChange={v=>set("zielProzent",v)}/></div>
           <div style={T.rowLast}>
             <label style={T.fldLbl}>Berufsstatus</label>
-            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",marginTop:"8px" }}>
-              {[["angestellt","Angestellt"],["selbst","Selbstständig"],["beamter","Beamter"]].map(([v,l])=>(
-                <button key={v} style={T.optBtn(p.beruf===v)} onClick={()=>set("beruf",v)}>{l}</button>
+            <div style={{display:"flex",flexDirection:"column",gap:"8px",marginTop:"8px"}}>
+              {[
+                { v:"angestellt", l:"Angestellt", d:"Arbeitgeberzuschuss zur Sozialversicherung" },
+                { v:"selbst", l:"Selbstständig", d:"Volle Beiträge, keine Lohnfortzahlung" },
+                { v:"beamter", l:"Beamter", d:"Beihilfe und besondere Tarife" },
+              ].map(({v,l,d})=>(
+                <SelectionCard key={v} value={v} label={l} description={d} selected={p.beruf===v} accent={C} onClick={()=>set("beruf",v)} />
               ))}
             </div>
           </div>
         </div>
       </div>
-      <Footer onNext={()=>goTo(2)} label="Vorhandene Vorsorge eingeben"/>
+
+      {/* Vorhandene Vorsorge — optional/einklappbar */}
+      <div style={T.section}>
+        <SectionHeader label="Vorhandene Vorsorge" />
+        <div style={{fontSize:"12px",color:"#aaa",marginBottom:"10px"}}>Optional — bei 0 wird die volle Lücke berechnet</div>
+        <div style={T.card}>
+          <div style={{padding:"8px 16px 4px",background:"#f8f8f8",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:"6px"}}>
+            <div style={{width:"7px",height:"7px",borderRadius:"50%",background:S1}}/><span style={{fontSize:"11px",fontWeight:"600",color:S1,letterSpacing:"0.5px",textTransform:"uppercase"}}>Schicht 1 — Gesetzlich + Rürup</span>
+          </div>
+          <div style={T.row}><SliderCard label="Gesetzliche Rente" value={p.gesRente} min={0} max={3000} step={50} unit="€/Mon" hint="Aus dem jährlichen Rentenbescheid" accent={C} onChange={v=>set("gesRente",v)}/></div>
+          <div style={{padding:"8px 16px 4px",background:"#f8f8f8",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:"6px"}}>
+            <div style={{width:"7px",height:"7px",borderRadius:"50%",background:S2}}/><span style={{fontSize:"11px",fontWeight:"600",color:S2,letterSpacing:"0.5px",textTransform:"uppercase"}}>Schicht 2 — bAV + Riester</span>
+          </div>
+          <div style={T.row}><SliderCard label="bAV + Riester" value={p.schicht2} min={0} max={1500} step={25} unit="€/Mon" accent={C} onChange={v=>set("schicht2",v)}/></div>
+          <div style={{padding:"8px 16px 4px",background:"#f8f8f8",borderBottom:"1px solid #f0f0f0",display:"flex",alignItems:"center",gap:"6px"}}>
+            <div style={{width:"7px",height:"7px",borderRadius:"50%",background:S3}}/><span style={{fontSize:"11px",fontWeight:"600",color:S3,letterSpacing:"0.5px",textTransform:"uppercase"}}>Schicht 3 — Privat + Fonds</span>
+          </div>
+          <div style={T.rowLast}><SliderCard label="Private Rente + Fondsanlage" value={p.schicht3} min={0} max={3000} step={50} unit="€/Mon" accent={C} onChange={v=>set("schicht3",v)}/></div>
+        </div>
+      </div>
+
+      <div style={{height:"120px"}}/>
+      <div style={T.footer}>
+        <button style={T.btnPrim(false)} onClick={()=>goTo(2)}>Rentenlücke berechnen</button>
+      </div>
     </div>
   );
 }

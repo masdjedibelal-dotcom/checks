@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
-import { Instrument_Serif } from "next/font/google";
+import { DM_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const instrumentSerif = Instrument_Serif({
@@ -8,6 +8,14 @@ const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   display: "swap",
   weight: "400",
+  style: ["normal", "italic"],
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
 });
 
@@ -25,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${GeistSans.variable} ${instrumentSerif.variable} bg-white text-[#111]`}
+      className={`${GeistSans.variable} ${instrumentSerif.variable} ${dmSans.variable} bg-white text-[#111]`}
       style={{ colorScheme: "light" }}
       suppressHydrationWarning
     >
