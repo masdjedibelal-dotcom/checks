@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import DemoCTA from "@/components/ui/DemoCTA";
 import { useMakler } from "@/components/ui/MaklerContext";
 
 const PRODUKTE=[
@@ -82,6 +83,9 @@ export default function Bedarfscheck(){
         <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Bedarfscheck</span></div>
         <div style={T.prog}><div style={T.progFil(100)}/></div>
         <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={{...T.h1}}>{`Paket „${gewaehlt}“ besprechen`}</div><div style={T.body}>Wir bereiten Ihr persönliches Angebot vor.</div></div>
+        {MAKLER.isDemoMode ? (
+          <DemoCTA slug={MAKLER.slug} />
+        ) : (
         <div style={T.section}>
           <div style={T.card}>
             {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
@@ -90,7 +94,10 @@ export default function Bedarfscheck(){
           </div>
           <div style={{fontSize:"11px",color:"#ccc",marginTop:"10px",marginBottom:"100px"}}>Vertraulich behandelt.</div>
         </div>
+        )}
+        {!MAKLER.isDemoMode && (
         <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={()=>{if(valid){setDanke(true);}}} disabled={!valid}>Gespräch anfragen</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+        )}
       </div>
     );
   }

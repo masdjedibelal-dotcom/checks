@@ -23,11 +23,25 @@ function sanitize(value: string | null, maxLen = 80): string {
 
 // ─── Shell-Wrapper ────────────────────────────────────────────────────────────
 type ShellWrapperProps = {
-  children: React.ReactNode;
+  children:    React.ReactNode;
+  isDemoMode?: boolean;
+  slug?:       string;
 };
 
-export default function ShellWrapper({ children }: ShellWrapperProps) {
+export default function ShellWrapper({
+  children,
+  isDemoMode: isDemoRoute = false,
+  slug = '',
+}: ShellWrapperProps) {
   const params = useSearchParams();
+
+  /** iFrame-URLs tragen name/firma/email/farbe/tel — dann echtes Kontaktformular, kein Kauf-CTA. */
+  const embedPersonalized = useMemo(() => {
+    const keys = ['name', 'firma', 'email', 'farbe', 'tel'] as const;
+    return keys.some((k) => Boolean(params.get(k)?.trim()));
+  }, [params]);
+
+  const isDemoMode = isDemoRoute && !embedPersonalized;
 
   const makler = useMemo<MaklerConfig>(() => {
     const name   = sanitize(params.get('name'));
@@ -42,8 +56,10 @@ export default function ShellWrapper({ children }: ShellWrapperProps) {
       email:        email || MAKLER_DEFAULT.email,
       telefon:      tel   || MAKLER_DEFAULT.telefon,
       primaryColor: farbe,
+      isDemoMode,
+      slug,
     };
-  }, [params]);
+  }, [params, isDemoMode, slug]);
 
   return (
     <MaklerContext.Provider value={makler}>

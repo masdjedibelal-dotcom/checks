@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import DemoCTA from "@/components/ui/DemoCTA";
+import { useMakler } from "@/components/ui/MaklerContext";
 
 // ─── GLOBAL SETUP ────────────────────────────────────────────────────────────
 (() => {
@@ -228,8 +230,20 @@ function SliderField({ label, value, min, max, step, onChange, display, hint, un
 }
 
 function ContactForm({ onSubmit, onBack, summary }) {
+  const demoCtx = useMakler();
   const [fd, setFd] = useState({ name: "", email: "", tel: "" });
   const valid = fd.name.trim() && fd.email.trim();
+  if (demoCtx.isDemoMode) {
+    return (
+      <div style={{ paddingBottom: "120px" }}>
+        {summary && <div style={{ ...T.section }}><div style={T.infoBox}>{summary}</div></div>}
+        <DemoCTA slug={demoCtx.slug} />
+        <div style={{ padding: "0 24px 28px" }}>
+          <button type="button" style={T.btnSec} onClick={onBack}>Zurück</button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{ paddingBottom: "120px" }}>
       {summary && <div style={{ ...T.section }}><div style={T.infoBox}>{summary}</div></div>}
@@ -296,6 +310,7 @@ function DankeScreen({ name, onBack }) {
 
 // ─── HAUPTKOMPONENTE ──────────────────────────────────────────────────────────
 export default function BUKTGRechner() {
+  const demoCtx = useMakler();
   const [phase, setPhase] = useState(1);
   const [ak, setAk] = useState(0);
   const [danke, setDanke] = useState(false);
@@ -447,7 +462,16 @@ export default function BUKTGRechner() {
           </div>
         </div>
 
+        {demoCtx.isDemoMode ? (
+          <>
+            <DemoCTA slug={demoCtx.slug} />
+            <div style={{ padding: "0 24px 28px" }}>
+              <button type="button" style={T.btnSec} onClick={() => goTo(2)}>Zurück</button>
+            </div>
+          </>
+        ) : (
         <Footer onNext={() => goTo(4)} onBack={() => goTo(2)} nextLabel="Lücke schliessen — Gespräch anfragen" />
+        )}
       </div>
     );
   }

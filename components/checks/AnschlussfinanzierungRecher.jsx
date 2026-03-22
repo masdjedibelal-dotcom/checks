@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import DemoCTA from "@/components/ui/DemoCTA";
+import { useMakler } from "@/components/ui/MaklerContext";
 (() => { if (typeof document === "undefined") return; const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 const MAKLER={name:"Max Mustermann",firma:"Mustermann Versicherungen",email:"kontakt@mustermann-versicherungen.de",telefon:"089 123 456 78",primaryColor:"#1a3a5c"};
 const C=MAKLER.primaryColor,WARN="#c0392b";
@@ -24,6 +26,7 @@ function SliderField({label,value,min,max,step,onChange,display,hint,unit=""}){
   return(<div style={{marginBottom:"22px"}}><div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:"8px"}}><label style={{...T.fldLbl}}>{label}</label><div style={{display:"flex",alignItems:"center",gap:"4px"}}><input type="text" inputMode="numeric" value={focused?inputVal:String(value)} placeholder={focused?"":String(value)} onFocus={()=>{setFocused(true);setInputVal(String(value));}} onBlur={handleBlur} onChange={e=>setInputVal(e.target.value)} style={{width:"90px",padding:"5px 8px",border:`1px solid ${focused?C:"#e8e8e8"}`,borderRadius:"5px",fontSize:"14px",fontWeight:"600",color:focused?"#111":C,textAlign:"right",outline:"none",background:focused?"#fff":`${C}08`,fontFamily:"'DM Sans',system-ui,sans-serif"}}/>{unit&&<span style={{fontSize:"12px",color:"#999",flexShrink:0}}>{unit}</span>}</div></div>{!focused&&display&&<div style={{fontSize:"12px",color:"#888",marginBottom:"8px"}}>{display}</div>}<input type="range" min={min} max={max} step={step} value={value} onChange={e=>handleSlider(+e.target.value)} style={{width:"100%","--accent":C}}/><div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#ccc",marginTop:"4px"}}><span>{min}{unit?" "+unit:""}</span><span>{max}{unit?" "+unit:""}</span></div>{hint&&<div style={T.fldHint}>{hint}</div>}</div>);
 }
 export default function AnschlussfinanzierungRechner(){
+  const demoCtx=useMakler();
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[p,setP]=useState({restschuld:220000,altZins:1.2,neuZins:3.8,tilgung:2,laufzeit:10});
   const set=(k,v)=>setP(x=>({...x,[k]:v}));const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
@@ -67,6 +70,9 @@ export default function AnschlussfinanzierungRechner(){
             ))}
           </div>
         </div>
+        {demoCtx.isDemoMode ? (
+          <DemoCTA slug={demoCtx.slug} />
+        ) : (
         <div style={{...T.section,marginBottom:"0"}}>
           <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px"}}>Gespräch anfragen</div>
           <div style={T.card}>
@@ -76,7 +82,10 @@ export default function AnschlussfinanzierungRechner(){
           </div>
           <div style={{fontSize:"11px",color:"#ccc",marginTop:"10px",marginBottom:"100px"}}>Vertraulich behandelt.</div>
         </div>
+        )}
+        {!demoCtx.isDemoMode && (
         <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={()=>{if(valid){setDanke(true);}}} disabled={!valid}>Gespräch anfragen</button><button style={T.btnSec} onClick={()=>goTo(1)}>Zurück</button></div>
+        )}
       </div>
     );
   }

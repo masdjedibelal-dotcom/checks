@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import DemoCTA from "@/components/ui/DemoCTA";
+import { useMakler } from "@/components/ui/MaklerContext";
 
 // ─── GLOBAL SETUP ─────────────────────────────────────────────────────────────
 (() => {
@@ -219,6 +221,7 @@ const alpha = (hex, a) => {
 // ─── HAUPT-KOMPONENTE ─────────────────────────────────────────────════════════
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function ProduktCheck({ checkConfig = CHECK_BU }) {
+  const demoCtx = useMakler();
   const [phase, setPhase]         = useState(1);   // 1=intro | 2=anlässe | 3=ergebnis | 4=kontakt | 5=danke
   const [animKey, setAnimKey]     = useState(0);
   const [gewaehlteIds, setGewaehlteIds] = useState([]);
@@ -396,14 +399,14 @@ export default function ProduktCheck({ checkConfig = CHECK_BU }) {
       eyebrow={`Ihre ${check.produktKurz} im Check`}
       title={dringend > 0 ? `${dringend} dringende${dringend > 1 ? " Punkte" : "r Punkt"} gefunden` : "Alles geprüft — Details besprechen"}
       lead={`${empfehlungen.length} Hinweis${empfehlungen.length !== 1 ? "e" : ""} zu Ihrer ${check.produktName}`}
-      footer={
+      footer={demoCtx.isDemoMode ? undefined : (
         <>
           <button style={T.btnMain(false)} onClick={() => goTo(4)}>
             In das Gespräch mitnehmen →
           </button>
           <button style={T.btnBack} onClick={() => goTo(2)}>← Anpassen</button>
         </>
-      }
+      )}
     >
       {/* Empfehlungen */}
       <div style={{ padding:"0 16px" }}>
@@ -429,12 +432,34 @@ export default function ProduktCheck({ checkConfig = CHECK_BU }) {
           {check.gespraechsFazit(gewaehlteIds)}
         </div>
       </div>
+      {demoCtx.isDemoMode && (
+        <>
+          <DemoCTA slug={demoCtx.slug} />
+          <div style={{ padding:"0 16px 24px" }}>
+            <button type="button" style={T.btnBack} onClick={() => goTo(2)}>← Anpassen</button>
+          </div>
+        </>
+      )}
     </Shell>
   );
 
   // ═══ PHASE 4 — Kontakt ═══════════════════════════════════════════════════
   if (phase === 4) {
     const valid = formData.name.trim() && formData.email.trim();
+    if (demoCtx.isDemoMode) {
+      return (
+        <Shell
+          eyebrow="Fast geschafft"
+          title="Termin vereinbaren"
+          lead="Im gekauften Template können Ihre Kunden hier direkt eine Anfrage senden."
+        >
+          <div style={{ padding:"0 16px 24px" }}>
+            <DemoCTA slug={demoCtx.slug} />
+            <button type="button" style={T.btnBack} onClick={() => goTo(3)}>← Zurück</button>
+          </div>
+        </Shell>
+      );
+    }
     return (
       <Shell
         eyebrow="Fast geschafft"

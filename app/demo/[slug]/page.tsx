@@ -1,3 +1,7 @@
+/**
+ * Demo-Route: Welche Komponente zu welchem Slug gehört, steht zentral in
+ * `lib/demoCheckMap.ts` (entspricht dem CHECKS-Mapping aus dem Projekt-Setup).
+ */
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -19,7 +23,7 @@ export default function DemoPage({ params }: Props) {
 
   return (
     <Suspense fallback={<div className="h-[100dvh] bg-[#f5f4f0]" />}>
-      <ShellWrapper>
+      <ShellWrapper isDemoMode slug={params.slug}>
         <div className="min-h-[100dvh] bg-[#f5f4f0]">
           <Check />
         </div>

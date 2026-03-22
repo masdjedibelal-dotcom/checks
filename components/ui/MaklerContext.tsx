@@ -9,6 +9,8 @@ export type MaklerConfig = {
   email:        string;
   telefon:      string;
   primaryColor: string;
+  isDemoMode:   boolean;
+  slug:         string;
 };
 
 // ─── Default (Fallback wenn kein URL-Parameter) ────────────────────────────────
@@ -18,6 +20,8 @@ export const MAKLER_DEFAULT: MaklerConfig = {
   email:        'kontakt@mustermann-versicherungen.de',
   telefon:      '089 123 456 78',
   primaryColor: '#1a3a5c',
+  isDemoMode:   false,
+  slug:         '',
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────

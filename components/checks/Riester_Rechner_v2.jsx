@@ -1,4 +1,8 @@
+"use client";
+
 import { useState } from "react";
+import DemoCTA from "@/components/ui/DemoCTA";
+import { useMakler } from "@/components/ui/MaklerContext";
 (() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
 const MAKLER={name:"Max Mustermann",firma:"Mustermann Versicherungen",email:"kontakt@mustermann-versicherungen.de",telefon:"089 123 456 78",primaryColor:"#1a3a5c"};
@@ -38,6 +42,7 @@ function SliderField({label,value,min,max,step,onChange,display,hint,unit=""}){
 }
 
 export default function RiesterRechner(){
+  const demoCtx=useMakler();
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[p,setP]=useState({brutto:3600,alter:34,kinder:1,kinderVor2008:0,verheiratet:false,eigenBeitrag:100,berufstaetig:true});
@@ -113,6 +118,9 @@ export default function RiesterRechner(){
           </div>
         </div>
 
+        {demoCtx.isDemoMode ? (
+          <DemoCTA slug={demoCtx.slug} />
+        ) : (
         <div style={{...T.section,marginBottom:"0"}}>
           <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px"}}>Vertrag prüfen lassen</div>
           <div style={T.card}>
@@ -122,7 +130,10 @@ export default function RiesterRechner(){
           </div>
           <div style={{fontSize:"11px",color:"#ccc",marginTop:"10px",marginBottom:"100px"}}>Vertraulich behandelt.</div>
         </div>
+        )}
+        {!demoCtx.isDemoMode && (
         <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={()=>{if(valid)setDanke(true);}} disabled={!valid}>Riester prüfen lassen</button><button style={T.btnSec} onClick={()=>goTo(1)}>Zurück</button></div>
+        )}
       </div>
     );
   }

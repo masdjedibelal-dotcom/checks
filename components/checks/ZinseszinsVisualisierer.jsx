@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import DemoCTA from "@/components/ui/DemoCTA";
+import { useMakler } from "@/components/ui/MaklerContext";
 
 (() => {
   if (typeof document === "undefined") return;
@@ -81,6 +83,7 @@ function SliderField({ label, value, min, max, step, onChange, display, hint, un
 }
 
 export default function ZinseszinsVisualisierer() {
+  const demoCtx = useMakler();
   const [danke, setDanke] = useState(false);
   const [fd, setFd] = useState({ name:"",email:"",tel:"" });
   const [p, setP] = useState({ rate:200, rendite:6, frueHalter:25, spaetStart:35, ziel:67 });
@@ -222,7 +225,10 @@ export default function ZinseszinsVisualisierer() {
 
       <div style={T.divider}/>
 
-      {/* Kontakt */}
+      {/* Kontakt / Demo-Kauf */}
+      {demoCtx.isDemoMode ? (
+        <DemoCTA slug={demoCtx.slug} />
+      ) : (
       <div style={T.section}>
         <div style={{ fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px" }}>Gespräch anfragen</div>
         <div style={T.card}>
@@ -235,10 +241,13 @@ export default function ZinseszinsVisualisierer() {
         </div>
         <div style={{ fontSize:"11px",color:"#ccc",marginTop:"10px",marginBottom:"100px" }}>Vertraulich behandelt.</div>
       </div>
+      )}
 
+      {!demoCtx.isDemoMode && (
       <div style={T.footer}>
         <button style={T.btnPrim(!valid)} onClick={()=>{if(valid)setDanke(true);}} disabled={!valid}>Gespräch anfragen</button>
       </div>
+      )}
     </div>
   );
 }

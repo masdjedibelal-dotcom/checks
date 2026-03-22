@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import DemoCTA from "@/components/ui/DemoCTA";
+import { useMakler } from "@/components/ui/MaklerContext";
 
 (() => {
   if (typeof document === "undefined") return;
@@ -122,6 +124,7 @@ function DankeScreen({ name, onBack }) {
 }
 
 export default function RisikoLebenRechner() {
+  const demoCtx = useMakler();
   const [phase, setPhase] = useState(1);
   const [ak, setAk] = useState(0);
   const [danke, setDanke] = useState(false);
@@ -149,6 +152,10 @@ export default function RisikoLebenRechner() {
               <div><div style={{ fontSize:"18px",fontWeight:"700",color:R.deckung>70?C:WARN,letterSpacing:"-0.5px" }}>{R.deckung}%</div><div style={{ fontSize:"11px",color:"#999",marginTop:"2px" }}>Deckungsgrad</div></div>
             </div>
           </div>
+          {demoCtx.isDemoMode ? (
+            <DemoCTA slug={demoCtx.slug} />
+          ) : (
+          <>
           <div style={T.card}>
             {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
               <div key={k} style={i<arr.length-1?T.row:T.rowLast}>
@@ -158,11 +165,15 @@ export default function RisikoLebenRechner() {
             ))}
           </div>
           <div style={{ fontSize:"11px",color:"#ccc",marginTop:"10px" }}>Vertraulich behandelt.</div>
+          </>
+          )}
         </div>
+        {!demoCtx.isDemoMode && (
         <div style={T.footer}>
           <button style={T.btnPrim(!valid)} onClick={()=>{if(valid){setName(fd.name);setDanke(true);}}} disabled={!valid}>Gespräch anfragen</button>
           <button style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
         </div>
+        )}
       </div>
     );
   }
