@@ -96,15 +96,21 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
         style={{
           minHeight: "100vh",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          gap: 20,
           background: "#f0ede6",
           fontFamily: "DM Sans, system-ui, sans-serif",
+          padding: 24,
         }}
       >
-        <div style={{ color: "#9ca3af", fontSize: 14 }}>
+        <div style={{ color: "#9ca3af", fontSize: 14, textAlign: "center" }}>
           Lade Ihre Bestellung… (Webhook kann einige Sekunden brauchen)
         </div>
+        <a href="/" style={{ color: "#b8884a", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
+          ← Zurück zur Startseite
+        </a>
       </div>
     );
   }
@@ -175,6 +181,19 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
       }}
     >
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
+        <a
+          href="/"
+          style={{
+            display: "inline-block",
+            marginBottom: 28,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#b8884a",
+            textDecoration: "none",
+          }}
+        >
+          ← Zurück zur Startseite
+        </a>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div
             style={{
@@ -354,6 +373,12 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
             </a>
           </div>
         )}
+
+        <div style={{ textAlign: "center", marginTop: 32 }}>
+          <a href="/" style={{ color: "#b8884a", fontSize: 14, fontWeight: 600, textDecoration: "none" }}>
+            Zurück zur Startseite
+          </a>
+        </div>
       </div>
     </div>
   );

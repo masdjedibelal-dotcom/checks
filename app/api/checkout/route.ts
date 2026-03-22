@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { normalizeDomainHost } from "@/lib/licenseUtils";
+import { normalizeDomainHost, publicAppUrl } from "@/lib/licenseUtils";
 
 /**
  * Fallback-Price-IDs (historisch). Wenn Stripe „No such price“ meldet, passen sie nicht zu
@@ -106,10 +106,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ungültiger Check" }, { status: 400 });
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_URL ||
-    "http://localhost:3000";
+  const baseUrl = publicAppUrl();
 
   const stripe = new Stripe(key, {
     apiVersion: "2026-02-25.clover",

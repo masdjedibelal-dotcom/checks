@@ -92,7 +92,7 @@ function DankeScreen({ name, onBack }) {
   );
 }
 
-export default function RisikoLebenRechner() {
+export default function RisikolebenRechner() {
   const [phase, setPhase] = useState(1);
   const [ak, setAk] = useState(0);
   const [danke, setDanke] = useState(false);

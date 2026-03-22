@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { KATALOG, type Template } from "@/lib/katalog";
+import { CHECK_FLOW_META, CheckFlowPhoneMock } from "./check-flow-checks";
 import DemoModal from "@/components/ui/DemoModal";
 import KonfiguratorOverlay, {
   type KonfiguratorForm,
@@ -17,6 +18,10 @@ const FAQ_ITEMS = [
   {
     q: "Wohin gehen die Leads?",
     a: "Direkt an Sie. Die Anfrage geht per E-Mail an die Adresse, die Sie beim Kauf angegeben haben. Kein Portal, kein Umweg.",
+  },
+  {
+    q: "Wer ist für die Einbindung und Datenverarbeitung verantwortlich?",
+    a: "Die Checks werden auf der Website des jeweiligen Maklers eingebunden. Anfragen gehen direkt an den jeweiligen Anbieter. Die konkrete rechtliche Einbindung und Datenschutzhinweise erfolgen daher über dessen Website.",
   },
   {
     q: "Funktioniert das auf dem Handy?",
@@ -36,157 +41,183 @@ const FAQ_ITEMS = [
   },
 ];
 
-const CHECK_CARDS = [
+const WHY_FLOWLEADS_CARDS: {
+  title: string;
+  desc: string;
+  highlight: string;
+  icon: ReactNode;
+}[] = [
   {
-    slug: "bedarfscheck" as const,
-    tag: "Neukunden",
-    name: "Versicherungs-Check",
-    desc: "Für Erstgespräche — zeigt sofort, was fehlt",
-    longDesc:
-      "Der Kunde markiert, was er bereits abgesichert hat und wo Lücken sind. Daraus werden drei nachvollziehbare Pakete mit kurzer Begründung — perfekt, um vor dem Erstgespräch Gesprächsbedarf zu erzeugen, ohne ins Tarifdetail zu gehen.",
-    price: "79",
-  },
-  {
-    slug: "lebenssituations-check" as const,
-    tag: "Bestandskunden",
-    name: "Lebenssituations-Check",
-    desc: "Nachwuchs, Jobwechsel — macht Anpassungsbedarf sichtbar",
-    longDesc:
-      "Lebensereignisse wie Heirat, Kind, Umzug oder Jobwechsel werden strukturiert erfasst und mit dem bestehenden Schutz abgeglichen. So wird sichtbar, wo Verträge nachgezogen oder angepasst werden sollten — ideal für Bestandskunden-Mails und Jahresgespräche.",
-    price: "79",
-  },
-  {
-    slug: "einkommens-check" as const,
-    tag: "BU & KTG",
-    name: "Einkommens-Check",
-    desc: "Zeigt Einbruch bei Krankheit Monat für Monat",
-    longDesc:
-      "Krankentagegeld und BU werden auf einer Zeitleiste dargestellt: wie lange reicht das Geld, wo entsteht die Lücke, was wäre sinnvoll? Inklusive Einordnung und grober Richtung — ohne konkrete Tarifempfehlung im Tool.",
-    price: "59",
-  },
-  {
-    slug: "gkv-pkv" as const,
-    tag: "PKV-Wechsel",
-    name: "GKV vs. PKV",
-    desc: "Klare Einordnung statt Tarifvergleich",
-    longDesc:
-      "Prüfung der Wechselvoraussetzungen (u. a. Jahresarbeitsentgeltgrenze), Beitragslogik und Familienfälle. Der Kunde bekommt eine verständliche Einordnung, ob ein Wechsel grundsätzlich in Frage kommt — ohne Vergleichsrechner und ohne Produktliste.",
-    price: "49",
-  },
-  {
-    slug: "vorsorge-check" as const,
-    tag: "Altersvorsorge",
-    name: "Vorsorge-Check",
-    desc: "Rentenlücke + Riester + 3 Strategien",
-    longDesc:
-      "Renteninformation, gewünschter Standard und Sparverhalten fließen ein. Es entstehen Rentenlücke, grobe Deckung und drei Strategien (Basis, ausgewogen, ambitioniert) mit Riester-Hinweis wo sinnvoll — alles als Orientierung für das spätere Beratungsgespräch.",
-    price: "59",
-  },
-  {
-    slug: "risikoleben" as const,
-    tag: "Familie & Kredit",
-    name: "Risikoleben-Check",
-    desc: "Versorgungslücke → empfohlene Summe",
-    longDesc:
-      "Aus Einkommen, Verbindlichkeiten und Familienstand wird die Versorgungslücke bei Todesfall grob beziffert — in Abgrenzung zu gesetzlicher Witwen- und Waisenrente. Ergebnis: eine einordnende Empfehlungssumme, kein Produktvergleich.",
-    price: "59",
-  },
-  {
-    slug: "pflege-check" as const,
-    tag: "Pflegevorsorge",
-    name: "Pflege-Check",
-    desc: "Eigenanteil nach Pflegegrad greifbar machen",
-    longDesc:
-      "Pflegegrad und gewünschter Lebensstandard führen zu einem nachvollziehbaren Eigenanteil und einer Einordnung der Kosten. Zusätzlich Überblick über typische Absicherungsbausteine — damit der Kunde das Thema nicht mehr abstrakt, sondern in Euro sieht.",
-    price: "49",
-  },
-  {
-    slug: "immobilien-check" as const,
-    tag: "Immobilien",
-    name: "Immobilien-Check",
-    desc: "Kaufen vs. Mieten, Anschluss & Wohngebäude",
-    longDesc:
-      "Drei Module: Mieten versus Kaufen (mit grober Sensitivität), Anschlussfinanzierung nach Ablauf der Zinsbindung sowie Wohngebäude-Risiko. Strukturierte Fragen, klare Zwischenergebnisse — geeignet für Immobilien- und Finanzierungsseiten.",
-    price: "59",
-  },
-] as const;
-
-const TRUST_ITEMS: { label: string; icon: ReactNode }[] = [
-  {
-    label: "iFrame auf jeder Website",
+    title: "Keine Plattform. Keine Umwege. Deine Anfrage.",
+    desc: "Der Kunde landet direkt bei dir – ohne Zwischenanbieter.",
+    highlight: "Kein Wettbewerb, keine Lead-Verluste.",
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M3 8h18" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M7 16h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M4 6h16v12H4V6z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path d="M4 9l8 6 8-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
-    label: "Mobile-first",
+    title: "Passt in jede Website – ohne Aufwand",
+    desc: "Einfach per iFrame einbinden und sofort nutzen.",
+    highlight: "Kein Projekt, keine Technik.",
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3 8h18" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 16h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    title: "Optimiert für echte Nutzung – nicht nur für Desktop",
+    desc: "Deine Kunden nutzen den Check mobil, schnell und intuitiv.",
+    highlight: "Genau dort, wo Entscheidungen entstehen.",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
         <rect x="7" y="2" width="10" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
         <path d="M10 18h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
   {
-    label: "Leads direkt an Sie",
+    title: "Einmal einrichten – dauerhaft nutzen",
+    desc: "Kein Abo, keine laufenden Kosten.",
+    highlight: "Einmal kaufen, immer einsetzen.",
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M3 7l9 6 9-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    label: "Einmalig kaufen",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
         <path
-          d="M4 7h3l1-2h8l1 2h3v12H4V7z"
+          d="M12 6v6l4 2"
           stroke="currentColor"
           strokeWidth="1.5"
+          strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="12" cy="13" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
       </svg>
     ),
   },
 ];
 
-const FEATURE_ITEMS = [
+const MECHANIC_BLOCKS: {
+  story: string;
+  title: string;
+  body: string;
+  highlight: string;
+  icon: ReactNode;
+}[] = [
   {
-    kicker: "Kundenerlebnis",
-    title: "Vom Besucher zur Beratungsanfrage",
+    story: "Input",
+    title: "Der Kunde wird geführt – nicht allein gelassen",
     body:
-      "In klaren Schritten führen die Checks durch Situation, Bedarf und nächsten Schritt — ohne Fachjargon und ohne Tarifvergleich. Ihre Besucher verstehen das Problem, bevor Sie ins Gespräch kommen.",
+      "Statt sich durch Texte zu kämpfen, wird der Kunde Schritt für Schritt durch seine Situation geführt.\n\nEr beantwortet einfache Fragen und merkt dabei selbst:",
+    highlight: "„Hier passt etwas nicht.“",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M8 6h13M8 12h13M8 18h9"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <circle cx="5" cy="6" r="1.5" fill="currentColor" />
+        <circle cx="5" cy="12" r="1.5" fill="currentColor" />
+        <circle cx="5" cy="18" r="1.5" fill="currentColor" />
+      </svg>
+    ),
   },
   {
-    kicker: "Ergebnis",
-    title: "Klare Zahlen statt Tarifdschungel",
+    story: "Ergebnis",
+    title: "Der Kunde erkennt sein Problem selbst",
     body:
-      "Am Ende stehen konkrete Kennzahlen und Einordnungen: Lücken, Deckungsgrade, empfohlene Richtungen. Der Kunde sieht Handlungsbedarf in Prozent und Euro — nicht in Produktlisten.",
+      "Keine Produktlisten.\nKeine Tarifvergleiche.\n\nStattdessen:\n\nklare Einordnung\nkonkrete Zahlen\nverständliche Ergebnisse",
+    highlight: "Der Kunde sieht seine Lücke – nicht deine Produkte.",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path d="M4 19V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M4 15l4-4 4 4 5-6 5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
   },
   {
-    kicker: "Setup",
-    title: "In Minuten live — ohne Entwickler",
+    story: "Anfrage",
+    title: "Die Anfrage entsteht von selbst",
     body:
-      "Check wählen, Name, Farbe und Kontaktdaten eintragen, iFrame-Code erhalten und auf Ihrer Website einfügen. Keine Programmierung und kein eigenes Hosting-Projekt — Sie bleiben Makler, wir liefern das Werkzeug.",
+      "Am Ende steht keine Erklärung mehr nötig.\n\nDer Kunde hat verstanden, warum er handeln sollte\nund stellt aktiv die Anfrage.",
+    highlight: "Du überzeugst nicht mehr – du bestätigst.",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M22 12h-4l-3 9L9 3l-3 9H2"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
   },
-] as const;
+  {
+    story: "Gespräch",
+    title: "Der Kunde kommt vorbereitet ins Gespräch",
+    body:
+      "Er kennt seine Situation bereits.\n\nDas Gespräch startet nicht bei Null,\nsondern mitten im Thema.",
+    highlight: "Weniger erklären. Mehr abschließen.",
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M5 6.5a2 2 0 012-2h10a2 2 0 012 2v7a2 2 0 01-2 2h-3.5L9 18.5V15.5H7a2 2 0 01-2-2v-7z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path d="M9 10h.01M12 10h.01M15 10h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
 
-function LogoMark({ size = 12 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden>
-      <rect x="1" y="1" width="4.2" height="4.2" rx=".8" fill="white" />
-      <rect x="6.8" y="1" width="4.2" height="4.2" rx=".8" fill="white" opacity=".5" />
-      <rect x="1" y="6.8" width="4.2" height="4.2" rx=".8" fill="white" opacity=".5" />
-      <rect x="6.8" y="6.8" width="4.2" height="4.2" rx=".8" fill="white" />
-    </svg>
-  );
-}
+const HOW_FLOW_STEPS: {
+  step: string;
+  micro?: string;
+  title: string;
+  desc: string;
+  highlight: string;
+}[] = [
+  {
+    step: "01",
+    micro: "Input",
+    title: "Sie wählen den passenden Check",
+    desc: "Für Neukunden, Bestandskunden\noder konkrete Anlässe.",
+    highlight: "Jeder Check ist auf einen klaren Einsatz gebaut.",
+  },
+  {
+    step: "02",
+    micro: "Ergebnis",
+    title: "Sie machen ihn zu Ihrem eigenen",
+    desc: "Name, Farben und Kontaktdaten eintragen.",
+    highlight: "Der Check sieht aus wie Teil Ihrer Website.",
+  },
+  {
+    step: "03",
+    micro: "Anfrage",
+    title: "Sie fügen ihn einfach ein",
+    desc: "Per iFrame auf Ihrer Website oder Landingpage.",
+    highlight: "Einmal einbauen – sofort live.",
+  },
+  {
+    step: "04",
+    title: "Ihre Kunden stellen die Anfrage",
+    desc: "Der Kunde versteht seine Situation\nund meldet sich aktiv bei Ihnen.",
+    highlight: "Kein Nachfassen. Kein Überreden.",
+  },
+];
 
 /** Modals an `document.body` — nicht von `.flow-leads-landing` (overflow/z-index) eingeschränkt */
 function LandingModalsPortal({ children }: { children: ReactNode }) {
@@ -250,13 +281,39 @@ export default function LandingHome() {
     <div className="flow-leads-landing">
       <nav>
         <div className="logo">
-          <div className="logo-mark">
-            <LogoMark />
+          <div
+            style={{
+              width: "28px",
+              height: "28px",
+              borderRadius: "7px",
+              background: "#1a1a1a",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+              <rect x="1" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" />
+              <rect x="9.5" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4" />
+              <rect x="1" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4" />
+              <rect x="9.5" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a" />
+            </svg>
           </div>
-          FlowLeads
+          <span
+            style={{
+              fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+              fontSize: 16,
+              fontWeight: 700,
+              letterSpacing: "-0.3px",
+              color: "#1a1a1a",
+            }}
+          >
+            FlowLeads
+          </span>
         </div>
         <div className="nav-links">
-          <a href="#feature">Funktionen</a>
+          <a href="#feature">So entstehen Anfragen</a>
           <a href="#checks">Checks</a>
           <a href="#how">Setup</a>
           <a href="#faq">FAQ</a>
@@ -266,7 +323,7 @@ export default function LandingHome() {
             Fragen?
           </a>
           <a href="#checks" className="btn-cta">
-            Checks ansehen →
+            Checks ansehen
           </a>
         </div>
       </nav>
@@ -297,13 +354,13 @@ export default function LandingHome() {
           </div>
 
           <h1 className="au d2">
-            Wenn Kunden verstehen,
+            Ihre Website bringt keine Anfragen?
             <br />
-            <span className="underline">handeln sie</span>. Und fragen an.
+            Dann fehlt <span className="underline">dieser Moment</span>.
           </h1>
 
           <p className="hero-sub au d3">
-            FlowLeads verwandelt Website-Besucher in qualifizierte Anfragen — mit interaktiven Checks, die Kunden ihre Lücke selbst erkennen lassen.
+            FlowLeads sorgt dafür, dass Kunden ihre Lücke selbst erkennen — und genau in diesem Moment aktiv Beratung anfragen.
           </p>
 
           <div className="hero-btns au d4">
@@ -324,124 +381,155 @@ export default function LandingHome() {
             </a>
           </div>
 
-          <div className="trust au d4">
-            {TRUST_ITEMS.map((item) => (
-              <div key={item.label} className="trust-item">
-                <span className="trust-ico" aria-hidden>
-                  {item.icon}
-                </span>
-                <span className="trust-label">{item.label}</span>
-              </div>
-            ))}
+          <div className="why-flowleads au d4">
+            <h2 className="why-flowleads-title">Warum FlowLeads funktioniert</h2>
+            <p className="why-flowleads-swipe-hint" aria-hidden>
+              Swipe →
+            </p>
+            <div className="why-cards-scroll">
+              {WHY_FLOWLEADS_CARDS.map((card) => (
+                <div key={card.title} className="why-card">
+                  <div className="why-card-ico" aria-hidden>
+                    {card.icon}
+                  </div>
+                  <h3 className="why-card-headline">{card.title}</h3>
+                  <p className="why-card-desc">{card.desc}</p>
+                  <p className="why-card-highlight">👉 {card.highlight}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="feature" className="s" style={{ background: "var(--bg)" }}>
+      <section id="feature" className="s mechanic-section" style={{ background: "var(--bg)" }}>
         <div className="inner">
-          <div className="s-label">Funktionen</div>
-          <h2>
-            Alles was Sie brauchen,
-            <br />
-            um Anfragen zu erzeugen
-          </h2>
-
-          <div className="feature-grid">
-            {FEATURE_ITEMS.map((f) => (
-              <div key={f.title} className="feature-card">
-                <div className="feature-kicker">{f.kicker}</div>
-                <h3>{f.title}</h3>
-                <p className="feature-body">{f.body}</p>
+          <div className="s-label">Mechanik</div>
+          <h2 className="mechanic-h2">Wie FlowLeads aus Besuchern Anfragen macht</h2>
+          <p className="mechanic-swipe-hint" aria-hidden>
+            Swipe →
+          </p>
+          <div className="mechanic-cards-row">
+            {MECHANIC_BLOCKS.map((block, i) => (
+              <div key={block.title} className="mechanic-step">
+                <div className="mechanic-card">
+                  <div className="mechanic-card-top">
+                    <span className="mechanic-story">{block.story}</span>
+                    <span className="mechanic-card-ico" aria-hidden>
+                      {block.icon}
+                    </span>
+                  </div>
+                  <h3 className="mechanic-card-title">{block.title}</h3>
+                  <p className="mechanic-card-body">{block.body}</p>
+                  <p className="mechanic-card-highlight">👉 {block.highlight}</p>
+                </div>
+                {i < MECHANIC_BLOCKS.length - 1 ? (
+                  <span className="mechanic-arrow" aria-hidden>
+                    →
+                  </span>
+                ) : null}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="how" className="s" style={{ background: "var(--surface)" }}>
+      <section id="how" className="s how-flow-section" style={{ background: "var(--surface)" }}>
         <div className="inner">
           <div className="s-label">So funktioniert&apos;s</div>
-          <h2>
-            In 4 Schritten zu
-            <br />
-            mehr Anfragen
-          </h2>
-          <p className="s-sub">Kein Entwickler. Kein Abo. Einmalig kaufen.</p>
-          <div className="how-row">
-            {[
-              {
-                n: "01",
-                t: "Check auswählen",
-                p: "Den passenden Rechner für Neukunden, Bestandskunden oder einen konkreten Anlass wählen.",
-              },
-              {
-                n: "02",
-                t: "Anpassen",
-                p: "Name, Firma, Akzentfarbe und Kontaktdaten eintragen — fertig.",
-              },
-              {
-                n: "03",
-                t: "Einbinden",
-                p: "Per iFrame auf Ihrer Website, Landingpage oder Unterseite platzieren.",
-              },
-              {
-                n: "04",
-                t: "Leads erhalten",
-                p: "Anfragen gehen direkt an Ihre E-Mail. Kein Umweg, kein Portal.",
-              },
-            ].map((cell) => (
-              <div key={cell.n} className="how-cell">
-                <div className="how-n">{cell.n}</div>
-                <h3>{cell.t}</h3>
-                <p>{cell.p}</p>
+          <h2 className="how-flow-h2">In wenigen Minuten auf Ihrer Website – ohne Technikstress</h2>
+          <p className="how-flow-sub">Kein Entwickler. Kein Projekt. Kein Setup-Chaos.</p>
+          <p className="how-flow-swipe-hint" aria-hidden>
+            Swipe →
+          </p>
+          <div className="how-flow-cards-row">
+            {HOW_FLOW_STEPS.map((row, i) => (
+              <div key={row.step} className="how-flow-step">
+                <div className="how-flow-card">
+                  <div className="how-flow-card-top">
+                    <span className="how-flow-num">{row.step}</span>
+                    {row.micro ? (
+                      <span className={`how-flow-micro how-flow-micro--pulse how-flow-micro--i${i}`}>
+                        {row.micro}
+                      </span>
+                    ) : null}
+                  </div>
+                  <h3 className="how-flow-title">{row.title}</h3>
+                  <p className="how-flow-body">{row.desc}</p>
+                  <p className="how-flow-highlight">👉 {row.highlight}</p>
+                </div>
+                {i < HOW_FLOW_STEPS.length - 1 ? (
+                  <span className="how-flow-arrow" aria-hidden>
+                    →
+                  </span>
+                ) : null}
               </div>
             ))}
+          </div>
+          <p className="how-flow-killer">
+            Der Kunde kommt nicht zufällig auf Sie zu –
+            <br />
+            er hat bereits verstanden, warum er handeln sollte.
+          </p>
+          <div className="how-flow-mini">
+            <p className="how-flow-mini-head">Technisch einfach. Vertrieblich stark.</p>
+            <ul className="how-flow-mini-list">
+              <li>iFrame auf jeder Seite</li>
+              <li>keine Programmierung</li>
+              <li>sofort einsatzbereit</li>
+            </ul>
           </div>
         </div>
       </section>
 
       <section id="checks" className="s checks-section" style={{ background: "var(--bg)" }}>
         <div className="inner">
-          <div>
-            <div className="s-label">Die 8 Checks</div>
-            <h2>
-              Ein System,
-              <br />
-              das Anfragen erzeugt
-            </h2>
-          </div>
-          <div className="checks-grid">
-            {CHECK_CARDS.map((c) => {
+          <div className="s-label">Die 8 Checks</div>
+          <h2 className="checks-section-headline">
+            8 Checks, die aus Interesse
+            <br />
+            konkrete Anfragen machen
+          </h2>
+          <p className="checks-section-tagline">
+            Jeder Check greift einen echten Anlass auf – und führt den Kunden mit wenigen Schritten ins Gespräch.
+          </p>
+          <div className="ck-cards">
+            {CHECK_FLOW_META.map((c) => {
               const tmpl = KATALOG.find((t) => t.slug === c.slug);
               return (
-                <div key={c.slug} className="c-card">
-                  <div className="c-top">
-                    <div className="c-tag">{c.tag}</div>
-                    <div className="c-name">{c.name}</div>
-                    <div className="c-desc">{c.desc}</div>
-                    <p className="c-long">{c.longDesc}</p>
+                <div key={c.slug} className="ck-card">
+                  <div className="ck-card-preview">
+                    <CheckFlowPhoneMock slug={c.slug} />
                   </div>
-                  <div className="c-foot">
-                    <div className="c-price">
-                      {c.price} € <small>einmalig</small>
+                  <div className="ck-card-right">
+                    <div>
+                      <div className={`ck-card-cat ${c.catClass}`}>{c.cat}</div>
+                      <div className="ck-card-name">{c.name}</div>
+                      <div className="ck-card-context">{c.context}</div>
+                      <p className="ck-card-erlebnis">{c.erlebnis}</p>
                     </div>
-                    <div className="c-btns">
-                      <button
-                        type="button"
-                        className="c-demo"
-                        disabled={!tmpl}
-                        onClick={() => tmpl && setDemoT(tmpl)}
-                      >
-                        Demo
-                      </button>
-                      <button
-                        type="button"
-                        className="c-buy"
-                        disabled={!tmpl}
-                        onClick={() => tmpl && setBuyT(tmpl)}
-                      >
-                        Kaufen
-                      </button>
+                    <div className="ck-card-foot">
+                      <div className="ck-card-price">
+                        {c.price} € <small>einmalig</small>
+                      </div>
+                      <div className="ck-card-btns">
+                        <button
+                          type="button"
+                          className="ck-demo"
+                          disabled={!tmpl}
+                          onClick={() => tmpl && setDemoT(tmpl)}
+                        >
+                          Demo
+                        </button>
+                        <button
+                          type="button"
+                          className="ck-buy"
+                          disabled={!tmpl}
+                          onClick={() => tmpl && setBuyT(tmpl)}
+                        >
+                          Kaufen
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -546,38 +634,22 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section className="s" style={{ background: "var(--surface)" }}>
+      <section className="s legal-compact-section" style={{ background: "var(--bg)" }} aria-labelledby="legal-compact-heading">
         <div className="inner">
-          <div className="s-label">Rechtliches</div>
-          <h2>Rechtliche Einordnung</h2>
-          <div className="legal-einordnung">
-            <p>
-              Die Rechner werden als technische Lösung bereitgestellt und vom jeweiligen Versicherungsmakler auf seiner
-              eigenen Website eingebunden.
+          <div className="legal-compact-card">
+            <h3 id="legal-compact-heading" className="legal-compact-title">
+              Einfach eingebunden, direkt bei Ihnen
+            </h3>
+            <p className="legal-compact-line">Die Checks werden per iFrame auf Ihrer Website eingebunden.</p>
+            <p className="legal-compact-line">Anfragen gehen direkt an Sie.</p>
+            <p className="legal-compact-line">
+              Die datenschutzrechtliche Einbindung erfolgt über Ihre Website und Ihre Datenschutzhinweise.
             </p>
-            <p>
-              Der Makler ist für die Inhalte, die Einbindung sowie die Verarbeitung der Kundendaten verantwortlich.
-              FlowLeads stellt ausschließlich die technische Infrastruktur und die Berechnungslogik zur Verfügung.
-            </p>
-            <div className="legal-subblock">
-              <h3>Hinweis</h3>
-              <p>
-                Die Inhalte und Ergebnisse der Rechner dienen der unverbindlichen Orientierung und ersetzen keine
-                individuelle Beratung.
-              </p>
-            </div>
-            <div className="legal-subblock">
-              <h3>Integration</h3>
-              <p>
-                Die Rechner werden per iFrame auf der Website des jeweiligen Anbieters eingebunden. Eine eigene
-                Verarbeitung der im Rechner eingegebenen Daten durch FlowLeads erfolgt nicht.
-              </p>
-            </div>
           </div>
         </div>
       </section>
 
-      <section id="faq" className="s" style={{ background: "var(--bg)" }}>
+      <section id="faq" className="s faq-section" style={{ background: "var(--bg)" }}>
         <div className="inner">
           <div className="s-label">FAQ</div>
           <h2>Häufige Fragen</h2>
@@ -626,7 +698,7 @@ export default function LandingHome() {
         </div>
         <div className="cta-right">
           <a href="#checks" className="btn-gold">
-            Checks ansehen →
+            Checks ansehen
           </a>
           <a href="#checks" className="btn-wh">
             Demo ansehen

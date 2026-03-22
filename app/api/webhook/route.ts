@@ -150,11 +150,20 @@ export async function POST(req: NextRequest) {
 
   const resendKey = process.env.RESEND_API_KEY;
   const from = formatResendFrom(process.env.RESEND_FROM_EMAIL);
+  const resendTestEmail = process.env.RESEND_TEST_EMAIL?.trim();
+  if (resendTestEmail && resendTestEmail !== email) {
+    console.warn(
+      "Resend: RESEND_TEST_EMAIL aktiv — to:",
+      resendTestEmail,
+      "| Käufer (DB):",
+      email
+    );
+  }
   if (resendKey && process.env.RESEND_FROM_EMAIL?.trim()) {
     const resend = new Resend(resendKey);
     const { error: mailErr } = await resend.emails.send({
       from,
-      to: email,
+      to: [resendTestEmail || email],
       replyTo: flowleadsContactEmail(),
       subject: onboardingEmailSubject(slug),
       html: buildOnboardingEmailHtml({

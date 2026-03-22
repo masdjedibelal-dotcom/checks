@@ -39,6 +39,8 @@ export default function RootLayout({
     >
       <head>
         <meta name="color-scheme" content="light" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
       </head>
       <body
         className={`${GeistSans.className} antialiased`}

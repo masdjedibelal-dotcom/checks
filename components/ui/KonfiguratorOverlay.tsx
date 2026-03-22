@@ -327,7 +327,7 @@ export default function KonfiguratorOverlay({
             <div className="text-xl font-bold tracking-[-0.05em] text-[#111]">
               {template.preis} €
             </div>
-            <div className="text-[11px] text-[#bbb]">einmalig · zzgl. MwSt.</div>
+            <div className="text-[11px] text-[#bbb]">einmalig</div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {(err.name || err.email || err.website) && (

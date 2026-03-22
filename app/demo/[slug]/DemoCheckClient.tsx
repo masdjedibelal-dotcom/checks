@@ -16,6 +16,7 @@ const CHECKS: Record<DemoSlug, ComponentType> = {
     () => import("@/components/checks/BUKTGRechner"),
     { ssr: false },
   ),
+  /** Datei: `components/checks/GKVPKVRechner.jsx` — default export `GKVPKVRechner` */
   "gkv-pkv": dynamic(() => import("@/components/checks/GKVPKVRechner"), {
     ssr: false,
   }),
@@ -23,6 +24,7 @@ const CHECKS: Record<DemoSlug, ComponentType> = {
     () => import("@/components/checks/RentenRechner"),
     { ssr: false },
   ),
+  /** Datei: `components/checks/Risikoleben_Rechner.jsx` — default export */
   risikoleben: dynamic(
     () => import("@/components/checks/Risikoleben_Rechner"),
     { ssr: false },
