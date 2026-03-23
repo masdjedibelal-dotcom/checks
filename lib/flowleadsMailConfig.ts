@@ -13,5 +13,5 @@ export function formatResendFrom(raw: string | undefined): string {
 
 /** Öffentliche Kontaktadresse (Impressum, Datenschutz, Success, Onboarding-Mail). */
 export function flowleadsContactEmail(): string {
-  return process.env.FLOWLEADS_CONTACT_EMAIL?.trim() || "schreiberflowleads@gmail.com";
+  return process.env.FLOWLEADS_CONTACT_EMAIL?.trim() || "masdjedi@flowleads.de";
 }

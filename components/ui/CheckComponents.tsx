@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { textOnAccent } from "@/lib/utils";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type InputCardProps = {
@@ -266,6 +267,7 @@ export function SelectionCard({
   onClick,
   value,
 }: SelectionCardProps) {
+  const markOnAccent = textOnAccent(accent);
   return (
     <button
       type="button"
@@ -274,10 +276,11 @@ export function SelectionCard({
       onClick={onClick}
       style={{
         width: "100%",
+        minWidth: 0,
         display: "flex",
         alignItems: "center",
-        gap: "12px",
-        padding: "14px 16px",
+        gap: "10px",
+        padding: "14px 12px",
         borderRadius: "10px",
         border: `1.5px solid ${selected ? accent : "#e8e8e8"}`,
         background: selected ? `${accent}08` : "#fff",
@@ -299,13 +302,21 @@ export function SelectionCard({
           {icon}
         </div>
       ) : null}
-      <div style={{ flex: 1 }}>
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          textAlign: "left",
+        }}
+      >
         <div
           style={{
             fontSize: "13px",
             fontWeight: "600",
             color: selected ? accent : "#111",
             lineHeight: 1.3,
+            overflowWrap: "break-word",
+            wordBreak: "break-word",
           }}
         >
           {label}
@@ -341,7 +352,7 @@ export function SelectionCard({
           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
             <path
               d="M1 4L3.5 6.5L9 1"
-              stroke="white"
+              stroke={markOnAccent}
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -362,6 +373,7 @@ export function CheckRow({
   onClick,
   showDivider = true,
 }: CheckRowProps) {
+  const markOnAccent = textOnAccent(accent);
   return (
     <div
       role="button"
@@ -404,7 +416,7 @@ export function CheckRow({
           <svg width="11" height="9" viewBox="0 0 10 8" fill="none">
             <path
               d="M1 4L3.5 6.5L9 1"
-              stroke="white"
+              stroke={markOnAccent}
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"

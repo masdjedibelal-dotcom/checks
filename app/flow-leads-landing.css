@@ -127,6 +127,12 @@ html {
   align-items: center;
   justify-content: center;
 }
+.flow-leads-landing nav .logo-mark{
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  background: var(--dark);
+}
 .flow-leads-landing .nav-links{
   display: flex;
   gap: 24px;
@@ -227,7 +233,7 @@ html {
 
 /* Hero headline — Instrument Serif, Perspective-ähnliche Proportionen */
 .flow-leads-landing .hero h1{
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(44px, 6.2vw, 64px);
   font-weight: 400;
   line-height: 1.05;
@@ -369,7 +375,7 @@ html {
   margin-right: auto;
 }
 .flow-leads-landing .why-flowleads-title{
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(28px, 3.6vw, 42px);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -560,7 +566,7 @@ html {
   background: var(--gold-mid);
 }
 .flow-leads-landing h2{
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -587,7 +593,7 @@ html {
 
 /* ─── HOW FLOW (So funktioniert's) ───────────────────────────────────────── */
 .flow-leads-landing .how-flow-h2{
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -927,7 +933,7 @@ html {
 
 /* ─── TOOLS SECTION (#tools, ehem. Checks, ck-*) ─────────────────────────── */
 .flow-leads-landing .checks-section-headline{
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -943,7 +949,7 @@ html {
   font-weight: 400;
   color: var(--subline);
   line-height: 1.65;
-  max-width: 560px;
+  max-width: 640px;
   margin: 0 auto 32px;
   text-align: center;
 }
@@ -1022,7 +1028,7 @@ html {
   color: #b45309;
 }
 .flow-leads-landing .ck-card-name{
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: 21px;
   font-weight: 400;
   color: var(--ink);
@@ -1124,30 +1130,30 @@ html {
   }
 }
 
-/* ─── TOOLS SECTION DUNKEL (#tools.checks-section--dark) ─────────────────── */
+/* ─── TOOLS SECTION: weißer Bereich, Karten dunkelgrün (#tools) ───────────── */
 .flow-leads-landing section#tools.checks-section--dark{
-  background: #0f1a14 !important;
+  background: #ffffff !important;
 }
 .flow-leads-landing section#tools.checks-section--dark .s-label{
   color: #b8884a;
 }
 .flow-leads-landing section#tools.checks-section--dark .checks-section-headline{
-  color: #ffffff;
+  color: var(--ink);
 }
 .flow-leads-landing section#tools.checks-section--dark .checks-section-tagline{
-  color: #b8884a;
+  color: var(--subline);
   font-style: italic;
 }
 .flow-leads-landing section#tools.checks-section--dark .ck-card{
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0f1a14;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  box-shadow: none;
-  transition: border-color 0.2s, background 0.2s;
+  box-shadow: 0 4px 24px rgba(15, 26, 20, 0.12);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .flow-leads-landing section#tools.checks-section--dark .ck-card:hover{
-  border-color: rgba(184, 136, 74, 0.4);
-  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(184, 136, 74, 0.45);
+  box-shadow: 0 8px 32px rgba(15, 26, 20, 0.18);
 }
 .flow-leads-landing section#tools.checks-section--dark .ck-card-preview{
   border-right-color: rgba(255, 255, 255, 0.08);
@@ -1169,7 +1175,7 @@ html {
   color: rgba(255, 255, 255, 0.55);
 }
 .flow-leads-landing section#tools.checks-section--dark .ck-card-foot{
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .flow-leads-landing section#tools.checks-section--dark .ck-card-price{
@@ -1231,7 +1237,7 @@ html {
   margin-bottom: 12px;
 }
 .flow-leads-landing .bento-card h3{
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: 22px;
   font-weight: 400;
   color: var(--ink);
@@ -1633,9 +1639,18 @@ html {
   gap: 16px;
   margin-top: 44px;
 }
+.flow-leads-landing .use-grid.use-grid--single{
+  grid-template-columns: 1fr;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
 @media (max-width: 720px) {
   .flow-leads-landing .use-grid{
     grid-template-columns: 1fr 1fr;
+  }
+  .flow-leads-landing .use-grid.use-grid--single{
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 400px) {
@@ -1785,7 +1800,7 @@ html {
   flex-wrap: wrap;
 }
 .flow-leads-landing .cta-left h2{
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(26px, 3.5vw, 40px);
   font-weight: 400;
   color: #fff;
@@ -1809,7 +1824,7 @@ html {
 }
 .flow-leads-landing .cta-left p{
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.55);
   font-weight: 300;
   line-height: 1.65;
   max-width: 400px;

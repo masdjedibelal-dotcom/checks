@@ -72,6 +72,12 @@ export async function POST(req: NextRequest) {
   const name = (nameNew ?? nameLegacy ?? "").trim();
 
   const firma = typeof body.firma === "string" ? body.firma : "";
+  const telefonRaw =
+    typeof body.telefon === "string"
+      ? body.telefon.trim()
+      : typeof body.tel === "string"
+        ? body.tel.trim()
+        : "";
   const accentColor =
     typeof body.accentColor === "string" && body.accentColor.trim()
       ? body.accentColor.trim()
@@ -79,14 +85,7 @@ export async function POST(req: NextRequest) {
         ? body.akzentfarbe.trim()
         : "#1a3a5c";
 
-  const headline = typeof body.headline === "string" ? body.headline : "";
-  const unterzeile = typeof body.unterzeile === "string" ? body.unterzeile : "";
-  const cta = typeof body.cta === "string" ? body.cta : "";
-  const danke = typeof body.danke === "string" ? body.danke : "";
-  const templateName =
-    typeof body.templateName === "string" ? body.templateName : "";
-
-  if (!slug || !email || !name) {
+  if (!slug || !email || !name || !telefonRaw) {
     return NextResponse.json({ error: "Pflichtfelder fehlen" }, { status: 400 });
   }
 
@@ -114,13 +113,9 @@ export async function POST(req: NextRequest) {
         slug,
         name,
         firma: firma || "",
-        accent_color: accentColor,
+        telefon: telefonRaw,
+        accent_color: accentColor || "#1a3a5c",
         email,
-        template_name: templateName,
-        headline,
-        unterzeile,
-        cta,
-        danke,
       },
     });
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
+import { useCheckConfig } from "@/lib/useCheckConfig";
 
 (() => {
   const link = document.createElement("link");
@@ -24,8 +25,6 @@ import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
   document.head.appendChild(s);
 })();
 
-const MAKLER = { name:"Max Mustermann", firma:"Mustermann Versicherungen", email:"kontakt@mustermann-versicherungen.de", telefon:"089 123 456 78", primaryColor:"#1a3a5c" };
-const C = MAKLER.primaryColor;
 const alpha = (hex,a) => { const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; };
 const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n>=10000 ? Math.round(n/1000)+"0".repeat(0)+".000 €" : fmt(n);
@@ -65,6 +64,8 @@ function berechne(p) {
 }
 
 export default function RisikolebenRechner() {
+  const MAKLER = useCheckConfig();
+  const C = MAKLER.primaryColor;
   const isDemo = isCheckDemoMode();
   const [phase, setPhase] = useState(1);
   const [animKey, setAnimKey] = useState(0);
@@ -254,7 +255,7 @@ export default function RisikolebenRechner() {
             <button type="button" style={T.btnBack} onClick={()=>goTo(2)}>← Zurück</button>
           </>
         ) : (
-          <><button style={T.btnMain(!valid)} disabled={!valid} onClick={()=>goTo(4)}>Anfrage senden</button><button style={T.btnBack} onClick={()=>goTo(2)}>← Zurück</button></>
+          <><button style={T.btnMain(!valid)} disabled={!valid} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"risikoleben",kundenName:formData.name,kundenEmail:formData.email,kundenTel:formData.telefon||""})}).catch(()=>{});}goTo(4);}}>Anfrage senden</button><button style={T.btnBack} onClick={()=>goTo(2)}>← Zurück</button></>
         )}>
         <div style={{padding:"0 16px"}}>
           {isDemo && (

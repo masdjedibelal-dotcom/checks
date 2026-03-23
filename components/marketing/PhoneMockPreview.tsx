@@ -1,6 +1,6 @@
 "use client";
 
-import { alpha } from "@/lib/utils";
+import { alpha, textOnAccent } from "@/lib/utils";
 
 /** Hintergrund der Karten-Preview wie in der statischen HTML-Vorlage */
 const PREVIEW_BG: Record<string, string> = {
@@ -28,8 +28,8 @@ function PhoneShell({
       <div className="flex items-center justify-between border-b border-black/[0.05] px-3 pb-2 pt-2.5">
         <div className="flex min-w-0 flex-1 items-center gap-1.5">
           <div
-            className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] text-[9px] font-extrabold text-white"
-            style={{ background: c }}
+            className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] text-[9px] font-extrabold"
+            style={{ background: c, color: textOnAccent(c) }}
           >
             M
           </div>
@@ -53,11 +53,10 @@ function PhoneShell({
 }
 
 function CtaBtn({ c, children }: { c: string; children: React.ReactNode }) {
-  const darkText = c.toLowerCase() === "#c9a96e";
   return (
     <div
-      className="block w-full rounded-lg py-2 text-center text-[9px] font-bold text-white"
-      style={{ background: c, color: darkText ? "#000" : "#fff" }}
+      className="block w-full rounded-lg py-2 text-center text-[9px] font-bold"
+      style={{ background: c, color: textOnAccent(c) }}
     >
       {children}
     </div>

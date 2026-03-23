@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
+import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -36,15 +37,6 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
   document.head.appendChild(s);
 })();
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
-const MAKLER = {
-  name:         "Max Mustermann",
-  firma:        "Mustermann Versicherungen",
-  email:        "kontakt@mustermann-versicherungen.de",
-  telefon:      "089 123 456 78",
-  primaryColor: "#1a3a5c",
-};
-const C = MAKLER.primaryColor;
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 
 // ─── SZENARIEN ────────────────────────────────────────────────────────────────
@@ -101,7 +93,8 @@ function berechne({ brutto, beruf, ktgTag, buRente, szenario }) {
 }
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
-const T = {
+function makeBUKTGT(C) {
+  return {
   page:    { minHeight: "100vh", background: "#ffffff", fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
   header:  { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   logo:    { display: "flex", alignItems: "center", gap: "10px" },
@@ -126,7 +119,6 @@ const T = {
   footer:  { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid #e8e8e8", padding: "14px 24px 28px" },
   btnPrim: (dis) => ({ width: "100%", padding: "13px 20px", background: dis ? "#e8e8e8" : C, color: dis ? "#aaa" : "#fff", borderRadius: "8px", fontSize: "14px", fontWeight: "600", cursor: dis ? "default" : "pointer", transition: "opacity 0.15s", letterSpacing: "-0.1px" }),
   btnSec:  { width: "100%", padding: "10px", color: "#aaa", fontSize: "13px", marginTop: "6px", cursor: "pointer" },
-  // Ergebnis
   bigNum:  (warn) => ({ fontSize: "36px", fontWeight: "700", color: warn ? "#c0392b" : C, letterSpacing: "-1px", lineHeight: 1 }),
   bigLbl:  { fontSize: "12px", color: "#888", marginTop: "4px", fontWeight: "500" },
   detRow:  { display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 0", borderBottom: "1px solid #f5f5f5" },
@@ -136,9 +128,10 @@ const T = {
   timeBar: { height: "6px", borderRadius: "3px", transition: "width 0.5s ease" },
   inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
 };
+}
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
-function Header({ phase, total }) {
+function Header({ phase, total, makler, T }) {
   return (
     <>
       <div style={T.header}>
@@ -151,7 +144,7 @@ function Header({ phase, total }) {
               <rect x="8" y="8" width="5" height="5" rx="1" fill="white"/>
             </svg>
           </div>
-          <span style={T.logoTxt}>{MAKLER.firma}</span>
+          <span style={T.logoTxt}>{makler.firma}</span>
         </div>
         <span style={T.badge}>BU + KTG</span>
       </div>
@@ -160,7 +153,7 @@ function Header({ phase, total }) {
   );
 }
 
-function Footer({ onNext, onBack, nextLabel = "Weiter", disabled = false }) {
+function Footer({ onNext, onBack, nextLabel = "Weiter", disabled = false, T }) {
   return (
     <div style={T.footer}>
       <button style={T.btnPrim(disabled)} onClick={onNext} disabled={disabled}>{nextLabel}</button>
@@ -169,7 +162,7 @@ function Footer({ onNext, onBack, nextLabel = "Weiter", disabled = false }) {
   );
 }
 
-function ContactForm({ onSubmit, onBack, summary, isDemo }) {
+function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
   const [fd, setFd] = useState({ name: "", email: "", tel: "" });
   const [consent, setConsent] = useState(false);
   const valid = fd.name.trim() && fd.email.trim() && consent;
@@ -221,14 +214,14 @@ function ContactForm({ onSubmit, onBack, summary, isDemo }) {
         </div>
         <div style={{ marginTop: "14px" }}>
           <CheckKontaktBeforeSubmitBlock
-            maklerName={MAKLER.name}
+            maklerName={makler.name}
             consent={consent}
             onConsentChange={setConsent}
           />
         </div>
       </div>
       <div style={T.footer}>
-        <button style={T.btnPrim(!valid)} onClick={() => valid && onSubmit(fd.name)} disabled={!valid}>
+        <button style={T.btnPrim(!valid)} onClick={() => valid && onSubmit(fd)} disabled={!valid}>
           Gespräch anfragen
         </button>
         <button style={T.btnSec} onClick={onBack}>Zurück</button>
@@ -237,7 +230,7 @@ function ContactForm({ onSubmit, onBack, summary, isDemo }) {
   );
 }
 
-function DankeScreen({ name, onBack }) {
+function DankeScreen({ name, onBack, makler, C }) {
   return (
     <div style={{ padding: "48px 24px", textAlign: "center" }} className="fade-in">
       <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: `1.5px solid ${C}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
@@ -254,12 +247,12 @@ function DankeScreen({ name, onBack }) {
       <div style={{ border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden", textAlign: "left" }}>
         <div style={{ padding: "14px 16px", borderBottom: "1px solid #f0f0f0" }}>
           <div style={{ fontSize: "11px", color: "#999", fontWeight: "600", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "4px" }}>Ihr Berater</div>
-          <div style={{ fontSize: "14px", fontWeight: "600", color: "#111" }}>{MAKLER.name}</div>
-          <div style={{ fontSize: "12px", color: "#888", marginTop: "1px" }}>{MAKLER.firma}</div>
+          <div style={{ fontSize: "14px", fontWeight: "600", color: "#111" }}>{makler.name}</div>
+          <div style={{ fontSize: "12px", color: "#888", marginTop: "1px" }}>{makler.firma}</div>
         </div>
         <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <a href={`tel:${MAKLER.telefon}`} style={{ fontSize: "13px", color: C, fontWeight: "500" }}>{MAKLER.telefon}</a>
-          <a href={`mailto:${MAKLER.email}`} style={{ fontSize: "13px", color: C, fontWeight: "500" }}>{MAKLER.email}</a>
+          <a href={`tel:${makler.telefon}`} style={{ fontSize: "13px", color: C, fontWeight: "500" }}>{makler.telefon}</a>
+          <a href={`mailto:${makler.email}`} style={{ fontSize: "13px", color: C, fontWeight: "500" }}>{makler.email}</a>
         </div>
       </div>
       <button onClick={onBack} style={{ marginTop: "20px", fontSize: "13px", color: "#aaa", cursor: "pointer" }}>
@@ -271,6 +264,9 @@ function DankeScreen({ name, onBack }) {
 
 // ─── HAUPTKOMPONENTE ──────────────────────────────────────────────────────────
 export default function BUKTGRechner() {
+  const MAKLER = useCheckConfig();
+  const C = MAKLER.primaryColor;
+  const T = useMemo(() => makeBUKTGT(C), [C]);
   const [phase, setPhase] = useState(1);
   const [ak, setAk] = useState(0);
   const [danke, setDanke] = useState(false);
@@ -294,15 +290,15 @@ export default function BUKTGRechner() {
 
   if (danke) return (
     <div style={{ ...T.page, "--accent": C }}>
-      <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} />
-      <DankeScreen name={name} onBack={() => { setDanke(false); setPhase(1); }} />
+      <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} T={T} />
+      <DankeScreen name={name} onBack={() => { setDanke(false); setPhase(1); }} makler={MAKLER} C={C} />
     </div>
   );
 
   // ── Phase 4: Kontakt ───────────────────────────────────────────────────────
   if (phase === 3) return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={4} total={TOTAL_PHASES} />
+      <Header phase={4} total={TOTAL_PHASES} makler={MAKLER} T={T} />
       <div style={T.hero}>
         <div style={T.label}>Beratungsgespräch</div>
         <div style={T.h1}>Lücke schliessen</div>
@@ -310,7 +306,26 @@ export default function BUKTGRechner() {
       </div>
       <ContactForm
         isDemo={isDemo}
-        onSubmit={n => { setName(n); setDanke(true); }}
+        makler={MAKLER}
+        T={T}
+        onSubmit={async (fd) => {
+          const token = new URLSearchParams(window.location.search).get("token");
+          if (token) {
+            await fetch("/api/lead", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                token,
+                slug: "einkommens-check",
+                kundenName: fd.name,
+                kundenEmail: fd.email,
+                kundenTel: fd.tel || "",
+              }),
+            }).catch(() => {});
+          }
+          setName(fd.name);
+          setDanke(true);
+        }}
         onBack={() => goTo(2)}
         summary={
           <div>
@@ -338,7 +353,7 @@ export default function BUKTGRechner() {
 
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header phase={2} total={TOTAL_PHASES} />
+        <Header phase={2} total={TOTAL_PHASES} makler={MAKLER} T={T} />
         <div style={T.hero}>
           <div style={T.label}>Ihr Einkommensschutz · {R.sz.label}</div>
           <div style={T.h1}>{groesseLueckeMon > 0 ? `${fmt(groesseLueckeMon)}/Monat ungesichert` : "Gut abgesichert"}</div>
@@ -515,7 +530,7 @@ export default function BUKTGRechner() {
           <div style={{ ...T.infoBox, marginTop: "10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
 
-        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Lücke schliessen — Gespräch anfragen" />
+        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Lücke schliessen — Gespräch anfragen" T={T} />
       </div>
     );
   }
@@ -523,7 +538,7 @@ export default function BUKTGRechner() {
   // ── Phase 1: Basisdaten + Absicherung (zusammengelegt) ────────────────────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={1} total={TOTAL_PHASES} />
+      <Header phase={1} total={TOTAL_PHASES} makler={MAKLER} T={T} />
       <div style={T.hero}>
         <div style={T.label}>Schritt 1 von 2 · Ihre Situation</div>
         <div style={T.h1}>Was passiert, wenn Sie ausfallen?</div>
@@ -600,7 +615,7 @@ export default function BUKTGRechner() {
         </div>
       </div>
 
-      <Footer onNext={() => goTo(2)} nextLabel="Lücke berechnen" />
+      <Footer onNext={() => goTo(2)} nextLabel="Lücke berechnen" T={T} />
     </div>
   );
 }

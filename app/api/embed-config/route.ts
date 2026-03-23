@@ -25,18 +25,22 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase
     .from("purchases")
-    .select("name, firma, email, accent_color, status")
+    .select("name, firma, email, telefon, accent_color, status")
     .eq("token", token)
+    .eq("status", "active")
     .maybeSingle();
 
-  if (error || !data || data.status !== "active") {
+  if (error || !data) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
+  const accent = safeHex(data.accent_color);
   return NextResponse.json({
     name: data.name,
     firma: data.firma ?? "",
     email: data.email,
-    primaryColor: safeHex(data.accent_color),
+    telefon: data.telefon ?? "",
+    accent_color: accent,
+    primaryColor: accent,
   });
 }

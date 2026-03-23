@@ -19,9 +19,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CheckKit — Checks & Rechner für Makler",
+  title: "FlowLeads — Bedarfsrechner für Versicherungsmakler",
   description:
-    "Interaktive Versicherungs-Checks und Rechner — kaufen, konfigurieren, per iFrame einbetten.",
+    "Fertige Bedarfsrechner für Versicherungsmakler. Auf der Website einbetten, als Link teilen oder QR-Code drucken. Besucher berechnen ihre Lücke und fragen direkt an.",
 };
 
 export default function RootLayout({

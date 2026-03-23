@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { Resend } from "resend";
 import crypto from "crypto";
+import QRCode from "qrcode";
 import { buildOnboardingEmailHtml, onboardingEmailSubject } from "@/lib/flowleadsOnboardingEmail";
 import { flowleadsContactEmail, formatResendFrom } from "@/lib/flowleadsMailConfig";
+import { buildLicensedDemoUrl } from "@/lib/flowleadsEmbed";
 import { getSupabaseServiceRole } from "@/lib/supabaseService";
 
 export const runtime = "nodejs";
@@ -122,6 +124,10 @@ export async function POST(req: NextRequest) {
     email,
     name,
     firma: typeof meta.firma === "string" ? meta.firma.trim() || null : null,
+    telefon:
+      typeof meta.telefon === "string" && meta.telefon.trim()
+        ? meta.telefon.trim()
+        : null,
     slug,
     token,
     accent_color: accent,
@@ -149,6 +155,12 @@ export async function POST(req: NextRequest) {
     );
   }
   if (resendKey && process.env.RESEND_FROM_EMAIL?.trim()) {
+    const directUrl = buildLicensedDemoUrl(slug, token);
+    const qrDataUrl = await QRCode.toDataURL(directUrl, {
+      width: 200,
+      margin: 2,
+      color: { dark: "#0f1a14", light: "#ffffff" },
+    });
     const resend = new Resend(resendKey);
     const { error: mailErr } = await resend.emails.send({
       from,
@@ -161,6 +173,7 @@ export async function POST(req: NextRequest) {
         slug,
         token,
         sessionId: session.id,
+        qrDataUrl,
       }),
     });
     if (mailErr) {

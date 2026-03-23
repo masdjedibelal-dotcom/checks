@@ -98,12 +98,8 @@ export default function LandingHome() {
           email: form.email,
           name: form.name,
           firma: form.firma,
+          telefon: form.telefon,
           accentColor: form.akzentfarbe,
-          templateName: template.name,
-          headline: form.headline,
-          unterzeile: form.unterzeile,
-          cta: form.cta,
-          danke: form.danke,
         }),
       });
       const data = await res.json();
@@ -125,18 +121,7 @@ export default function LandingHome() {
     <div className="flow-leads-landing">
       <nav>
         <div className="logo">
-          <div
-            style={{
-              width: "28px",
-              height: "28px",
-              borderRadius: "7px",
-              background: "#1a1a1a",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
+          <div className="logo-mark">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
               <rect x="1" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" />
               <rect x="9.5" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4" />
@@ -144,17 +129,7 @@ export default function LandingHome() {
               <rect x="9.5" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a" />
             </svg>
           </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif',
-              fontSize: 16,
-              fontWeight: 700,
-              letterSpacing: "-0.3px",
-              color: "#1a1a1a",
-            }}
-          >
-            FlowLeads
-          </span>
+          <span>FlowLeads</span>
         </div>
         <div className="nav-links">
           <a href="#how">Wie es funktioniert</a>
@@ -175,17 +150,20 @@ export default function LandingHome() {
         <div className="hero">
           <div className="hero-tag au d1">
             <span className="tag-dot" />
-            Leadmagneten für Versicherungsmakler
+            Für Versicherungsmakler &amp; -vermittler
           </div>
 
           <h1 className="au d2">
             Ihre Website bringt keine Anfragen?
             <br />
-            Dann fehlt unser <span className="hero-moment-flow">Leadmagnet</span>.
+            Dann fehlt ein <span className="hero-moment-flow">Rechner</span>.
           </h1>
 
           <p className="hero-sub au d3">
-            FlowLeads sorgt dafür, dass Kunden ihre Lücke selbst erkennen — und genau in diesem Moment aktiv Beratung anfragen.
+            FlowLeads gibt Ihnen fertige Bedarfsrechner —<br />
+            einbetten, verlinken oder als QR-Code drucken.<br />
+            Besucher berechnen ihre Versorgungslücke und<br />
+            fragen direkt bei Ihnen an.
           </p>
 
           <div className="hero-btns au d4">
@@ -204,69 +182,6 @@ export default function LandingHome() {
             <a href="#how" className="btn-demo-lg">
               Wie es funktioniert
             </a>
-          </div>
-
-          <div className="trust au d4">
-            <div className="trust-pill">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                <rect
-                  x="1"
-                  y="2"
-                  width="12"
-                  height="9"
-                  rx="1.5"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                />
-                <path
-                  d="M5 6l-2 1.5L5 9M9 6l2 1.5L9 9"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                  strokeLinecap="round"
-                />
-              </svg>
-              iFrame auf jeder Website
-            </div>
-            <div className="trust-pill">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                <rect
-                  x="3"
-                  y="1"
-                  width="8"
-                  height="12"
-                  rx="2"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                />
-                <path d="M6 10h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-              </svg>
-              Mobile-first
-            </div>
-            <div className="trust-pill">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                <path
-                  d="M1 3l6 4.5L13 3M1 3h12v9H1V3z"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Leads direkt an Sie
-            </div>
-            <div className="trust-pill">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                <path
-                  d="M2 2h1.5l1.8 6h5.4l1.3-4H5"
-                  stroke="currentColor"
-                  strokeWidth="1.3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="6.5" cy="11" r="1" fill="currentColor" />
-                <circle cx="10.5" cy="11" r="1" fill="currentColor" />
-              </svg>
-              Einmalig kaufen
-            </div>
           </div>
 
           <div className="wf-wrap au d4">
@@ -329,32 +244,10 @@ export default function LandingHome() {
         <div className="tl-wrap">
           <div className="tl-header">
             <div className="tl-label">Wie es funktioniert</div>
-            <h2
-              style={{
-                fontFamily: "'Instrument Serif', serif",
-                fontSize: "clamp(26px, 3.2vw, 40px)",
-                fontWeight: 400,
-                color: "#ffffff",
-                letterSpacing: "-.3px",
-                lineHeight: 1.15,
-                marginBottom: "10px",
-              }}
-            >
-              Vom Besucher zur
-              <br />
-              Beratungsanfrage
-            </h2>
-            <p
-              style={{
-                fontSize: "16px",
-                fontWeight: 300,
-                color: "rgba(255,255,255,0.6)",
-                lineHeight: 1.7,
-                maxWidth: "480px",
-                margin: "0 auto",
-              }}
-            >
-              In 4 Schritten — ohne Kaltstart, ohne Tarifvergleich.
+            <h2 className="tl-headline">Vom Besucher zur Beratungsanfrage</h2>
+            <p className="tl-sub">
+              Egal ob Website, Link oder QR-Code —<br />
+              der Ablauf ist immer gleich.
             </p>
           </div>
 
@@ -400,16 +293,15 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="tools" className="s checks-section checks-section--dark" style={{ background: "#0f1a14" }}>
+      <section id="tools" className="s checks-section checks-section--dark" style={{ background: "#ffffff" }}>
         <div className="inner">
           <div className="s-label">Die 8 Tools</div>
           <h2 className="checks-section-headline">
-            8 Tools, die aus Interesse
-            <br />
-            konkrete Anfragen machen
+            8 Bedarfsrechner — für jeden Anlass einer
           </h2>
           <p className="checks-section-tagline">
-            Jedes Tool greift einen echten Anlass auf – und führt den Kunden mit wenigen Schritten ins Gespräch.
+            Jeder Rechner führt den Besucher in<br />
+            3 Minuten zur Anfrage.
           </p>
           <div className="ck-cards">
             {CHECK_FLOW_META.map((c) => {
@@ -460,18 +352,16 @@ export default function LandingHome() {
       <section id="einsatz" className="dark-s">
         <div className="inner">
           <div className="s-label">Einsatz</div>
-          <h2>
-            Überall einsetzbar —
-            <br />
-            nicht nur die Startseite
-          </h2>
-          <p className="s-sub">Auf jeder Seite, für jeden Anlass, für jeden Kanal.</p>
-          <div className="use-grid">
+          <h2>Mehr Anfragen — auf drei Wegen</h2>
+          <p className="s-sub">
+            Fertige Bedarfsrechner die Sie auf Ihrer Website einbetten, als Link teilen oder als QR-Code drucken
+            können.
+          </p>
+          <div className="use-grid use-grid--single">
             {[
               {
                 t: "iFrame einbetten",
                 p: "Direkt auf Ihrer Website — ein Code-Snippet genügt.",
-                highlight: true,
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
                     <rect
@@ -495,7 +385,6 @@ export default function LandingHome() {
               {
                 t: "Als Link teilen",
                 p: "Per E-Mail, WhatsApp oder in der Social-Media-Bio.",
-                highlight: true,
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                     <path
@@ -516,7 +405,6 @@ export default function LandingHome() {
               {
                 t: "QR-Code drucken",
                 p: "Auf Visitenkarte oder Flyer — Kunde scannt und startet.",
-                highlight: true,
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                     <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
@@ -529,88 +417,14 @@ export default function LandingHome() {
                   </svg>
                 ),
               },
-              {
-                t: "Website",
-                p: "Direkt nach dem Hero — Besucher werden sofort zu Leads.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <rect x="1" y="2" width="14" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-                    <path d="M5 6h6M5 9h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
-                  </svg>
-                ),
-              },
-              {
-                t: "Produktseiten",
-                p: "BU-Seite mit Einkommens-Check, Rentenvorsorge mit Vorsorge-Check.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <path
-                      d="M8 2l1.5 3 3.5.5-2.5 2.5.6 3.5L8 10l-3.1 1.5.6-3.5L3 5.5l3.5-.5z"
-                      fill="currentColor"
-                      opacity=".6"
-                    />
-                  </svg>
-                ),
-              },
-              {
-                t: "Kampagnen",
-                p: "Für Google Ads, Meta oder E-Mail mit konkretem Anlass.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3" />
-                    <path
-                      d="M5.5 8l2 2L10.5 6"
-                      stroke="currentColor"
-                      strokeWidth="1.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                ),
-              },
-              {
-                t: "Bestandskunden",
-                p: "Check-Link per E-Mail — reaktiviert ohne Kaltakquise.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <path
-                      d="M2 4h12v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z"
-                      stroke="currentColor"
-                      strokeWidth="1.3"
-                    />
-                    <path d="M2 4l6 5 6-5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                  </svg>
-                ),
-              },
-              {
-                t: "Erstgespräch",
-                p: "Strukturierter Einstieg — digital, modern, direkt.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <path d="M8 3v4l2.5 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
-                    <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3" />
-                  </svg>
-                ),
-              },
-              {
-                t: "Social Media",
-                p: "Link in Bio, Stories oder Beiträgen als Lead-Magnet.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <rect x="3" y="1" width="6" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-                    <path d="M6 13h7M10 4v9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                  </svg>
-                ),
-              },
             ].map((u) => (
               <div
                 key={u.t}
                 className="use-card"
-                style={
-                  "highlight" in u && u.highlight
-                    ? { border: "1px solid rgba(184,136,74,0.3)", background: "rgba(184,136,74,0.06)" }
-                    : undefined
-                }
+                style={{
+                  border: "1px solid rgba(184,136,74,0.3)",
+                  background: "rgba(184,136,74,0.06)",
+                }}
               >
                 <div className="use-icon">{u.icon}</div>
                 <h3>{u.t}</h3>
@@ -662,9 +476,9 @@ export default function LandingHome() {
       <section className="cta-s">
         <div className="cta-left">
           <h2>
-            Entdecken Sie die
+            Ihr nächster Lead wartet auf
             <br />
-            <span className="underline-w">Möglichkeiten</span> von FlowLeads
+            einen Rechner.
           </h2>
           <p>Verwandeln Sie Website-Besucher in echte Anfragen. Einmalig kaufen, dauerhaft nutzen.</p>
         </div>

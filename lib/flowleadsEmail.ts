@@ -22,6 +22,8 @@ export type OnboardingEmailParams = {
   token: string;
   /** Stripe Checkout Session-ID für Link zur Bestätigungsseite */
   sessionId?: string;
+  /** data:image/png;base64,… für eingebetteten QR-Code */
+  qrDataUrl?: string;
 };
 
 export function buildOnboardingEmailSubject(slug: string): string {
@@ -32,23 +34,26 @@ export function buildOnboardingEmailSubject(slug: string): string {
 export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: string; html: string } {
   const checkName = slugToDisplayName(p.slug);
   const iframeCode = buildLicensedIframeCode(p.slug, p.token);
-  const firstName = p.name.trim().split(/\s+/)[0] || p.name;
+  const firstName = p.name?.split(" ")[0] || "dort";
   const appUrl = publicAppUrl();
-  const demoUrl = buildLicensedDemoUrl(p.slug, p.token);
+  const directUrl = buildLicensedDemoUrl(p.slug, p.token);
   const subject = buildOnboardingEmailSubject(p.slug);
 
   const safeFirst = escapeHtml(firstName);
   const safeCheck = escapeHtml(checkName);
   const safeIframeInBox = escapeHtml(iframeCode);
-  const safeDemoUrl = escapeHtml(demoUrl);
+  const safeDirectUrl = escapeHtml(directUrl);
   const safeAppUrl = escapeHtml(appUrl);
-  const successPageUrl = p.sessionId
-    ? `${appUrl}/success?session_id=${encodeURIComponent(p.sessionId)}`
-    : `${appUrl}/success`;
-  const safeSuccessPageUrl = escapeHtml(successPageUrl);
   const contactEmail = flowleadsContactEmail();
   const safeContact = escapeHtml(contactEmail);
-  const mailtoCodeBody = encodeURIComponent(iframeCode);
+  const qrBlock = p.qrDataUrl
+    ? `
+      <img src="${p.qrDataUrl}"
+      width="160" height="160"
+      alt="QR-Code"
+      style="border-radius:8px;margin-bottom:12px;display:block;margin:0 auto 12px;"/>
+    `
+    : "";
 
   const html = `<!DOCTYPE html>
 <html lang="de">
@@ -98,47 +103,100 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
     <div class="greeting">Ihr Tool ist bereit, ${safeFirst}.</div>
     <p class="intro">
       Ihr <strong>${safeCheck}</strong> wurde erfolgreich konfiguriert und ist aktiv.
-      Kopieren Sie den iFrame-Code unten und fügen Sie ihn auf Ihrer Website ein.
-      Eine Anleitung finden Sie direkt darunter.
+    </p>
+    <p class="intro" style="margin-bottom:28px;">
+      Ihr Tool ist in 3 Varianten verfügbar — wählen Sie was am besten zu Ihnen passt:
     </p>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <span style="font-size:12px;font-weight:700;color:#1a1a1a;text-transform:uppercase;letter-spacing:0.5px;">Ihr iFrame-Code</span>
-      <a href="mailto:?body=${mailtoCodeBody}" style="font-size:12px;font-weight:600;color:#b8884a;text-decoration:none;">Code kopieren</a>
-    </div>
-    <div class="code-box">${safeIframeInBox}</div>
-    <div style="font-size:11px;color:#9ca3af;margin-top:6px;margin-bottom:24px;text-align:center;">
-      ↑ Code markieren und kopieren
+    <div style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#f0ede6;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="2" width="12" height="9" rx="1.5" stroke="#b8884a" stroke-width="1.3"/>
+            <path d="M4 6l-2 1.5L4 9M10 6l2 1.5L10 9" stroke="#b8884a" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1a1a1a;">Variante 1 — iFrame einbetten</div>
+          <div style="font-size:11px;color:#9ca3af;">Direkt auf Ihrer Website</div>
+        </div>
+      </div>
+      <div style="background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;font-family:monospace;font-size:11px;color:#374151;word-break:break-all;line-height:1.7;">
+        ${safeIframeInBox}
+      </div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:5px;text-align:center;">
+        ↑ Code markieren und kopieren
+      </div>
     </div>
 
-    <div style="margin-top:16px;">
-      <div style="font-size:12px;font-weight:700;color:#1a1a1a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
-        Ihr Direkt-Link
+    <div style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#f0ede6;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 7h10M7 2l5 5-5 5" stroke="#b8884a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1a1a1a;">Variante 2 — Direkt-Link teilen</div>
+          <div style="font-size:11px;color:#9ca3af;">Per E-Mail, WhatsApp oder Social Media</div>
+        </div>
       </div>
-      <div style="background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;font-size:12px;color:#374151;word-break:break-all;line-height:1.7;">
-        <a href="${safeDemoUrl}" style="color:#b8884a;text-decoration:none;">
-          ${safeDemoUrl}
+      <div style="background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;font-size:12px;color:#374151;word-break:break-all;line-height:1.7;">
+        <a href="${directUrl}" style="color:#b8884a;">
+          ${safeDirectUrl}
         </a>
       </div>
-      <div style="font-size:11px;color:#9ca3af;margin-top:6px;">
-        Für E-Mail, WhatsApp, Social Media oder als Button-Link.
+      <div style="font-size:11px;color:#9ca3af;margin-top:5px;">
+        Einfach kopieren und in jede Nachricht einfügen.
       </div>
     </div>
 
-    <div style="margin-top:12px;font-size:12px;color:#9ca3af;line-height:1.65;">
-      QR-Code und alle Einbindungsoptionen finden Sie
-      auch auf Ihrer <a href="${safeSuccessPageUrl}" style="color:#b8884a;">Bestätigungsseite</a>.
+    <div style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div style="width:28px;height:28px;border-radius:7px;background:#f0ede6;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="5" height="5" rx="1" stroke="#b8884a" stroke-width="1.3"/>
+            <rect x="8" y="1" width="5" height="5" rx="1" stroke="#b8884a" stroke-width="1.3"/>
+            <rect x="1" y="8" width="5" height="5" rx="1" stroke="#b8884a" stroke-width="1.3"/>
+            <path d="M8 8h2v2H8zM10 10h3v3h-3z" fill="#b8884a"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1a1a1a;">Variante 3 — QR-Code drucken</div>
+          <div style="font-size:11px;color:#9ca3af;">Für Visitenkarte, Flyer oder Messestand</div>
+        </div>
+      </div>
+      <div style="background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:20px;text-align:center;">
+        ${qrBlock}
+        <a href="${directUrl}"
+        style="display:inline-block;padding:9px 18px;background:#0f1a14;color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+          QR-Code herunterladen →
+        </a>
+        <div style="font-size:11px;color:#9ca3af;margin-top:8px;">
+          Auf Visitenkarte oder Flyer — Kunde scannt und startet das Tool direkt.
+        </div>
+      </div>
     </div>
 
-    <div class="steps-box">
-      <div class="steps-title">So binden Sie das Tool ein</div>
-      <div class="step-line"><strong style="color:#b8884a;">1.</strong> Code oben kopieren</div>
-      <div class="step-line"><strong style="color:#b8884a;">2.</strong> Im Website-Editor ein „HTML / Einbettungs-Element“ einfügen (WordPress, Jimdo, Squarespace, Wix, Webflow)</div>
-      <div class="step-line"><strong style="color:#b8884a;">3.</strong> Code einfügen und Seite speichern</div>
-      <div class="step-line"><strong style="color:#b8884a;">4.</strong> Fertig — das Tool ist live auf Ihrer Website</div>
+    <div style="margin-bottom:24px;">
+      <div class="steps-title" style="margin-bottom:10px;">So binden Sie das Tool ein</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">1.</td>
+        <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
+        iFrame-Code, Direkt-Link oder QR-Code aus dieser E-Mail wählen</td></tr>
+        <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">2.</td>
+        <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
+        iFrame: Im Website-Editor ein &#8222;HTML-Element&#8220; einfügen und Code einfügen</td></tr>
+        <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">3.</td>
+        <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
+        Link: Direkt in E-Mail oder Social Media teilen</td></tr>
+        <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">4.</td>
+        <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
+        QR-Code: Herunterladen und drucken lassen</td></tr>
+      </table>
     </div>
 
-    <a href="${safeDemoUrl}" class="cta-btn">
+    <a href="${directUrl}" class="cta-btn">
       Tool in der Vorschau ansehen →
     </a>
 
@@ -160,7 +218,7 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
   </div>
 
   <div class="footer">
-    © ${new Date().getFullYear()} FlowLeads · Thomas Schreiber · Seitzstraße 15, 80538 München<br/>
+    © ${new Date().getFullYear()} FlowLeads · Belal Masdjedi · Seitzstraße 15, 80538 München<br/>
     <a href="${safeAppUrl}/impressum">Impressum</a> ·
     <a href="${safeAppUrl}/datenschutz">Datenschutz</a> ·
     <a href="${safeAppUrl}/agb">AGB</a>

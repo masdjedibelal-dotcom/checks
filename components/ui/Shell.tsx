@@ -32,6 +32,7 @@ type LicensedMakler = {
   name: string;
   firma: string;
   email: string;
+  telefon: string;
   primaryColor: string;
 };
 
@@ -53,13 +54,21 @@ export default function ShellWrapper({
     let cancelled = false;
     void fetch(`/api/embed-config?token=${encodeURIComponent(token)}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((j: LicensedMakler | null) => {
-        if (cancelled || !j?.email) return;
+      .then((j: LicensedMakler | Record<string, unknown> | null) => {
+        if (cancelled || !j || typeof j !== "object" || !("name" in j) || !j.name)
+          return;
+        const primary =
+          typeof j.primaryColor === "string"
+            ? j.primaryColor
+            : typeof (j as { accent_color?: string }).accent_color === "string"
+              ? (j as { accent_color: string }).accent_color
+              : null;
         setLicensed({
-          name: sanitize(j.name, 80) || MAKLER_DEFAULT.name,
-          firma: sanitize(j.firma, 80) || MAKLER_DEFAULT.firma,
-          email: sanitize(j.email, 120) || MAKLER_DEFAULT.email,
-          primaryColor: validateHex(j.primaryColor ?? null),
+          name: sanitize(String(j.name), 80),
+          firma: sanitize(typeof j.firma === "string" ? j.firma : "", 80),
+          email: sanitize(typeof j.email === "string" ? j.email : "", 120),
+          telefon: sanitize(typeof j.telefon === "string" ? j.telefon : "", 40),
+          primaryColor: validateHex(primary),
         });
       })
       .catch(() => {});
@@ -83,7 +92,7 @@ export default function ShellWrapper({
         name: licensed.name,
         firma: licensed.firma,
         email: licensed.email,
-        telefon: MAKLER_DEFAULT.telefon,
+        telefon: licensed.telefon,
         primaryColor: licensed.primaryColor,
         isDemoMode: false,
         slug,

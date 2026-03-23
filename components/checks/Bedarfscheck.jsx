@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
+import { useCheckConfig } from "@/lib/useCheckConfig";
+import { textOnAccent } from "@/lib/utils";
 import { SelectionCard, CheckRow } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 (() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
-const MAKLER={name:"Max Mustermann",firma:"Mustermann Versicherungen",email:"kontakt@mustermann-versicherungen.de",telefon:"089 123 456 78",primaryColor:"#1a3a5c"};
-const C=MAKLER.primaryColor,OK="#059669";
+const OK="#059669";
 
 // ─── DATA: Produktuniversum ────────────────────────────────────────────────────
 // ─── RISK-FIRST SCORING: Basisgewichte nach Risikohierarchie ─────────────────
@@ -153,10 +154,71 @@ function runScoringEngine(profil,existing){
   return{basisPackage,plusPackage,completePackage,alreadyCovered};
 }
 
-// ─── STYLES ──────────────────────────────────────────────────────────────────
-const T={page:{minHeight:"100vh",background:"#fff",fontFamily:"'Inter','Helvetica Neue',Helvetica,Arial,sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?C:"#e8e8e8"}`,background:a?C:"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"}),infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6}};
-function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
-function Header({progPct=0}){return(<><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Bedarfscheck</span></div><div style={T.prog}><div style={T.progFil(progPct)}/></div></>);}
+// ─── STYLES (C = Akzent aus MaklerContext / URL / Embed) ───────────────────
+function makeBedarfT(C, onAccent) {
+  return {
+    page: { minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Helvetica Neue',Helvetica,Arial,sans-serif" },
+    header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+    logo: { display: "flex", alignItems: "center", gap: "10px" },
+    logoMk: { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
+    badge: { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
+    prog: { height: "2px", background: "#f0f0f0" },
+    progFil: (w) => ({ height: "100%", width: `${w}%`, background: C, transition: "width 0.4s ease" }),
+    hero: { padding: "32px 24px 16px" },
+    eyebrow: { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
+    h1: { fontSize: "22px", fontWeight: "700", color: "#111", lineHeight: 1.25, letterSpacing: "-0.5px" },
+    body: { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
+    section: { padding: "0 24px", marginBottom: "20px" },
+    card: { border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden" },
+    row: { padding: "14px 16px", borderBottom: "1px solid #f0f0f0" },
+    rowLast: { padding: "14px 16px" },
+    fldLbl: { fontSize: "12px", fontWeight: "600", color: "#444", display: "block", marginBottom: "8px" },
+    footer: { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid #e8e8e8", padding: "14px 24px 28px" },
+    btnPrim: (d) => ({ width: "100%", padding: "13px 20px", background: d ? "#e8e8e8" : C, color: d ? "#aaa" : onAccent, borderRadius: "8px", fontSize: "14px", fontWeight: "600", cursor: d ? "default" : "pointer" }),
+    btnSec: { width: "100%", padding: "10px", color: "#aaa", fontSize: "13px", marginTop: "6px", cursor: "pointer" },
+    inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
+    optBtn: (a) => ({ padding: "9px 14px", borderRadius: "6px", border: `1px solid ${a ? C : "#e8e8e8"}`, background: a ? C : "#fff", fontSize: "13px", fontWeight: a ? "600" : "400", color: a ? onAccent : "#444", transition: "all 0.15s", cursor: "pointer" }),
+    infoBox: { padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 },
+  };
+}
+
+function makePaketeDefs(C, onAccent) {
+  return [
+    { key: "basisPackage", label: "Essentieller Schutz", badge: null, stripe: "#e0e0e0", desc: "Die wichtigsten Absicherungen — kompakt und klar.", btnBg: "#f5f5f5", btnTxt: "#333", btnBorder: "1px solid #e0e0e0" },
+    { key: "plusPackage", label: "Starker Rundumschutz", badge: "Empfohlen", stripe: C, desc: "Bewährtester Schutz für Ihre Situation — Basis plus die wichtigsten Ergänzungen.", btnBg: C, btnTxt: onAccent, btnBorder: "none" },
+    { key: "completePackage", label: "Maximale Sicherheit", badge: null, stripe: "#2d2d2d", desc: "Vollständig abgesichert — alle relevanten Bereiche auf einmal.", btnBg: "#1a1a1a", btnTxt: "#ffffff", btnBorder: "none" },
+  ];
+}
+
+function LogoSVG({ color = "#ffffff" }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+      <rect x="1" y="1" width="5" height="5" rx="1" fill={color} />
+      <rect x="8" y="1" width="5" height="5" rx="1" fill={color} opacity="0.6" />
+      <rect x="1" y="8" width="5" height="5" rx="1" fill={color} opacity="0.6" />
+      <rect x="8" y="8" width="5" height="5" rx="1" fill={color} />
+    </svg>
+  );
+}
+
+function Header({ progPct = 0, T, firma, logoIconColor }) {
+  return (
+    <>
+      <div style={T.header}>
+        <div style={T.logo}>
+          <div style={T.logoMk}>
+            <LogoSVG color={logoIconColor} />
+          </div>
+          <span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{firma}</span>
+        </div>
+        <span style={T.badge}>Bedarfscheck</span>
+      </div>
+      <div style={T.prog}>
+        <div style={T.progFil(progPct)} />
+      </div>
+    </>
+  );
+}
 
 // Phase 1
 const EMP_OPTS=[["angestellt","Angestellt"],["selbstständig","Selbstständig"],["verbeamtet","Verbeamtet"],["ausbildung_studium","Ausbildung/Studium"],["sonstiges","Sonstiges"]];
@@ -166,10 +228,10 @@ const FAM_OPTS=[["ledig","Ledig"],["partnerschaft","Partnerschaft"],["verheirate
 const HSG_OPTS=[["eltern_wg","Eltern/WG"],["mieter","Mieter"],["eigentuemer","Eigentümer"]];
 const KV_OPTS=[["gkv","GKV"],["pkv","PKV"],["unsicher","Unklar"]];
 
-function Phase1({profil,set,onWeiter}){
-  const Opts=({k,opts})=><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(120px, 1fr))",gap:"8px"}}>{opts.map(([v,l])=><SelectionCard key={v} value={v} label={l} selected={profil[k]===v} accent={C} onClick={()=>set(k,v)}/>)}</div>;
+function Phase1({ profil, set, onWeiter, C, T, firma, logoIconColor }) {
+  const Opts=({k,opts})=><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(min(100%, 120px), 1fr))",gap:"8px",width:"100%",minWidth:0}}>{opts.map(([v,l])=><SelectionCard key={v} value={v} label={l} selected={profil[k]===v} accent={C} onClick={()=>set(k,v)}/>)}</div>;
   const ok=profil.age&&profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus&&profil.healthStatus;
-  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={25}/>
+  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={25} T={T} firma={firma} logoIconColor={logoIconColor}/>
     <div style={T.hero}><div style={T.eyebrow}>Schritt 1 von 2</div><div style={T.h1}>Welche Versicherungen brauche ich?</div><div style={T.body}>Wenige Angaben — persönliche Empfehlung in unter 2 Minuten.</div></div>
     <div style={T.section}><div style={T.card}>
       <div style={T.row}><label style={T.fldLbl}>Ihr Alter (18–65)</label><input type="text" inputMode="numeric" placeholder="z. B. 34" value={profil.age||""} onChange={e=>set("age",e.target.value.replace(/\D/g,""))} onBlur={e=>{const v=parseInt(e.target.value)||"";set("age",v>=18&&v<=65?v:"");}} style={{...T.inputEl}}/></div>
@@ -191,8 +253,8 @@ const EX_GROUPS=[
   {label:"Gesundheit",items:[{id:"pkv",name:"Private Krankenversicherung"},{id:"zahnzusatz",name:"Zahnzusatz"},{id:"krankenhauszusatz",name:"Krankenhauszusatz"},{id:"ambulante_zusatz",name:"Ambulante Zusatz"},{id:"pflegezusatz",name:"Pflegezusatz"}]},
   {label:"Familie & Vermögen",items:[{id:"unfall",name:"Unfallversicherung"},{id:"risikoleben",name:"Risikolebensversicherung"},{id:"sparen_investieren",name:"Sparen & Investieren"}]},
 ];
-function Phase2({existing,toggle,onWeiter,onZurueck}){
-  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={60}/>
+function Phase2({ existing, toggle, onWeiter, onZurueck, C, T, firma, logoIconColor }) {
+  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={60} T={T} firma={firma} logoIconColor={logoIconColor}/>
     <div style={T.hero}><div style={T.eyebrow}>Schritt 2 von 2</div><div style={T.h1}>Was haben Sie bereits?</div><div style={T.body}>Vorhandene Versicherungen werden nicht erneut empfohlen.</div></div>
     {EX_GROUPS.map(group=>(
       <div key={group.label} style={T.section}>
@@ -217,22 +279,6 @@ function Phase2({existing,toggle,onWeiter,onZurueck}){
   </div>);}
 
 // Phase 3: Ergebnis — Fintech Carousel
-// ─── PAKET-DEFINITIONEN ───────────────────────────────────────────────────────
-const PAKETE_DEFS=[
-  {key:"basisPackage",label:"Essentieller Schutz",badge:null,
-   stripe:"#e0e0e0",
-   desc:"Die wichtigsten Absicherungen — kompakt und klar.",
-   btnBg:"#f5f5f5",btnTxt:"#333",btnBorder:"1px solid #e0e0e0"},
-  {key:"plusPackage",label:"Starker Rundumschutz",badge:"Empfohlen",
-   stripe:C,
-   desc:"Bewährtester Schutz für Ihre Situation — Basis plus die wichtigsten Ergänzungen.",
-   btnBg:C,btnTxt:"#fff",btnBorder:"none"},
-  {key:"completePackage",label:"Maximale Sicherheit",badge:null,
-   stripe:"#2d2d2d",
-   desc:"Vollständig abgesichert — alle relevanten Bereiche auf einmal.",
-   btnBg:"#1a1a1a",btnTxt:"#fff",btnBorder:"none"},
-];
-
 function PackageBadge({text,stripe}){
   if(!text)return null;
   return(<span style={{display:"inline-flex",alignItems:"center",gap:"4px",
@@ -242,7 +288,7 @@ function PackageBadge({text,stripe}){
     {text}
   </span>);}
 
-function PackageCard({def,items,active,onCTA,isDemo}){
+function PackageCard({ def, items, active, onCTA, isDemo, accent }) {
   const isRecommended=def.key==="plusPackage";
   return(<div style={{
     background:"#fff",
@@ -252,7 +298,7 @@ function PackageCard({def,items,active,onCTA,isDemo}){
     borderLeft:`3px solid ${def.stripe}`,
     transform:active?"scale(1.02)":"scale(0.97)",
     boxShadow:active
-      ?(isRecommended?`0 12px 40px ${C}28`:"0 6px 20px rgba(0,0,0,0.08)")
+      ?(isRecommended?`0 12px 40px ${accent}28`:"0 6px 20px rgba(0,0,0,0.08)")
       :"none",
     opacity:active?1:0.72,
     transition:"transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease",
@@ -308,22 +354,33 @@ function PackageCard({def,items,active,onCTA,isDemo}){
     </div>
   </div>);}
 
-function PackageCarousel({result,onCTA,isDemo}){
+function PackageCarousel({ result, onCTA, isDemo, accent, paketeDefs }) {
   const[active,setActive]=useState(1);
   const[touchX,setTouchX]=useState(null);
-  const pakete=PAKETE_DEFS.map(d=>({...d,items:result[d.key]||[]})).filter(d=>d.items.length>0);
+  const pakete=paketeDefs.map(d=>({...d,items:result[d.key]||[]})).filter(d=>d.items.length>0);
   if(pakete.length===0)return null;
   const idx=Math.min(active,pakete.length-1);
   const hts=(e)=>setTouchX(e.touches[0].clientX);
   const hte=(e)=>{if(touchX===null)return;const dx=e.changedTouches[0].clientX-touchX;if(dx<-40&&idx<pakete.length-1)setActive(idx+1);if(dx>40&&idx>0)setActive(idx-1);setTouchX(null);};
-  const bgTints={"basisPackage":"#f4f4f4","plusPackage":`${C}09`,"completePackage":"#f0f0ee"};
+  const bgTints={"basisPackage":"#f4f4f4","plusPackage":`${accent}09`,"completePackage":"#f0f0ee"};
   const activeBg=bgTints[pakete[idx]?.key]||"#f4f4f4";
   const CW=82;const GAP=12;
-  return(<div style={{background:activeBg,borderRadius:"16px",padding:"16px 0 14px",transition:"background 0.4s ease"}}>
+  const navBtn=48;
+  return(<div style={{background:activeBg,borderRadius:"16px",padding:"12px 0 14px",transition:"background 0.4s ease"}}>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"20px",marginBottom:"12px",padding:"0 8px"}}>
+      {[{d:-1,p:"M10 3.5L5 8l5 4.5",label:"Vorheriges Paket"},{d:1,p:"M6 3.5L11 8l-5 4.5",label:"Nächstes Paket"}].map(({d,p,label})=>{
+        const dis=d===-1?idx===0:idx===pakete.length-1;
+        return(<button key={d} type="button" aria-label={label} disabled={dis} onClick={()=>!dis&&setActive(idx+d)} style={{
+          width:navBtn,height:navBtn,minWidth:navBtn,borderRadius:"50%",border:"1.5px solid rgba(0,0,0,0.12)",
+          background:"rgba(255,255,255,0.95)",boxShadow:"0 2px 10px rgba(0,0,0,0.06)",cursor:dis?"default":"pointer",opacity:dis?0.35:1,
+          display:"flex",alignItems:"center",justifyContent:"center",transition:"opacity 0.2s, transform 0.15s"}}>
+          <svg width="22" height="22" viewBox="0 0 16 16" fill="none" aria-hidden><path d={p} stroke="#333" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>);})}
+    </div>
     <div style={{display:"flex",justifyContent:"center",gap:"5px",marginBottom:"14px"}}>
-      {pakete.map((_,i)=><button key={i} onClick={()=>setActive(i)} style={{
+      {pakete.map((_,i)=><button key={i} type="button" aria-label={`Paket ${i+1}`} onClick={()=>setActive(i)} style={{
         width:i===idx?20:6,height:6,borderRadius:3,border:"none",cursor:"pointer",padding:0,
-        background:i===idx?C:"rgba(0,0,0,0.14)",transition:"all 0.25s ease"}}/>)}
+        background:i===idx?accent:"rgba(0,0,0,0.14)",transition:"all 0.25s ease"}}/>)}
     </div>
     <div style={{overflow:"hidden",paddingLeft:`${(100-CW)/2}%`}} onTouchStart={hts} onTouchEnd={hte}>
       <div style={{display:"flex",gap:`${GAP}px`,
@@ -332,34 +389,24 @@ function PackageCarousel({result,onCTA,isDemo}){
         {pakete.map((def,i)=>(
           <div key={def.key} style={{width:`${CW}%`,flexShrink:0,cursor:i!==idx?"pointer":"default"}}
             onClick={()=>i!==idx&&setActive(i)}>
-            <PackageCard def={def} items={def.items} active={i===idx} onCTA={onCTA} isDemo={isDemo}/>
+            <PackageCard def={def} items={def.items} active={i===idx} onCTA={onCTA} isDemo={isDemo} accent={accent}/>
           </div>
         ))}
       </div>
     </div>
-    <div style={{display:"flex",gap:"8px",justifyContent:"center",marginTop:"14px"}}>
-      {[{d:-1,p:"M9 3L5 7l4 4"},{d:1,p:"M5 3l4 4-4 4"}].map(({d,p})=>{
-        const dis=d===-1?idx===0:idx===pakete.length-1;
-        return(<button key={d} onClick={()=>!dis&&setActive(idx+d)} style={{
-          width:36,height:36,borderRadius:"50%",border:"1px solid rgba(0,0,0,0.1)",
-          background:"rgba(255,255,255,0.8)",cursor:dis?"default":"pointer",opacity:dis?0.3:1,
-          display:"flex",alignItems:"center",justifyContent:"center",transition:"opacity 0.2s"}}>
-          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d={p} stroke="#555" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>);})}
-    </div>
-    <div style={{textAlign:"center",marginTop:"8px",fontSize:"11px",color:"rgba(0,0,0,0.35)"}}>
+    <div style={{textAlign:"center",marginTop:"12px",fontSize:"11px",color:"rgba(0,0,0,0.35)",padding:"0 12px"}}>
       {idx+1} / {pakete.length} — <span style={{color:"rgba(0,0,0,0.55)",fontWeight:"600"}}>{pakete[idx]?.label}</span>
     </div>
   </div>);}
-function Phase3({result,onCTA,onReset,isDemo}){
-  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={100}/>
+function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor, paketeDefs }) {
+  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={100} T={T} firma={firma} logoIconColor={logoIconColor}/>
     <div style={T.hero}>
       <div style={T.eyebrow}>Ihre persönliche Empfehlung</div>
       <div style={T.h1}>3 Pakete für Ihre Situation</div>
       <div style={T.body}>Wählen Sie den Schutz, der zu Ihnen passt — von essentiell bis vollständig.</div>
     </div>
     <div style={{padding:"0 20px",marginBottom:"16px"}}>
-      <PackageCarousel result={result} onCTA={onCTA} isDemo={isDemo}/>
+      <PackageCarousel result={result} onCTA={onCTA} isDemo={isDemo} accent={C} paketeDefs={paketeDefs}/>
     </div>
     {result.alreadyCovered.length>0&&(
       <div style={T.section}>
@@ -382,11 +429,11 @@ function Phase3({result,onCTA,onReset,isDemo}){
   </div>);}
 
 // Phase 4: Kontakt
-function Phase4({selectedRec,onAbsenden,onZurueck,isDemo}){
+function Phase4({ selectedRec, onAbsenden, onZurueck, isDemo, makler, C, T, firma, logoIconColor }) {
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[consent,setConsent]=useState(false);
   const valid=fd.name.trim()&&fd.email.trim()&&consent;
-  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={100}/>
+  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={100} T={T} firma={firma} logoIconColor={logoIconColor}/>
     <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={T.h1}>Über <span style={{color:C}}>{selectedRec?.name}</span> sprechen</div><div style={T.body}>Wir bereiten ein persönliches Angebot auf Basis Ihres Ergebnisses vor.</div></div>
     {isDemo ? (
       <>
@@ -419,7 +466,7 @@ function Phase4({selectedRec,onAbsenden,onZurueck,isDemo}){
       ))}
     </div>
     <div style={{marginTop:"14px",marginBottom:"100px"}}>
-      <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={consent} onConsentChange={setConsent} />
+      <CheckKontaktBeforeSubmitBlock maklerName={makler.name} consent={consent} onConsentChange={setConsent} />
     </div>
     </div>
     <div style={T.footer}><button style={T.btnPrim(!valid)} disabled={!valid} onClick={()=>valid&&onAbsenden(fd)}>Gespräch anfragen</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
@@ -428,19 +475,26 @@ function Phase4({selectedRec,onAbsenden,onZurueck,isDemo}){
   </div>);}
 
 // Danke
-function DankeScreen({name,onReset}){
-  return(<div style={{...T.page,"--accent":C}}><Header progPct={100}/>
+function DankeScreen({ name, onReset, makler, C, T, firma, logoIconColor }) {
+  return(<div style={{...T.page,"--accent":C}}><Header progPct={100} T={T} firma={firma} logoIconColor={logoIconColor}/>
     <div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in">
       <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
       <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{name?`Danke, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
       <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir bereiten das Gespräch mit Ihrem persönlichen Ergebnis vor und melden uns innerhalb von 24 Stunden.</div>
-      <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div>
+      <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{makler.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{makler.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${makler.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{makler.telefon}</a><a href={`mailto:${makler.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{makler.email}</a></div></div>
       <button onClick={onReset} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button>
     </div></div>);}
 
 // Root
 export default function Bedarfscheck(){
   const isDemo = isCheckDemoMode();
+  const makler = useCheckConfig();
+  const C = makler.primaryColor;
+  const onAccent = useMemo(() => textOnAccent(C), [C]);
+  const T = useMemo(() => makeBedarfT(C, onAccent), [C, onAccent]);
+  const paketeDefs = useMemo(() => makePaketeDefs(C, onAccent), [C, onAccent]);
+  const logoIconColor = onAccent;
+  const firma = makler.firma;
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[selectedRec,setSelectedRec]=useState(null);const[kontaktName,setKontaktName]=useState("");
   const[profil,setProfil]=useState({age:"",employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:""});
   const[existing,setExisting]=useState([]);
@@ -450,9 +504,9 @@ export default function Bedarfscheck(){
   const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setProfil({age:"",employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:""});setExisting([]);setSelectedRec(null);setKontaktName("");};
   const profilReady=profil.age&&profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus&&profil.healthStatus;
   const result=profilReady?runScoringEngine(profil,existing):null;
-  if(danke)return <DankeScreen name={kontaktName} onReset={reset}/>;
-  if(phase===4)return <Phase4 key={ak} isDemo={isDemo} selectedRec={selectedRec} onAbsenden={(fd)=>{setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)}/>;
-  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={(rec)=>{setSelectedRec(rec);goTo(4);}} onReset={reset}/>;
-  if(phase===2)return <Phase2 key={ak} existing={existing} toggle={toggle} onWeiter={()=>goTo(3)} onZurueck={()=>goTo(1)}/>;
-  return <Phase1 key={ak} profil={profil} set={set} onWeiter={()=>goTo(2)}/>;
+  if(danke)return <DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
+  if(phase===4)return <Phase4 key={ak} isDemo={isDemo} selectedRec={selectedRec} onAbsenden={async (fd)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
+  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={(rec)=>{setSelectedRec(rec);goTo(4);}} onReset={reset} C={C} T={T} firma={firma} logoIconColor={logoIconColor} paketeDefs={paketeDefs}/>;
+  if(phase===2)return <Phase2 key={ak} existing={existing} toggle={toggle} onWeiter={()=>goTo(3)} onZurueck={()=>goTo(1)} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
+  return <Phase1 key={ak} profil={profil} set={set} onWeiter={()=>goTo(2)} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
 }

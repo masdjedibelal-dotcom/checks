@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
+import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 (() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
-const MAKLER={name:"Max Mustermann",firma:"Mustermann Versicherungen",email:"kontakt@mustermann-versicherungen.de",telefon:"089 123 456 78",primaryColor:"#1a3a5c"};
-const C=MAKLER.primaryColor,WARN="#c0392b",OK="#059669";
+const WARN="#c0392b",OK="#059669";
 const fmt=(n)=>Math.round(Math.abs(n)).toLocaleString("de-DE")+" €";
 const fmtK=(n)=>n>=1000000?(n/1000000).toFixed(2)+" Mio. €":n>=10000?Math.round(n/1000).toLocaleString("de-DE")+".000 €":fmt(n);
 
@@ -79,7 +79,7 @@ const ABSICHERUNG={
 };
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
-const T={
+function makeImmobilienT(C){return{
   page:{minHeight:"100vh",background:"#fff",fontFamily:"'Inter','Helvetica Neue',Helvetica,Arial,sans-serif"},
   header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},
   logo:{display:"flex",alignItems:"center",gap:"10px"},
@@ -102,12 +102,12 @@ const T={
   btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},
   infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},
   inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},
-};
+};}
 
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 
 // ─── ABSICHERUNGS-BLOCK ───────────────────────────────────────────────────────
-function AbsicherungBlock({modul}){
+function AbsicherungBlock({modul,T,C}){
   const cards=ABSICHERUNG[modul]||[];
   const prioColor={kritisch:WARN,sinnvoll:"#d97706",optional:"#888"};
   const prioBg={kritisch:"#fff5f5",sinnvoll:"#fffbf0",optional:"#f9f9f9"};
@@ -133,6 +133,9 @@ function AbsicherungBlock({modul}){
 
 // ─── HAUPTKOMPONENTE ──────────────────────────────────────────────────────────
 export default function ImmobilienCheck(){
+  const MAKLER=useCheckConfig();
+  const C=MAKLER.primaryColor;
+  const T=useMemo(()=>makeImmobilienT(C),[C]);
   const isDemo = isCheckDemoMode();
   const[phase,setPhase]=useState(1);
   const[ak,setAk]=useState(0);
@@ -195,7 +198,7 @@ export default function ImmobilienCheck(){
           <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
         </div>
       </div>
-      <div style={T.footer}><button type="button" style={T.btnPrim(!valid)} onClick={()=>{if(valid)setDanke(true);}} disabled={!valid}>Gespräch anfragen</button><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      <div style={T.footer}><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"immobilien-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>Gespräch anfragen</button><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
       </>
       )}
     </div>);
@@ -333,7 +336,7 @@ export default function ImmobilienCheck(){
       </>)}
 
       {/* Absicherungs-Block */}
-      <AbsicherungBlock modul={modul}/>
+      <AbsicherungBlock modul={modul} T={T} C={C}/>
 
       <div style={{...T.section,marginBottom:"120px"}}>
         <div style={T.infoBox}>Orientierungs-Check — Näherungswerte. Für verbindliche Angebote empfehlen wir ein persönliches Gespräch.</div>

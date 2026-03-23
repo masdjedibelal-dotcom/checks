@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
+import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard, SectionHeader } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -26,8 +27,6 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
   document.head.appendChild(s);
 })();
 
-const MAKLER = { name: "Max Mustermann", firma: "Mustermann Versicherungen", email: "kontakt@mustermann-versicherungen.de", telefon: "089 123 456 78", primaryColor: "#1a3a5c" };
-const C = MAKLER.primaryColor;
 const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n >= 1000 ? (Math.round(n / 1000) * 1000).toLocaleString("de-DE") + " €" : fmt(n);
 
@@ -62,7 +61,8 @@ function berechne(p) {
   return { jahreBis, renteDauer, ziel, vorhanden, luecke, deckung, rateA, nettoA, stVorteil, rateB, rateC, kapBedarf, kapitalBedarf, depotLeer, schichten, lebenserw };
 }
 
-const T = {
+function makeRentenT(C) {
+  return {
   page:    { minHeight: "100vh", background: "#fff", fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif" },
   header:  { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   logo:    { display: "flex", alignItems: "center", gap: "10px" },
@@ -91,16 +91,17 @@ const T = {
   infoBox: { padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 },
   inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
 };
+}
 
 function LogoSVG() {
   return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;
 }
 
-function Header({ phase, total, badge }) {
+function Header({ phase, total, badge, makler, T }) {
   return (
     <>
       <div style={T.header}>
-        <div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{ fontSize:"13px",fontWeight:"600",color:"#111",letterSpacing:"-0.1px" }}>{MAKLER.firma}</span></div>
+        <div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{ fontSize:"13px",fontWeight:"600",color:"#111",letterSpacing:"-0.1px" }}>{makler.firma}</span></div>
         <span style={T.badge}>{badge}</span>
       </div>
       <div style={T.prog}><div style={T.progFil((phase/total)*100)}/></div>
@@ -108,7 +109,7 @@ function Header({ phase, total, badge }) {
   );
 }
 
-function Footer({ onNext, onBack, label="Weiter", disabled=false }) {
+function Footer({ onNext, onBack, label="Weiter", disabled=false, T }) {
   return (
     <div style={T.footer}>
       <button style={T.btnPrim(disabled)} onClick={onNext} disabled={disabled}>{label}</button>
@@ -117,7 +118,7 @@ function Footer({ onNext, onBack, label="Weiter", disabled=false }) {
   );
 }
 
-function DankeScreen({ name, onBack }) {
+function DankeScreen({ name, onBack, makler, C }) {
   return (
     <div style={{ padding:"48px 24px", textAlign:"center" }} className="fade-in">
       <div style={{ width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px" }}>
@@ -128,12 +129,12 @@ function DankeScreen({ name, onBack }) {
       <div style={{ border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left" }}>
         <div style={{ padding:"14px 16px",borderBottom:"1px solid #f0f0f0" }}>
           <div style={{ fontSize:"11px",color:"#999",fontWeight:"600",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px" }}>Ihr Berater</div>
-          <div style={{ fontSize:"14px",fontWeight:"600",color:"#111" }}>{MAKLER.name}</div>
-          <div style={{ fontSize:"12px",color:"#888",marginTop:"1px" }}>{MAKLER.firma}</div>
+          <div style={{ fontSize:"14px",fontWeight:"600",color:"#111" }}>{makler.name}</div>
+          <div style={{ fontSize:"12px",color:"#888",marginTop:"1px" }}>{makler.firma}</div>
         </div>
         <div style={{ padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px" }}>
-          <a href={`tel:${MAKLER.telefon}`} style={{ fontSize:"13px",color:C,fontWeight:"500" }}>{MAKLER.telefon}</a>
-          <a href={`mailto:${MAKLER.email}`} style={{ fontSize:"13px",color:C,fontWeight:"500" }}>{MAKLER.email}</a>
+          <a href={`tel:${makler.telefon}`} style={{ fontSize:"13px",color:C,fontWeight:"500" }}>{makler.telefon}</a>
+          <a href={`mailto:${makler.email}`} style={{ fontSize:"13px",color:C,fontWeight:"500" }}>{makler.email}</a>
         </div>
       </div>
       <button onClick={onBack} style={{ marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer" }}>Neue Berechnung starten</button>
@@ -142,6 +143,9 @@ function DankeScreen({ name, onBack }) {
 }
 
 export default function RentenRechner() {
+  const MAKLER = useCheckConfig();
+  const C = MAKLER.primaryColor;
+  const T = useMemo(() => makeRentenT(C), [C]);
   const isDemo = isCheckDemoMode();
   const [phase, setPhase] = useState(1);
   const [ak, setAk] = useState(0);
@@ -156,14 +160,14 @@ export default function RentenRechner() {
   const R = berechne(p);
   const TOTAL = 3;
 
-  if (danke) return <div style={{...T.page,"--accent":C}}><Header phase={TOTAL} total={TOTAL} badge="Renten-Rechner"/><DankeScreen name={name} onBack={()=>{setDanke(false);setPhase(1);}}/></div>;
+  if (danke) return <div style={{...T.page,"--accent":C}}><Header phase={TOTAL} total={TOTAL} badge="Renten-Rechner" makler={MAKLER} T={T}/><DankeScreen name={name} onBack={()=>{setDanke(false);setPhase(1);}} makler={MAKLER} C={C}/></div>;
 
   // Phase 3: Kontakt
   if (phase === 3) {
     const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
     return (
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-        <Header phase={3} total={TOTAL} badge="Renten-Rechner"/>
+        <Header phase={3} total={TOTAL} badge="Renten-Rechner" makler={MAKLER} T={T}/>
         <div style={T.hero}><div style={T.eyebrow}>Beratungsgespräch</div><div style={T.h1}>Rentenplan besprechen</div><div style={T.body}>Wir erstellen einen konkreten Sparplan mit echten Tarifen.</div></div>
         <div style={T.section}>
           <div style={{ ...T.infoBox, marginBottom:"16px" }}>
@@ -211,7 +215,7 @@ export default function RentenRechner() {
         {isDemo ? (
           <div style={T.footer}><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></div>
         ) : (
-        <Footer onNext={()=>{if(valid){setName(fd.name);setDanke(true);}}} onBack={()=>goTo(2)} label="Gespräch anfragen" disabled={!valid}/>
+        <Footer onNext={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"vorsorge-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setName(fd.name);setDanke(true);}} onBack={()=>goTo(2)} label="Gespräch anfragen" disabled={!valid} T={T}/>
         )}
       </div>
     );
@@ -226,7 +230,7 @@ export default function RentenRechner() {
     ];
     return (
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-        <Header phase={3} total={TOTAL} badge="Renten-Rechner"/>
+        <Header phase={3} total={TOTAL} badge="Renten-Rechner" makler={MAKLER} T={T}/>
         <div style={T.hero}>
           <div style={T.eyebrow}>Ihre Rentenanalyse</div>
           <div style={T.h1}>{R.luecke>0?`${fmt(R.luecke)}/Monat fehlen ab ${p.rentenAlter}`:"Gut versorgt"}</div>
@@ -302,7 +306,7 @@ export default function RentenRechner() {
         <div style={{ ...T.section, marginBottom:"120px" }}>
           <div style={T.infoBox}>Näherungswerte auf Basis von Ø-Renditen. Für einen verbindlichen Sparplan empfehlen wir ein persönliches Gespräch.</div>
         </div>
-        <Footer onNext={()=>goTo(4)} onBack={()=>goTo(2)} label="Strategie besprechen"/>
+        <Footer onNext={()=>goTo(4)} onBack={()=>goTo(2)} label="Strategie besprechen" T={T}/>
       </div>
     );
   }
@@ -352,7 +356,7 @@ export default function RentenRechner() {
 
     return (
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-        <Header phase={2} total={TOTAL} badge="Renten-Rechner"/>
+        <Header phase={2} total={TOTAL} badge="Renten-Rechner" makler={MAKLER} T={T}/>
 
         {/* Block 1: Rentenlücke */}
         <div style={T.hero}>
@@ -493,7 +497,7 @@ export default function RentenRechner() {
   // Phase 1: Basisdaten + Vorsorge (zusammengelegt)
   return (
     <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-      <Header phase={1} total={TOTAL} badge="Renten-Rechner"/>
+      <Header phase={1} total={TOTAL} badge="Renten-Rechner" makler={MAKLER} T={T}/>
       <div style={T.hero}>
         <div style={T.eyebrow}>Schritt 1 von 2 · Ihre Situation</div>
         <div style={T.h1}>Wie sieht Ihre Rente aus?</div>

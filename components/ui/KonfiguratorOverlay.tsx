@@ -3,17 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { MAKLER } from "@/lib/config";
 import type { Template } from "@/lib/katalog";
-import { alpha } from "@/lib/utils";
+import { alpha, textOnAccent } from "@/lib/utils";
 
 export type KonfiguratorForm = {
   name: string;
   firma: string;
   email: string;
+  telefon: string;
   akzentfarbe: string;
-  headline: string;
-  unterzeile: string;
-  cta: string;
-  danke: string;
 };
 
 export type KonfiguratorOverlayProps = {
@@ -41,13 +38,10 @@ export default function KonfiguratorOverlay({
 }: KonfiguratorOverlayProps) {
   const [form, setForm] = useState<KonfiguratorForm>(() => ({
     name: "",
-    firma: MAKLER.firma,
+    firma: "",
     email: "",
+    telefon: "",
     akzentfarbe: template?.accentColor ?? MAKLER.primaryColor,
-    headline: "Was haben Sie bereits?",
-    unterzeile: "Tippen Sie an was vorhanden ist.",
-    cta: "Weiter →",
-    danke: "Wir melden uns innerhalb von 24 Stunden.",
   }));
 
   useEffect(() => {
@@ -80,13 +74,15 @@ export default function KonfiguratorOverlay({
     () => ({
       name: !form.name.trim(),
       email: !form.email.trim(),
+      telefon: !form.telefon.trim(),
     }),
-    [form.name, form.email]
+    [form.name, form.email, form.telefon]
   );
 
   if (!template) return null;
 
   const c = form.akzentfarbe;
+  const onAccent = textOnAccent(c);
 
   const set = (k: keyof KonfiguratorForm, v: string) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -150,6 +146,14 @@ export default function KonfiguratorOverlay({
                 err={err.email}
                 type="email"
               />
+              <Field
+                label="Telefon (für Rückruf)"
+                value={form.telefon}
+                onChange={(v) => set("telefon", v)}
+                err={err.telefon}
+                type="tel"
+                placeholder="z. B. 089 123 456 78"
+              />
               <div className="mb-3">
                 <label className="mb-1.5 block text-[11px] font-semibold text-[#555]">
                   Akzentfarbe
@@ -188,32 +192,6 @@ export default function KonfiguratorOverlay({
                 </div>
               </div>
             </div>
-            <div>
-              <div className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#ccc]">
-                <span>Texte</span>
-                <span className="h-px flex-1 bg-[#f0f0f0]" />
-              </div>
-              <Field
-                label="Begrüßungs-Headline"
-                value={form.headline}
-                onChange={(v) => set("headline", v)}
-              />
-              <Field
-                label="Unterzeile"
-                value={form.unterzeile}
-                onChange={(v) => set("unterzeile", v)}
-              />
-              <Field
-                label="Button-Text (CTA)"
-                value={form.cta}
-                onChange={(v) => set("cta", v)}
-              />
-              <Field
-                label="Danke-Text"
-                value={form.danke}
-                onChange={(v) => set("danke", v)}
-              />
-            </div>
           </div>
 
           <div className="hidden flex-col bg-[#f7f7f5] md:flex">
@@ -228,8 +206,8 @@ export default function KonfiguratorOverlay({
                 <div className="flex items-center justify-between border-b border-black/[0.05] px-3 py-2.5">
                   <div className="flex items-center gap-1.5">
                     <div
-                      className="flex h-[22px] w-[22px] items-center justify-center rounded-md text-[10px] font-extrabold text-black"
-                      style={{ background: c }}
+                      className="flex h-[22px] w-[22px] items-center justify-center rounded-md text-[10px] font-extrabold"
+                      style={{ background: c, color: onAccent }}
                     >
                       {initials}
                     </div>
@@ -237,7 +215,7 @@ export default function KonfiguratorOverlay({
                       className="text-[11px] font-bold"
                       style={{ color: c }}
                     >
-                      {form.firma || MAKLER.firma}
+                      {form.firma.trim() || "Ihre Firma"}
                     </span>
                   </div>
                   <span
@@ -264,10 +242,10 @@ export default function KonfiguratorOverlay({
                     {shortName} · Schritt 1
                   </div>
                   <div className="mb-1 text-[13px] font-extrabold leading-tight text-[#0d0d0d]">
-                    {form.headline}
+                    Was haben Sie bereits?
                   </div>
                   <div className="mb-3 text-[10px] leading-snug text-black/45">
-                    {form.unterzeile}
+                    Tippen Sie an was vorhanden ist.
                   </div>
                   <div className="mb-3 flex flex-col gap-1.5">
                     {["BU", "Haftpflicht", "KTG", "Risiko"].map((x, i) => (
@@ -280,7 +258,7 @@ export default function KonfiguratorOverlay({
                           style={{
                             borderColor: i < 2 ? "transparent" : "rgba(0,0,0,0.15)",
                             background: i < 2 ? c : "transparent",
-                            color: i < 2 ? "#000" : "transparent",
+                            color: i < 2 ? onAccent : "transparent",
                           }}
                         >
                           {i < 2 ? "✓" : ""}
@@ -293,10 +271,10 @@ export default function KonfiguratorOverlay({
                   </div>
                   <button
                     type="button"
-                    className="w-full rounded-lg py-2.5 text-center text-[11px] font-bold text-black"
-                    style={{ background: c }}
+                    className="w-full rounded-lg py-2.5 text-center text-[11px] font-bold"
+                    style={{ background: c, color: onAccent }}
                   >
-                    {form.cta}
+                    Weiter →
                   </button>
                   <p className="mt-2 text-center text-[9px] text-black/30">
                     Von <strong>{form.name || "Max Mustermann"}</strong>
@@ -315,9 +293,9 @@ export default function KonfiguratorOverlay({
             <div className="text-[11px] text-[#bbb]">einmalig</div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {(err.name || err.email) && (
+            {(err.name || err.email || err.telefon) && (
               <span className="text-[11px] text-[#e53e3e]">
-                Name und E-Mail nötig
+                Name, E-Mail und Telefon nötig
               </span>
             )}
             <button
@@ -331,7 +309,7 @@ export default function KonfiguratorOverlay({
               type="button"
               className="flex items-center gap-1.5 rounded-lg bg-[#111] px-[22px] py-2.5 text-[13px] font-bold text-white transition hover:bg-[#c9a96e]"
               onClick={() => {
-                if (err.name || err.email) return;
+                if (err.name || err.email || err.telefon) return;
                 onCheckout(form);
               }}
             >
