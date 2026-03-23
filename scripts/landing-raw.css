@@ -133,10 +133,15 @@ nav {
 /* ─── HERO ───────────────────────────────────────────────────────────────── */
 .hero {
   text-align: center;
-  padding: 80px 24px 64px;
+  padding: 100px 24px 64px;
   max-width: 1100px;
   margin: 0 auto;
   position: relative;
+}
+@media (max-width: 680px) {
+  .hero {
+    padding-top: 80px;
+  }
 }
 
 /* eyebrow tag */
@@ -417,6 +422,10 @@ nav {
   border: 1px solid var(--border);
   padding: 5px 12px;
   border-radius: 100px;
+}
+.trust-pill svg {
+  flex-shrink: 0;
+  color: var(--gold);
 }
 .trust-check {
   width: 15px;
@@ -1061,6 +1070,85 @@ h2 {
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
+}
+
+/* ─── TOOLS SECTION DUNKEL (#tools.checks-section--dark) ─────────────────── */
+section#tools.checks-section--dark {
+  background: #0f1a14 !important;
+}
+section#tools.checks-section--dark .s-label {
+  color: #b8884a;
+}
+section#tools.checks-section--dark .checks-section-headline {
+  color: #ffffff;
+}
+section#tools.checks-section--dark .checks-section-tagline {
+  color: #b8884a;
+  font-style: italic;
+}
+section#tools.checks-section--dark .ck-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+section#tools.checks-section--dark .ck-card:hover {
+  border-color: rgba(184, 136, 74, 0.4);
+  background: rgba(255, 255, 255, 0.07);
+}
+section#tools.checks-section--dark .ck-card-preview {
+  border-right-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+section#tools.checks-section--dark .ck-card-cat,
+section#tools.checks-section--dark .ck-cat-neu,
+section#tools.checks-section--dark .ck-cat-schutz,
+section#tools.checks-section--dark .ck-cat-entscheidung,
+section#tools.checks-section--dark .ck-cat-vorsorge,
+section#tools.checks-section--dark .ck-cat-familie,
+section#tools.checks-section--dark .ck-cat-pflege,
+section#tools.checks-section--dark .ck-cat-immobilien {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  border: none;
+}
+section#tools.checks-section--dark .ck-card-name {
+  color: #ffffff;
+}
+section#tools.checks-section--dark .ck-card-context {
+  color: #b8884a;
+  font-size: 11px;
+}
+section#tools.checks-section--dark .ck-card-erlebnis {
+  color: rgba(255, 255, 255, 0.55);
+}
+section#tools.checks-section--dark .ck-card-foot {
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+section#tools.checks-section--dark .ck-card-price {
+  color: #ffffff;
+}
+section#tools.checks-section--dark .ck-card-price small {
+  color: rgba(255, 255, 255, 0.4);
+}
+section#tools.checks-section--dark .ck-demo {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+}
+section#tools.checks-section--dark .ck-demo:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  background: transparent;
+}
+section#tools.checks-section--dark .ck-buy {
+  background: #b8884a;
+  color: #ffffff;
+}
+section#tools.checks-section--dark .ck-buy:hover:not(:disabled) {
+  background: #a07038;
 }
 
 /* ─── FEATURE BENTO GRID ─────────────────────────────────────────────────── */
