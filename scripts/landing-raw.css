@@ -75,6 +75,12 @@ nav {
   align-items: center;
   justify-content: center;
 }
+nav .logo-mark {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  background: var(--dark);
+}
 .nav-links {
   display: flex;
   gap: 24px;
@@ -175,7 +181,7 @@ nav {
 
 /* Hero headline — Instrument Serif, Perspective-ähnliche Proportionen */
 .hero h1 {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(44px, 6.2vw, 64px);
   font-weight: 400;
   line-height: 1.05;
@@ -317,7 +323,7 @@ nav {
   margin-right: auto;
 }
 .why-flowleads-title {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(28px, 3.6vw, 42px);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -508,7 +514,7 @@ nav {
   background: var(--gold-mid);
 }
 h2 {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -535,7 +541,7 @@ h2 {
 
 /* ─── HOW FLOW (So funktioniert's) ───────────────────────────────────────── */
 .how-flow-h2 {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -875,7 +881,7 @@ h2 {
 
 /* ─── TOOLS SECTION (#tools, ehem. Checks, ck-*) ─────────────────────────── */
 .checks-section-headline {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
   letter-spacing: -0.025em;
@@ -891,7 +897,7 @@ h2 {
   font-weight: 400;
   color: var(--subline);
   line-height: 1.65;
-  max-width: 560px;
+  max-width: 640px;
   margin: 0 auto 32px;
   text-align: center;
 }
@@ -970,7 +976,7 @@ h2 {
   color: #b45309;
 }
 .ck-card-name {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: 21px;
   font-weight: 400;
   color: var(--ink);
@@ -1072,30 +1078,30 @@ h2 {
   }
 }
 
-/* ─── TOOLS SECTION DUNKEL (#tools.checks-section--dark) ─────────────────── */
+/* ─── TOOLS SECTION: weißer Bereich, Karten dunkelgrün (#tools) ───────────── */
 section#tools.checks-section--dark {
-  background: #0f1a14 !important;
+  background: #ffffff !important;
 }
 section#tools.checks-section--dark .s-label {
   color: #b8884a;
 }
 section#tools.checks-section--dark .checks-section-headline {
-  color: #ffffff;
+  color: var(--ink);
 }
 section#tools.checks-section--dark .checks-section-tagline {
-  color: #b8884a;
+  color: var(--subline);
   font-style: italic;
 }
 section#tools.checks-section--dark .ck-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0f1a14;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  box-shadow: none;
-  transition: border-color 0.2s, background 0.2s;
+  box-shadow: 0 4px 24px rgba(15, 26, 20, 0.12);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 section#tools.checks-section--dark .ck-card:hover {
-  border-color: rgba(184, 136, 74, 0.4);
-  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(184, 136, 74, 0.45);
+  box-shadow: 0 8px 32px rgba(15, 26, 20, 0.18);
 }
 section#tools.checks-section--dark .ck-card-preview {
   border-right-color: rgba(255, 255, 255, 0.08);
@@ -1124,7 +1130,7 @@ section#tools.checks-section--dark .ck-card-erlebnis {
   color: rgba(255, 255, 255, 0.55);
 }
 section#tools.checks-section--dark .ck-card-foot {
-  background: rgba(255, 255, 255, 0.03);
+  background: transparent;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 section#tools.checks-section--dark .ck-card-price {
@@ -1186,7 +1192,7 @@ section#tools.checks-section--dark .ck-buy:hover:not(:disabled) {
   margin-bottom: 12px;
 }
 .bento-card h3 {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: 22px;
   font-weight: 400;
   color: var(--ink);
@@ -1588,9 +1594,18 @@ section#tools.checks-section--dark .ck-buy:hover:not(:disabled) {
   gap: 16px;
   margin-top: 44px;
 }
+.use-grid.use-grid--single {
+  grid-template-columns: 1fr;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
 @media (max-width: 720px) {
   .use-grid {
     grid-template-columns: 1fr 1fr;
+  }
+  .use-grid.use-grid--single {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 400px) {
@@ -1740,7 +1755,7 @@ section#tools.checks-section--dark .ck-buy:hover:not(:disabled) {
   flex-wrap: wrap;
 }
 .cta-left h2 {
-  font-family: "Instrument Serif", serif;
+  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
   font-size: clamp(26px, 3.5vw, 40px);
   font-weight: 400;
   color: #fff;
@@ -1764,7 +1779,7 @@ section#tools.checks-section--dark .ck-buy:hover:not(:disabled) {
 }
 .cta-left p {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.55);
   font-weight: 300;
   line-height: 1.65;
   max-width: 400px;
