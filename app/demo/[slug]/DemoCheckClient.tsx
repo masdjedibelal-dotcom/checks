@@ -7,7 +7,7 @@ import type { DemoSlug } from "@/lib/demoCheckMap";
 /**
  * gkv-pkv → GKVPKVRechner.jsx
  * risikoleben → Risikoleben_Rechner.jsx
- * (einheitliches Layout: DM Sans, Header 52px, sticky Footer, SliderCard aus CheckComponents)
+ * (einheitliches Layout: Inter / Helvetica-Stack, Header 52px, sticky Footer, SliderCard aus CheckComponents)
  */
 const CHECKS: Record<DemoSlug, ComponentType> = {
   bedarfscheck: dynamic(() => import("@/components/checks/Bedarfscheck"), {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { normalizeDomainHost, publicAppUrl } from "@/lib/licenseUtils";
+import { publicAppUrl } from "@/lib/licenseUtils";
 
 /**
  * Fallback-Price-IDs (historisch). Wenn Stripe „No such price“ meldet, passen sie nicht zu
@@ -72,9 +72,6 @@ export async function POST(req: NextRequest) {
   const name = (nameNew ?? nameLegacy ?? "").trim();
 
   const firma = typeof body.firma === "string" ? body.firma : "";
-  const domain = normalizeDomainHost(
-    typeof body.domain === "string" ? body.domain : typeof body.website === "string" ? body.website : ""
-  );
   const accentColor =
     typeof body.accentColor === "string" && body.accentColor.trim()
       ? body.accentColor.trim()
@@ -91,13 +88,6 @@ export async function POST(req: NextRequest) {
 
   if (!slug || !email || !name) {
     return NextResponse.json({ error: "Pflichtfelder fehlen" }, { status: 400 });
-  }
-
-  if (!domain) {
-    return NextResponse.json(
-      { error: "Website-Domain ist erforderlich (ohne https://)" },
-      { status: 400 }
-    );
   }
 
   const priceIds = resolvedStripePriceIds();
@@ -119,12 +109,11 @@ export async function POST(req: NextRequest) {
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/`,
+      cancel_url: `${baseUrl}/templates`,
       metadata: {
         slug,
         name,
         firma: firma || "",
-        domain,
         accent_color: accentColor,
         email,
         template_name: templateName,

@@ -12,7 +12,7 @@ import KonfiguratorOverlay, {
 
 const FAQ_ITEMS = [
   {
-    q: "Wie baue ich den Check ein?",
+    q: "Wie baue ich das Tool ein?",
     a: "Per iFrame — einfach kopieren und einfügen. Nach dem Kauf erhalten Sie per E-Mail einen personalisierten Einbettungscode mit Ihrem Namen, Ihrer Farbe und Ihren Kontaktdaten.",
   },
   {
@@ -21,123 +21,23 @@ const FAQ_ITEMS = [
   },
   {
     q: "Wer ist für die Einbindung und Datenverarbeitung verantwortlich?",
-    a: "Die Checks werden auf der Website des jeweiligen Maklers eingebunden. Anfragen gehen direkt an den jeweiligen Anbieter. Die konkrete rechtliche Einbindung und Datenschutzhinweise erfolgen daher über dessen Website.",
+    a: "Die Tools werden auf der Website des jeweiligen Maklers eingebunden. Anfragen gehen direkt an den jeweiligen Anbieter. Die konkrete rechtliche Einbindung und Datenschutzhinweise erfolgen daher über dessen Website.",
   },
   {
     q: "Funktioniert das auf dem Handy?",
-    a: "Ja — alle Checks sind mobile-first entwickelt und auf Touch-Bedienung optimiert. Die meisten Ihrer Kunden werden den Check auf dem Smartphone nutzen.",
+    a: "Ja — alle Tools sind mobile-first entwickelt und auf Touch-Bedienung optimiert. Die meisten Ihrer Kunden werden das Tool auf dem Smartphone nutzen.",
   },
   {
     q: "Kann ich Design und Inhalte anpassen?",
-    a: "Ja — Farben, Name und Kontaktdaten sind individuell anpassbar. Der Check erscheint dann in Ihrem Look.",
+    a: "Ja — Farben, Name und Kontaktdaten sind individuell anpassbar. Das Tool erscheint dann in Ihrem Look.",
   },
   {
     q: "Gibt es Folgekosten oder ein Abo?",
-    a: "Nein — Sie zahlen einmalig und nutzen den Check dauerhaft. Kein Abo, keine monatlichen Kosten, keine versteckten Gebühren.",
+    a: "Nein — Sie zahlen einmalig und nutzen das Tool dauerhaft. Kein Abo, keine monatlichen Kosten, keine versteckten Gebühren.",
   },
   {
     q: "Brauche ich eine eigene Website?",
-    a: "Nein — die Checks lassen sich auf jeder bestehenden Website einbinden. Das funktioniert auf Jimdo, Squarespace, WordPress und den meisten Baukastensystemen.",
-  },
-];
-
-const WHY_FLOWLEADS_CARDS: {
-  title: string;
-  desc: string;
-  highlight: string;
-  icon: ReactNode;
-}[] = [
-  {
-    title: "Keine Plattform. Keine Umwege. Deine Anfrage.",
-    desc: "Der Kunde landet direkt bei dir – ohne Zwischenanbieter.",
-    highlight: "Kein Wettbewerb, keine Lead-Verluste.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path
-          d="M4 6h16v12H4V6z"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path d="M4 9l8 6 8-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    title: "Passt in jede Website – ohne Aufwand",
-    desc: "Einfach per iFrame einbinden und sofort nutzen.",
-    highlight: "Kein Projekt, keine Technik.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M3 8h18" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M8 16h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    title: "Optimiert für echte Nutzung – nicht nur für Desktop",
-    desc: "Deine Kunden nutzen den Check mobil, schnell und intuitiv.",
-    highlight: "Genau dort, wo Entscheidungen entstehen.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <rect x="7" y="2" width="10" height="20" rx="2" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M10 18h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    title: "Einmal einrichten – dauerhaft nutzen",
-    desc: "Kein Abo, keine laufenden Kosten.",
-    highlight: "Einmal kaufen, immer einsetzen.",
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <path
-          d="M12 6v6l4 2"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-      </svg>
-    ),
-  },
-];
-
-const HOW_FLOW_STEPS: {
-  step: string;
-  micro?: string;
-  title: string;
-  desc: string;
-  highlight: string;
-}[] = [
-  {
-    step: "01",
-    micro: "Input",
-    title: "Sie wählen den passenden Check",
-    desc: "Für Neukunden, Bestandskunden\noder konkrete Anlässe.",
-    highlight: "Jeder Check ist auf einen klaren Einsatz gebaut.",
-  },
-  {
-    step: "02",
-    micro: "Ergebnis",
-    title: "Sie machen ihn zu Ihrem eigenen",
-    desc: "Name, Farben und Kontaktdaten eintragen.",
-    highlight: "Der Check sieht aus wie Teil Ihrer Website.",
-  },
-  {
-    step: "03",
-    micro: "Anfrage",
-    title: "Sie fügen ihn einfach ein",
-    desc: "Per iFrame auf Ihrer Website oder Landingpage.",
-    highlight: "Einmal einbauen – sofort live.",
-  },
-  {
-    step: "04",
-    title: "Ihre Kunden stellen die Anfrage",
-    desc: "Der Kunde versteht seine Situation\nund meldet sich aktiv bei Ihnen.",
-    highlight: "Kein Nachfassen. Kein Überreden.",
+    a: "Nein — die Tools lassen sich auf jeder bestehenden Website einbinden. Das funktioniert auf Jimdo, Squarespace, WordPress und den meisten Baukastensystemen.",
   },
 ];
 
@@ -198,7 +98,6 @@ export default function LandingHome() {
           email: form.email,
           name: form.name,
           firma: form.firma,
-          domain: form.website,
           accentColor: form.akzentfarbe,
           templateName: template.name,
           headline: form.headline,
@@ -247,7 +146,7 @@ export default function LandingHome() {
           </div>
           <span
             style={{
-              fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+              fontFamily: 'var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif',
               fontSize: 16,
               fontWeight: 700,
               letterSpacing: "-0.3px",
@@ -259,15 +158,15 @@ export default function LandingHome() {
         </div>
         <div className="nav-links">
           <a href="#how">So funktioniert&apos;s</a>
-          <a href="#checks">Checks</a>
+          <a href="#tools">Tools</a>
           <a href="#faq">FAQ</a>
         </div>
         <div className="nav-right">
           <a href="#faq" className="btn-ghost">
             Fragen?
           </a>
-          <a href="#checks" className="btn-cta">
-            Checks ansehen
+          <a href="#tools" className="btn-cta">
+            Tools ansehen
           </a>
         </div>
       </nav>
@@ -290,8 +189,8 @@ export default function LandingHome() {
           </p>
 
           <div className="hero-btns au d4">
-            <a href="#checks" className="btn-primary-lg">
-              Checks ansehen
+            <a href="#tools" className="btn-primary-lg">
+              Tools ansehen
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
                 <path
                   d="M3 7h8M7 3l4 4-4 4"
@@ -307,69 +206,146 @@ export default function LandingHome() {
             </a>
           </div>
 
-          <div className="why-flowleads au d4">
-            <h2 className="why-flowleads-title">Warum FlowLeads funktioniert</h2>
-            <p className="why-flowleads-scroll-hint" aria-hidden>
-              Weiter →
-            </p>
-            <div className="why-cards-scroll">
-              {WHY_FLOWLEADS_CARDS.map((card) => (
-                <div key={card.title} className="why-card">
-                  <div className="why-card-ico" aria-hidden>
-                    {card.icon}
-                  </div>
-                  <h3 className="why-card-headline">{card.title}</h3>
-                  <p className="why-card-desc">{card.desc}</p>
-                  <p className="why-card-highlight">👉 {card.highlight}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+          <div className="vt-wrap au d4">
+            <div className="vt-label">Warum FlowLeads</div>
+            <h2 className="vt-h2">
+              Der einfachste Weg
+              <br />
+              zu mehr Anfragen
+            </h2>
 
-      <section id="how" className="s how-flow-section" style={{ background: "var(--surface)" }}>
-        <div className="inner">
-          <div className="s-label">So funktioniert&apos;s</div>
-          <h2 className="how-flow-h2">In wenigen Minuten auf Ihrer Website – ohne Technikstress</h2>
-          <p className="how-flow-sub">Kein Entwickler. Kein Projekt. Kein Setup-Chaos.</p>
-          <div className="how-flow-cards-row">
-            {HOW_FLOW_STEPS.map((row, i) => (
-              <div key={row.step} className="how-flow-step">
-                <div className="how-flow-card">
-                  <div className="how-flow-card-top">
-                    <span className="how-flow-num">{row.step}</span>
-                    {row.micro ? (
-                      <span className={`how-flow-micro how-flow-micro--pulse how-flow-micro--i${i}`}>
-                        {row.micro}
-                      </span>
-                    ) : null}
-                  </div>
-                  <h3 className="how-flow-title">{row.title}</h3>
-                  <p className="how-flow-body">{row.desc}</p>
-                  <p className="how-flow-highlight">👉 {row.highlight}</p>
+            {[
+              {
+                badge: "Kein Abo",
+                title: "Einmalig kaufen — dauerhaft nutzen",
+                desc: "Kein Abo, keine Plattformgebühren, keine monatlichen Kosten. Einmal kaufen und dauerhaft auf Ihrer Website einsetzen.",
+              },
+              {
+                badge: "Direkt",
+                title: "Leads gehen direkt an Sie",
+                desc: "Keine Plattform, kein Portal, keine Provision. Anfragen landen direkt in Ihrem Postfach.",
+              },
+              {
+                badge: "5 Minuten",
+                title: "In Minuten live",
+                desc: "iFrame-Code nach dem Kauf per E-Mail — auf jeder Website einfügen, fertig. Kein Entwickler nötig.",
+              },
+              {
+                badge: "Mobile",
+                title: "Mobile-first entwickelt",
+                desc: "Alle Tools sind für Smartphone optimiert — wo die meisten Ihrer Kunden sind.",
+              },
+              {
+                badge: "8 Tools",
+                title: "Für jeden Anlass das passende Tool",
+                desc: "Von Neukunden bis Bestandskunden, von BU bis Immobilien — für jeden Gesprächsanlass gibt es das passende Tool.",
+              },
+            ].map((item) => (
+              <div key={item.badge} className="vt-row">
+                <div className="vt-badge">{item.badge}</div>
+                <div className="vt-content">
+                  <div className="vt-title">{item.title}</div>
+                  <div className="vt-desc">{item.desc}</div>
                 </div>
-                {i < HOW_FLOW_STEPS.length - 1 ? (
-                  <span className="how-flow-arrow" aria-hidden>
-                    →
-                  </span>
-                ) : null}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="checks" className="s checks-section" style={{ background: "var(--bg)" }}>
+      <section id="how" style={{ background: "#0f1a14" }}>
+        <div className="tl-wrap">
+          <div className="tl-header">
+            <div className="tl-label">So funktioniert&apos;s</div>
+            <h2
+              style={{
+                fontFamily: "'Instrument Serif', serif",
+                fontSize: "clamp(26px, 3.2vw, 40px)",
+                fontWeight: 400,
+                color: "#ffffff",
+                letterSpacing: "-.3px",
+                lineHeight: 1.15,
+                marginBottom: "10px",
+              }}
+            >
+              Vom Besucher zur
+              <br />
+              Beratungsanfrage
+            </h2>
+            <p
+              style={{
+                fontSize: "16px",
+                fontWeight: 300,
+                color: "rgba(255,255,255,0.45)",
+                lineHeight: 1.7,
+                maxWidth: "480px",
+                margin: "0 auto",
+              }}
+            >
+              In 4 Schritten — ohne Kaltstart, ohne Tarifvergleich.
+            </p>
+          </div>
+
+          <div className="tl-items">
+            <div className="tl-line" />
+
+            {[
+              {
+                num: "01",
+                label: "Einbindung",
+                title: "Tool auf Ihrer Website platzieren",
+                desc: "Ein Tool auswählen, mit Ihrem Namen und Ihrer Farbe anpassen — per iFrame auf jeder Website einbetten. Kein Entwickler nötig.",
+                badge: "WordPress · Jimdo · Webflow · Wix",
+              },
+              {
+                num: "02",
+                label: "Kundenerlebnis",
+                title: "Kunde startet das Tool",
+                desc: "In 3 Minuten beantwortet der Kunde einfache Fragen zu seiner Situation — ohne Fachwissen, ohne Tarifvergleich.",
+                badge: "Mobile-first · Touch-optimiert",
+              },
+              {
+                num: "03",
+                label: "Ergebnis",
+                title: "Kunde sieht seine Lücke",
+                desc: "Am Ende steht eine klare Zahl — Rentenlücke, Einkommenseinbruch oder Versorgungslücke. Handlungsbedarf in Euro, nicht in Produktlisten.",
+                badge: "Konkret · Personalisiert · Verständlich",
+              },
+              {
+                num: "04",
+                label: "Lead",
+                title: "Anfrage geht direkt an Sie",
+                desc: "Der Kunde fragt ein Gespräch an — direkt an Ihre E-Mail. Kein Portal, kein Umweg, keine Provision an Dritte.",
+                badge: "Direkt · Qualifiziert · Kein Kaltstart",
+              },
+            ].map((step) => (
+              <div key={step.num} className="tl-item">
+                <div className="tl-num">{step.num}</div>
+                <div className="tl-right">
+                  <div className="tl-step-label">{step.label}</div>
+                  <div className="tl-title">{step.title}</div>
+                  <div className="tl-desc">{step.desc}</div>
+                  <div className="tl-badge">
+                    <div className="tl-badge-dot" />
+                    {step.badge}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="tools" className="s checks-section" style={{ background: "var(--bg)" }}>
         <div className="inner">
-          <div className="s-label">Die 8 Checks</div>
+          <div className="s-label">Die 8 Tools</div>
           <h2 className="checks-section-headline">
-            8 Checks, die aus Interesse
+            8 Tools, die aus Interesse
             <br />
             konkrete Anfragen machen
           </h2>
           <p className="checks-section-tagline">
-            Jeder Check greift einen echten Anlass auf – und führt den Kunden mit wenigen Schritten ins Gespräch.
+            Jedes Tool greift einen echten Anlass auf – und führt den Kunden mit wenigen Schritten ins Gespräch.
           </p>
           <div className="ck-cards">
             {CHECK_FLOW_META.map((c) => {
@@ -512,21 +488,6 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section className="s legal-compact-section" style={{ background: "var(--bg)" }} aria-labelledby="legal-compact-heading">
-        <div className="inner">
-          <div className="legal-compact-card">
-            <h3 id="legal-compact-heading" className="legal-compact-title">
-              Einfach eingebunden, direkt bei Ihnen
-            </h3>
-            <p className="legal-compact-line">Die Checks werden per iFrame auf Ihrer Website eingebunden.</p>
-            <p className="legal-compact-line">Anfragen gehen direkt an Sie.</p>
-            <p className="legal-compact-line">
-              Die datenschutzrechtliche Einbindung erfolgt über Ihre Website und Ihre Datenschutzhinweise.
-            </p>
-          </div>
-        </div>
-      </section>
-
       <section id="faq" className="s faq-section" style={{ background: "var(--bg)" }}>
         <div className="inner">
           <div className="s-label">FAQ</div>
@@ -575,10 +536,10 @@ export default function LandingHome() {
           <p>Verwandeln Sie Website-Besucher in echte Anfragen. Einmalig kaufen, dauerhaft nutzen.</p>
         </div>
         <div className="cta-right">
-          <a href="#checks" className="btn-gold">
-            Checks ansehen
+          <a href="#tools" className="btn-gold">
+            Tools ansehen
           </a>
-          <a href="#checks" className="btn-wh">
+          <a href="#tools" className="btn-wh">
             Demo ansehen
           </a>
         </div>
@@ -593,7 +554,7 @@ export default function LandingHome() {
         </div>
         <div className="footer-links">
           <Link href="/">Startseite</Link>
-          <a href="#checks">Checks</a>
+          <a href="#tools">Tools</a>
           <a href="#how">Setup</a>
           <a href="#faq">FAQ</a>
           <a href="#">Kontakt</a>

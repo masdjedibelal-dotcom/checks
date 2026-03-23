@@ -3,7 +3,7 @@ import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
-(() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
+(() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
 const MAKLER={name:"Max Mustermann",firma:"Mustermann Versicherungen",email:"kontakt@mustermann-versicherungen.de",telefon:"089 123 456 78",primaryColor:"#1a3a5c"};
 const C=MAKLER.primaryColor,WARN="#c0392b",OK="#059669";
@@ -80,7 +80,7 @@ const ABSICHERUNG={
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const T={
-  page:{minHeight:"100vh",background:"#fff",fontFamily:"'DM Sans',system-ui,sans-serif"},
+  page:{minHeight:"100vh",background:"#fff",fontFamily:"'Inter','Helvetica Neue',Helvetica,Arial,sans-serif"},
   header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},
   logo:{display:"flex",alignItems:"center",gap:"10px"},
   logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},
@@ -165,7 +165,7 @@ export default function ImmobilienCheck(){
         <>
           <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
             <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
-              Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.
+              Das ist eine Live-Vorschau — so sieht Ihr Kunde das Tool.
             </div>
             <button
               type="button"
@@ -442,7 +442,7 @@ export default function ImmobilienCheck(){
     <div style={T.hero}>
       <div style={T.eyebrow}>Schritt 1 von 3 · Ihre Situation</div>
       <div style={T.h1}>Was bewegt Sie rund um Ihre Immobilie?</div>
-      <div style={T.body}>Wählen Sie Ihre Situation — der Check passt sich automatisch an.</div>
+      <div style={T.body}>Wählen Sie Ihre Situation — das Tool passt sich automatisch an.</div>
     </div>
 
     {/* Situation */}

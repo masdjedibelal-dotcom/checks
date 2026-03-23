@@ -6,9 +6,9 @@ export const CHECK_FLOW_META = [
     catClass: "ck-cat-neu",
     cat: "Neukunden",
     name: "Versicherungs-Check",
-    context: "Für Erstgespräche und neue Website-Besucher",
+    context: "Paketverkauf & Erstgespräch",
     erlebnis:
-      "Der Kunde gibt an, was bereits abgesichert ist, und erkennt sofort, wo Lücken bestehen. So entsteht ein klares erstes Gespräch – ohne Tarifvergleich und ohne langen Erklärbedarf.",
+      'Der Kunde sieht welche Pakete zu seiner Situation passen — Basis, Rundumschutz oder komplett. Kein "was fehlt dir noch", sondern ein strukturierter Paketvorschlag der direkt zur Anfrage führt.',
     price: "79",
   },
   {
@@ -16,9 +16,9 @@ export const CHECK_FLOW_META = [
     catClass: "ck-cat-neu",
     cat: "Bestandskunden",
     name: "Lebenssituations-Check",
-    context: "Für Bestandskunden, Anlässe und Reaktivierung",
+    context: "Digitales Jahresgespräch",
     erlebnis:
-      "Ob Nachwuchs, Jobwechsel oder Immobilienkauf: Der Kunde erkennt, was in seiner aktuellen Lebenssituation überprüft oder angepasst werden sollte. Ideal für Jahresgespräche und Bestandskunden-Kampagnen.",
+      "Ersetzt den klassischen Jahresgesprächs-Anruf. Der Bestandskunde gibt aktuelle Lebensveränderungen ein — Nachwuchs, Jobwechsel, Immobilie — und sieht sofort wo Anpassungsbedarf besteht.",
     price: "79",
   },
   {
@@ -26,9 +26,9 @@ export const CHECK_FLOW_META = [
     catClass: "ck-cat-schutz",
     cat: "Einkommensschutz",
     name: "Einkommens-Check",
-    context: "Für BU-, Krankentagegeld- und Einkommensschutz-Beratung",
+    context: "Arbeitskraftverlust-Rechner",
     erlebnis:
-      "Der Check zeigt auf einer Zeitachse, wie stark das Einkommen bei Krankheit oder Berufsunfähigkeit einbrechen kann. Dadurch wird aus einem abstrakten Risiko eine konkrete Versorgungslücke.",
+      "Zeigt dem Kunden auf einer Zeitachse wie sein Einkommen bei Krankheit oder BU Monat für Monat einbricht. Aus einem abstrakten Risiko wird eine konkrete Versorgungslücke in Euro.",
     price: "59",
   },
   {
@@ -36,9 +36,9 @@ export const CHECK_FLOW_META = [
     catClass: "ck-cat-entscheidung",
     cat: "Entscheidung",
     name: "GKV vs. PKV",
-    context: "Für Wechselinteresse, Orientierung und Erstprüfung",
+    context: "Krankenversicherungs-Beratung",
     erlebnis:
-      "Der Kunde bekommt eine verständliche Einordnung, ob GKV oder PKV grundsätzlich besser zu seiner Situation passt. Keine Tarifflut, sondern eine klare erste Richtung für das Gespräch.",
+      "Strukturierte Entscheidungshilfe ob GKV oder PKV — inkl. Zusatzversicherungen. Der Kunde bekommt eine klare Einordnung auf Basis seines Einkommens, Alters und seiner familiären Situation.",
     price: "49",
   },
   {
@@ -46,9 +46,9 @@ export const CHECK_FLOW_META = [
     catClass: "ck-cat-vorsorge",
     cat: "Altersvorsorge",
     name: "Vorsorge-Check",
-    context: "Für Rentenlücke, Vorsorgeaufbau und Strategiegespräche",
+    context: "Altersvorsorge & Rentenlücke",
     erlebnis:
-      "Der Kunde sieht, was ihm im Alter voraussichtlich fehlt, wie seine heutige Vorsorge aufgestellt ist und welche grundsätzlichen Wege infrage kommen. Das schafft sofort Relevanz im Vorsorgegespräch.",
+      "Berechnet die individuelle Rentenlücke und zeigt wie das Einkommen im Alter gesichert werden kann. Mit konkreten Strategien — steueroptimiert, flexibel oder renditeorientiert.",
     price: "59",
   },
   {
@@ -56,9 +56,9 @@ export const CHECK_FLOW_META = [
     catClass: "ck-cat-familie",
     cat: "Familie",
     name: "Risikoleben-Check",
-    context: "Für Familien, Finanzierung und Todesfall-Absicherung",
+    context: "Familienabsicherung im Todesfall",
     erlebnis:
-      "Aus Einkommen, Verpflichtungen und Familiensituation wird eine konkrete Versorgungslücke berechnet. So versteht der Kunde sofort, welche Summe im Ernstfall wirklich abgesichert werden sollte.",
+      "Berechnet die Versorgungslücke die entsteht wenn der Hauptverdiener stirbt — unter Berücksichtigung von Witwen- und Waisenrente, Krediten und Partnereinkommen. Die empfohlene Versicherungssumme in Euro.",
     price: "59",
   },
   {
@@ -66,9 +66,9 @@ export const CHECK_FLOW_META = [
     catClass: "ck-cat-pflege",
     cat: "Pflegevorsorge",
     name: "Pflege-Check",
-    context: "Für Pflegevorsorge und Kostenbewusstsein",
+    context: "Pflegebedarf & Eigenanteil",
     erlebnis:
-      "Der Check macht sichtbar, welcher Eigenanteil bei Pflege tatsächlich selbst getragen werden müsste. Dadurch wird ein oft verdrängtes Thema in eine verständliche und greifbare Zahl übersetzt.",
+      "Zeigt dem Kunden was Pflege tatsächlich kostet — nach Pflegegrad, Region und Einrichtung. Der monatliche Eigenanteil wird greifbar und die Notwendigkeit privater Pflegevorsorge klar.",
     price: "49",
   },
   {
@@ -76,9 +76,9 @@ export const CHECK_FLOW_META = [
     catClass: "ck-cat-immobilien",
     cat: "Immobilien",
     name: "Immobilien-Check",
-    context: "Für Kaufentscheidung, Anschlussfinanzierung und Immobilien-Schutz",
+    context: "Für Käufer, Eigentümer & Mieter",
     erlebnis:
-      "Ob Kaufen oder Mieten, neue Zinsbindung oder Unterversicherung: Der Kunde bekommt je nach Situation eine klare Einordnung und erkennt gleichzeitig, welche Absicherung rund um die Immobilie wichtig wird.",
+      "Drei Module in einem: Kaufen vs. Mieten Entscheidungshilfe, Anschlussfinanzierungs-Rechner und Wohngebäude-Absicherungs-Check. Je nach Situation des Kunden wird das passende Modul aktiviert.",
     price: "59",
   },
 ] as const;

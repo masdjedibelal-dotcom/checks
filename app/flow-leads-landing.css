@@ -8,15 +8,16 @@ html {
   --gold: #b8884a;
   --gold-light: #f5ede0;
   --gold-mid: #e8d0b0;
-  --bg: #f0ede6;
-  --surface: #faf9f6;
+  --bg: #ffffff;
+  --surface: #ffffff;
   --border: rgba(0, 0, 0, 0.08);
   --border-mid: rgba(0, 0, 0, 0.12);
   --mid: rgba(0, 0, 0, 0.45);
   --muted: rgba(0, 0, 0, 0.28);
+  --subline: rgba(0, 0, 0, 0.55);
   --white: #ffffff;
-  font-family: "DM Sans", system-ui, sans-serif;
-  background: #f0ede6;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: #ffffff;
   color: #1a1a1a;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -103,7 +104,7 @@ html {
   align-items: center;
   justify-content: space-between;
   padding: 0 36px;
-  background: rgba(240, 237, 230, 0.92);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
@@ -111,7 +112,7 @@ html {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.4px;
@@ -162,7 +163,7 @@ html {
   font-weight: 700;
   padding: 8px 18px;
   border-radius: 8px;
-  background: var(--ink);
+  background: var(--dark);
   color: #fff;
   transition: background 0.15s;
 }
@@ -185,7 +186,7 @@ html {
 .flow-leads-landing .hero{
   text-align: center;
   padding: 80px 24px 64px;
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   position: relative;
 }
@@ -219,15 +220,16 @@ html {
   }
 }
 
-/* big headline — Clause style: large serif with accent underline */
+/* Hero headline — Instrument Serif, Perspective-ähnliche Proportionen */
 .flow-leads-landing .hero h1{
   font-family: "Instrument Serif", serif;
-  font-size: clamp(40px, 6.5vw, 76px);
+  font-size: clamp(44px, 6.2vw, 64px);
   font-weight: 400;
-  line-height: 1.06;
-  letter-spacing: -0.5px;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
   color: var(--ink);
-  margin-bottom: 24px;
+  margin: 0 auto 24px;
+  max-width: 680px;
 }
 /* Hero-Hervorhebung — fließender Gold-Akzent (Flow) */
 .flow-leads-landing .hero h1 .hero-moment-flow{
@@ -299,11 +301,12 @@ html {
   }
 }
 .flow-leads-landing .hero-sub{
-  font-size: 17px;
-  font-weight: 300;
-  color: var(--mid);
-  line-height: 1.72;
-  max-width: 520px;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--subline);
+  line-height: 1.65;
+  max-width: 560px;
   margin: 0 auto 36px;
 }
 .flow-leads-landing .hero-btns{
@@ -318,17 +321,18 @@ html {
   font-weight: 700;
   padding: 13px 26px;
   border-radius: 10px;
-  background: var(--ink);
+  background: var(--dark);
   color: #fff;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 18px rgba(15, 26, 20, 0.28);
 }
 .flow-leads-landing .btn-primary-lg:hover{
   background: var(--gold);
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(184, 136, 74, 0.35);
 }
 .flow-leads-landing .btn-demo-lg{
   font-size: 14px;
@@ -361,12 +365,15 @@ html {
 }
 .flow-leads-landing .why-flowleads-title{
   font-family: "Instrument Serif", serif;
-  font-size: clamp(22px, 3.2vw, 34px);
+  font-size: clamp(28px, 3.6vw, 42px);
   font-weight: 400;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.025em;
   color: var(--ink);
   margin: 0 0 6px;
-  line-height: 1.15;
+  line-height: 1.12;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .flow-leads-landing .why-flowleads-scroll-hint{
   font-size: 12px;
@@ -419,24 +426,24 @@ html {
   height: 20px;
 }
 .flow-leads-landing .why-card-headline{
-  font-family: "DM Sans", sans-serif;
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--ink);
   line-height: 1.35;
   margin: 0 0 8px;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.02em;
 }
 .flow-leads-landing .why-card-desc{
-  font-family: "DM Sans", sans-serif;
-  font-size: 13px;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
   font-weight: 400;
   color: var(--mid);
   line-height: 1.6;
   margin: 0 0 10px;
 }
 .flow-leads-landing .why-card-highlight{
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--ink);
@@ -545,19 +552,23 @@ html {
 }
 .flow-leads-landing h2{
   font-family: "Instrument Serif", serif;
-  font-size: clamp(26px, 3.2vw, 42px);
+  font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
-  letter-spacing: -0.3px;
-  line-height: 1.15;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
   color: var(--ink);
   margin-bottom: 14px;
 }
 .flow-leads-landing .s-sub{
-  font-size: 16px;
-  font-weight: 300;
-  color: var(--mid);
-  line-height: 1.7;
-  max-width: 480px;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--subline);
+  line-height: 1.65;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 @media (max-width: 680px) {
   .flow-leads-landing .s{
@@ -568,21 +579,24 @@ html {
 /* ─── HOW FLOW (So funktioniert's) ───────────────────────────────────────── */
 .flow-leads-landing .how-flow-h2{
   font-family: "Instrument Serif", serif;
-  font-size: clamp(26px, 3.2vw, 40px);
+  font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
-  letter-spacing: -0.3px;
-  line-height: 1.15;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
   color: var(--ink);
-  margin: 0 0 12px;
-  max-width: 640px;
+  margin: 0 auto 12px;
+  max-width: 680px;
+  text-align: center;
 }
 .flow-leads-landing .how-flow-sub{
-  font-size: 16px;
-  font-weight: 300;
-  color: var(--mid);
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--subline);
   line-height: 1.65;
-  max-width: 520px;
-  margin: 0 0 36px;
+  max-width: 560px;
+  margin: 0 auto 36px;
+  text-align: center;
 }
 .flow-leads-landing .how-flow-cards-row{
   display: flex;
@@ -619,7 +633,7 @@ html {
   margin-bottom: 12px;
 }
 .flow-leads-landing .how-flow-num{
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -627,10 +641,10 @@ html {
   line-height: 1;
 }
 .flow-leads-landing .how-flow-micro{
-  font-family: "DM Sans", sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--gold);
   padding: 5px 9px;
@@ -661,17 +675,17 @@ html {
   animation-delay: 0.5s;
 }
 .flow-leads-landing .how-flow-title{
-  font-family: "DM Sans", sans-serif;
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--ink);
   line-height: 1.35;
   margin: 0 0 10px;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.02em;
 }
 .flow-leads-landing .how-flow-body{
-  font-family: "DM Sans", sans-serif;
-  font-size: 13px;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
   font-weight: 400;
   color: var(--mid);
   line-height: 1.6;
@@ -679,7 +693,7 @@ html {
   white-space: pre-line;
 }
 .flow-leads-landing .how-flow-highlight{
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--ink);
@@ -726,7 +740,7 @@ html {
   border: 1px solid var(--border);
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.07);
   overflow: hidden;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 .flow-leads-landing .ph-bar{
   height: 3px;
@@ -902,24 +916,27 @@ html {
   cursor: default;
 }
 
-/* ─── CHECKS SECTION (Die 8 Checks, ck-*) ───────────────────────────────── */
+/* ─── TOOLS SECTION (#tools, ehem. Checks, ck-*) ─────────────────────────── */
 .flow-leads-landing .checks-section-headline{
   font-family: "Instrument Serif", serif;
-  font-size: clamp(26px, 3.2vw, 42px);
+  font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.025em;
   line-height: 1.12;
   color: var(--ink);
-  margin: 0 0 12px;
-  max-width: 580px;
+  margin: 0 auto 12px;
+  max-width: 680px;
+  text-align: center;
 }
 .flow-leads-landing .checks-section-tagline{
-  font-size: 16px;
-  font-weight: 300;
-  color: var(--mid);
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--subline);
   line-height: 1.65;
-  max-width: 540px;
-  margin: 0 0 32px;
+  max-width: 560px;
+  margin: 0 auto 32px;
+  text-align: center;
 }
 .flow-leads-landing .ck-cards{
   display: flex;
@@ -944,7 +961,7 @@ html {
   align-items: center;
   justify-content: center;
   padding: 14px 12px;
-  background: linear-gradient(165deg, #faf8f5 0%, #f0ebe3 100%);
+  background: linear-gradient(165deg, #ffffff 0%, #f3f3f3 100%);
   border-right: 1px solid var(--border);
 }
 .flow-leads-landing .ck-card-right{
@@ -958,9 +975,10 @@ html {
 }
 .flow-leads-landing .ck-card-cat{
   display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.9px;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 5px 10px;
   border-radius: 6px;
@@ -1012,7 +1030,9 @@ html {
   line-height: 1.35;
 }
 .flow-leads-landing .ck-card-erlebnis{
-  font-size: 14px;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
   color: var(--mid);
   line-height: 1.65;
   margin: 0;
@@ -1044,7 +1064,7 @@ html {
   gap: 8px;
 }
 .flow-leads-landing .ck-demo{
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 13px;
   font-weight: 600;
   padding: 10px 16px;
@@ -1064,7 +1084,7 @@ html {
   cursor: not-allowed;
 }
 .flow-leads-landing .ck-buy{
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 13px;
   font-weight: 700;
   padding: 10px 16px;
@@ -1520,7 +1540,11 @@ html {
   color: #fff;
 }
 .flow-leads-landing .dark-s .s-sub{
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.55);
+  text-align: left;
+  margin-left: 0;
+  margin-right: 0;
+  max-width: 640px;
 }
 .flow-leads-landing .use-grid{
   display: grid;

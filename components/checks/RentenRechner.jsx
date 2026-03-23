@@ -7,12 +7,12 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
 (() => {
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
+  link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
   document.head.appendChild(link);
   const s = document.createElement("style");
   s.textContent = `
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: #ffffff; font-family: 'DM Sans', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; background: #ffffff; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
     button, input, select { font-family: inherit; border: none; background: none; cursor: pointer; }
     input, select { cursor: text; }
     ::-webkit-scrollbar { display: none; } * { scrollbar-width: none; }
@@ -63,7 +63,7 @@ function berechne(p) {
 }
 
 const T = {
-  page:    { minHeight: "100vh", background: "#fff", fontFamily: "'DM Sans', system-ui, sans-serif" },
+  page:    { minHeight: "100vh", background: "#fff", fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif" },
   header:  { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   logo:    { display: "flex", alignItems: "center", gap: "10px" },
   logoMk:  { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
@@ -176,7 +176,7 @@ export default function RentenRechner() {
           {isDemo ? (
             <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
               <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
-                Das ist eine Live-Vorschau — so sieht Ihr Kunde den Check.
+                Das ist eine Live-Vorschau — so sieht Ihr Kunde das Tool.
               </div>
               <button
                 type="button"

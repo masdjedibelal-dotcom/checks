@@ -79,7 +79,7 @@ export default function CheckRangeField({
               textAlign: "right",
               outline: "none",
               background: f ? "#fff" : `${C}08`,
-              fontFamily: "'DM Sans', system-ui, sans-serif",
+              fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
             }}
           />
           {unit ? (

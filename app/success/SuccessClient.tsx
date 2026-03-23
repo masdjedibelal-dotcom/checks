@@ -9,7 +9,7 @@ type PurchaseData = {
   firma: string | null;
   slug: string;
   token: string;
-  domain: string;
+  domain: string | null;
 };
 
 type SuccessClientProps = {
@@ -79,9 +79,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
     };
   }, [sessionId, pollKey]);
 
-  const iframeCode = data
-    ? buildLicensedIframeCode(data.slug, data.token, data.domain)
-    : "";
+  const iframeCode = data ? buildLicensedIframeCode(data.slug, data.token) : "";
 
   const copy = async () => {
     if (!iframeCode) return;
@@ -101,7 +99,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           justifyContent: "center",
           gap: 20,
           background: "#f0ede6",
-          fontFamily: "DM Sans, system-ui, sans-serif",
+          fontFamily: 'var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif',
           padding: 24,
         }}
       >
@@ -125,7 +123,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           justifyContent: "center",
           background: "#f0ede6",
           padding: 24,
-          fontFamily: "DM Sans, system-ui, sans-serif",
+          fontFamily: 'var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif',
         }}
       >
         <div style={{ maxWidth: 460, textAlign: "center", color: "#6b7280", fontSize: 14, lineHeight: 1.65 }}>
@@ -176,7 +174,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
       style={{
         minHeight: "100vh",
         background: "#f0ede6",
-        fontFamily: "DM Sans, system-ui, sans-serif",
+        fontFamily: 'var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif',
         padding: "48px 24px",
       }}
     >
@@ -233,7 +231,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           <p style={{ fontSize: 15, color: "#6b7280", lineHeight: 1.65 }}>
             Ihr{" "}
             <strong style={{ color: "#1a1a1a" }}>
-              {data ? slugToDisplayName(data.slug) : "Check"}
+              {data ? slugToDisplayName(data.slug) : "Tool"}
             </strong>{" "}
             ist aktiv. Eine E-Mail mit diesem Code wurde an Sie gesendet.
           </p>
@@ -314,13 +312,13 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
               marginBottom: 16,
             }}
           >
-            So binden Sie den Check ein
+            So binden Sie das Tool ein
           </div>
           {[
             ["01", "Code oben kopieren"],
             ["02", "Im Website-Editor ein HTML-/Einbettungs-Element einfügen"],
             ["03", "Code einfügen und speichern"],
-            ["04", "Fertig — der Check ist live auf Ihrer Website"],
+            ["04", "Fertig — das Tool ist live auf Ihrer Website"],
           ].map(([n, t]) => (
             <div
               key={n}
@@ -363,9 +361,9 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
               lineHeight: 1.65,
             }}
           >
-            <strong style={{ color: "#1a1a1a" }}>Lizenziert für:</strong> {data.domain}
+            Das Tool kann auf Ihrer Website eingebunden werden.
             <br />
-            Einbindung auf anderen Domains ist nicht gestattet.
+            Weitergabe des Codes ist gemäß AGB nicht gestattet.
             <br />
             Bei Fragen:{" "}
             <a href={`mailto:${contactEmail}`} style={{ color: "#b8884a" }}>

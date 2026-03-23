@@ -4,13 +4,12 @@ import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 (() => {
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href =
-    "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap";
+  link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
   document.head.appendChild(link);
   const s = document.createElement("style");
   s.textContent = `
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-    html, body { height:100%; background:#fff; font-family:'DM Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+    html, body { height:100%; background:#fff; font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
     button, input { font-family:inherit; cursor:pointer; border:none; background:none; }
     input { cursor:text; }
     ::-webkit-scrollbar { display:none; } * { scrollbar-width:none; }
@@ -84,7 +83,7 @@ export default function RisikolebenRechner() {
   };
 
   const T = {
-    root:    { minHeight:"100vh", background:"#fff", fontFamily:"'DM Sans',system-ui,sans-serif", "--accent": C },
+    root:    { minHeight:"100vh", background:"#fff", fontFamily:"'Inter','Helvetica Neue',Helvetica,Arial,sans-serif", "--accent": C },
     header:  { position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", borderBottom:"1px solid #e8e8e8", padding:"0 24px", height:"52px", display:"flex", alignItems:"center", justifyContent:"space-between" },
     logoWrap:{ display:"flex", alignItems:"center", gap:"10px" },
     logoBox: { width:"28px", height:"28px", borderRadius:"6px", background:C, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", fontWeight:"700" },

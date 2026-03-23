@@ -1,12 +1,10 @@
 /**
- * true = Marketing-Demo / gleiche Origin ohne Lizenz (iframe Modal, Embed-Test, …).
- * false = eingebetteter Check mit Kauf-Lizenz (?token=…&domain=…).
+ * true = Marketing-Demo ohne Lizenz-Token (Modal, Landing, …).
+ * false = eingebettetes Tool mit gültigem ?token=…
  */
 export function isCheckDemoMode(): boolean {
   if (typeof window === "undefined") return false;
-  const q = new URLSearchParams(window.location.search);
-  const token = q.get("token")?.trim();
-  const domain = q.get("domain")?.trim();
-  if (token && domain) return false;
+  const token = new URLSearchParams(window.location.search).get("token")?.trim();
+  if (token) return false;
   return true;
 }

@@ -36,7 +36,7 @@ export default function DemoModal({
 
   return (
     <div
-      className="fixed inset-0 z-[500] flex items-center justify-center bg-black/55 p-5 transition-opacity duration-[220ms]"
+      className="fixed inset-0 z-[500] flex items-center justify-center bg-black/55 p-0 sm:p-5 transition-opacity duration-[220ms]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="demo-modal-title"
@@ -45,7 +45,7 @@ export default function DemoModal({
       }}
     >
       <div
-        className="flex h-[88vh] max-h-[780px] w-full max-w-[400px] flex-col overflow-hidden rounded-[22px] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] transition-[transform] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className="flex h-[88vh] max-h-[780px] w-full max-w-[480px] flex-col overflow-hidden rounded-[22px] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] transition-[transform] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-[#f0f0f0] px-[18px] py-3.5">
@@ -75,7 +75,12 @@ export default function DemoModal({
           key={template.slug}
           src={demoUrl}
           title={`Demo: ${template.name}`}
-          className="min-h-0 w-full flex-1 border-0 bg-[#f0f2f5]"
+          className="min-h-0 flex-1 bg-[#f0f2f5]"
+          style={{
+            width: "100%",
+            border: "none",
+            overflowX: "hidden",
+          }}
         />
         <div className="flex shrink-0 items-center justify-between gap-3 border-t border-[#f0f0f0] px-[18px] py-3 pb-4">
           <div className="text-lg font-bold tracking-[-0.03em] text-[#111]">

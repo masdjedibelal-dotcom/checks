@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { DM_Sans, Instrument_Serif } from "next/font/google";
+import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const instrumentSerif = Instrument_Serif({
@@ -11,9 +10,9 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
 });
 
-const dmSans = DM_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-sans",
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
@@ -33,7 +32,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${GeistSans.variable} ${instrumentSerif.variable} ${dmSans.variable} bg-white text-[#111]`}
+      className={`${inter.variable} ${instrumentSerif.variable} bg-white text-[#111]`}
       style={{ colorScheme: "light" }}
       suppressHydrationWarning
     >
@@ -43,7 +42,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/favicon.svg" />
       </head>
       <body
-        className={`${GeistSans.className} antialiased`}
+        className={`${inter.className} antialiased`}
         style={{
           background: "#ffffff",
           color: "#111111",

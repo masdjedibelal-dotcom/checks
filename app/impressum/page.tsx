@@ -16,7 +16,7 @@ export default function ImpressumPage() {
         maxWidth: "680px",
         margin: "0 auto",
         padding: "80px 24px",
-        fontFamily: "'DM Sans', system-ui, sans-serif",
+        fontFamily: 'var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif',
         color: "#1a1a1a",
         lineHeight: "1.7",
         background: "#faf9f6",

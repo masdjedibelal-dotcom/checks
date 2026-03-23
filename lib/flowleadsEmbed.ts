@@ -1,5 +1,5 @@
 import { KATALOG } from "@/lib/katalog";
-import { normalizeDomainHost, publicAppUrl } from "@/lib/licenseUtils";
+import { publicAppUrl } from "@/lib/licenseUtils";
 
 export { appHostname, normalizeDomainHost, publicAppUrl } from "@/lib/licenseUtils";
 
@@ -11,18 +11,14 @@ export function slugToDisplayName(slug: string): string {
   return i >= 0 ? t.name.slice(0, i).trim() : t.name;
 }
 
-export function buildLicensedDemoUrl(slug: string, token: string, domain: string): string {
+export function buildLicensedDemoUrl(slug: string, token: string): string {
   const base = publicAppUrl();
-  const d = normalizeDomainHost(domain);
-  const q = new URLSearchParams({
-    token,
-    domain: d,
-  });
+  const q = new URLSearchParams({ token });
   return `${base}/demo/${encodeURIComponent(slug)}?${q.toString()}`;
 }
 
-export function buildLicensedIframeCode(slug: string, token: string, domain: string): string {
-  const url = buildLicensedDemoUrl(slug, token, domain);
+export function buildLicensedIframeCode(slug: string, token: string): string {
+  const url = buildLicensedDemoUrl(slug, token);
   return `<iframe
   src="${url}"
   width="100%"

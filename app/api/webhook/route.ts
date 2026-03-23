@@ -4,7 +4,6 @@ import { Resend } from "resend";
 import crypto from "crypto";
 import { buildOnboardingEmailHtml, onboardingEmailSubject } from "@/lib/flowleadsOnboardingEmail";
 import { flowleadsContactEmail, formatResendFrom } from "@/lib/flowleadsMailConfig";
-import { normalizeDomainHost } from "@/lib/licenseUtils";
 import { getSupabaseServiceRole } from "@/lib/supabaseService";
 
 export const runtime = "nodejs";
@@ -95,15 +94,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const domain = normalizeDomainHost(typeof meta.domain === "string" ? meta.domain : "");
-  if (!domain) {
-    console.error("checkout.session.completed: domain fehlt", meta);
-    return NextResponse.json(
-      { error: "domain required", code: "missing_domain" },
-      { status: 400 }
-    );
-  }
-
   let supabase;
   try {
     supabase = getSupabaseServiceRole();
@@ -134,7 +124,6 @@ export async function POST(req: NextRequest) {
     firma: typeof meta.firma === "string" ? meta.firma.trim() || null : null,
     slug,
     token,
-    domain,
     accent_color: accent,
     stripe_session_id: session.id,
     status: "active",
@@ -171,7 +160,6 @@ export async function POST(req: NextRequest) {
         firma: typeof meta.firma === "string" ? meta.firma.trim() : "",
         slug,
         token,
-        domain,
       }),
     });
     if (mailErr) {

@@ -76,3 +76,226 @@ input[type="range"]::-webkit-slider-thumb {
   }
 }
 
+/* Landing: „So funktioniert’s“ vertikale Timeline (#how) */
+.tl-wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+.tl-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.tl-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #b8884a;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.tl-label::before,
+.tl-label::after {
+  content: "";
+  width: 24px;
+  height: 1.5px;
+  background: #f0d9b5;
+}
+.tl-items {
+  position: relative;
+}
+.tl-line {
+  position: absolute;
+  left: 19px;
+  top: 20px;
+  bottom: 20px;
+  width: 1.5px;
+  background: #e5e7eb;
+}
+.tl-item {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 40px;
+  position: relative;
+}
+.tl-item:last-child {
+  margin-bottom: 0;
+}
+.tl-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b8884a;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.tl-right {
+  padding-top: 8px;
+  flex: 1;
+}
+.tl-step-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #b8884a;
+  margin-bottom: 6px;
+}
+.tl-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.tl-desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.7;
+}
+.tl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: #f0ede6;
+  color: #b8884a;
+  margin-top: 10px;
+}
+.tl-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #b8884a;
+}
+
+/* #how: Timeline auf dunklem Hintergrund (#0f1a14) */
+#how .tl-label {
+  color: #b8884a;
+}
+#how .tl-label::before,
+#how .tl-label::after {
+  background: rgba(184, 136, 74, 0.3);
+}
+#how .tl-line {
+  background: rgba(255, 255, 255, 0.08);
+}
+#how .tl-num {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: #b8884a;
+}
+#how .tl-step-label {
+  color: #b8884a;
+}
+#how .tl-title {
+  color: #ffffff;
+}
+#how .tl-desc {
+  color: rgba(255, 255, 255, 0.45);
+}
+#how .tl-badge {
+  background: rgba(184, 136, 74, 0.12);
+  border: 1px solid rgba(184, 136, 74, 0.25);
+  color: #b8884a;
+}
+#how .tl-badge-dot {
+  background: #b8884a;
+}
+
+/* Landing: „Warum FlowLeads“ Badge + Zeilen */
+.vt-wrap {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+.vt-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #b8884a;
+  text-align: center;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.vt-label::before,
+.vt-label::after {
+  content: "";
+  width: 24px;
+  height: 1.5px;
+  background: #f0d9b5;
+}
+.vt-h2 {
+  font-family: "Instrument Serif", serif;
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight: 400;
+  color: #1a1a1a;
+  text-align: center;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  margin-bottom: 40px;
+}
+.vt-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 20px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+h2.vt-h2 + .vt-row {
+  border-top: 1px solid #f3f4f6;
+}
+.vt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: #fdf6ec;
+  color: #b8884a;
+  border: 1px solid #f0d9b5;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+.vt-content {
+  flex: 1;
+}
+.vt-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+.vt-desc {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.65;
+}
+
