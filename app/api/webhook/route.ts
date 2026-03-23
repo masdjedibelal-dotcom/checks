@@ -160,6 +160,7 @@ export async function POST(req: NextRequest) {
         firma: typeof meta.firma === "string" ? meta.firma.trim() : "",
         slug,
         token,
+        sessionId: session.id,
       }),
     });
     if (mailErr) {

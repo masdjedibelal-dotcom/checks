@@ -8,7 +8,7 @@ export const CHECK_FLOW_META = [
     name: "Versicherungs-Check",
     context: "Paketverkauf & Erstgespräch",
     erlebnis:
-      'Der Kunde sieht welche Pakete zu seiner Situation passen — Basis, Rundumschutz oder komplett. Kein "was fehlt dir noch", sondern ein strukturierter Paketvorschlag der direkt zur Anfrage führt.',
+      "Der Kunde sieht, welche Pakete zu seiner Situation passen: Basis, Rundumschutz oder komplett. Kein „was fehlt Ihnen noch“, sondern ein strukturierter Paketvorschlag, der direkt zur Anfrage führt.",
     price: "79",
   },
   {
@@ -18,7 +18,7 @@ export const CHECK_FLOW_META = [
     name: "Lebenssituations-Check",
     context: "Digitales Jahresgespräch",
     erlebnis:
-      "Ersetzt den klassischen Jahresgesprächs-Anruf. Der Bestandskunde gibt aktuelle Lebensveränderungen ein — Nachwuchs, Jobwechsel, Immobilie — und sieht sofort wo Anpassungsbedarf besteht.",
+      "Ersetzt den klassischen Jahresgesprächs-Anruf. Der Bestandskunde gibt aktuelle Lebensveränderungen ein (Nachwuchs, Jobwechsel, Immobilie) und sieht sofort, wo Anpassungsbedarf besteht.",
     price: "79",
   },
   {
@@ -38,7 +38,7 @@ export const CHECK_FLOW_META = [
     name: "GKV vs. PKV",
     context: "Krankenversicherungs-Beratung",
     erlebnis:
-      "Strukturierte Entscheidungshilfe ob GKV oder PKV — inkl. Zusatzversicherungen. Der Kunde bekommt eine klare Einordnung auf Basis seines Einkommens, Alters und seiner familiären Situation.",
+      "Strukturierte Entscheidungshilfe: GKV oder PKV, inkl. Zusatzversicherungen. Der Kunde bekommt eine klare Einordnung auf Basis seines Einkommens, Alters und seiner familiären Situation.",
     price: "49",
   },
   {
@@ -48,7 +48,7 @@ export const CHECK_FLOW_META = [
     name: "Vorsorge-Check",
     context: "Altersvorsorge & Rentenlücke",
     erlebnis:
-      "Berechnet die individuelle Rentenlücke und zeigt wie das Einkommen im Alter gesichert werden kann. Mit konkreten Strategien — steueroptimiert, flexibel oder renditeorientiert.",
+      "Berechnet die individuelle Rentenlücke und zeigt, wie das Einkommen im Alter gesichert werden kann. Konkrete Strategien: steueroptimiert, flexibel oder renditeorientiert.",
     price: "59",
   },
   {
@@ -58,7 +58,7 @@ export const CHECK_FLOW_META = [
     name: "Risikoleben-Check",
     context: "Familienabsicherung im Todesfall",
     erlebnis:
-      "Berechnet die Versorgungslücke die entsteht wenn der Hauptverdiener stirbt — unter Berücksichtigung von Witwen- und Waisenrente, Krediten und Partnereinkommen. Die empfohlene Versicherungssumme in Euro.",
+      "Berechnet die Versorgungslücke, die entsteht, wenn der Hauptverdiener stirbt — unter Berücksichtigung von Witwen- und Waisenrente, Krediten und Partnereinkommen. Die empfohlene Versicherungssumme in Euro.",
     price: "59",
   },
   {
@@ -68,7 +68,7 @@ export const CHECK_FLOW_META = [
     name: "Pflege-Check",
     context: "Pflegebedarf & Eigenanteil",
     erlebnis:
-      "Zeigt dem Kunden was Pflege tatsächlich kostet — nach Pflegegrad, Region und Einrichtung. Der monatliche Eigenanteil wird greifbar und die Notwendigkeit privater Pflegevorsorge klar.",
+      "Zeigt dem Kunden, was Pflege tatsächlich kostet, abhängig von Pflegegrad, Region und Einrichtung. Der monatliche Eigenanteil wird greifbar; die Notwendigkeit privater Pflegevorsorge wird klar.",
     price: "49",
   },
   {

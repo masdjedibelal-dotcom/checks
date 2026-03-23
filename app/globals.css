@@ -80,7 +80,7 @@ input[type="range"]::-webkit-slider-thumb {
 .tl-wrap {
   max-width: 640px;
   margin: 0 auto;
-  padding: 80px 24px;
+  padding: 96px 24px;
 }
 .tl-header {
   text-align: center;
@@ -203,99 +203,66 @@ input[type="range"]::-webkit-slider-thumb {
   color: #b8884a;
 }
 #how .tl-step-label {
-  color: #b8884a;
+  color: rgba(255, 255, 255, 0.5);
 }
 #how .tl-title {
   color: #ffffff;
 }
 #how .tl-desc {
-  color: rgba(255, 255, 255, 0.45);
-}
-#how .tl-badge {
-  background: rgba(184, 136, 74, 0.12);
-  border: 1px solid rgba(184, 136, 74, 0.25);
-  color: #b8884a;
-}
-#how .tl-badge-dot {
-  background: #b8884a;
+  color: rgba(255, 255, 255, 0.7);
 }
 
-/* Landing: „Warum FlowLeads“ Badge + Zeilen */
-.vt-wrap {
-  max-width: 700px;
+/* Landing: „Warum FlowLeads“ — drei Zeilen mit Icon */
+#how {
+  margin: 0;
+}
+.wf-wrap {
+  max-width: 640px;
   margin: 0 auto;
-  padding: 80px 24px;
+  padding: 56px 24px 80px;
 }
-.vt-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #b8884a;
-  text-align: center;
-  margin-bottom: 12px;
+.wf-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.vt-label::before,
-.vt-label::after {
-  content: "";
-  width: 24px;
-  height: 1.5px;
-  background: #f0d9b5;
-}
-.vt-h2 {
-  font-family: "Instrument Serif", serif;
-  font-size: clamp(26px, 3.2vw, 40px);
-  font-weight: 400;
-  color: #1a1a1a;
-  text-align: center;
-  letter-spacing: -0.3px;
-  line-height: 1.2;
-  margin-bottom: 40px;
-}
-.vt-row {
-  display: flex;
-  gap: 24px;
+  gap: 18px;
   align-items: flex-start;
-  padding: 20px 0;
+  padding: 22px 0;
   border-bottom: 1px solid #f3f4f6;
 }
-h2.vt-h2 + .vt-row {
-  border-top: 1px solid #f3f4f6;
+.wf-row:last-child {
+  border-bottom: none;
 }
-.vt-badge {
-  display: inline-flex;
+.wf-ico {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #f0ede6;
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 100px;
-  background: #fdf6ec;
-  color: #b8884a;
-  border: 1px solid #f0d9b5;
-  white-space: nowrap;
   flex-shrink: 0;
-  min-width: 80px;
 }
-.vt-content {
+.wf-ico svg {
+  display: block;
+}
+.wf-body {
   flex: 1;
+  min-width: 0;
 }
-.vt-title {
+.wf-title {
+  font-family: var(--font-sans, system-ui), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
   margin-bottom: 4px;
   letter-spacing: -0.2px;
+  line-height: 1.3;
 }
-.vt-desc {
+.wf-text {
+  font-family: var(--font-sans, system-ui), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
+  font-weight: 400;
   color: #6b7280;
   line-height: 1.65;
+  margin: 0;
 }
 

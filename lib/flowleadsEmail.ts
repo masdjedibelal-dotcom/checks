@@ -20,6 +20,8 @@ export type OnboardingEmailParams = {
   firma: string;
   slug: string;
   token: string;
+  /** Stripe Checkout Session-ID für Link zur Bestätigungsseite */
+  sessionId?: string;
 };
 
 export function buildOnboardingEmailSubject(slug: string): string {
@@ -40,6 +42,10 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
   const safeIframeInBox = escapeHtml(iframeCode);
   const safeDemoUrl = escapeHtml(demoUrl);
   const safeAppUrl = escapeHtml(appUrl);
+  const successPageUrl = p.sessionId
+    ? `${appUrl}/success?session_id=${encodeURIComponent(p.sessionId)}`
+    : `${appUrl}/success`;
+  const safeSuccessPageUrl = escapeHtml(successPageUrl);
   const contactEmail = flowleadsContactEmail();
   const safeContact = escapeHtml(contactEmail);
   const mailtoCodeBody = encodeURIComponent(iframeCode);
@@ -103,6 +109,25 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
     <div class="code-box">${safeIframeInBox}</div>
     <div style="font-size:11px;color:#9ca3af;margin-top:6px;margin-bottom:24px;text-align:center;">
       ↑ Code markieren und kopieren
+    </div>
+
+    <div style="margin-top:16px;">
+      <div style="font-size:12px;font-weight:700;color:#1a1a1a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
+        Ihr Direkt-Link
+      </div>
+      <div style="background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;font-size:12px;color:#374151;word-break:break-all;line-height:1.7;">
+        <a href="${safeDemoUrl}" style="color:#b8884a;text-decoration:none;">
+          ${safeDemoUrl}
+        </a>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:6px;">
+        Für E-Mail, WhatsApp, Social Media oder als Button-Link.
+      </div>
+    </div>
+
+    <div style="margin-top:12px;font-size:12px;color:#9ca3af;line-height:1.65;">
+      QR-Code und alle Einbindungsoptionen finden Sie
+      auch auf Ihrer <a href="${safeSuccessPageUrl}" style="color:#b8884a;">Bestätigungsseite</a>.
     </div>
 
     <div class="steps-box">
