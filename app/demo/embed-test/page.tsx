@@ -31,7 +31,7 @@ function EmbedTestContent() {
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 24px', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 24px', fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif" }}>
       <div style={{ marginBottom: '32px' }}>
         <div style={{ fontSize: '11px', fontWeight: '600', color: '#999', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '6px' }}>
           CheckKit — Embed Test

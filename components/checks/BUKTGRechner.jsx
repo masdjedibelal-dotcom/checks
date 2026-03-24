@@ -3,18 +3,15 @@ import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 
 // ─── GLOBAL SETUP ────────────────────────────────────────────────────────────
 (() => {
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
-  document.head.appendChild(link);
   const s = document.createElement("style");
   s.textContent = `
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: #ffffff; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; background: #ffffff; font-family: var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
     button, input, select { font-family: inherit; border: none; background: none; cursor: pointer; }
     input, select { cursor: text; }
     ::-webkit-scrollbar { display: none; }
@@ -58,9 +55,16 @@ function berechne({ brutto, beruf, ktgTag, buRente, szenario }) {
   const lohnPhase = { start: 1, end: 42, pct: 100, monatl: netto, label: "Lohnfortzahlung" };
 
   // Phase 2: Krankengeld (Tag 43–546 = 18 Monate)
-  const kgBrutto  = brutto * 0.70 / 30;
-  const kgNetto   = Math.min(kgBrutto, netto * 0.90 / 30);
-  const gesKG     = beruf === "selbst" ? 0 : kgNetto * 30;
+  // BBG KV 2026: 5.812,50 €/Mon. → max KG 135,63 €/Tag brutto
+  // nach SV-Abzügen: ~120 €/Tag netto = ~3.600 €/Mon.
+  // Quelle: §47 SGB V, BBG KV 2026
+  const BBG_KV_MONAT = 5812.5;
+  const BBG_KV_TAG = BBG_KV_MONAT / 30;
+  const kgBruttoTag = Math.min(brutto / 30, BBG_KV_TAG) * 0.7;
+  const kgNettoTag = kgBruttoTag * 0.885;
+  const kg90Netto = (netto / 30) * 0.9;
+  const kgEffTag = Math.min(kgNettoTag, kg90Netto);
+  const gesKG = beruf === "selbst" ? 0 : kgEffTag * 30;
   const ktgMonatl = ktgTag * 30;
   const phase2    = { start: 43, end: 546, pct: Math.round(((gesKG + ktgMonatl) / netto) * 100), monatl: gesKG + ktgMonatl, label: beruf === "selbst" ? "Krankentagegeld" : "Krankengeld + KTG" };
 
@@ -95,7 +99,7 @@ function berechne({ brutto, beruf, ktgTag, buRente, szenario }) {
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 function makeBUKTGT(C) {
   return {
-  page:    { minHeight: "100vh", background: "#ffffff", fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
+  page:    { minHeight: "100vh", background: "#ffffff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
   header:  { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   logo:    { display: "flex", alignItems: "center", gap: "10px" },
   logoMk:  { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
@@ -527,6 +531,13 @@ export default function BUKTGRechner() {
 
         <div style={{ ...T.section, marginBottom: "120px" }}>
           <div style={T.infoBox}>Näherungswerte. Exakte Berechnung abhängig von Tarif, Einstufung und Gesundheitszustand.</div>
+          <CheckBerechnungshinweis>
+            <>
+              Das <strong>Einkommen</strong> wird in 4 Phasen berechnet: Lohnfortzahlung (Tag 1–42), Krankengeld (Tag 43–546, max. 135,63 €/Tag brutto nach BBG KV 2026), Wartezeit BU (Monat 19–24, nur KTG), BU-Rente (dauerhaft).
+              Selbstständige erhalten kein gesetzliches Krankengeld.{" "}
+              <span style={{ color: "#b8884a" }}>Grundlage: §47 SGB V.</span>
+            </>
+          </CheckBerechnungshinweis>
           <div style={{ ...T.infoBox, marginTop: "10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
 

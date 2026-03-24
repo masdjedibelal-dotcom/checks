@@ -3,19 +3,28 @@ import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
-(() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
+(() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 const WARN="#c0392b",OK="#059669";
 const fmt=(n)=>Math.round(Math.abs(n)).toLocaleString("de-DE")+" €";
 // JAEG 2026: 77.400 € / Jahr = 6.450 € / Monat
-const JAEG_MONAT = 6450;
+const JAEG_MONAT = 6450; // Versicherungspflichtgrenze
+const BBG_KV = 5812.5; // Beitragsbemessungsgrenze KV 2026
 function berechne(p){
   const{brutto,alter,kinder,partner,beruf,gesundheit}=p;
-  // GKV 2026: 14,6% allg. + 2,9% Ø-Zusatzbeitrag — Beitrag unten über feste Sätze
-  const gkvBeitrag = beruf==="selbst"
-    ? Math.min(brutto*0.175, 6450*0.175)  // Beitragsbemessungsgrenze
-    : Math.min(brutto*0.0875, 6450*0.0875);
-  const pkv=beruf==="beamter"?brutto*0.025:alter<30?brutto*0.045:alter<40?brutto*0.06:alter<50?brutto*0.075:brutto*0.095;
+  const gkvBeitrag = beruf === "selbst"
+    ? Math.min(brutto, BBG_KV) * 0.175
+    : Math.min(brutto, BBG_KV) * 0.0875;
+  // PKV Ø-Beitrag 2026 (Komfort-Tarif inkl. KTG + Pflege)
+  // Quelle: Finanztip/PKV-Verband, Stand März 2026
+  const PKV_SELBST = alter < 30 ? 550 : alter < 40 ? 700 : alter < 50 ? 820 : 1050;
+  const PKV_BEAMTER = alter < 40 ? 200 : alter < 50 ? 260 : 320;
+  const PKV_ANGEST = Math.max(
+    Math.round(PKV_SELBST / 2),
+    Math.round(PKV_SELBST - 508.59)
+  );
+  const pkv = beruf === "beamter" ? PKV_BEAMTER : beruf === "angestellt" ? PKV_ANGEST : PKV_SELBST;
   // Zugang PKV für Angestellte: nur über JAEG
   const pkuZugang = beruf!=="angestellt" || brutto>=JAEG_MONAT;
   const unterGrenze = beruf==="angestellt" && brutto<JAEG_MONAT;
@@ -31,7 +40,7 @@ function berechne(p){
   return{gkvBeitrag,pkv,famBonus:kinder>0&&partner&&beruf!=="selbst"&&beruf!=="beamter",
     score,total,empfehlung,diff:Math.abs(gkvBeitrag-pkv),pkuZugang,unterGrenze};
 }
-function makeGKVPKVT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"'Inter','Helvetica Neue',Helvetica,Arial,sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?(c||C):"#e8e8e8"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"})};}
+function makeGKVPKVT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?(c||C):"#e8e8e8"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"})};}
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 export default function GKVPKVRechner(){
   const MAKLER=useCheckConfig();
@@ -55,7 +64,7 @@ export default function GKVPKVRechner(){
     {l:"Gesundheit",gkv:"Irrelevant für Beitragshöhe",pkv:p.gesundheit==="gut"?"Günstig einsteigen":p.gesundheit==="mittel"?"Risikoaufschlag möglich":"Annahme kann abgelehnt werden",fav:p.gesundheit==="gut"?"pkv":"gkv"},
     {l:"Alter",gkv:"Steigerung mit Einkommen",pkv:p.alter<35?"Jetzt günstig einsteigen":p.alter<50?"Altersrückstellungen aufgebaut":"Wechsel wird teurer",fav:p.alter<35?"pkv":p.alter>45?"gkv":"neutral"},
     {l:"Beruf",gkv:p.beruf==="beamter"?"Freiwillig möglich":p.beruf==="selbst"?"Voller Beitrag":"Arbeitgeberzuschuss 50%",pkv:p.beruf==="beamter"?"Beihilfe 50–70%":p.beruf==="selbst"?"Keine Pflichtversicherung":"Nur über Einkommensgrenze",fav:p.beruf==="beamter"?"pkv":p.beruf==="selbst"?"pkv":"neutral"},
-    {l:"Beitrag (Ø)",gkv:fmt(R.gkvBeitrag)+"/Mon.",pkv:fmt(R.pkv)+"/Mon. (Schätzung)",fav:R.gkvBeitrag<R.pkv?"gkv":"pkv"},
+    {l:"Beitrag (Ø)",gkv:fmt(R.gkvBeitrag)+"/Mon.",pkv:fmt(R.pkv)+"/Mon. (Ø 2026)",fav:R.gkvBeitrag<R.pkv?"gkv":"pkv"},
   ];
 
   // Kontext-Übersetzung
@@ -108,7 +117,7 @@ export default function GKVPKVRechner(){
           <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",padding:"12px 14px",background:"#fafafa",marginBottom:"16px",display:"flex",gap:"20px"}}>
             <div><div style={{fontSize:"15px",fontWeight:"700",color:C,letterSpacing:"-0.3px"}}>{tendenzAnzeige}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>Tendenz{R.unterGrenze?" (GKV-pflichtig)":""}</div></div>
             <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.gkvBeitrag)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>GKV Ø/Mon.</div></div>
-            <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.pkv)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>PKV Schätzung</div></div>
+            <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.pkv)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>PKV Ø-Beitrag 2026 (Komfort-Tarif, einkommensunabhängig)</div></div>
           </div>
           {isDemo && (
             <div style={{ fontSize: "13px", color: "#999", textAlign: "center", marginBottom: "14px", lineHeight: 1.5 }}>
@@ -191,7 +200,7 @@ export default function GKVPKVRechner(){
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"8px"}}>
             {[
               {label:"GKV",beitrag:R.gkvBeitrag,sub:"Ø-Zusatzbeitrag 2026",empf:gkvHervorgehoben},
-              {label:"PKV",beitrag:R.pkv,sub:"Faustschätzung nach Alter",empf:pkvHervorgehoben},
+              {label:"PKV",beitrag:R.pkv,sub:"PKV Ø-Beitrag 2026 (Komfort-Tarif, einkommensunabhängig)",empf:pkvHervorgehoben},
             ].map(({label,beitrag,sub,empf},i)=>(
               <div key={i} style={{border:`2px solid ${empf?C:"#e8e8e8"}`,borderRadius:"10px",padding:"14px",background:empf?`${C}06`:"#fff"}}>
                 <div style={{fontSize:"11px",fontWeight:"700",color:empf?C:"#aaa",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>{empf?"Tendenz · ":""}{label}</div>
@@ -241,6 +250,13 @@ export default function GKVPKVRechner(){
         {/* Disclaimer */}
         <div style={{...T.section,marginBottom:"120px"}}>
           <div style={T.infoBox}>Diese Einschätzung ist eine erste Orientierung und ersetzt keine individuelle Tarif- und Leistungsprüfung. PKV-Beiträge basieren auf Faustformeln — konkrete Angebote können abweichen.</div>
+          <CheckBerechnungshinweis>
+            <>
+              Der <strong>GKV-Beitrag</strong> wird auf Basis der Beitragsbemessungsgrenze 2026 (5.812,50 €/Mon.) berechnet: AN-Anteil 8,75%. <strong>PKV-Beiträge</strong> sind einkommensunabhängig — die Werte zeigen Marktdurchschnittswerte 2026 je Altersgruppe.
+              Angestellte erhalten einen AG-Zuschuss von max. 508,59 €/Mon.{" "}
+              <span style={{ color: "#b8884a" }}>Grundlage: §241 SGB V, §257 SGB V.</span>
+            </>
+          </CheckBerechnungshinweis>
           <div style={{...T.infoBox,marginTop:"10px"}}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
 

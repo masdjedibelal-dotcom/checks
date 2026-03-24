@@ -2,11 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+}
+
 html {
   color-scheme: light !important;
 }
 
 body {
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -101,7 +106,7 @@ input[type="range"]::-webkit-slider-thumb {
   letter-spacing: 2px;
   text-transform: uppercase;
   color: #b8884a;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,8 +231,19 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 #how .tl-wrap {
-  padding-top: 176px;
-  padding-bottom: 132px;
+  padding-top: 96px;
+  padding-bottom: 96px;
+  padding-left: 36px;
+  padding-right: 36px;
+}
+
+@media (max-width: 680px) {
+  #how .tl-wrap {
+    padding-top: 64px;
+    padding-bottom: 64px;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
 }
 #how .tl-item {
   margin-bottom: 72px;
@@ -243,20 +259,20 @@ input[type="range"]::-webkit-slider-thumb {
 }
 #how .tl-label {
   justify-content: flex-start;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 #how .tl-right {
   padding-top: 12px;
 }
 
 #how .tl-headline {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(26px, 3.2vw, 40px);
-  font-weight: 400;
+  font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.3px;
   line-height: 1.15;
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   max-width: 640px;
 }
 #how .tl-sub {
@@ -275,7 +291,7 @@ input[type="range"]::-webkit-slider-thumb {
 .wf-wrap {
   max-width: 640px;
   margin: 0 auto;
-  padding: 56px 24px 80px;
+  padding: 56px 0 80px;
 }
 .wf-row {
   display: flex;

@@ -4,8 +4,9 @@ import { useCheckConfig } from "@/lib/useCheckConfig";
 import { textOnAccent } from "@/lib/utils";
 import { SelectionCard, CheckRow } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
-(() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
+(() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
 const OK="#059669";
 
@@ -135,6 +136,12 @@ function runScoringEngine(profil,existing){
     if(hatExistenzLuecke&&OPTIMIERUNG_IDS.includes(c.id)) return{...c,score:Math.min(c.score,19)};  // Regel 1+9
     return c;
   });
+  const istEigentuemer=profil.housingStatus==="eigentuemer";
+  scored=scored.map(c=>{
+    if(istEigentuemer&&c.id==="risikoleben") return{...c,score:Math.max(c.score,180)};
+    if(istEigentuemer&&c.id==="wohngebaeude") return{...c,score:Math.max(c.score,190)};
+    return c;
+  });
   // Regel 7: sparen_investieren nur ohne Existenzlücke
   if(hatExistenzLuecke) scored=scored.filter(c=>c.id!=="sparen_investieren");
 
@@ -157,7 +164,7 @@ function runScoringEngine(profil,existing){
 // ─── STYLES (C = Akzent aus MaklerContext / URL / Embed) ───────────────────
 function makeBedarfT(C, onAccent) {
   return {
-    page: { minHeight: "100vh", background: "#fff", fontFamily: "'Inter','Helvetica Neue',Helvetica,Arial,sans-serif" },
+    page: { minHeight: "100vh", background: "#fff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif" },
     header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
     logo: { display: "flex", alignItems: "center", gap: "10px" },
     logoMk: { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
@@ -423,6 +430,12 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor, pa
     )}
 
     <div style={{padding:"0 24px",marginBottom:"120px"}}>
+      <CheckBerechnungshinweis>
+        <>
+          Die Empfehlung basiert auf einem <strong>Risiko-Scoring</strong>: Jedes Produkt erhält ein Basisgewicht je nach Risikostufe (Existenz → Einkommen → Langfristig → Optimierung) plus Zuschläge aus Ihrem Profil.{" "}
+          <strong>Privathaftpflicht</strong> ist immer Priorität 1. Optimierungsprodukte erscheinen erst wenn alle Existenzrisiken abgedeckt sind.
+        </>
+      </CheckBerechnungshinweis>
       <div style={T.infoBox}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
     </div>
     <div style={T.footer}><button style={T.btnSec} onClick={onReset}>Neue Berechnung starten</button></div>

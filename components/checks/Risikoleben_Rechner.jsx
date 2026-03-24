@@ -1,16 +1,14 @@
 import { useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 
 (() => {
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
-  document.head.appendChild(link);
   const s = document.createElement("style");
   s.textContent = `
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-    html, body { height:100%; background:#fff; font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+    html, body { height:100%; background:#fff; font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
     button, input { font-family:inherit; cursor:pointer; border:none; background:none; }
     input { cursor:text; }
     ::-webkit-scrollbar { display:none; } * { scrollbar-width:none; }
@@ -28,6 +26,8 @@ import { useCheckConfig } from "@/lib/useCheckConfig";
 const alpha = (hex,a) => { const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; };
 const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n>=10000 ? Math.round(n/1000)+"0".repeat(0)+".000 €" : fmt(n);
+const FREIBETRAG_WITWE = 1038;
+const WARN_RL = "#c0392b";
 
 function berechne(p) {
   const { bruttoVerstorben, alterJuengstesKind, kinder, partnerEinkommen, vorhandeneVS, kredite } = p;
@@ -42,8 +42,16 @@ function berechne(p) {
   const waisenRenteJKind  = renteAnwartschaft * 0.10;
   const waisenRenteGesamt = waisenRenteJKind * Math.min(kinder, 3); // max. 3 Kinder
 
+  // §97 SGB VI: Eigenes Einkommen wird auf Witwenrente angerechnet wenn über Freibetrag
+  const anrechnung =
+    partnerEinkommen > FREIBETRAG_WITWE
+      ? Math.round((partnerEinkommen - FREIBETRAG_WITWE) * 0.4)
+      : 0;
+  const gesWitwe = Math.max(0, witweRente - anrechnung);
+  const gesGesetzl = gesWitwe + waisenRenteGesamt;
+
   // Monatlicher Eingang nach Tod
-  const eingang = witweRente + waisenRenteGesamt + partnerEinkommen;
+  const eingang = gesWitwe + waisenRenteGesamt + partnerEinkommen;
 
   // Bedarf: Haushalt läuft weiter bis jüngstes Kind 25 ist, dann Witwenbedarf
   const familienBedarf    = bruttoVerstorben * 0.67 * 0.75; // 75% des Nettos als Familienbedarf
@@ -60,7 +68,23 @@ function berechne(p) {
   const lueckeVS          = Math.max(0, gesamtBedarf - vorhandeneVS);
   const deckungsgrad      = gesamtBedarf > 0 ? Math.min(100, Math.round((vorhandeneVS / gesamtBedarf) * 100)) : 100;
 
-  return { witweRente, waisenRenteGesamt, waisenRenteJKind, jahreWaisenrente, eingang, familienBedarf, lueckeMonat, absicherungsjahre, barwert, gesamtBedarf, lueckeVS, deckungsgrad };
+  return {
+    witweRente,
+    gesWitwe,
+    anrechnung,
+    gesGesetzl,
+    waisenRenteGesamt,
+    waisenRenteJKind,
+    jahreWaisenrente,
+    eingang,
+    familienBedarf,
+    lueckeMonat,
+    absicherungsjahre,
+    barwert,
+    gesamtBedarf,
+    lueckeVS,
+    deckungsgrad,
+  };
 }
 
 export default function RisikolebenRechner() {
@@ -84,7 +108,7 @@ export default function RisikolebenRechner() {
   };
 
   const T = {
-    root:    { minHeight:"100vh", background:"#fff", fontFamily:"'Inter','Helvetica Neue',Helvetica,Arial,sans-serif", "--accent": C },
+    root:    { minHeight:"100vh", background:"#fff", fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
     header:  { position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", borderBottom:"1px solid #e8e8e8", padding:"0 24px", height:"52px", display:"flex", alignItems:"center", justifyContent:"space-between" },
     logoWrap:{ display:"flex", alignItems:"center", gap:"10px" },
     logoBox: { width:"28px", height:"28px", borderRadius:"6px", background:C, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", fontWeight:"700" },
@@ -192,7 +216,7 @@ export default function RisikolebenRechner() {
               <span style={{fontSize:"13px",fontWeight:"800",color:"#111827"}}>{fmt(R.familienBedarf)}/Monat</span>
             </div>
             {[
-              {l:"Gesetzl. Witwen-/Witwerrente",  v:fmt(R.witweRente),        farbe:"#059669", sub:`55% der Rentenanwartschaft des Verstorbenen`},
+              {l:"Gesetzl. Witwen-/Witwerrente",  v:fmt(R.gesWitwe),        farbe:"#059669", sub:`55% der Rentenanwartschaft des Verstorbenen`},
               {l:`Waisenrente (${p.kinder} Kind${p.kinder>1?"er":""})`,        v:fmt(R.waisenRenteGesamt),  farbe:"#059669", sub:`je ${fmt(R.waisenRenteJKind)}/Mon. × ${Math.min(p.kinder,3)} Kinder · noch ${R.jahreWaisenrente} Jahre`},
               {l:"Eigenes Einkommen Partner",      v:fmt(p.partnerEinkommen),  farbe:"#059669", sub:"Bleibt der Familie erhalten"},
               {l:"Gesamteingang",                  v:fmt(R.eingang),           farbe:C,         sub:"Summe aller Einnahmen", bold:true},
@@ -203,6 +227,11 @@ export default function RisikolebenRechner() {
                 <div style={{fontSize:"13px",fontWeight:"700",color:row.farbe,textAlign:"right",marginLeft:"12px",flexShrink:0}}>{row.v}</div>
               </div>
             ))}
+            {R.gesWitwe < R.witweRente && (
+              <div style={{fontSize:"11px",color:WARN_RL,marginTop:"4px",lineHeight:1.5}}>
+                Witwen-/Witwerrente durch Einkommensanrechnung auf {fmt(R.gesWitwe)}/Mon. reduziert (§97 SGB VI, Freibetrag {fmt(FREIBETRAG_WITWE)}/Mon.)
+              </div>
+            )}
           </div>
         </div>
 
@@ -229,6 +258,17 @@ export default function RisikolebenRechner() {
           <div style={{fontSize:"12px",fontWeight:"700",color:C,marginBottom:"4px"}}>Empfehlung</div>
           <div style={{fontSize:"13px",color:"#4b5563",lineHeight:1.55}}>Versicherungssumme von mindestens <strong>{fmtK(R.lueckeVS)}</strong> absichern. Als kostengünstige Risikolebensversicherung — für 30 Jahre ca. 20–50 €/Monat je nach Alter und Gesundheit.</div>
         </div>}
+
+        <div style={{ padding: "0 16px" }}>
+          <CheckBerechnungshinweis>
+            <>
+              Gesamtbedarf = monatlicher Eigenbedarf × 12 × Absicherungsjahre + Kredite. Eigenbedarf = Monatsbedarf minus Witwenrente minus Waisenrente minus Partnereinkommen.{" "}
+              Wichtig: Eigenes Einkommen des Partners wird nach <span style={{ color: "#b8884a" }}>§97 SGB VI</span> auf die Witwenrente angerechnet (Freibetrag 1.038 €/Mon., 40% Anrechnung darüber).{" "}
+              <span style={{ color: "#b8884a" }}>Grundlage: §46–48 SGB VI</span>
+            </>
+          </CheckBerechnungshinweis>
+          <div style={{ padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+        </div>
 
       </Shell>
     );

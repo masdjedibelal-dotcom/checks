@@ -15,7 +15,7 @@ export default function SuccessPage() {
             alignItems: "center",
             justifyContent: "center",
             background: "#f0ede6",
-            fontFamily: 'DM Sans, var(--font-sans), system-ui, sans-serif',
+            fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
             color: "#9ca3af",
             fontSize: 14,
           }}

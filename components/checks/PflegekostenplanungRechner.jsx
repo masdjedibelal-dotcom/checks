@@ -3,13 +3,14 @@ import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
-(() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
+(() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 const WARN="#c0392b",OK="#059669";
 const fmt=(n)=>Math.round(Math.abs(n)).toLocaleString("de-DE")+" €";
 const fmtK=(n)=>n>=1000000?(n/1000000).toFixed(2)+" Mio. €":n>=10000?Math.round(n/1000).toLocaleString("de-DE")+".000 €":fmt(n);
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
-function makePflegeT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"'Inter','Helvetica Neue',Helvetica,Arial,sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?C:"#e8e8e8"}`,background:a?C:"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"})};}
+function makePflegeT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?C:"#e8e8e8"}`,background:a?C:"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"})};}
 function Danke({name,onBack,makler,C}){return(<div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{name?`Danke, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir melden uns innerhalb von 24 Stunden.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{makler.name}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${makler.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{makler.telefon}</a><a href={`mailto:${makler.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{makler.email}</a></div></div><button onClick={onBack} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div>);}
 function KontaktForm({fd,setFd,onSubmit,onBack,isDemo,makler,T}){
   const[consent,setConsent]=useState(false);
@@ -52,12 +53,21 @@ function KontaktForm({fd,setFd,onSubmit,onBack,isDemo,makler,T}){
 function berechne(p){
   const leistStationaer=[0,770,1262,1775,2005,2005][p.pflegegrad]||0;
   const heimkosten=[0,2800,3200,3600,4000,4400][p.pflegegrad]||3600;
-  const eigenStationaer=Math.max(0,heimkosten-leistStationaer);
+  const eigenStationaerBrutto = Math.max(0, heimkosten - leistStationaer);
+  const UNTERKUNFT_VERPFLEGUNG = 700;
+  const pflegeEigenanteil = Math.max(0, eigenStationaerBrutto - UNTERKUNFT_VERPFLEGUNG);
+  const eigenJahr1 = UNTERKUNFT_VERPFLEGUNG + Math.round(pflegeEigenanteil * 0.85);
+  const eigenJahr2 = UNTERKUNFT_VERPFLEGUNG + Math.round(pflegeEigenanteil * 0.7);
+  const eigenJahr3 = UNTERKUNFT_VERPFLEGUNG + Math.round(pflegeEigenanteil * 0.5);
+  const eigenJahr4 = UNTERKUNFT_VERPFLEGUNG + Math.round(pflegeEigenanteil * 0.25);
+  const eigenStationaer = UNTERKUNFT_VERPFLEGUNG + Math.round(pflegeEigenanteil * 0.7);
   const leistAmbulant=[0,347,689,1298,1612,1995][p.pflegegrad]||0;
   const eigenAmbulant=Math.max(0,Math.round(heimkosten*0.5)-leistAmbulant);
   const dauer=[0,7,6,5,4,3][p.pflegegrad]||5;
   const gesamtEigen=eigenStationaer*12*dauer;
-  return{leistStationaer,heimkosten,eigenStationaer,leistAmbulant,eigenAmbulant,dauer,gesamtEigen};
+  // §43c SGB XI (ab 01.01.2024): 0–12 Mon: 15%, 13–24 Mon: 30%, 25–36 Mon: 50%,
+  // ab 37 Mon: 75% auf pflegebedingten Eigenanteil; U+V (~700€/Mon.) nicht rabattierbar
+  return{leistStationaer,heimkosten,eigenStationaer,eigenStationaerBrutto,eigenJahr1,eigenJahr2,eigenJahr3,eigenJahr4,pflegeEigenanteil,leistAmbulant,eigenAmbulant,dauer,gesamtEigen};
 }
 export default function PflegekostenplanungRechner(){
   const MAKLER=useCheckConfig();
@@ -110,6 +120,15 @@ export default function PflegekostenplanungRechner(){
         <div style={T.eyebrow}>Pflegegrad {p.pflegegrad} · {p.art==="stationaer"?"Stationär":"Ambulant"}</div>
         <div style={T.h1}>{fmt(eigen)}/Monat Eigenanteil</div>
         <div style={T.body}>Über Ø {R.dauer} Jahre: <strong style={{color:WARN}}>{fmtK(R.gesamtEigen)}</strong> Gesamtbelastung</div>
+        {p.art==="stationaer"&&(
+          <div style={{fontSize:"11px",color:"#666",marginTop:"8px",lineHeight:1.6}}>
+            Inkl. gesetzlichem Leistungszuschlag (§43c SGB XI):
+            Jahr 1: {fmt(R.eigenJahr1)}/Mon. →
+            Jahr 2: {fmt(R.eigenJahr2)}/Mon. →
+            ab Jahr 3: {fmt(R.eigenJahr3)}/Mon. →
+            ab Jahr 4: {fmt(R.eigenJahr4)}/Mon.
+          </div>
+        )}
       </div>
 
       {/* KPI-Kacheln */}
@@ -177,6 +196,13 @@ export default function PflegekostenplanungRechner(){
       </div>
 
       <div style={{...T.section,marginBottom:"0"}}>
+        <CheckBerechnungshinweis>
+          <>
+            <strong>Eigenanteil</strong> = Heimkosten minus gesetzliche Kassenleistung (<span style={{ color: "#b8884a" }}>§43 SGB XI</span>).
+            Ab Monat 13 reduziert sich der pflegebedingte Eigenanteil durch den gesetzlichen Leistungszuschlag (<span style={{ color: "#b8884a" }}>§43c SGB XI</span>): Monat 13–24: 30% Rabatt, Monat 25–36: 50% Rabatt, ab Monat 37: 75% Rabatt.
+            Unterkunft und Verpflegung (~700 €/Mon.) sind nicht rabattierbar. Alle Werte: Ø-Werte nach BMG 2026.
+          </>
+        </CheckBerechnungshinweis>
         <div style={T.infoBox}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
       </div>
       {/* Block 5: Kontakt CTA */}

@@ -174,7 +174,7 @@ html {
   transition: background 0.15s;
 }
 .flow-leads-landing .btn-cta:hover{
-  background: var(--gold);
+  background: #1a3228;
 }
 @media (max-width: 680px) {
   .flow-leads-landing nav{
@@ -191,15 +191,19 @@ html {
 /* ─── HERO ───────────────────────────────────────────────────────────────── */
 .flow-leads-landing .hero{
   text-align: center;
-  padding: 100px 24px 64px;
+  padding: 100px 36px 80px;
   max-width: 1100px;
   margin: 0 auto;
   position: relative;
 }
 @media (max-width: 680px) {
   .flow-leads-landing .hero{
-    padding-top: 80px;
+    padding: 72px 18px 64px;
   }
+}
+
+.flow-leads-landing .hero .wf-wrap {
+  text-align: left;
 }
 
 /* eyebrow tag */
@@ -231,11 +235,11 @@ html {
   }
 }
 
-/* Hero headline — Instrument Serif, Perspective-ähnliche Proportionen */
+/* Hero headline — DM Sans */
 .flow-leads-landing .hero h1{
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(44px, 6.2vw, 64px);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.035em;
   color: var(--ink);
@@ -341,9 +345,9 @@ html {
   box-shadow: 0 4px 18px rgba(15, 26, 20, 0.28);
 }
 .flow-leads-landing .btn-primary-lg:hover{
-  background: var(--gold);
+  background: #1a3228;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(184, 136, 74, 0.35);
+  box-shadow: 0 6px 20px rgba(15, 26, 20, 0.4);
 }
 .flow-leads-landing .btn-demo-lg{
   font-size: 14px;
@@ -375,9 +379,9 @@ html {
   margin-right: auto;
 }
 .flow-leads-landing .why-flowleads-title{
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(28px, 3.6vw, 42px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--ink);
   margin: 0 0 6px;
@@ -542,7 +546,7 @@ html {
 
 /* ─── SECTIONS ───────────────────────────────────────────────────────────── */
 .flow-leads-landing .s{
-  padding: 80px 36px;
+  padding: 96px 36px;
 }
 .flow-leads-landing .inner{
   max-width: 1100px;
@@ -566,13 +570,17 @@ html {
   background: var(--gold-mid);
 }
 .flow-leads-landing h2{
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.12;
   color: var(--ink);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+}
+
+.flow-leads-landing #how .tl-headline {
+  margin: 0 0 12px;
 }
 .flow-leads-landing .s-sub{
   font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -593,9 +601,9 @@ html {
 
 /* ─── HOW FLOW (So funktioniert's) ───────────────────────────────────────── */
 .flow-leads-landing .how-flow-h2{
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.12;
   color: var(--ink);
@@ -933,15 +941,19 @@ html {
 
 /* ─── TOOLS SECTION (#tools, ehem. Checks, ck-*) ─────────────────────────── */
 .flow-leads-landing .checks-section-headline{
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.12;
   color: var(--ink);
-  margin: 0 auto 12px;
+  margin: 0 0 12px;
   max-width: 680px;
-  text-align: center;
+  text-align: left;
+}
+.flow-leads-landing .checks-section .s-label {
+  text-align: left;
+  justify-content: flex-start;
 }
 .flow-leads-landing .checks-section-tagline{
   font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -1028,9 +1040,9 @@ html {
   color: #b45309;
 }
 .flow-leads-landing .ck-card-name{
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 21px;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.3px;
   margin-bottom: 5px;
@@ -1237,9 +1249,9 @@ html {
   margin-bottom: 12px;
 }
 .flow-leads-landing .bento-card h3{
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 22px;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.3px;
   margin-bottom: 10px;
@@ -1615,7 +1627,7 @@ html {
 /* ─── DARK SECTION ───────────────────────────────────────────────────────── */
 .flow-leads-landing .dark-s{
   background: var(--dark);
-  padding: 80px 36px;
+  padding: 96px 36px;
 }
 .flow-leads-landing .dark-s .s-label{
   color: var(--gold);
@@ -1656,6 +1668,11 @@ html {
 @media (max-width: 400px) {
   .flow-leads-landing .use-grid{
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 680px) {
+  .flow-leads-landing .dark-s {
+    padding: 64px 18px;
   }
 }
 .flow-leads-landing .use-card{
@@ -1792,7 +1809,7 @@ html {
 /* ─── CTA FINAL ──────────────────────────────────────────────────────────── */
 .flow-leads-landing .cta-s{
   background: var(--dark);
-  padding: 80px 36px;
+  padding: 96px 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1800,13 +1817,13 @@ html {
   flex-wrap: wrap;
 }
 .flow-leads-landing .cta-left h2{
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(26px, 3.5vw, 40px);
-  font-weight: 400;
+  font-weight: 700;
   color: #fff;
   letter-spacing: -0.3px;
   line-height: 1.15;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 .flow-leads-landing .cta-left h2 .underline-w{
   position: relative;
@@ -1834,6 +1851,29 @@ html {
   gap: 10px;
   flex-wrap: wrap;
   flex-shrink: 0;
+}
+/* CTA auf --dark: erster Button grün sichtbar, zweiter (unterer bei Wrap) Gold */
+.flow-leads-landing .cta-s .btn-primary-lg{
+  background: #1f3d32;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+.flow-leads-landing .cta-s .btn-primary-lg:hover{
+  background: #285445;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+.flow-leads-landing .cta-s .btn-wh{
+  background: var(--gold);
+  color: #fff;
+  border: 1px solid transparent;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(184, 136, 74, 0.35);
+}
+.flow-leads-landing .cta-s .btn-wh:hover{
+  background: #a07038;
+  border-color: transparent;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(184, 136, 74, 0.45);
 }
 .flow-leads-landing .btn-gold{
   font-size: 14px;
@@ -1870,13 +1910,13 @@ html {
 @media (max-width: 680px) {
   .flow-leads-landing .cta-s{
     flex-direction: column;
-    padding: 60px 18px;
+    padding: 64px 18px;
   }
 }
 
 /* ─── FOOTER ─────────────────────────────────────────────────────────────── */
 .flow-leads-landing footer{
-  padding: 28px 36px;
+  padding: 48px 36px;
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -1912,6 +1952,6 @@ html {
 }
 @media (max-width: 680px) {
   .flow-leads-landing footer{
-    padding: 22px 18px;
+    padding: 36px 18px;
   }
 }

@@ -3,17 +3,14 @@ import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard, SectionHeader } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 
 (() => {
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
-  document.head.appendChild(link);
   const s = document.createElement("style");
   s.textContent = `
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: #ffffff; font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; background: #ffffff; font-family: var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
     button, input, select { font-family: inherit; border: none; background: none; cursor: pointer; }
     input, select { cursor: text; }
     ::-webkit-scrollbar { display: none; } * { scrollbar-width: none; }
@@ -33,11 +30,13 @@ const fmtK = (n) => n >= 1000 ? (Math.round(n / 1000) * 1000).toLocaleString("de
 const S1 = "#0369a1", S2 = "#7c3aed", S3 = "#059669", WARN = "#c0392b";
 
 function berechne(p) {
-  const { alter, rentenAlter, netto, zielProzent, gesRente, schicht1, schicht2, schicht3, beruf } = p;
+  const { alter, rentenAlter, netto, zielProzent, gesRente, schicht1, schicht2, schicht3, beruf, inflationsschutz = true } = p;
   const jahreBis    = Math.max(1, rentenAlter - alter);
   const lebenserw   = 87;
   const renteDauer  = Math.max(1, lebenserw - rentenAlter);
-  const ziel        = netto * (zielProzent / 100);
+  const zielHeute   = netto * (zielProzent / 100);
+  const INFLATION   = 0.02;
+  const ziel        = inflationsschutz ? Math.round(zielHeute * Math.pow(1 + INFLATION, jahreBis)) : zielHeute;
   const vorhanden   = gesRente + schicht1 + schicht2 + schicht3;
   const luecke      = Math.max(0, ziel - vorhanden);
   const deckung     = Math.min(100, Math.round((vorhanden / ziel) * 100));
@@ -58,12 +57,12 @@ function berechne(p) {
     { label: "Schicht 3", sub: "Privat + Fonds",            farbe: S3, betrag: schicht3, anteil: ziel>0?Math.min(100,Math.round((schicht3/ziel)*100)):0 },
   ];
   const kapitalBedarf = kapBedarf;
-  return { jahreBis, renteDauer, ziel, vorhanden, luecke, deckung, rateA, nettoA, stVorteil, rateB, rateC, kapBedarf, kapitalBedarf, depotLeer, schichten, lebenserw };
+  return { jahreBis, renteDauer, ziel, zielHeute, vorhanden, luecke, deckung, rateA, nettoA, stVorteil, rateB, rateC, kapBedarf, kapitalBedarf, depotLeer, schichten, lebenserw };
 }
 
 function makeRentenT(C) {
   return {
-  page:    { minHeight: "100vh", background: "#fff", fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  page:    { minHeight: "100vh", background: "#fff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif" },
   header:  { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   logo:    { display: "flex", alignItems: "center", gap: "10px" },
   logoMk:  { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
@@ -154,7 +153,7 @@ export default function RentenRechner() {
   const [showStrat, setShowStrat] = useState(null);
   const [fd, setFd] = useState({ name:"", email:"", tel:"" });
   const [kontaktConsent, setKontaktConsent] = useState(false);
-  const [p, setP] = useState({ alter:35, rentenAlter:67, netto:2800, zielProzent:80, gesRente:1200, schicht1:0, schicht2:0, schicht3:0, beruf:"angestellt" });
+  const [p, setP] = useState({ alter:35, rentenAlter:67, netto:2800, zielProzent:80, gesRente:1200, schicht1:0, schicht2:0, schicht3:0, beruf:"angestellt", inflationsschutz:true });
   const set = (k,v) => setP(x=>({...x,[k]:v}));
   const goTo = (ph) => { setAk(k=>k+1); setPhase(ph); window.scrollTo({top:0}); };
   const R = berechne(p);
@@ -176,6 +175,12 @@ export default function RentenRechner() {
               <div><div style={{ fontSize:"18px",fontWeight:"700",color:C,letterSpacing:"-0.5px" }}>{R.deckung}%</div><div style={{ fontSize:"11px",color:"#999",marginTop:"2px" }}>Deckungsgrad</div></div>
               <div><div style={{ fontSize:"18px",fontWeight:"700",color:"#111",letterSpacing:"-0.5px" }}>{R.jahreBis} J.</div><div style={{ fontSize:"11px",color:"#999",marginTop:"2px" }}>bis Rente</div></div>
             </div>
+            {p.inflationsschutz && R.luecke > 0 && (
+              <div style={{ fontSize:"11px", color:"#9ca3af", marginTop:"10px", lineHeight:1.55 }}>
+                Inflationsbereinigt für {R.jahreBis} Jahre (+2%/Jahr). Heutige Kaufkraft:{" "}
+                {fmt(Math.round(R.ziel / Math.pow(1.02, R.jahreBis)))}/Mon.
+              </div>
+            )}
           </div>
           {isDemo ? (
             <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
@@ -378,6 +383,12 @@ export default function RentenRechner() {
               </div>
             ))}
           </div>
+          {p.inflationsschutz && R.luecke > 0 && (
+            <div style={{ fontSize:"11px", color:"#9ca3af", marginTop:"4px", lineHeight:1.55 }}>
+              Inflationsbereinigt für {R.jahreBis} Jahre (+2%/Jahr). Heutige Kaufkraft:{" "}
+              {fmt(Math.round(R.ziel / Math.pow(1.02, R.jahreBis)))}/Mon.
+            </div>
+          )}
         </div>
 
         {/* Block 2: Schichten-Balken */}
@@ -484,6 +495,13 @@ export default function RentenRechner() {
 
         <div style={{...T.section,marginBottom:"120px"}}>
           <div style={T.infoBox}>Näherungswerte auf Basis von Ø-Renditen. Für einen verbindlichen Sparplan empfehlen wir ein persönliches Gespräch.</div>
+          <CheckBerechnungshinweis>
+            <>
+              <strong>Rentenlücke</strong> = Zielrente minus gesetzliche Rente minus bestehende Vorsorge. Zielrente wird bei aktivem Inflationsschutz mit 2%/Jahr auf den Rentenbeginn hochgerechnet.
+              Lebenserwartung: 87 Jahre (Basis DAV 2004R). Sparrate Strategie A: Rentenversicherung (3% Zins), Strategie B: Depot/ETF (6% Zins, 3,5% Entnahmerate).{" "}
+              <span style={{ color: "#b8884a" }}>Grundlage: §64 SGB VI.</span>
+            </>
+          </CheckBerechnungshinweis>
           <div style={{ ...T.infoBox, marginTop:"10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
         <div style={T.footer}>
@@ -511,6 +529,24 @@ export default function RentenRechner() {
           <div style={T.row}><SliderCard label="Aktuelles Alter" value={p.alter} min={20} max={60} step={1} unit="Jahre" display={`noch ${R.jahreBis} Jahre bis zur Rente`} accent={C} onChange={v=>set("alter",v)}/></div>
           <div style={T.row}><SliderCard label="Gewünschtes Rentenalter" value={p.rentenAlter} min={60} max={70} step={1} unit="Jahre" display={`Rentenphase ca. ${R.renteDauer} Jahre`} accent={C} onChange={v=>set("rentenAlter",v)}/></div>
           <div style={T.row}><SliderCard label="Gewünschtes Rentenniveau" value={p.zielProzent} min={50} max={100} step={5} unit="%" display={`= ${fmt(R.ziel)}/Monat Zielrente`} accent={C} onChange={v=>set("zielProzent",v)}/></div>
+          <div style={T.row}>
+            <label style={T.fldLbl}>Inflationsschutz (2%/Jahr)</label>
+            <div style={{ display:"flex", gap:"8px", marginTop:"6px" }}>
+              {[
+                { v:true,  l:"Ja — empfohlen" },
+                { v:false, l:"Nein" },
+              ].map(({ v, l }) => (
+                <button key={String(v)} type="button" style={T.optBtn(p.inflationsschutz === v)} onClick={() => set("inflationsschutz", v)}>
+                  {l}
+                </button>
+              ))}
+            </div>
+            <div style={T.fldHint}>
+              {p.inflationsschutz
+                ? `Bei 2% Inflation ist Ihre Zielrente in ${R.jahreBis} Jahren ${fmt(R.ziel)}/Mon. (heute: ${fmt(Math.round(R.ziel / Math.pow(1.02, R.jahreBis)))}/Mon.)`
+                : "Ohne Inflationsanpassung — Kaufkraftverlust nicht berücksichtigt"}
+            </div>
+          </div>
           <div style={T.rowLast}>
             <label style={T.fldLbl}>Berufsstatus</label>
             <div style={{display:"flex",flexDirection:"column",gap:"8px",marginTop:"8px"}}>

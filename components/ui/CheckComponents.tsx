@@ -134,7 +134,7 @@ export function SliderCard({
               textAlign: "right",
               outline: "none",
               background: focused ? "#fff" : `${accent}08`,
-              fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+              fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif",
               transition: "border-color 0.15s, background 0.15s",
             }}
           />

@@ -62,7 +62,7 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:#f0ede6;font-family:Inter,Helvetica,'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;padding:40px 16px;}
+  body{background:#f0ede6;font-family:'DM Sans',Helvetica,'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;padding:40px 16px;}
   .wrap{max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;}
   .header{background:#1a1a1a;padding:24px 32px;display:flex;align-items:center;gap:12px;}
   .header-name{color:#ffffff;font-size:17px;font-weight:700;letter-spacing:-0.3px;}

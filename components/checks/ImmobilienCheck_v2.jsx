@@ -3,8 +3,9 @@ import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
-(() => { const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";document.head.appendChild(l);const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
+(() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
 const WARN="#c0392b",OK="#059669";
 const fmt=(n)=>Math.round(Math.abs(n)).toLocaleString("de-DE")+" €";
@@ -24,7 +25,18 @@ function berechneMK(p){
   let anlageVerm=0;
   if(diffMonatl<0){for(let j=0;j<jahre;j++)anlageVerm=(anlageVerm+Math.abs(diffMonatl)*12)*(1+0.05);}
   const immWert=Math.round(kaufpreis*Math.pow(1.02,jahre));
-  const restschuld=Math.max(0,darlehen*(1-tilgung/100*jahre)*0.9);
+  const i = zinsen / 100;
+  const t = tilgung / 100;
+  const restschuld =
+    Math.abs(i) < 1e-12
+      ? Math.max(0, Math.round(darlehen * (1 - t * jahre)))
+      : Math.max(
+          0,
+          Math.round(
+            darlehen * Math.pow(1 + i, jahre) -
+              ((i + t) / i) * darlehen * (Math.pow(1 + i, jahre) - 1),
+          ),
+        );
   const eigentumsWert=immWert-restschuld;
   let breakeven=null,kaufKum=gesamtinvest,mietKum=0,immW=kaufpreis;
   for(let j=1;j<=50;j++){
@@ -41,7 +53,18 @@ function berechneAnschluss(p){
   const neuRate=(restschuld*(neuZins/100+tilgung/100))/12;
   const diffMonatl=neuRate-altRate;
   const mehrGesamt=diffMonatl*laufzeit*12;
-  const altEnde=Math.max(0,restschuld-restschuld*(tilgung/100)*laufzeit);
+  const i2 = neuZins / 100;
+  const t2 = tilgung / 100;
+  const altEnde =
+    Math.abs(i2) < 1e-12
+      ? Math.max(0, Math.round(restschuld * (1 - t2 * laufzeit)))
+      : Math.max(
+          0,
+          Math.round(
+            restschuld * Math.pow(1 + i2, laufzeit) -
+              ((i2 + t2) / i2) * restschuld * (Math.pow(1 + i2, laufzeit) - 1),
+          ),
+        );
   return{altRate,neuRate,diffMonatl,mehrGesamt,altEnde};
 }
 
@@ -80,7 +103,7 @@ const ABSICHERUNG={
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 function makeImmobilienT(C){return{
-  page:{minHeight:"100vh",background:"#fff",fontFamily:"'Inter','Helvetica Neue',Helvetica,Arial,sans-serif"},
+  page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},
   header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},
   logo:{display:"flex",alignItems:"center",gap:"10px"},
   logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},
@@ -340,6 +363,13 @@ export default function ImmobilienCheck(){
 
       <div style={{...T.section,marginBottom:"120px"}}>
         <div style={T.infoBox}>Orientierungs-Check — Näherungswerte. Für verbindliche Angebote empfehlen wir ein persönliches Gespräch.</div>
+        <CheckBerechnungshinweis>
+          <>
+            <strong>Monatsrate</strong> = Darlehen × (Zinssatz + Tilgung) / 12 (Annuitätendarlehen). Restschuld nach n Jahren: exakte Annuitätenformel.
+            <strong>Immobilienwert</strong>: Ø 2%/Jahr Wertsteigerung (historischer DE-Mittelwert, keine Garantie). Nebenkosten: 10% des Kaufpreises (Grunderwerbsteuer, Notar, ggf. Makler).
+            <strong>Break-even</strong>: Jahr in dem Nettokaufkosten {"<"} kumulative Mietkosten.
+          </>
+        </CheckBerechnungshinweis>
         <div style={{...T.infoBox,marginTop:"10px"}}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
       </div>
       <div style={T.footer}>

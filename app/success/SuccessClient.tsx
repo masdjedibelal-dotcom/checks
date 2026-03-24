@@ -131,7 +131,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
     page: {
       minHeight: "100vh",
       background: "#f0ede6",
-      fontFamily: 'DM Sans, var(--font-sans), system-ui, sans-serif',
+      fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
       padding: "48px 24px",
     },
     wrap: { maxWidth: "600px", margin: "0 auto" },
@@ -147,9 +147,9 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
       margin: "0 auto 20px",
     },
     h1: {
-      fontFamily: "var(--font-instrument-serif), ui-serif, Georgia, serif",
+      fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
       fontSize: "30px",
-      fontWeight: "400",
+      fontWeight: "700",
       color: "#1a1a1a",
       letterSpacing: "-.5px",
       marginBottom: "6px",
@@ -329,7 +329,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           justifyContent: "center",
           gap: 20,
           background: "#f0ede6",
-          fontFamily: 'DM Sans, var(--font-sans), system-ui, sans-serif',
+          fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
           padding: 24,
         }}
       >
@@ -353,7 +353,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           justifyContent: "center",
           background: "#f0ede6",
           padding: 24,
-          fontFamily: 'DM Sans, var(--font-sans), system-ui, sans-serif',
+          fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
         }}
       >
         <div style={{ maxWidth: 460, textAlign: "center", color: "#6b7280", fontSize: 14, lineHeight: 1.65 }}>

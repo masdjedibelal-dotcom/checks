@@ -1,21 +1,13 @@
 import type { Metadata } from "next";
-import { Inter, Instrument_Serif } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-instrument-serif",
-  display: "swap",
-  weight: "400",
-  style: ["normal", "italic"],
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
   weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
+  variable: "--font-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -32,7 +24,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${inter.variable} ${instrumentSerif.variable} bg-white text-[#111]`}
+      className={`${dmSans.variable} bg-white text-[#111]`}
       style={{ colorScheme: "light" }}
       suppressHydrationWarning
     >
@@ -42,7 +34,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/favicon.svg" />
       </head>
       <body
-        className={`${inter.className} antialiased`}
+        className={`${dmSans.className} antialiased`}
         style={{
           background: "#ffffff",
           color: "#111111",

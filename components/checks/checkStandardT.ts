@@ -37,7 +37,7 @@ export function standardCheckT(C: string): CheckTheme {
     page: {
       minHeight: "100vh",
       background: "#fff",
-      fontFamily: "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif",
     },
     header: {
       position: "sticky",
