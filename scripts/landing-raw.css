@@ -179,11 +179,11 @@ nav .logo-mark {
   }
 }
 
-/* Hero headline — Instrument Serif, Perspective-ähnliche Proportionen */
+/* Hero headline — DM Sans */
 .hero h1 {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(44px, 6.2vw, 64px);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.035em;
   color: var(--ink);
@@ -323,9 +323,9 @@ nav .logo-mark {
   margin-right: auto;
 }
 .why-flowleads-title {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(28px, 3.6vw, 42px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--ink);
   margin: 0 0 6px;
@@ -514,9 +514,9 @@ nav .logo-mark {
   background: var(--gold-mid);
 }
 h2 {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.12;
   color: var(--ink);
@@ -541,9 +541,9 @@ h2 {
 
 /* ─── HOW FLOW (So funktioniert's) ───────────────────────────────────────── */
 .how-flow-h2 {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.12;
   color: var(--ink);
@@ -881,9 +881,9 @@ h2 {
 
 /* ─── TOOLS SECTION (#tools, ehem. Checks, ck-*) ─────────────────────────── */
 .checks-section-headline {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(32px, 4vw, 48px);
-  font-weight: 400;
+  font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.12;
   color: var(--ink);
@@ -976,9 +976,9 @@ h2 {
   color: #b45309;
 }
 .ck-card-name {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 21px;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.3px;
   margin-bottom: 5px;
@@ -1192,9 +1192,9 @@ section#tools.checks-section--dark .ck-buy:hover:not(:disabled) {
   margin-bottom: 12px;
 }
 .bento-card h3 {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 22px;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.3px;
   margin-bottom: 10px;
@@ -1755,9 +1755,9 @@ section#tools.checks-section--dark .ck-buy:hover:not(:disabled) {
   flex-wrap: wrap;
 }
 .cta-left h2 {
-  font-family: var(--font-instrument-serif), ui-serif, Georgia, "Instrument Serif", serif;
+  font-family: var(--font-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: clamp(26px, 3.5vw, 40px);
-  font-weight: 400;
+  font-weight: 700;
   color: #fff;
   letter-spacing: -0.3px;
   line-height: 1.15;
