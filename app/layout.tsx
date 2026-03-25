@@ -11,9 +11,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FlowLeads — Bedarfsrechner für Versicherungsmakler",
+  title: "FlowLeads — Fertige Microsites für Versicherungsmakler",
   description:
-    "Fertige Bedarfsrechner für Versicherungsmakler. Auf der Website einbetten, als Link teilen oder QR-Code drucken. Besucher berechnen ihre Lücke und fragen direkt an.",
+    "Fertige Bedarfs-Microsites für Versicherungsmakler — auf der Website einbetten, per Link teilen oder als QR-Code drucken. Kunden berechnen ihre Versorgungslücke und fragen direkt an.",
 };
 
 export default function RootLayout({

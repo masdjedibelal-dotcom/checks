@@ -302,19 +302,19 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
       "Code oben kopieren",
       'Im Website-Editor ein "HTML / Einbettungs-Element" einfügen',
       "Code einfügen und Seite speichern",
-      "Fertig — das Tool ist live auf Ihrer Website",
+      "Fertig — die Microsite ist live auf Ihrer Website",
     ],
     link: [
       "Link kopieren",
       "In E-Mail, WhatsApp oder Social Media einfügen",
       "Oder als Button auf Ihrer Website verlinken",
-      "Kunde klickt und startet das Tool direkt",
+      "Kunde klickt und startet die Microsite direkt",
     ],
     qr: [
       "QR-Code als PNG herunterladen",
       "Auf Visitenkarte, Flyer oder Broschüre platzieren",
       "Kunde scannt mit dem Smartphone",
-      "Tool öffnet sich direkt — ohne Tippen",
+      "Die Microsite öffnet sich direkt — ohne Tippen",
     ],
   };
 

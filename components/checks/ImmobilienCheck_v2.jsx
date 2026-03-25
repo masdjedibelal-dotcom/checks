@@ -191,7 +191,7 @@ export default function ImmobilienCheck(){
         <>
           <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
             <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
-              Das ist eine Live-Vorschau — so sieht Ihr Kunde das Tool.
+              Das ist eine Live-Vorschau — so sieht Ihr Kunde die Microsite.
             </div>
             <button
               type="button"
@@ -475,7 +475,7 @@ export default function ImmobilienCheck(){
     <div style={T.hero}>
       <div style={T.eyebrow}>Schritt 1 von 3 · Ihre Situation</div>
       <div style={T.h1}>Was bewegt Sie rund um Ihre Immobilie?</div>
-      <div style={T.body}>Wählen Sie Ihre Situation — das Tool passt sich automatisch an.</div>
+      <div style={T.body}>Wählen Sie Ihre Situation — die Microsite passt sich automatisch an.</div>
     </div>
 
     {/* Situation */}

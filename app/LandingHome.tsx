@@ -12,7 +12,7 @@ import KonfiguratorOverlay, {
 
 const FAQ_ITEMS = [
   {
-    q: "Wie baue ich das Tool ein?",
+    q: "Wie baue ich die Microsite ein?",
     a: "Per iFrame — einfach kopieren und einfügen. Nach dem Kauf erhalten Sie per E-Mail einen personalisierten Einbettungscode mit Ihrem Namen, Ihrer Farbe und Ihren Kontaktdaten.",
   },
   {
@@ -21,23 +21,23 @@ const FAQ_ITEMS = [
   },
   {
     q: "Wer ist für die Einbindung und Datenverarbeitung verantwortlich?",
-    a: "Die Tools werden auf der Website des jeweiligen Maklers eingebunden. Anfragen gehen direkt an den jeweiligen Anbieter. Die konkrete rechtliche Einbindung und Datenschutzhinweise erfolgen daher über dessen Website.",
+    a: "Die Microsites werden auf der Website des jeweiligen Maklers eingebunden. Anfragen gehen direkt an den jeweiligen Anbieter. Die konkrete rechtliche Einbindung und Datenschutzhinweise erfolgen daher über dessen Website.",
   },
   {
     q: "Funktioniert das auf dem Handy?",
-    a: "Ja — alle Tools sind mobile-first entwickelt und auf Touch-Bedienung optimiert. Die meisten Ihrer Kunden werden das Tool auf dem Smartphone nutzen.",
+    a: "Ja — alle Microsites sind mobile-first entwickelt und auf Touch-Bedienung optimiert. Die meisten Ihrer Kunden werden die Microsite auf dem Smartphone nutzen.",
   },
   {
     q: "Kann ich Design und Inhalte anpassen?",
-    a: "Ja — Farben, Name und Kontaktdaten sind individuell anpassbar. Das Tool erscheint dann in Ihrem Look.",
+    a: "Ja — Farben, Name und Kontaktdaten sind individuell anpassbar. Die Microsite erscheint dann in Ihrem Look.",
   },
   {
     q: "Gibt es Folgekosten oder ein Abo?",
-    a: "Nein — Sie zahlen einmalig und nutzen das Tool dauerhaft. Kein Abo, keine monatlichen Kosten, keine versteckten Gebühren.",
+    a: "Nein — Sie zahlen einmalig und nutzen die Microsite dauerhaft. Kein Abo, keine monatlichen Kosten, keine versteckten Gebühren.",
   },
   {
     q: "Brauche ich eine eigene Website?",
-    a: "Nein — die Tools lassen sich auf jeder bestehenden Website einbinden. Das funktioniert auf Jimdo, Squarespace, WordPress und den meisten Baukastensystemen.",
+    a: "Nein — die Microsites lassen sich auf jeder bestehenden Website einbinden. Das funktioniert auf Jimdo, Squarespace, WordPress und den meisten Baukastensystemen.",
   },
 ];
 
@@ -133,7 +133,7 @@ export default function LandingHome() {
         </div>
         <div className="nav-links">
           <a href="#how">Wie es funktioniert</a>
-          <a href="#tools">Tools</a>
+          <a href="#tools">Microsites</a>
           <a href="#faq">FAQ</a>
         </div>
         <div className="nav-right">
@@ -141,7 +141,7 @@ export default function LandingHome() {
             Fragen?
           </a>
           <a href="#tools" className="btn-cta">
-            Tools ansehen
+            Microsites ansehen
           </a>
         </div>
       </nav>
@@ -154,21 +154,24 @@ export default function LandingHome() {
           </div>
 
           <h1 className="au d2">
-            Ihre Website bringt keine Anfragen?
+            Fertige Microsites auf denen Kunden
             <br />
-            Dann fehlt ein <span className="hero-moment-flow">Rechner</span>.
+            ihren Bedarf selbst berechnen.
           </h1>
 
           <p className="hero-sub au d3">
-            FlowLeads gibt Ihnen fertige Bedarfsrechner —<br />
-            einbetten, verlinken oder als QR-Code drucken.<br />
-            Besucher berechnen ihre Versorgungslücke und<br />
-            fragen direkt bei Ihnen an.
+            Für jeden Beratungsanlass eine fertige Microsite —<br />
+            auf Ihrer Website einbetten, per Link teilen oder als QR-Code auf<br />
+            Visitenkarte und Flyer drucken.
+            <br />
+            Kunden berechnen ihre Lücke.
+            <br />
+            Sie bekommen die Anfrage.
           </p>
 
           <div className="hero-btns au d4">
             <a href="#tools" className="btn-primary-lg">
-              Tools ansehen
+              Microsites ansehen
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
                 <path
                   d="M3 7h8M7 3l4 4-4 4"
@@ -197,9 +200,9 @@ export default function LandingHome() {
                 </svg>
               </div>
               <div className="wf-body">
-                <div className="wf-title">Einmalig kaufen — dauerhaft nutzen</div>
+                <div className="wf-title">Eigenständige Microsite</div>
                 <p className="wf-text">
-                  Kein Abo. Keine Plattformgebühren. Einmal kaufen und für immer auf Ihrer Website einsetzen.
+                  Direkt erreichbar per Link oder QR-Code — auch ohne eigene Website.
                 </p>
               </div>
             </div>
@@ -216,9 +219,9 @@ export default function LandingHome() {
                 </svg>
               </div>
               <div className="wf-body">
-                <div className="wf-title">Leads direkt in Ihr Postfach</div>
+                <div className="wf-title">Einbetten, teilen oder drucken</div>
                 <p className="wf-text">
-                  Keine Plattform, kein Portal, keine Provision. Anfragen landen direkt bei Ihnen.
+                  iFrame auf der Website, Link in E-Mail und WhatsApp, oder QR-Code auf Visitenkarte und Flyer.
                 </p>
               </div>
             </div>
@@ -230,9 +233,9 @@ export default function LandingHome() {
                 </svg>
               </div>
               <div className="wf-body">
-                <div className="wf-title">In 5 Minuten live</div>
+                <div className="wf-title">Leads direkt an Sie</div>
                 <p className="wf-text">
-                  iFrame-Code per E-Mail — auf jeder Website einfügen, fertig. Kein Entwickler nötig.
+                  Keine Plattform, kein Portal, keine Provision. Anfragen landen direkt in Ihrem Postfach.
                 </p>
               </div>
             </div>
@@ -240,128 +243,16 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="how" style={{ background: "#0f1a14" }}>
-        <div className="tl-wrap">
-          <div className="tl-header">
-            <div className="tl-label">Wie es funktioniert</div>
-            <h2 className="tl-headline">Vom Besucher zur Beratungsanfrage</h2>
-            <p className="tl-sub">
-              Egal ob Website, Link oder QR-Code —<br />
-              der Ablauf ist immer gleich.
-            </p>
-          </div>
-
-          <div className="tl-items">
-            <div className="tl-line" />
-
-            {[
-              {
-                num: "01",
-                label: "Einbindung",
-                title: "Tool auf Ihrer Website platzieren",
-                desc: "Ein Tool auswählen, mit Ihrem Namen und Ihrer Farbe anpassen — per iFrame auf jeder Website einbetten. Kein Entwickler nötig.",
-              },
-              {
-                num: "02",
-                label: "Kundenerlebnis",
-                title: "Kunde startet das Tool",
-                desc: "In 3 Minuten beantwortet der Kunde einfache Fragen zu seiner Situation — ohne Fachwissen, ohne Tarifvergleich.",
-              },
-              {
-                num: "03",
-                label: "Ergebnis",
-                title: "Kunde sieht seine Lücke",
-                desc: "Am Ende steht eine klare Zahl — Rentenlücke, Einkommenseinbruch oder Versorgungslücke. Handlungsbedarf in Euro, nicht in Produktlisten.",
-              },
-              {
-                num: "04",
-                label: "Lead",
-                title: "Anfrage geht direkt an Sie",
-                desc: "Der Kunde fragt ein Gespräch an — direkt an Ihre E-Mail. Kein Portal, kein Umweg, keine Provision an Dritte.",
-              },
-            ].map((step) => (
-              <div key={step.num} className="tl-item">
-                <div className="tl-num">{step.num}</div>
-                <div className="tl-right">
-                  <div className="tl-step-label">{step.label}</div>
-                  <div className="tl-title">{step.title}</div>
-                  <div className="tl-desc">{step.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="tools" className="s checks-section checks-section--dark" style={{ background: "#ffffff" }}>
-        <div className="inner">
-          <div className="s-label">Die 8 Tools</div>
-          <h2 className="checks-section-headline">
-            8 Bedarfsrechner — für jeden Anlass einer
-          </h2>
-          <p className="checks-section-tagline">
-            Jeder Rechner führt den Besucher in<br />
-            3 Minuten zur Anfrage.
-          </p>
-          <div className="ck-cards">
-            {CHECK_FLOW_META.map((c) => {
-              const tmpl = KATALOG.find((t) => t.slug === c.slug);
-              return (
-                <div key={c.slug} className="ck-card">
-                  <div className="ck-card-preview">
-                    <CheckFlowPhoneMock slug={c.slug} />
-                  </div>
-                  <div className="ck-card-right">
-                    <div>
-                      <div className={`ck-card-cat ${c.catClass}`}>{c.cat}</div>
-                      <div className="ck-card-name">{c.name}</div>
-                      <div className="ck-card-context">{c.context}</div>
-                      <p className="ck-card-erlebnis">{c.erlebnis}</p>
-                    </div>
-                    <div className="ck-card-foot">
-                      <div className="ck-card-price">
-                        {c.price} € <small>einmalig</small>
-                      </div>
-                      <div className="ck-card-btns">
-                        <button
-                          type="button"
-                          className="ck-demo"
-                          disabled={!tmpl}
-                          onClick={() => tmpl && setDemoT(tmpl)}
-                        >
-                          Demo
-                        </button>
-                        <button
-                          type="button"
-                          className="ck-buy"
-                          disabled={!tmpl}
-                          onClick={() => tmpl && setBuyT(tmpl)}
-                        >
-                          Kaufen
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       <section id="einsatz" className="dark-s">
         <div className="inner">
-          <div className="s-label">Einsatz</div>
+          <div className="s-label">Warum FlowLeads</div>
           <h2>Mehr Anfragen — auf drei Wegen</h2>
-          <p className="s-sub">
-            Fertige Bedarfsrechner die Sie auf Ihrer Website einbetten, als Link teilen oder als QR-Code drucken
-            können.
-          </p>
+          <p className="s-sub">Eine Microsite. Drei Wege sie einzusetzen.</p>
           <div className="use-grid use-grid--single">
             {[
               {
-                t: "iFrame einbetten",
-                p: "Direkt auf Ihrer Website — ein Code-Snippet genügt.",
+                t: "Auf der Website einbetten",
+                p: "Per iFrame auf jeder Website — WordPress, Jimdo, Webflow, Wix. Kein Entwickler nötig.",
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
                     <rect
@@ -384,7 +275,7 @@ export default function LandingHome() {
               },
               {
                 t: "Als Link teilen",
-                p: "Per E-Mail, WhatsApp oder in der Social-Media-Bio.",
+                p: "Direkt-Link in E-Mail, WhatsApp oder Social-Media-Bio. Auch ohne eigene Website nutzbar.",
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                     <path
@@ -403,8 +294,8 @@ export default function LandingHome() {
                 ),
               },
               {
-                t: "QR-Code drucken",
-                p: "Auf Visitenkarte oder Flyer — Kunde scannt und startet.",
+                t: "Als QR-Code drucken",
+                p: "QR-Code herunterladen und auf Visitenkarte, Flyer oder Messestand platzieren. Kunde scannt — Microsite öffnet sich direkt.",
                 icon: (
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                     <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
@@ -431,6 +322,124 @@ export default function LandingHome() {
                 <p>{u.p}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="how" style={{ background: "#0f1a14" }}>
+        <div className="tl-wrap">
+          <div className="tl-header">
+            <div className="tl-label">So funktioniert&apos;s</div>
+            <h2 className="tl-headline">Vom Besucher zur Beratungsanfrage</h2>
+            <p className="tl-sub">
+              Egal ob Website, Link oder QR-Code —<br />
+              der Ablauf ist immer gleich.
+            </p>
+          </div>
+
+          <div className="tl-items">
+            <div className="tl-line" />
+
+            {[
+              {
+                num: "01",
+                label: "Einbindung",
+                title: "Microsite einbetten, teilen oder drucken",
+                desc: "Eine Microsite kaufen, mit Ihrem Namen und Ihrer Farbe konfigurieren — dann per iFrame einbetten, als Link teilen oder als QR-Code drucken. Sie entscheiden wie Ihre Kunden sie erreichen.",
+                badge: "3 Wege · Kein Entwickler nötig",
+              },
+              {
+                num: "02",
+                label: "Kundenerlebnis",
+                title: "Kunde startet die Microsite",
+                desc: "In 3 Minuten beantwortet der Kunde einfache Fragen zu seiner Situation — ohne Fachwissen, ohne Tarifvergleich.",
+                badge: "Mobile-first · Touch-optimiert",
+              },
+              {
+                num: "03",
+                label: "Ergebnis",
+                title: "Kunde sieht seine Lücke",
+                desc: "Am Ende steht eine klare Zahl — Rentenlücke, Einkommenseinbruch oder Versorgungslücke. Handlungsbedarf in Euro, nicht in Produktlisten.",
+                badge: "Konkret · Personalisiert · Verständlich",
+              },
+              {
+                num: "04",
+                label: "Lead",
+                title: "Anfrage geht direkt an Sie",
+                desc: "Der Kunde fragt ein Gespräch an — direkt an Ihre E-Mail. Kein Portal, kein Umweg, keine Provision an Dritte.",
+                badge: "Direkt · Qualifiziert · Kein Kaltstart",
+              },
+            ].map((step) => (
+              <div key={step.num} className="tl-item">
+                <div className="tl-num">{step.num}</div>
+                <div className="tl-right">
+                  <div className="tl-step-label">{step.label}</div>
+                  <div className="tl-title">{step.title}</div>
+                  <div className="tl-desc">{step.desc}</div>
+                  <div className="tl-badge">
+                    <span className="tl-badge-dot" />
+                    {step.badge}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="tools" className="s checks-section checks-section--dark" style={{ background: "#ffffff" }}>
+        <div className="inner">
+          <div className="s-label">Die 8 Microsites</div>
+          <h2 className="checks-section-headline">
+            8 fertige Microsites —<br />
+            für jeden Beratungsanlass eine
+          </h2>
+          <p className="checks-section-tagline">
+            Jede Microsite führt Ihren Kunden<br />
+            in 3 Minuten von der ersten Frage zur konkreten Anfrage.
+          </p>
+          <div className="ck-cards">
+            {CHECK_FLOW_META.map((c) => {
+              const tmpl = KATALOG.find((t) => t.slug === c.slug);
+              return (
+                <div key={c.slug} className="ck-card">
+                  <div className="ck-card-preview">
+                    <CheckFlowPhoneMock slug={c.slug} />
+                  </div>
+                  <div className="ck-card-right">
+                    <div>
+                      <div className={`ck-card-cat ${c.catClass}`}>{c.cat}</div>
+                      <div className="ck-card-name">{c.name}</div>
+                      <div className="ck-card-context">{c.context}</div>
+                      <p className="ck-card-erlebnis">{c.erlebnis}</p>
+                    </div>
+                    <div className="ck-card-foot">
+                      <div className="ck-card-price">
+                        {c.price} € <small>einmalig</small> · Ihre Microsite
+                      </div>
+                      <div className="ck-card-btns">
+                        <button
+                          type="button"
+                          className="ck-demo"
+                          disabled={!tmpl}
+                          onClick={() => tmpl && setDemoT(tmpl)}
+                        >
+                          Demo
+                        </button>
+                        <button
+                          type="button"
+                          className="ck-buy"
+                          disabled={!tmpl}
+                          onClick={() => tmpl && setBuyT(tmpl)}
+                        >
+                          Kaufen
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -476,15 +485,19 @@ export default function LandingHome() {
       <section className="cta-s">
         <div className="cta-left">
           <h2>
-            Ihr nächster Lead wartet auf
+            Ihre erste Microsite.
             <br />
-            einen Rechner.
+            Ihre ersten qualifizierten Anfragen.
           </h2>
-          <p>Verwandeln Sie Website-Besucher in echte Anfragen. Einmalig kaufen, dauerhaft nutzen.</p>
+          <p>
+            Einmalig kaufen — dauerhaft einsetzen.
+            <br />
+            Einbetten, verlinken oder drucken.
+          </p>
         </div>
         <div className="cta-right">
           <a href="#tools" className="btn-primary-lg">
-            Tools ansehen
+            Microsites ansehen
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
               <path
                 d="M3 7h8M7 3l4 4-4 4"
@@ -502,15 +515,28 @@ export default function LandingHome() {
       </section>
 
       <footer>
-        <div className="footer-logo">
-          <div className="logo-mark" style={{ width: 20, height: 20, borderRadius: 5 }}>
-            <LogoMarkSm />
+        <div>
+          <div className="footer-logo">
+            <div className="logo-mark" style={{ width: 20, height: 20, borderRadius: 5 }}>
+              <LogoMarkSm />
+            </div>
+            FlowLeads
           </div>
-          FlowLeads
+          <div
+            style={{
+              fontSize: 12,
+              color: "rgba(0,0,0,0.45)",
+              marginTop: 6,
+              maxWidth: 220,
+              lineHeight: 1.45,
+            }}
+          >
+            Fertige Microsites für Versicherungsmakler.
+          </div>
         </div>
         <div className="footer-links">
           <Link href="/">Startseite</Link>
-          <a href="#tools">Tools</a>
+          <a href="#tools">Microsites</a>
           <a href="#how">Wie es funktioniert</a>
           <a href="#faq">FAQ</a>
           <a href="#">Kontakt</a>

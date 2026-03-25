@@ -64,7 +64,7 @@ export default function ImpressumPage() {
 
       <Section title="Hinweis zur Tätigkeit">
         <p>
-          FlowLeads ist ein Anbieter technischer Tools für Versicherungsmakler. FlowLeads erbringt keine
+          FlowLeads ist ein Anbieter fertiger Microsites für Versicherungsmakler. FlowLeads erbringt keine
           Versicherungsberatung, ist kein Versicherungsvermittler und unterliegt nicht der Erlaubnispflicht nach §
           34d GewO.
         </p>

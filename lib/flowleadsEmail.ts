@@ -28,7 +28,7 @@ export type OnboardingEmailParams = {
 
 export function buildOnboardingEmailSubject(slug: string): string {
   const checkName = slugToDisplayName(slug);
-  return `Ihr FlowLeads-Tool ist bereit — ${checkName}`;
+  return `Ihre FlowLeads-Microsite ist bereit — ${checkName}`;
 }
 
 export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: string; html: string } {
@@ -100,12 +100,12 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
 
   <div class="body">
 
-    <div class="greeting">Ihr Tool ist bereit, ${safeFirst}.</div>
+    <div class="greeting">Ihre Microsite ist bereit, ${safeFirst}.</div>
     <p class="intro">
       Ihr <strong>${safeCheck}</strong> wurde erfolgreich konfiguriert und ist aktiv.
     </p>
     <p class="intro" style="margin-bottom:28px;">
-      Ihr Tool ist in 3 Varianten verfügbar — wählen Sie was am besten zu Ihnen passt:
+      Ihre Microsite ist in 3 Varianten verfügbar — wählen Sie was am besten zu Ihnen passt:
     </p>
 
     <div style="margin-bottom:24px;">
@@ -173,13 +173,13 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
           QR-Code herunterladen →
         </a>
         <div style="font-size:11px;color:#9ca3af;margin-top:8px;">
-          Auf Visitenkarte oder Flyer — Kunde scannt und startet das Tool direkt.
+          Auf Visitenkarte oder Flyer — Kunde scannt und startet die Microsite direkt.
         </div>
       </div>
     </div>
 
     <div style="margin-bottom:24px;">
-      <div class="steps-title" style="margin-bottom:10px;">So binden Sie das Tool ein</div>
+      <div class="steps-title" style="margin-bottom:10px;">So binden Sie die Microsite ein</div>
       <table style="width:100%;border-collapse:collapse;">
         <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">1.</td>
         <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
@@ -197,11 +197,11 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
     </div>
 
     <a href="${directUrl}" class="cta-btn">
-      Tool in der Vorschau ansehen →
+      Microsite in der Vorschau ansehen →
     </a>
 
     <div class="domain-box">
-      Das Tool kann auf Ihrer Website eingebunden werden.<br/>
+      Die Microsite kann auf Ihrer Website eingebunden werden.<br/>
       Weitergabe des Codes ist gemäß AGB nicht gestattet.
     </div>
 
@@ -211,7 +211,7 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
       Bei Fragen stehen wir gerne zur Verfügung:<br/>
       <a href="mailto:${contactEmail.replace(/"/g, "")}">${safeContact}</a><br/><br/>
       <strong>Wichtiger Hinweis:</strong> Bitte ergänzen Sie Ihre Datenschutzerklärung
-      um die Einbindung des Tools. Die Verarbeitung der Kundendaten liegt in
+      um die Einbindung der Microsite. Die Verarbeitung der Kundendaten liegt in
       Ihrer Verantwortung als Makler.
     </div>
 

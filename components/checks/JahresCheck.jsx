@@ -221,7 +221,7 @@ export default function JahresCheck(){
         <>
           <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
             <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
-              Das ist eine Live-Vorschau — so sieht Ihr Kunde das Tool.
+              Das ist eine Live-Vorschau — so sieht Ihr Kunde die Microsite.
             </div>
             <button
               type="button"
@@ -395,7 +395,7 @@ export default function JahresCheck(){
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
         <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Schritt 2 / 3</span></div>
         <div style={T.prog}><div style={T.progFil(60)}/></div>
-        <div style={T.hero}><div style={T.eyebrow}>Schritt 2 von 3 · Lebenssituation</div><div style={T.h1}>Was bewegt Sie gerade?</div><div style={T.body}>Alles Zutreffende antippen — das Tool passt sich Ihrer Situation an.</div></div>
+        <div style={T.hero}><div style={T.eyebrow}>Schritt 2 von 3 · Lebenssituation</div><div style={T.h1}>Was bewegt Sie gerade?</div><div style={T.body}>Alles Zutreffende antippen — die Microsite passt sich Ihrer Situation an.</div></div>
         <div style={{padding:"0 20px",marginBottom:"16px"}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
             {EREIGNISSE.map(ev=>(

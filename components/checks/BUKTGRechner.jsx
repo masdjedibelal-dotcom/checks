@@ -176,7 +176,7 @@ function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
         {summary && <div style={{ ...T.section }}><div style={T.infoBox}>{summary}</div></div>}
         <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
           <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
-            Das ist eine Live-Vorschau — so sieht Ihr Kunde das Tool.
+            Das ist eine Live-Vorschau — so sieht Ihr Kunde die Microsite.
           </div>
           <button
             type="button"

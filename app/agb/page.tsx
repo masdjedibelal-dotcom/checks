@@ -44,7 +44,7 @@ export default function AGBPage() {
         <p>
           Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen FlowLeads (Thomas Schreiber,
           Seitzstraße 15, 80538 München) — nachfolgend „Anbieter“ — und den Käufern der bereitgestellten digitalen
-          Tools — nachfolgend „Kunde“.
+          Microsites — nachfolgend „Kunde“.
         </p>
         <p style={{ marginTop: "8px" }}>
           Abweichende Bedingungen des Kunden werden nicht anerkannt, es sei denn, der Anbieter stimmt ihrer Geltung
@@ -54,7 +54,7 @@ export default function AGBPage() {
 
       <Section title="§ 2 Leistungsgegenstand">
         <p>
-          Der Anbieter stellt interaktive Berechnungstools („Checks“) als technische Infrastruktur bereit. Die Tools
+          Der Anbieter stellt interaktive Microsites („Checks“) als technische Infrastruktur bereit. Die Microsites
           werden als lizenzierte iFrame-Lösung zur Einbindung auf Websites des Kunden angeboten.
         </p>
         <p style={{ marginTop: "8px" }}>Der Anbieter ist ausdrücklich:</p>
@@ -144,14 +144,14 @@ export default function AGBPage() {
           die Richtigkeit, Vollständigkeit oder Aktualität der angezeigten Ergebnisse.
         </p>
         <p style={{ marginTop: "8px" }}>
-          Der Anbieter haftet nicht für Schäden, die aus der Nutzung oder Nichtnutzung der bereitgestellten Tools
+          Der Anbieter haftet nicht für Schäden, die aus der Nutzung oder Nichtnutzung der bereitgestellten Microsites
           entstehen, es sei denn, diese beruhen auf Vorsatz oder grober Fahrlässigkeit des Anbieters.
         </p>
       </Section>
 
       <Section title="§ 9 Verfügbarkeit">
         <p>
-          Der Anbieter bemüht sich um eine hohe Verfügbarkeit der Tools, übernimmt jedoch keine Garantie für eine
+          Der Anbieter bemüht sich um eine hohe Verfügbarkeit der Microsites, übernimmt jedoch keine Garantie für eine
           ununterbrochene Verfügbarkeit. Wartungsarbeiten werden nach Möglichkeit angekündigt.
         </p>
       </Section>

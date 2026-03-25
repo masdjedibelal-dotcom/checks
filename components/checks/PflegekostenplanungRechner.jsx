@@ -19,7 +19,7 @@ function KontaktForm({fd,setFd,onSubmit,onBack,isDemo,makler,T}){
     return(
       <>
         <div style={{textAlign:"center",padding:"24px 0 8px"}}>
-          <div style={{fontSize:"13px",color:"#999",marginBottom:"16px"}}>Das ist eine Live-Vorschau — so sieht Ihr Kunde das Tool.</div>
+          <div style={{fontSize:"13px",color:"#999",marginBottom:"16px"}}>Das ist eine Live-Vorschau — so sieht Ihr Kunde die Microsite.</div>
           <button type="button" style={{...T.btnPrim(false)}} onClick={()=>window.parent.postMessage({type:"openConfig",slug:"pflege-check"},"*")}>Anpassen & kaufen</button>
         </div>
         <div style={T.footer}><button type="button" style={T.btnSec} onClick={onBack}>Zurück</button></div>

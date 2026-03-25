@@ -1,6 +1,6 @@
 /**
  * true = Marketing-Demo ohne Lizenz-Token (Modal, Landing, …).
- * false = eingebettetes Tool mit gültigem ?token=…
+ * false = eingebettete Microsite mit gültigem ?token=…
  */
 export function isCheckDemoMode(): boolean {
   if (typeof window === "undefined") return false;
