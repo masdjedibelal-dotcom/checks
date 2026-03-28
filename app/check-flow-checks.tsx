@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 const BAR_SEGMENTS = [
   { label: "Einkommen",         pct: 36, color: "#374151" },
   { label: "Gesetzl. Leistung", pct: 24, color: "#D1D5DB" },
-  { label: "Absicherung",       pct:  5, color: "#1a3a5c" },
+  { label: "Absicherung",       pct:  5, color: "#1d4f91" },
   { label: "Lücke",             pct: 35, color: "#EF4444" },
 ] as const;
 
@@ -34,7 +34,7 @@ export function HeroResultMockup(): ReactNode {
       <div style={{
         position: "absolute",
         inset: 0,
-        background: "radial-gradient(ellipse 70% 60% at 50% 55%, rgba(26,58,92,0.10) 0%, transparent 75%)",
+        background: "radial-gradient(ellipse 70% 60% at 50% 55%, rgba(29,79,145,0.10) 0%, transparent 75%)",
         borderRadius: "32px",
         pointerEvents: "none",
       }} />
@@ -45,7 +45,7 @@ export function HeroResultMockup(): ReactNode {
         width: "min(300px, 84vw)",
         background: "#fff",
         borderRadius: "36px",
-        border: "1.5px solid rgba(26,58,92,0.14)",
+        border: "1.5px solid rgba(29,79,145,0.14)",
         boxShadow: "0 40px 80px rgba(15,23,42,0.18), 0 12px 32px rgba(15,23,42,0.10), 0 2px 8px rgba(15,23,42,0.06)",
         overflow: "hidden",
         fontFamily: "var(--font-sans), 'Inter', 'Helvetica Neue', sans-serif",
@@ -73,7 +73,7 @@ export function HeroResultMockup(): ReactNode {
           <div style={{
             height: "100%",
             width: animated ? "88%" : "0%",
-            background: "#1a3a5c",
+            background: "#1d4f91",
             transition: "width 0.9s cubic-bezier(0.34,1.08,0.64,1)",
           }} />
         </div>
@@ -97,7 +97,7 @@ export function HeroResultMockup(): ReactNode {
           <div style={{
             fontSize: "48px",
             fontWeight: "800",
-            color: "#0f1f35",
+            color: "#0F172A",
             letterSpacing: "-2.5px",
             lineHeight: 1,
             marginBottom: "6px",
@@ -210,7 +210,7 @@ export function HeroResultMockup(): ReactNode {
           {/* CTA button */}
           <div
             style={{
-              background: "#1a3a5c",
+              background: "#1d4f91",
               color: "#fff",
               borderRadius: "10px",
               padding: "12px 16px",
@@ -380,7 +380,7 @@ export function CheckFlowPhoneMock({ slug }: { slug: CheckFlowSlug }): ReactNode
       );
     case "gkv-pkv":
       return (
-        <ResultPhoneShell accent="#1a3a5c">
+        <ResultPhoneShell accent="#1d4f91">
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "-0.2px", color: "#111", marginBottom: 7 }}>
               GKV oder PKV

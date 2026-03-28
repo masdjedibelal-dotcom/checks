@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
-import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 
 // ─── GLOBAL SETUP ────────────────────────────────────────────────────────────
@@ -30,11 +29,37 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
       border: 2px solid #ffffff; box-shadow: 0 0 0 1px var(--accent);
     }
     a { text-decoration: none; }
+    .buktg-swiper {
+      display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch; padding: 4px 24px 12px; margin: 0 -24px;
+      scrollbar-width: none;
+    }
+    .buktg-swiper::-webkit-scrollbar { display: none; }
+    .buktg-swiper-card {
+      flex: 0 0 85%; max-width: 85%; min-width: 0; scroll-snap-align: start;
+      border-radius: 16px; background: #F9FAFB; border: 1px solid rgba(17,24,39,0.06);
+      padding: 16px 18px; box-sizing: border-box;
+    }
+    .buktg-acc-item { border-radius: 12px; background: #F9FAFB; border: 1px solid rgba(17,24,39,0.06); margin-bottom: 8px; overflow: hidden; }
+    .buktg-acc-btn {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; text-align: left; font-size: 13px; font-weight: 600; color: #1F2937;
+      background: transparent; cursor: pointer;
+    }
+    .buktg-acc-panel { padding: 0 16px 14px; font-size: 12px; color: #6B7280; line-height: 1.6; border-top: 1px solid rgba(17,24,39,0.06); }
   `;
   document.head.appendChild(s);
 })();
 
+const phaseBarColor = (pct) =>
+  pct >= 75 ? "#22c55e" : pct >= 45 ? "#eab308" : "#C0392B";
+
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
+
+/** Krankengeld-Bemessung: relevantes Brutto bis BBG (2026, orientierend) */
+const KG_BBG_MONATLICH = 4068;
+/** Sozialabzug vom Krankengeld (KV + PV + RV + ALV — Krankenkasse behält ein) */
+const KG_KRANKENGELD_SOZIAL_SATZ = 0.1235;
 
 // ─── SZENARIEN ────────────────────────────────────────────────────────────────
 const SZENARIEN = [
@@ -46,56 +71,120 @@ const SZENARIEN = [
 ];
 
 // ─── BERECHNUNG ───────────────────────────────────────────────────────────────
-function berechne({ brutto, beruf, kv, ktgTag, buRente, szenario }) {
-  const sz    = SZENARIEN.find(s => s.id === szenario) || SZENARIEN[0];
+function berechne({ brutto, beruf, kv, ktgTag, buRente, szenario, pkvBeitrag = 0 }) {
+  const sz = SZENARIEN.find((s) => s.id === szenario) || SZENARIEN[0];
   const netto = Math.round(brutto * 0.72);
   const ktgMon = ktgTag * 30;
+  const pkvAb = kv === "pkv" ? Math.max(0, Number(pkvBeitrag) || 0) : 0;
+  const ktgNetNachPkv = Math.max(0, ktgMon - pkvAb);
 
-  // Phase 1: Lohnfortzahlung (0–6 Wochen) — immer 100 %
+  let kgVorSozial = 0;
+  let kgNachSozial = 0;
+  if (kv === "gkv" && beruf !== "selbst") {
+    const brKg = Math.min(brutto, KG_BBG_MONATLICH);
+    kgVorSozial = Math.round(brKg * 0.7);
+    kgNachSozial = Math.round(kgVorSozial * (1 - KG_KRANKENGELD_SOZIAL_SATZ));
+  }
+
+  const ktgInPhasen = kv === "pkv" ? ktgNetNachPkv : ktgMon;
+
   const p1 = { label: "Lohnfortzahlung", sub: "Erste 6 Wochen (Arbeitgeber)", monatl: netto, pct: 100 };
 
-  // Phase 2: Krankengeld / KTG (ab Woche 7)
-  // GKV-Angestellte: min(brutto × 0,7 ; 3.000 €) + KTG
-  // PKV oder Selbstständige ohne GKV-KG: nur KTG
-  const kgBasis = (kv === "gkv" && beruf !== "selbst")
-    ? Math.min(Math.round(brutto * 0.7), 3000)
-    : 0;
-  const p2mon  = kgBasis + ktgMon;
+  const p2mon =
+    (kv === "gkv" && beruf !== "selbst" ? kgNachSozial : 0) +
+    (kv === "gkv" && beruf !== "selbst" ? ktgMon : ktgInPhasen);
+
+  let p2Label;
+  let p2Sub = "Ab Woche 7";
+  if (kv === "gkv" && beruf !== "selbst") {
+    p2Label = ktgMon > 0 ? "Krankengeld + KTG" : "Krankengeld (GKV)";
+    p2Sub = "Ab Woche 7 · Krankengeld nach Sozialabzug durch die Kasse";
+  } else if (kv === "pkv") {
+    p2Label = ktgMon > 0 ? "Krankentagegeld" : "Kein Krankengeld";
+    p2Sub =
+      pkvAb > 0
+        ? "Ab Woche 7 · KTG abzüglich PKV (Arbeitgeberzuschuss entfällt)"
+        : "Ab Woche 7";
+  } else {
+    p2Label = ktgMon > 0 ? "Krankentagegeld" : "Kein Krankengeld";
+  }
+
   const p2 = {
-    label: kv === "gkv" && beruf !== "selbst"
-      ? (ktgMon > 0 ? "Krankengeld + KTG" : "Krankengeld (GKV)")
-      : (ktgMon > 0 ? "Krankentagegeld" : "Kein Krankengeld"),
-    sub:    "Ab Woche 7",
+    label: p2Label,
+    sub: p2Sub,
     monatl: p2mon,
-    pct:    Math.min(100, Math.round((p2mon / netto) * 100)),
+    pct: Math.min(100, Math.round((p2mon / netto) * 100)),
   };
 
-  // Phase 3: Wartezeit — nur noch KTG (GKV-KG läuft nach ~18 Monaten aus)
   const p3 = {
-    label: ktgMon > 0 ? "Nur KTG (Wartezeit)" : "Keine Leistung",
-    sub:   "Nach ~18 Monaten",
-    monatl: ktgMon,
-    pct:   Math.min(100, Math.round((ktgMon / netto) * 100)),
+    label: ktgInPhasen > 0 ? "Nur KTG (Wartezeit)" : "Keine Leistung",
+    sub: "Nach ~18 Monaten",
+    monatl: ktgInPhasen,
+    pct: Math.min(100, Math.round((ktgInPhasen / netto) * 100)),
   };
 
-  // Phase 4: Langfristig — BU-Rente + EM-Schätzung (grob: 35 % des Nettos)
   const emSchaetzung = Math.round(netto * 0.35);
   const p4mon = buRente + emSchaetzung;
+  let p4Label = buRente > 0 ? "BU-Rente + EM-Rente" : "Nur EM-Rente (gesetzlich)";
+  if (beruf === "beamter") {
+    p4Label = buRente > 0 ? "BU-Rente + Ruhegehalt/DU" : "Ruhegehalt / Dienstunfähigkeit (geschätzt)";
+  }
   const p4 = {
-    label: buRente > 0 ? "BU-Rente + EM-Rente" : "Nur EM-Rente (gesetzlich)",
-    sub:   "Dauerhaft",
+    label: p4Label,
+    sub: "Dauerhaft",
     monatl: p4mon,
-    pct:   Math.min(100, Math.round((p4mon / netto) * 100)),
+    pct: Math.min(100, Math.round((p4mon / netto) * 100)),
   };
 
-  const luecke   = Math.max(0, netto - p4mon);
+  const luecke = Math.max(0, netto - p4mon);
   const lueckeKG = Math.max(0, netto - p2mon);
 
-  // Empfehlungen (nur wenn Lücke besteht)
   const empfKTG = lueckeKG > 0 ? Math.max(0, Math.ceil((lueckeKG / 30) / 5) * 5) : 0;
-  const empfBU  = luecke   > 0 ? Math.max(0, Math.round(luecke / 50) * 50)       : 0;
+  const empfBU = luecke > 0 ? Math.max(0, Math.round(luecke / 50) * 50) : 0;
 
-  return { netto, p1, p2, p3, p4, luecke, lueckeKG, sz, kgBasis, ktgMon, emSchaetzung, empfKTG, empfBU };
+  const inflationLuecke20 = luecke > 0 ? Math.round(luecke * 1.02 ** 20) : 0;
+
+  return {
+    netto,
+    p1,
+    p2,
+    p3,
+    p4,
+    luecke,
+    lueckeKG,
+    sz,
+    kgBasis: kgNachSozial,
+    kgVorSozial,
+    ktgMon,
+    ktgNetNachPkv,
+    pkvAbzugMon: pkvAb,
+    emSchaetzung,
+    empfKTG,
+    empfBU,
+    inflationLuecke20,
+  };
+}
+
+function SmartHintCard({ children }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: "12px",
+        alignItems: "flex-start",
+        padding: "14px 16px",
+        borderRadius: "14px",
+        background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+        border: "1px solid #FCD34D",
+        marginBottom: "12px",
+      }}
+    >
+      <span style={{ flexShrink: 0, fontSize: "18px", lineHeight: 1.2 }} aria-hidden>
+        💡
+      </span>
+      <div style={{ fontSize: "13px", fontWeight: "500", color: "#92400E", lineHeight: 1.55 }}>{children}</div>
+    </div>
+  );
 }
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
@@ -307,19 +396,63 @@ export default function BUKTGRechner() {
     brutto:   4000,
     beruf:    "angestellt",
     kv:       "gkv",
+    pkvBeitrag: 400,
     ktgTag:   0,
     buRente:  0,
     szenario: "psyche",
   });
 
-  const set = (k, v) => setP(x => ({ ...x, [k]: v }));
+  const set = (k, v) => setP((x) => ({ ...x, [k]: v }));
   const [scr, setScr] = useState(1);
-  const nextScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr < 5) { setScr(s => s + 1); } else { goTo(2); } };
-  const backScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr > 1) { setScr(s => s - 1); } };
-  const goTo = (ph) => { setAk(k => k + 1); setPhase(ph); window.scrollTo({ top: 0 }); };
+
+  const STEP_IDS = useMemo(() => {
+    const ids = ["beruf", "kv"];
+    if (p.kv === "pkv") ids.push("pkvBeitrag");
+    ids.push("brutto", "ktgBu", "szenario");
+    return ids;
+  }, [p.kv]);
+
+  const stepCount = STEP_IDS.length;
+  const sid = STEP_IDS[scr - 1] ?? "beruf";
+
+  const prevKvRef = useRef(p.kv);
+  useEffect(() => {
+    setScr((s) => Math.min(s, stepCount));
+  }, [stepCount]);
+
+  useEffect(() => {
+    const prev = prevKvRef.current;
+    if (prev === "pkv" && p.kv === "gkv") setScr((s) => Math.max(1, s - 1));
+    else if (prev === "gkv" && p.kv === "pkv") setScr((s) => (s >= 3 ? s + 1 : s));
+    prevKvRef.current = p.kv;
+  }, [p.kv]);
+
+  const nextScr = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (scr < stepCount) setScr((s) => s + 1);
+    else goTo(2);
+  };
+  const backScr = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (scr > 1) setScr((s) => s - 1);
+  };
+  const goTo = (ph) => { setAk((k) => k + 1); setPhase(ph); window.scrollTo({ top: 0 }); };
 
   const R = berechne(p);
   const TOTAL_PHASES = 3;
+
+  const [phaseBarsReady, setPhaseBarsReady] = useState(false);
+  const [legalOpen, setLegalOpen] = useState(null);
+
+  useEffect(() => {
+    if (phase !== 2) {
+      setPhaseBarsReady(false);
+      return undefined;
+    }
+    setPhaseBarsReady(false);
+    const t = window.setTimeout(() => setPhaseBarsReady(true), 70);
+    return () => window.clearTimeout(t);
+  }, [phase, ak]);
 
   if (danke) return (
     <div style={{ ...T.page, "--accent": C }}>
@@ -373,169 +506,332 @@ export default function BUKTGRechner() {
     </div>
   );
 
-  // ── Phase 2: Ergebnis ─────────────────────────────────────────────────────
+  // ── Phase 2: Ergebnis (mobile-first, Swiper + Grid + Accordion) ───────────
   if (phase === 2) {
     const phasen = [R.p1, R.p2, R.p3, R.p4];
 
+    const ktgAnzeige =
+      p.kv === "pkv" && R.ktgMon > 0 ? fmt(R.ktgNetNachPkv) : R.ktgMon > 0 ? fmt(R.ktgMon) : "—";
+    const ktgSub =
+      p.kv === "pkv" && R.pkvAbzugMon > 0 && R.ktgMon > 0 ? "nach PKV-Beitrag" : "Krankentagegeld";
+
+    const buildingBlocks = [
+      {
+        key: "kg",
+        title: "Krankengeld",
+        short: "GKV (netto)",
+        active: p.kv === "gkv" && p.beruf !== "selbst" && R.kgBasis > 0,
+        val: p.kv === "gkv" && p.beruf !== "selbst" ? fmt(R.kgBasis) : "—",
+      },
+      {
+        key: "ktg",
+        title: "KTG",
+        short: ktgSub,
+        active: R.ktgMon > 0,
+        val: ktgAnzeige,
+      },
+      {
+        key: "bu",
+        title: "BU-Rente",
+        short: "Berufsunfähigkeit",
+        active: p.buRente > 0,
+        val: p.buRente > 0 ? fmt(p.buRente) : "—",
+      },
+      {
+        key: "em",
+        title: p.beruf === "beamter" ? "Ruhegehalt / DU" : "EM-Rente",
+        short: "geschätzt",
+        active: true,
+        val: fmt(R.emSchaetzung),
+      },
+    ];
+
+    const massiveUnterdeckung = p.buRente < R.netto * 0.5;
+
+    const resultSmartHints = [];
+    if (p.kv === "gkv" && p.beruf !== "selbst" && R.kgBasis > 0) {
+      resultSmartHints.push({
+        key: "kgSozial",
+        text: "Vom Krankengeld behält die Kasse direkt Sozialbeiträge ein — dein ausgezahltes Krankengeld liegt deshalb unter den 70 % vom Brutto.",
+      });
+    }
+    if (p.brutto < 2500) {
+      resultSmartHints.push({
+        key: "grusi",
+        text: "Bei niedrigem Krankengeld kann es zur Verrechnung mit Grundsicherung kommen — ein persönlicher Check lohnt sich.",
+      });
+    }
+    if (p.ktgTag === 0 && p.kv === "gkv") {
+      resultSmartHints.push({
+        key: "ktgMin",
+        text: "Du stützt dich nur auf das gesetzliche Krankengeld — ein zusätzliches Krankentagegeld schließt oft die größte Lücke in den ersten Monaten.",
+      });
+    }
+    if (R.luecke > 1500) {
+      resultSmartHints.push({
+        key: "haus",
+        text: "Deine langfristige Lücke entspricht in der Größenordnung einer typischen Finanzrate fürs Eigenheim — dieses Risiko trägst du ohne Absicherung allein.",
+      });
+    }
+    if (R.luecke > 0 && R.inflationLuecke20 > 0) {
+      resultSmartHints.push({
+        key: "infl",
+        text: `In 20 Jahren ist deine heutige Lücke bei 2 % Inflation kaufkraftmäßig etwa ${fmt(R.inflationLuecke20)} wert.`,
+      });
+    }
+
+    const toggleLegal = (id) => setLegalOpen((x) => (x === id ? null : id));
+
     return (
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
         <Header phase={2} total={TOTAL_PHASES} makler={MAKLER} T={T} />
 
-        {/* ── Hero ──────────────────────────────────────────────────────────── */}
-        <div style={T.resultHero}>
-          <div style={T.resultEyebrow}>Ihre Absicherung im Überblick</div>
-          <div style={T.resultNumber(R.luecke > 0)}>
-            {R.luecke > 0 ? fmt(R.luecke) : "Gedeckt"}
-          </div>
-          <div style={T.resultUnit}>
-            {R.luecke > 0 ? "mögliche monatliche Lücke" : "Ihr Einkommen ist weitgehend abgesichert"}
-          </div>
-          {R.luecke > 0
-            ? <div style={T.statusWarn}>Absicherungslücke erkannt</div>
-            : <div style={T.statusOk}>Gut abgesichert</div>
-          }
-          <div style={T.resultSub}>Vereinfachte Einordnung · auf Basis Ihrer Angaben</div>
-        </div>
-
-        {/* ── Section 1: Einkommensverlauf ──────────────────────────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>So entwickelt sich Ihr Einkommen</div>
-          <div style={T.cardPrimary}>
-            {phasen.map((ph, i) => {
-              const isLast = i === phasen.length - 1;
-              const barColor = ph.pct >= 90 ? "#22c55e" : ph.pct >= 60 ? "#f59e0b" : ph.pct >= 30 ? "#f97316" : "#C0392B";
-              const diff = R.netto - ph.monatl;
-              return (
-                <div key={i} style={{ padding: "16px 20px", borderBottom: isLast ? "none" : "1px solid rgba(17,24,39,0.04)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                    <div>
-                      <div style={{ fontSize: "14px", fontWeight: "600", color: "#111" }}>{ph.label}</div>
-                      <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "2px" }}>{ph.sub}</div>
-                    </div>
-                    <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
-                      <div style={{ fontSize: "16px", fontWeight: "700", color: ph.pct < 60 ? "#C0392B" : "#1F2937", letterSpacing: "-0.4px" }}>{fmt(ph.monatl)}</div>
-                      <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "1px" }}>{ph.pct} % des Nettos</div>
-                    </div>
-                  </div>
-                  <div style={T.progBarTrack}>
-                    <div style={T.progBarFill(Math.min(100, ph.pct), barColor)} />
-                  </div>
-                  {diff > 0 && (
-                    <div style={{ fontSize: "12px", color: "#C0392B", marginTop: "6px", fontWeight: "500" }}>
-                      − {fmt(diff)} / Monat Lücke
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── Section 2: Was aktuell abgesichert ist ────────────────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Was aktuell abgesichert ist</div>
-          <div style={T.cardContext}>
-            {[
-              {
-                label: p.kv === "gkv" && p.beruf !== "selbst" ? "Krankengeld (GKV)" : "GKV-Krankengeld",
-                val:   p.kv === "gkv" && p.beruf !== "selbst" ? fmt(R.kgBasis) : "–",
-                hint:  p.kv === "gkv" && p.beruf !== "selbst" ? "ca. 70 % des Bruttos, max. 3.000 €/Mon." : "Nicht anwendbar",
-              },
-              {
-                label: "Krankentagegeld (KTG)",
-                val:   R.ktgMon > 0 ? fmt(R.ktgMon) : "Nicht vorhanden",
-                hint:  R.ktgMon > 0 ? `${p.ktgTag} €/Tag × 30` : "Kein KTG-Vertrag angegeben",
-              },
-              {
-                label: "BU-Rente",
-                val:   p.buRente > 0 ? fmt(p.buRente) : "Nicht vorhanden",
-                hint:  p.buRente > 0 ? "Monatlich bei Berufsunfähigkeit" : "Kein BU-Vertrag angegeben",
-              },
-              {
-                label: "EM-Rente (gesetzlich, geschätzt)",
-                val:   fmt(R.emSchaetzung),
-                hint:  "ca. 35 % des Nettos — vereinfachte Schätzung (§ 43 SGB VI)",
-              },
-            ].map((row, i, arr) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: i < arr.length - 1 ? "12px" : "0", marginBottom: i < arr.length - 1 ? "12px" : "0", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.06)" : "none" }}>
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937" }}>{row.label}</div>
-                  <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "2px" }}>{row.hint}</div>
-                </div>
-                <div style={{ fontSize: "14px", fontWeight: "700", color: C, flexShrink: 0, marginLeft: "12px" }}>{row.val}</div>
+        <div style={{ paddingBottom: "120px" }}>
+          {/* Hero: große Zahl, darunter Pill */}
+          <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px" }}>
+            <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Ihre Absicherung im Überblick</div>
+            <div
+              style={{
+                ...T.resultNumber(R.luecke > 0),
+                fontSize: "48px",
+                color: R.luecke > 0 ? "#C0392B" : "#15803D",
+              }}
+            >
+              {R.luecke > 0 ? fmt(R.luecke) : "Gedeckt"}
+            </div>
+            <div style={{ ...T.resultUnit, marginBottom: "14px" }}>
+              {R.luecke > 0 ? "mögliche monatliche Lücke" : "Ihr Einkommen ist weitgehend abgesichert"}
+            </div>
+            {R.luecke > 0 ? (
+              <div style={{ ...T.statusWarn, margin: "0 auto", width: "fit-content" }}>Absicherungslücke erkannt</div>
+            ) : (
+              <div style={{ ...T.statusOk, margin: "0 auto", width: "fit-content" }}>Gut abgesichert</div>
+            )}
+            {massiveUnterdeckung && (
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "5px 13px",
+                  background: "#FFF7ED",
+                  border: "1px solid #FDBA74",
+                  borderRadius: "999px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  color: "#C2410C",
+                  margin: "10px auto 0",
+                  width: "fit-content",
+                }}
+              >
+                Massive Unterdeckung
               </div>
-            ))}
+            )}
+            <div style={{ ...T.resultSub, marginTop: "16px" }}>Vereinfachte Einordnung · auf Basis Ihrer Angaben</div>
           </div>
-        </div>
 
-        {/* ── Section 3: Größte Lücke (Warnblock) ──────────────────────────── */}
-        {R.luecke > 0 && (
+          {resultSmartHints.length > 0 && (
+            <div style={{ ...T.section, marginTop: "4px" }}>
+              <div style={{ ...T.sectionLbl, marginBottom: "8px" }}>Einordnung</div>
+              {resultSmartHints.map((h) => (
+                <SmartHintCard key={h.key}>{h.text}</SmartHintCard>
+              ))}
+            </div>
+          )}
+
+          {/* Horizontal Swiper (snap) */}
           <div style={T.section}>
-            <div style={T.sectionLbl}>Ihre größte Lücke</div>
-            <div style={T.warnCard}>
-              <div style={T.warnCardTitle}>Langfristige Absicherungslücke</div>
-              <div style={{ fontSize: "40px", fontWeight: "800", color: "#C0392B", letterSpacing: "-2px", lineHeight: 1, marginBottom: "6px" }}>
-                {fmt(R.luecke)}
-              </div>
-              <div style={{ fontSize: "13px", color: "#9CA3AF", marginBottom: "10px" }}>pro Monat · dauerhaft</div>
-              <div style={T.warnCardText}>
-                BU-Rente und EM-Rente zusammen ({fmt(R.p4.monatl)}) decken Ihr Netto ({fmt(R.netto)}) nicht vollständig ab. Die Lücke wächst mit der Zeit — je früher abgesichert, desto günstiger die Prämie.
-              </div>
+            <div style={{ ...T.sectionLbl, paddingLeft: 0 }}>So entwickelt sich Ihr Einkommen</div>
+            <div className="buktg-swiper" role="region" aria-label="Phasen Einkommen">
+              {phasen.map((ph, i) => {
+                const diff = R.netto - ph.monatl;
+                const barW = phaseBarsReady ? Math.min(100, ph.pct) : 0;
+                const barCol = phaseBarColor(ph.pct);
+                return (
+                  <div key={i} className="buktg-swiper-card">
+                    <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
+                      Phase {i + 1}
+                    </div>
+                    <div style={{ fontSize: "15px", fontWeight: "700", color: "#111827", lineHeight: 1.3 }}>{ph.label}</div>
+                    <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px", lineHeight: 1.45 }}>{ph.sub}</div>
+                    <div style={{ fontSize: "22px", fontWeight: "800", color: ph.pct < 45 ? "#C0392B" : "#111827", letterSpacing: "-0.5px", marginTop: "12px" }}>
+                      {fmt(ph.monatl)}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px" }}>{ph.pct} % Ihres Nettos</div>
+                    <div style={{ ...T.progBarTrack, marginTop: "12px", height: "8px", borderRadius: "999px" }}>
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${barW}%`,
+                          borderRadius: "999px",
+                          background: barCol,
+                          transition: "width 0.85s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                        }}
+                      />
+                    </div>
+                    {diff > 0 && (
+                      <div
+                        style={{
+                          marginTop: "12px",
+                          padding: "10px 12px",
+                          borderRadius: "10px",
+                          background: "#FFF6F5",
+                          border: "1px solid #F2D4D0",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          color: "#C0392B",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        Lücke zu Ihrem Netto: − {fmt(diff)} / Monat
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-        )}
 
-        {/* ── Section 4: Das kann sinnvoll sein ────────────────────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Das kann sinnvoll sein</div>
-          <div style={T.recCard}>
-            {R.empfKTG > 0 && (
-              <div style={R.empfBU > 0 ? T.recRow : T.recRowLast}>
+          {/* 2×2 Bausteine */}
+          <div style={T.section}>
+            <div style={T.sectionLbl}>Ihre Bausteine</div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "10px",
+              }}
+            >
+              {buildingBlocks.map((b) => (
+                <div
+                  key={b.key}
+                  style={{
+                    borderRadius: "14px",
+                    background: "#F9FAFB",
+                    border: "1px solid rgba(17,24,39,0.06)",
+                    padding: "12px 14px",
+                    opacity: b.active ? 1 : 0.45,
+                    filter: b.active ? "none" : "grayscale(0.15)",
+                  }}
+                >
+                  <div style={{ fontSize: "11px", fontWeight: "600", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.04em" }}>{b.title}</div>
+                  <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "2px" }}>{b.short}</div>
+                  <div style={{ fontSize: "16px", fontWeight: "800", color: b.active ? C : "#9CA3AF", marginTop: "8px", letterSpacing: "-0.3px" }}>{b.val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Empfehlung + Szenario (Primary-Rahmen) */}
+          <div style={T.section}>
+            <div style={T.sectionLbl}>Empfehlung</div>
+            <div
+              style={{
+                borderRadius: "18px",
+                background: "#FFFFFF",
+                border: `2px solid ${C}`,
+                boxShadow: "0 4px 20px rgba(17,24,39,0.06)",
+                padding: "18px 18px 16px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "12px" }}>
+                <span style={{ fontSize: "22px", lineHeight: 1 }} aria-hidden>{R.sz.emoji}</span>
                 <div>
-                  <div style={T.recLabel}>Krankentagegeld prüfen</div>
-                  <div style={T.recSub}>
+                  <div style={{ fontSize: "13px", fontWeight: "700", color: "#111827" }}>Ihr Fokus-Szenario</div>
+                  <div style={{ fontSize: "15px", fontWeight: "700", color: C, marginTop: "2px" }}>{R.sz.label}</div>
+                  <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px", lineHeight: 1.5 }}>{R.sz.desc} · Ø {R.sz.dauer} Mon.</div>
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  color: "#374151",
+                  background: "#F9FAFB",
+                  borderRadius: "10px",
+                  padding: "10px 12px",
+                  marginBottom: "14px",
+                  lineHeight: 1.5,
+                }}
+              >
+                Geschätzte BU-Wahrscheinlichkeit in diesem Szenario:{" "}
+                <span style={{ color: C }}>{R.sz.buWahrsch} %</span>
+              </div>
+              {R.empfKTG > 0 && (
+                <div style={{ paddingTop: "12px", borderTop: "1px solid rgba(17,24,39,0.06)" }}>
+                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#111827" }}>Krankentagegeld prüfen</div>
+                  <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px", lineHeight: 1.5 }}>
                     {p.kv === "gkv" && p.beruf !== "selbst"
                       ? "Schließt die Lücke nach Krankengeld-Ende"
                       : "Existenzielle Absicherung — ab Tag 1 der Krankheit"}
                   </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "10px" }}>
+                    <span style={{ fontSize: "12px", color: "#9CA3AF" }}>Richtwert</span>
+                    <span style={{ fontSize: "17px", fontWeight: "800", color: C }}>
+                      {R.empfKTG} €/Tag <span style={{ fontSize: "12px", fontWeight: "600", color: "#6B7280" }}>({fmt(R.empfKTG * 30)}/Mon.)</span>
+                    </span>
+                  </div>
                 </div>
-                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
-                  <div style={T.recValue}>{R.empfKTG} €/Tag</div>
-                  <div style={T.recValueSub}>= {fmt(R.empfKTG * 30)}/Mon.</div>
+              )}
+              {R.empfBU > 0 && (
+                <div style={{ paddingTop: R.empfKTG > 0 ? "14px" : "12px", borderTop: "1px solid rgba(17,24,39,0.06)" }}>
+                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#111827" }}>BU-Rente anpassen</div>
+                  <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>Dauerhafter Einkommensschutz</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "10px" }}>
+                    <span style={{ fontSize: "12px", color: "#9CA3AF" }}>kalkulierter Richtwert</span>
+                    <span style={{ fontSize: "17px", fontWeight: "800", color: C }}>{fmt(R.empfBU)}/Mon.</span>
+                  </div>
                 </div>
-              </div>
-            )}
-            {R.empfBU > 0 && (
-              <div style={T.recRowLast}>
-                <div>
-                  <div style={T.recLabel}>BU-Rente anpassen</div>
-                  <div style={T.recSub}>Dauerhafter Schutz · {R.sz.buWahrsch} % BU-Wahrscheinlichkeit im Szenario</div>
+              )}
+              {R.empfKTG === 0 && R.empfBU === 0 && (
+                <div style={{ fontSize: "14px", color: "#059669", fontWeight: "600", lineHeight: 1.55 }}>
+                  Ihre Absicherung deckt das Nettoeinkommen in der Langfristbetrachtung vollständig ab.
                 </div>
-                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
-                  <div style={T.recValue}>{fmt(R.empfBU)}/Mon.</div>
-                  <div style={T.recValueSub}>kalkulierter Richtwert</div>
-                </div>
-              </div>
-            )}
-            {R.empfKTG === 0 && R.empfBU === 0 && (
-              <div style={T.recRowLast}>
-                <div style={{ fontSize: "14px", color: "#059669", fontWeight: "500" }}>Ihre Absicherung deckt das Nettoeinkommen vollständig ab.</div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* ── Berechnungshinweis + Legal ────────────────────────────────────── */}
-        <div style={{ ...T.section, marginBottom: "120px" }}>
-          <CheckBerechnungshinweis>
-            <>
-              Vereinfachte Einordnung auf Basis Ihrer Angaben. Netto = Brutto × 0,72 (Schätzwert).
-              GKV-Krankengeld: min(Brutto × 0,7 ; 3.000 €/Mon.) · Grundlage §47 SGB V.
-              EM-Rente: ca. 35 % des Nettos · Grundlage §43 SGB VI.
-              <span style={{ color: "#b8884a" }}> Keine Rechtsberatung.</span>
-            </>
-          </CheckBerechnungshinweis>
-          <div style={{ ...T.infoBox, marginTop: "10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+          {R.luecke > 0 && (
+            <div style={T.section}>
+              <div style={T.sectionLbl}>Langfristige Lücke</div>
+              <div style={T.warnCard}>
+                <div style={T.warnCardTitle}>Dauerhaft unter Netto</div>
+                <div style={{ fontSize: "28px", fontWeight: "800", color: "#C0392B", letterSpacing: "-1px", marginBottom: "6px" }}>{fmt(R.luecke)}</div>
+                <div style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "8px" }}>pro Monat</div>
+                <div style={T.warnCardText}>
+                  BU-Rente und EM-Rente zusammen ({fmt(R.p4.monatl)}) decken Ihr Netto ({fmt(R.netto)}) nicht vollständig ab.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Accordion Rechtliches */}
+          <div style={{ ...T.section, marginBottom: "24px" }}>
+            <div style={{ ...T.sectionLbl, marginBottom: "10px" }}>Hinweise & Rechtliches</div>
+            <div className="buktg-acc-item">
+              <button type="button" className="buktg-acc-btn" onClick={() => toggleLegal("calc")} aria-expanded={legalOpen === "calc"}>
+                <span>Wie berechnen wir das?</span>
+                <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{legalOpen === "calc" ? "▲" : "▼"}</span>
+              </button>
+              {legalOpen === "calc" && (
+                <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
+                  Vereinfachte Einordnung auf Basis Ihrer Angaben. Netto = Brutto × 0,72 (Schätzwert). GKV-Krankengeld: 70 % des relevanten Bruttos bis zur BBG Krankengeld (orientierend 4.068 €/Mon. 2026), abzüglich Sozialabzug durch die Kasse (ca. 12,2–12,5 %). PKV: KTG abzüglich monatlichem PKV-Eigenanteil ab Woche 7 (ohne Arbeitgeberzuschuss). · Grundlage §47 SGB V. EM-Rente: ca. 35 % des Nettos · Grundlage §43 SGB VI.
+                  <span style={{ color: "#b8884a" }}> Keine Rechtsberatung.</span>
+                </div>
+              )}
+            </div>
+            <div className="buktg-acc-item">
+              <button type="button" className="buktg-acc-btn" onClick={() => toggleLegal("legal")} aria-expanded={legalOpen === "legal"}>
+                <span>Haftungsausschluss</span>
+                <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{legalOpen === "legal" ? "▲" : "▼"}</span>
+              </button>
+              {legalOpen === "legal" && (
+                <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
+                  {CHECK_LEGAL_DISCLAIMER_FOOTER}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Absicherung gemeinsam prüfen" T={T} />
@@ -543,118 +839,184 @@ export default function BUKTGRechner() {
     );
   }
 
-  // ── Phase 1: 1 Frage pro Screen ──────────────────────────────────────────
+  // ── Phase 1: dynamischer Flow (PKV-Zusatzscreen) ───────────────────────────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={scr} total={5} makler={MAKLER} T={T} />
+      <Header phase={scr} total={stepCount} makler={MAKLER} T={T} />
 
-      {/* Screen 1: Beschäftigung */}
-      {scr === 1 && <>
-        <div style={T.hero}>
-          <div style={T.label}>Einkommens-Check · 1 / 5</div>
-          <div style={T.h1}>Wie sind Sie aktuell beschäftigt?</div>
-          <div style={T.body}>Davon hängt ab, welche gesetzlichen Leistungen greifen.</div>
-        </div>
-        <div style={T.section}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {[
-              { v: "angestellt", l: "Angestellt",    d: "Lohnfortzahlung + Krankengeld (GKV)",  emoji: "💼" },
-              { v: "selbst",     l: "Selbstständig", d: "Kein gesetzliches Sicherheitsnetz",    emoji: "🧑‍💻" },
-              { v: "beamter",    l: "Beamter",       d: "Beihilfe + besondere Absicherungstarife", emoji: "🏛️" },
-            ].map(({ v, l, d, emoji }) => (
-              <SelectionCard key={v} value={v} label={l} description={d}
-                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
-                selected={p.beruf === v} accent={C} onClick={() => set("beruf", v)} />
-            ))}
+      {sid === "beruf" && (
+        <>
+          <div style={T.hero}>
+            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.h1}>Wie sind Sie aktuell beschäftigt?</div>
+            <div style={T.body}>Davon hängt ab, welche gesetzlichen Leistungen greifen.</div>
           </div>
-        </div>
-        <div style={{ height: "120px" }} />
-        <Footer onNext={nextScr} nextLabel="Weiter →" T={T} showBack={false} />
-      </>}
-
-      {/* Screen 2: Krankenversicherung */}
-      {scr === 2 && <>
-        <div style={T.hero}>
-          <div style={T.label}>Einkommens-Check · 2 / 5</div>
-          <div style={T.h1}>Wie sind Sie krankenversichert?</div>
-          <div style={T.body}>Das entscheidet, ob und wie viel Krankengeld Sie erhalten.</div>
-        </div>
-        <div style={T.section}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {[
-              { v: "gkv", l: "Gesetzlich (GKV)", d: "Krankengeld nach §47 SGB V: ca. 70 % des Bruttos, max. 3.000 €/Mon.", emoji: "🏥" },
-              { v: "pkv", l: "Privat (PKV)",     d: "Kein gesetzliches Krankengeld — nur privates KTG sichert ab",          emoji: "🔒" },
-            ].map(({ v, l, d, emoji }) => (
-              <SelectionCard key={v} value={v} label={l} description={d}
-                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
-                selected={p.kv === v} accent={C} onClick={() => set("kv", v)} />
-            ))}
-          </div>
-          {p.beruf === "selbst" && p.kv === "gkv" && (
-            <div style={{ ...T.infoBox, marginTop: "12px", borderLeft: "3px solid #f59e0b", background: "#fffbf0", borderRadius: "0 8px 8px 0" }}>
-              <strong style={{ color: "#92400e" }}>Hinweis:</strong> Selbstständige erhalten GKV-Krankengeld nur mit gesonderter Option (§44 SGB V) — bitte prüfen Sie Ihren Tarif.
+          <div style={T.section}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {[
+                { v: "angestellt", l: "Angestellt",    d: "Lohnfortzahlung + Krankengeld (GKV)",  emoji: "💼" },
+                { v: "selbst",     l: "Selbstständig", d: "Kein gesetzliches Sicherheitsnetz",    emoji: "🧑‍💻" },
+                { v: "beamter",    l: "Beamter",       d: "Beihilfe + besondere Absicherungstarife", emoji: "🏛️" },
+              ].map(({ v, l, d, emoji }) => (
+                <SelectionCard key={v} value={v} label={l} description={d}
+                  icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
+                  selected={p.beruf === v} accent={C} onClick={() => set("beruf", v)} />
+              ))}
             </div>
-          )}
-        </div>
-        <div style={{ height: "120px" }} />
-        <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
-      </>}
-
-      {/* Screen 3: Einkommen */}
-      {scr === 3 && <>
-        <div style={T.hero}>
-          <div style={T.label}>Einkommens-Check · 3 / 5</div>
-          <div style={T.h1}>Was verdienen Sie aktuell brutto pro Monat?</div>
-          <div style={T.body}>Daraus berechnen wir Ihr Netto und die möglichen Leistungen.</div>
-        </div>
-        <div style={T.section}>
-          <SliderCard label="Monatliches Bruttogehalt" value={p.brutto} min={1500} max={12000} step={100} unit="€"
-            display={`ca. ${fmt(R.netto)} netto`} accent={C} onChange={v => set("brutto", v)} />
-        </div>
-        <div style={{ height: "120px" }} />
-        <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
-      </>}
-
-      {/* Screen 4: Bestehende Absicherung */}
-      {scr === 4 && <>
-        <div style={T.hero}>
-          <div style={T.label}>Einkommens-Check · 4 / 5</div>
-          <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
-          <div style={T.body}>Beide Felder sind optional — 0 eingeben wenn kein Vertrag vorhanden.</div>
-        </div>
-        <div style={T.section}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <SliderCard label="Krankentagegeld (KTG)" value={p.ktgTag} min={0} max={150} step={5} unit="€/Tag"
-              display={p.ktgTag > 0 ? `= ${fmt(p.ktgTag * 30)}/Monat` : "Kein KTG vorhanden"}
-              accent={C} onChange={v => set("ktgTag", v)} hint="0 wenn kein Vertrag vorhanden" />
-            <SliderCard label="BU-Rente" value={p.buRente} min={0} max={4000} step={100} unit="€/Mon"
-              display={p.buRente === 0 ? "Keine BU-Versicherung" : ""}
-              accent={C} onChange={v => set("buRente", v)} hint="0 wenn keine BU vorhanden" />
           </div>
-        </div>
-        <div style={{ height: "120px" }} />
-        <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
-      </>}
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextScr} nextLabel="Weiter →" T={T} />
+        </>
+      )}
 
-      {/* Screen 5: Szenario */}
-      {scr === 5 && <>
-        <div style={T.hero}>
-          <div style={T.label}>Einkommens-Check · 5 / 5</div>
-          <div style={T.h1}>Welches Szenario beschäftigt Sie am meisten?</div>
-        </div>
-        <div style={T.section}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {SZENARIEN.map(sz => (
-              <SelectionCard key={sz.id} value={sz.id} label={sz.label}
-                description={`${sz.desc} · Ø ${sz.dauer} Mon.`}
-                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{sz.emoji}</span>}
-                selected={p.szenario === sz.id} accent={C} onClick={() => set("szenario", sz.id)} />
-            ))}
+      {sid === "kv" && (
+        <>
+          <div style={T.hero}>
+            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.h1}>Wie sind Sie krankenversichert?</div>
+            <div style={T.body}>Das entscheidet, ob und wie viel Krankengeld Sie erhalten.</div>
           </div>
-        </div>
-        <div style={{ height: "120px" }} />
-        <Footer onNext={nextScr} onBack={backScr} nextLabel="Meine Lücke berechnen" T={T} />
-      </>}
+          <div style={T.section}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {[
+                { v: "gkv", l: "Gesetzlich (GKV)", d: `Krankengeld: ca. 70 % des relevanten Bruttos (BBG KG orientierend ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon.)`, emoji: "🏥" },
+                { v: "pkv", l: "Privat (PKV)",     d: "Kein gesetzliches Krankengeld — nur privates KTG sichert ab", emoji: "🔒" },
+              ].map(({ v, l, d, emoji }) => (
+                <SelectionCard key={v} value={v} label={l} description={d}
+                  icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
+                  selected={p.kv === v} accent={C} onClick={() => set("kv", v)} />
+              ))}
+            </div>
+            {p.beruf === "selbst" && p.kv === "gkv" && (
+              <div style={{ ...T.infoBox, marginTop: "12px", borderLeft: "3px solid #f59e0b", background: "#fffbf0", borderRadius: "0 8px 8px 0" }}>
+                <strong style={{ color: "#92400e" }}>Hinweis:</strong> Selbstständige erhalten GKV-Krankengeld nur mit gesonderter Option (§44 SGB V) — bitte prüfen Sie Ihren Tarif.
+              </div>
+            )}
+          </div>
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+        </>
+      )}
+
+      {sid === "pkvBeitrag" && (
+        <>
+          <div style={T.hero}>
+            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.h1}>Wie hoch ist Ihr monatlicher PKV-Beitrag?</div>
+            <div style={T.body}>Eigenanteil ohne Arbeitgeberzuschuss — ab Woche 7 der Krankheit fließt er voll aus Ihrem Tagegeld.</div>
+          </div>
+          <div style={T.section}>
+            <SliderCard
+              label="PKV-Beitrag (Monat)"
+              value={p.pkvBeitrag}
+              min={0}
+              max={1200}
+              step={10}
+              unit="€"
+              display={p.pkvBeitrag > 0 ? "wird vom KTG abgezogen" : "bitte realistischen Wert wählen"}
+              accent={C}
+              onChange={(v) => set("pkvBeitrag", v)}
+              hint="Inkl. ggf. Pflege- und Krankenversicherungsanteil, die Sie selbst zahlen"
+            />
+            <SmartHintCard>
+              Achtung: Der Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch den laufenden KV-Beitrag decken.
+            </SmartHintCard>
+          </div>
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+        </>
+      )}
+
+      {sid === "brutto" && (
+        <>
+          <div style={T.hero}>
+            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.h1}>Was verdienen Sie aktuell brutto pro Monat?</div>
+            <div style={T.body}>Daraus berechnen wir Ihr Netto und die möglichen Leistungen.</div>
+          </div>
+          <div style={T.section}>
+            <SliderCard label="Monatliches Bruttogehalt" value={p.brutto} min={1500} max={12000} step={100} unit="€"
+              display={`ca. ${fmt(R.netto)} netto`} accent={C} onChange={(v) => set("brutto", v)} />
+            {p.brutto > 5800 && (
+              <SmartHintCard>
+                Ihr Einkommen liegt über der typischen Kappungsgrenze der Krankenkasse beim Krankengeld. Die Lücke im Krankheitsfall kann deshalb überproportional hoch ausfallen.
+              </SmartHintCard>
+            )}
+            {p.brutto < 2500 && (
+              <SmartHintCard>
+                Unterhalb von 2.500 € Brutto droht bei längerer Krankheit die Verrechnung mit Grundsicherung — das sollte im Gespräch geprüft werden.
+              </SmartHintCard>
+            )}
+          </div>
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+        </>
+      )}
+
+      {sid === "ktgBu" && (
+        <>
+          <div style={T.hero}>
+            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
+            <div style={T.body}>Beide Felder sind optional — 0 eingeben wenn kein Vertrag vorhanden.</div>
+          </div>
+          <div style={T.section}>
+            {p.beruf === "selbst" && (
+              <SmartHintCard>
+                Als Selbstständiger haben Sie ab Tag 1 der Arbeitsunfähigkeit kein Lohnfortzahlungsrecht. Hast du eine Absicherung ab dem 15. oder 43. Tag?
+              </SmartHintCard>
+            )}
+            {p.kv === "pkv" && (
+              <SmartHintCard>
+                Achtung: Dein Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen. Dein Tagegeld muss auch deinen KV-Beitrag decken!
+              </SmartHintCard>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <SliderCard label="Krankentagegeld (KTG)" value={p.ktgTag} min={0} max={150} step={5} unit="€/Tag"
+                display={p.ktgTag > 0 ? `= ${fmt(p.ktgTag * 30)}/Monat` : "Kein KTG vorhanden"}
+                accent={C} onChange={(v) => set("ktgTag", v)} hint="0 wenn kein Vertrag vorhanden" />
+              <SliderCard label="BU-Rente" value={p.buRente} min={0} max={4000} step={100} unit="€/Mon"
+                display={p.buRente === 0 ? "Keine BU-Versicherung" : ""}
+                accent={C} onChange={(v) => set("buRente", v)} hint="0 wenn keine BU vorhanden" />
+            </div>
+            {p.ktgTag === 0 && p.kv === "gkv" && (
+              <div style={{ marginTop: "12px" }}>
+                <SmartHintCard>
+                  Du verlässt dich rein auf das gesetzliche Minimum beim Einkommen — ein zusätzliches Krankentagegeld ist oft der schnellste Hebel.
+                </SmartHintCard>
+              </div>
+            )}
+          </div>
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+        </>
+      )}
+
+      {sid === "szenario" && (
+        <>
+          <div style={T.hero}>
+            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.h1}>Welches Szenario beschäftigt Sie am meisten?</div>
+          </div>
+          <div style={T.section}>
+            {p.szenario === "psyche" && (
+              <SmartHintCard>
+                Wusstest du? Psychische Erkrankungen sind mit Ø 42 Monaten die längsten Leistungsfälle — weit über die typische Krankengeld-Dauer von 18 Monaten hinaus.
+              </SmartHintCard>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {SZENARIEN.map((sz) => (
+                <SelectionCard key={sz.id} value={sz.id} label={sz.label}
+                  description={`${sz.desc} · Ø ${sz.dauer} Mon.`}
+                  icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{sz.emoji}</span>}
+                  selected={p.szenario === sz.id} accent={C} onClick={() => set("szenario", sz.id)} />
+              ))}
+            </div>
+          </div>
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextScr} onBack={backScr} nextLabel="Meine Lücke berechnen" T={T} />
+        </>
+      )}
     </div>
   );
 }

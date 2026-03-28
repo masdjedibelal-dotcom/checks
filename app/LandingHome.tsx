@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { KATALOG, type Template } from "@/lib/katalog";
 import { CHECK_FLOW_META, CheckFlowPhoneMock, HeroResultMockup } from "./check-flow-checks";
@@ -73,51 +79,100 @@ function LandingModalsPortal({ children }: { children: ReactNode }) {
   return createPortal(children, document.body);
 }
 
-const PROBLEM_POINTS = [
+const FACTS_CARDS = [
   {
-    title: "Kein Einstieg beim Kunden",
-    text: "Die meisten Kunden beschäftigen sich nicht aktiv mit ihrer Absicherung. Ohne konkreten Anlass entsteht kein Gespräch.",
+    icon: "trend" as const,
+    stat: "2–3x mehr Anfragen",
+    body: "Mehr Nutzer starten aktiv eine Anfrage statt passiv zu bleiben.",
   },
   {
-    title: "Kein klarer Bedarf",
-    text: "Selbst wenn Interesse da ist bleibt es unspezifisch. Der Kunde weiß nicht, was er wirklich braucht.",
+    icon: "clock" as const,
+    stat: "bis zu 50% weniger Zeit im Erstgespräch",
+    body: "Alle relevanten Informationen liegen vor – kein Einstieg bei null.",
   },
   {
-    title: "Kein Impuls zur Anfrage",
-    text: "Ohne konkrete Situation fehlt der Auslöser. Das Gespräch kommt oft gar nicht zustande.",
+    icon: "target" as const,
+    stat: "2x höhere Abschlussquote",
+    body: "Sie sprechen mit Interessenten, nicht mit unklaren Leads.",
   },
 ] as const;
+
+function FactsCardIcon({ name }: { name: (typeof FACTS_CARDS)[number]["icon"] }) {
+  const svgProps = {
+    className: "facts-card-icon-svg",
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none" as const,
+    xmlns: "http://www.w3.org/2000/svg",
+    "aria-hidden": true as const,
+  };
+  if (name === "trend") {
+    return (
+      <svg {...svgProps}>
+        <path
+          d="M4 17V7M4 17h16M4 17l5-5 4 4 6-8"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  if (name === "clock") {
+    return (
+      <svg {...svgProps}>
+        <circle cx="12" cy="12" r="8.25" stroke="currentColor" strokeWidth="1.4" />
+        <path
+          d="M12 7.5V12l3.5 2"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg {...svgProps}>
+      <circle cx="12" cy="12" r="8.25" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="12" cy="12" r="4.25" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="12" cy="12" r="1.25" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
 const HOW_TIMELINE_STEPS = [
   {
     num: "01",
-    title: "Kunde startet",
-    desc: "Über Website, QR-Code oder Link. Ohne Login, ohne Hürde.",
+    title: "Aufmerksamkeit entsteht",
+    desc: "Der Nutzer bleibt an einem Thema hängen, das ihn direkt betrifft.",
   },
   {
     num: "02",
-    title: "Microsite führt durch die Situation",
-    desc: "Der Kunde versteht, was für ihn relevant ist. Ohne Fachbegriffe.",
+    title: "Interesse wird konkret",
+    desc: "Die Microsite macht seine Situation greifbar und zeigt, warum das Thema für ihn relevant ist.",
   },
   {
     num: "03",
-    title: "Anfrage bei Ihnen",
-    desc: "Sie erhalten Kontaktdaten und Ausgangssituation — nicht nur eine Anfrage, sondern Kontext.",
+    title: "Anfrage wird ausgelöst",
+    desc: "Aus einem abstrakten Gedanken wird ein konkreter nächster Schritt und der Nutzer meldet sich bei Ihnen.",
   },
 ] as const;
 
 function HowAnfragenTimelineSection() {
   const tlRef = useRef<HTMLDivElement>(null);
-  const [lineVisible, setLineVisible] = useState(false);
+  const [blockVisible, setBlockVisible] = useState(false);
 
   useEffect(() => {
     const el = tlRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e?.isIntersecting) setLineVisible(true);
+        if (e?.isIntersecting) setBlockVisible(true);
       },
-      { threshold: 0.18, rootMargin: "0px 0px -12% 0px" }
+      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -125,76 +180,87 @@ function HowAnfragenTimelineSection() {
 
   return (
     <section id="how" className="how-section">
-      <div className="how-tl-header fade-up">
-        <p className="how-tl-eyebrow">Ablauf</p>
-        <h2 className="how-h2">So entstehen Anfragen</h2>
-      </div>
+      <div className="how-section-inner">
+        <header className="how-tl-header fade-up">
+          <p className="how-tl-eyebrow">Ablauf</p>
+          <h2 className="how-h2">So wird aus Interesse eine Anfrage</h2>
+          <p className="how-tl-sub">
+            Storytelling und interaktive Microsites machen aus erstem Interesse einen klaren Handlungsimpuls.
+          </p>
+        </header>
 
-      <div
-        ref={tlRef}
-        className={`how-timeline${lineVisible ? " how-timeline--visible" : ""}`}
-      >
-        <div className="how-timeline-spine" aria-hidden>
-          <div className="how-timeline-spine-track" />
-          <div className="how-timeline-spine-fill" />
-        </div>
-
-        <div className="how-timeline-steps">
-          {HOW_TIMELINE_STEPS.map((step, i) => (
-            <div
-              key={step.num}
-              className="how-tl-step"
-              style={{
-                transitionDelay: lineVisible ? `${0.14 + i * 0.13}s` : "0s",
-              }}
-            >
-              <div className="how-tl-num-wrap">
-                <span className="how-tl-num">{step.num}</span>
-              </div>
-              <div className="how-tl-line-gap" aria-hidden />
-              <h3 className="how-tl-title">{step.title}</h3>
-              <p className="how-tl-desc">{step.desc}</p>
+        <div
+          ref={tlRef}
+          className={`how-timeline-block${blockVisible ? " how-timeline-block--visible" : ""}`}
+        >
+          <div className="how-timeline-wrap">
+            <div className="how-timeline-line" aria-hidden>
+              <div className="how-timeline-line-fill" />
             </div>
-          ))}
+
+            <div className="how-timeline-steps">
+              {HOW_TIMELINE_STEPS.map((step, i) => (
+                <div
+                  key={step.num}
+                  className="how-tl-step"
+                  style={
+                    {
+                      "--how-step-delay": `${0.14 + i * 0.08}s`,
+                    } as CSSProperties
+                  }
+                >
+                  <div className="how-tl-step-marker">{step.num}</div>
+                  <div className="how-tl-step-content">
+                    <h3 className="how-tl-content-title">{step.title}</h3>
+                    <p className="how-tl-content-desc">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="how-tl-cta-wrap">
+            <a href="#tools" className="how-tl-cta">
+              Microsites ansehen
+            </a>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function ProblemSection() {
+function FactsSection() {
   return (
-    <section className="problem-section">
-      <div className="problem-inner">
-        <p className="problem-eyebrow fade-up" style={{ transitionDelay: "0.04s" }}>
-          Das Problem
-        </p>
-        <h2 className="problem-headline fade-up" style={{ transitionDelay: "0.08s" }}>
-          Zu wenig Anfragen
+    <section className="facts-section" aria-labelledby="facts-heading">
+      <div className="facts-inner">
+        <p className="facts-bridge fade-up">Für unabhängige Versicherungsmakler in Deutschland.</p>
+        <h2 id="facts-heading" className="facts-h2 fade-up d1">
+          Mehr Anfragen. Weniger Aufwand. Mehr Abschluss.
         </h2>
-        <p className="problem-sub fade-up" style={{ transitionDelay: "0.12s" }}>
-          Ihr Vertrieb beginnt oft zu spät. Der Kunde meldet sich nicht aktiv.
+        <p className="facts-sub fade-up d2">
+          Klare Ergebnisse für Ihren Vertrieb – messbar im Alltag.
         </p>
 
-        <ul className="problem-list" role="list">
-          {PROBLEM_POINTS.map((item, i) => (
-            <li
-              key={item.title}
-              className="problem-point fade-up"
-              style={{ transitionDelay: `${0.18 + i * 0.09}s` }}
+        <div className="facts-grid">
+          {FACTS_CARDS.map((card, i) => (
+            <article
+              key={card.stat}
+              className="facts-card fade-up"
+              style={{ transitionDelay: `${0.05 + i * 0.05}s` }}
             >
-              <div className="problem-point-title">{item.title}</div>
-              <p className="problem-point-text">{item.text}</p>
-            </li>
+              <span className="facts-card-icon" aria-hidden>
+                <FactsCardIcon name={card.icon} />
+              </span>
+              <p className="facts-card-stat">{card.stat}</p>
+              <div className="facts-card-rule" aria-hidden />
+              <p className="facts-card-body">{card.body}</p>
+            </article>
           ))}
-        </ul>
-
-        <div className="problem-bridge fade-up" style={{ transitionDelay: "0.48s" }}>
-          <p className="problem-bridge-lead">FlowLeads erzeugt diesen Anlass</p>
-          <p className="problem-bridge-text">
-            Ihre Kunden erkennen ihren Bedarf selbst und melden sich mit einer konkreten Situation bei Ihnen.
-          </p>
         </div>
+        <p className="facts-note fade-up d3">
+          Angaben orientieren sich an typischer Nutzung im Feld; konkrete Ergebnisse hängen von Ihrem Einsatz ab.
+        </p>
       </div>
     </section>
   );
@@ -295,11 +361,20 @@ export default function LandingHome() {
       <nav>
         <div className="logo">
           <div className="logo-mark">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-              <rect x="1" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" />
-              <rect x="9.5" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4" />
-              <rect x="1" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4" />
-              <rect x="9.5" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a" />
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 48 48"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden
+            >
+              <rect width="48" height="48" rx="12" fill="#0F172A" />
+              <path
+                d="M16 14H30V18H20V22H28V26H20V34H16V14Z"
+                fill="white"
+              />
+              <path d="M32 14H36V34H26V30H32V14Z" fill="white" />
             </svg>
           </div>
           <span>FlowLeads</span>
@@ -349,7 +424,7 @@ export default function LandingHome() {
       </section>
 
       {/* ── PROBLEM ───────────────────────────────────────────────────────── */}
-      <ProblemSection />
+      <FactsSection />
 
       {/* ── SO ENTSTEHEN ANFRAGEN (Timeline) ──────────────────────────────── */}
       <HowAnfragenTimelineSection />
@@ -376,7 +451,7 @@ export default function LandingHome() {
                 <div
                   key={c.slug}
                   className="ck-card fade-up"
-                  style={{ transitionDelay: `${(i % 2) * 0.08}s` }}
+                  style={{ transitionDelay: `${(i % 2) * 0.05}s` }}
                 >
                   <div className="ck-card-preview">
                     <CheckFlowPhoneMock slug={c.slug} />
@@ -384,7 +459,7 @@ export default function LandingHome() {
                   <div className="ck-card-right">
                     <div>
                       <div className={`ck-card-cat ${c.catClass}`}>{c.cat}</div>
-                      <div className="ck-card-name">{c.name}</div>
+                      <div className="ck-card-name">{tmpl?.name ?? c.name}</div>
                       <p className="ck-card-hook">{c.hook}</p>
                       <p className="ck-card-erlebnis">{c.erlebnis}</p>
                     </div>

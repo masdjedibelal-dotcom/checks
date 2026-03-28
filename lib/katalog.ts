@@ -15,7 +15,7 @@ export const KATALOG: Template[] = [
   {
     slug: "bedarfscheck",
     icon: "🎯",
-    name: "Versicherungs-Check — Welche Versicherungen brauche ich?",
+    name: "Absicherungspakete",
     desc: "Profil + Bestand → 3 personalisierte Pakete mit Begründung.",
     tags: ["Neukunden", "Vor dem Erstgespräch"],
     kategorie: "alle-kunden",
@@ -25,7 +25,7 @@ export const KATALOG: Template[] = [
   {
     slug: "lebenssituations-check",
     icon: "📋",
-    name: "Lebenssituations-Check — Was hat sich verändert?",
+    name: "Jahresgespräch",
     desc: "Lebensereignisse auswählen → konkreter Handlungsbedarf mit Bestandsabgleich.",
     tags: ["Bestandskunden", "Lebensereignisse"],
     kategorie: "alle-kunden",
@@ -35,7 +35,7 @@ export const KATALOG: Template[] = [
   {
     slug: "einkommens-check",
     icon: "💼",
-    name: "Einkommens-Check — Was passiert wenn ich ausfalle?",
+    name: "Einkommensabsicherung",
     desc: "BU + KTG Zeitstrahl, Lückenberechnung, Empfehlung und EU als Alternative.",
     tags: ["Einkommensschutz", "BU & Krankentagegeld"],
     kategorie: "luecken",
@@ -45,7 +45,7 @@ export const KATALOG: Template[] = [
   {
     slug: "gkv-pkv",
     icon: "🏥",
-    name: "GKV vs. PKV — Was lohnt sich für mich?",
+    name: "PKV-Entscheidung",
     desc: "JAEG-Prüfung, Beitragsvergleich, Familienlogik, konkrete Einordnung.",
     tags: ["Gehaltssprung", "PKV-Wechsel"],
     kategorie: "luecken",
@@ -55,7 +55,7 @@ export const KATALOG: Template[] = [
   {
     slug: "vorsorge-check",
     icon: "🌱",
-    name: "Vorsorge-Check — Wie groß ist meine Rentenlücke?",
+    name: "Rentenlücke",
     desc: "Rentenlücke, Schichten, Rentenzeitpunkt, Riester-Förderung, 3 Strategien.",
     tags: ["Altersvorsorge", "Sparrate"],
     kategorie: "luecken",
@@ -65,7 +65,7 @@ export const KATALOG: Template[] = [
   {
     slug: "risikoleben",
     icon: "❤️",
-    name: "Risikoleben — Ist meine Familie wirklich abgesichert?",
+    name: "Familienabsicherung",
     desc: "Versorgungslücke mit gesetzl. Witwen-/Waisenrente, empfohlene Summe.",
     tags: ["Familien mit Kindern"],
     kategorie: "luecken",
@@ -75,7 +75,7 @@ export const KATALOG: Template[] = [
   {
     slug: "pflege-check",
     icon: "🛡️",
-    name: "Pflege-Check — Was kostet Pflege wirklich?",
+    name: "Pflegekosten",
     desc: "Eigenanteil nach Pflegegrad, Einordnung, Produktübersicht.",
     tags: ["Pflege", "Eigenanteil"],
     kategorie: "luecken",
@@ -85,7 +85,7 @@ export const KATALOG: Template[] = [
   {
     slug: "immobilien-check",
     icon: "🏠",
-    name: "Immobilien-Check — Kaufen, finanzieren oder absichern?",
+    name: "Immobilien",
     desc: "Drei Module: Kaufen vs. Mieten, Anschlussfinanzierung, Wohngebäude-Check.",
     tags: ["Immobilien", "Finanzierung"],
     kategorie: "finanzen",
