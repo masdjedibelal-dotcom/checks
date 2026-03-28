@@ -36,7 +36,7 @@ export default function DemoModal({
 
   return (
     <div
-      className="fixed inset-0 z-[500] flex items-center justify-center bg-black/55 p-0 sm:p-5 transition-opacity duration-[220ms]"
+      className="fixed inset-0 z-[500] flex items-end justify-center bg-black/55 transition-opacity duration-[220ms] sm:items-center sm:p-5"
       role="dialog"
       aria-modal="true"
       aria-labelledby="demo-modal-title"
@@ -45,9 +45,12 @@ export default function DemoModal({
       }}
     >
       <div
-        className="flex h-[88vh] max-h-[780px] w-full max-w-[480px] flex-col overflow-hidden rounded-[22px] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] transition-[transform] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className="flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-[22px] bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)] transition-[transform] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:h-[88vh] sm:max-h-[780px] sm:max-w-[480px] sm:rounded-[22px]"
         onClick={(e) => e.stopPropagation()}
       >
+        <div className="flex shrink-0 flex-col sm:hidden">
+          <div className="mx-auto mt-2.5 mb-1 h-1 w-10 rounded-full bg-[#e0e0e0]" />
+        </div>
         <div className="flex shrink-0 items-center justify-between border-b border-[#f0f0f0] px-[18px] py-3.5">
           <div>
             <div
@@ -82,7 +85,10 @@ export default function DemoModal({
             overflowX: "hidden",
           }}
         />
-        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-[#f0f0f0] px-[18px] py-3 pb-4">
+        <div
+          className="flex shrink-0 items-center justify-between gap-3 border-t border-[#f0f0f0] px-[18px] pt-3"
+          style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}
+        >
           <div className="text-lg font-bold tracking-[-0.03em] text-[#111]">
             {template.preis} €{" "}
             <small className="text-[11px] font-normal text-[#bbb]">
@@ -91,7 +97,7 @@ export default function DemoModal({
           </div>
           <button
             type="button"
-            className="shrink-0 rounded-lg bg-[#111] px-[18px] py-2.5 text-[13px] font-semibold text-white transition hover:bg-[#c9a96e]"
+            className="shrink-0 rounded-lg bg-[#111] px-[18px] py-2.5 text-[13px] font-semibold text-white transition active:bg-[#c9a96e] hover:bg-[#c9a96e]"
             onClick={() => onBuy(template)}
           >
             Anpassen & kaufen

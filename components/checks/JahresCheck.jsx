@@ -1,29 +1,22 @@
 import { useMemo, useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
-import { SelectionCard, CheckRow } from "@/components/ui/CheckComponents";
+import { SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
 const WARN="#c0392b";
 
-const SPARTEN=[
-  {id:"sachen",l:"Sachen & Wohnen",beschr:"Was passiert mit meiner Wohnung und meinem Eigentum?",prods:["Privathaftpflicht","Hausratversicherung","Wohngebäudeversicherung","Rechtsschutzversicherung","Kfz-Versicherung","E-Bike / Fahrrad"]},
-  {id:"einkommen",l:"Einkommen & Arbeitskraft",beschr:"Was wenn ich nicht mehr arbeiten kann?",prods:["Berufsunfähigkeitsversicherung","Erwerbsunfähigkeitsversicherung","Krankentagegeld","Unfallversicherung"]},
-  {id:"gesundheit",l:"Gesundheit",beschr:"Was passiert wenn ich krank werde?",prods:["Private Krankenversicherung (PKV)","Zahnzusatzversicherung","Krankenhauszusatzversicherung","Ambulante Zusatzversicherung","Pflegezusatzversicherung","Auslandskrankenversicherung"]},
-  {id:"familie",l:"Familie & Existenz",beschr:"Was passiert mit meiner Familie?",prods:["Risikolebensversicherung","Sterbegeldversicherung","Privathaftpflicht"]},
-  {id:"vorsorge",l:"Vorsorge & Vermögen",beschr:"Wie baue ich Vermögen auf?",prods:["Altersvorsorge / private Rentenversicherung","Riester-Rente","Rürup-Rente","Betriebliche Altersvorsorge (bAV)","Sparen & Investieren","Bausparvertrag"]},
-];
 const EREIGNISSE=[
-  {id:"umzug",l:"Umzug oder Hauskauf"},
-  {id:"heirat",l:"Heirat oder Trennung"},
-  {id:"nachwuchs",l:"Nachwuchs / Geburt"},
-  {id:"elternzeit",l:"Elternzeit"},
-  {id:"jobwechsel",l:"Jobwechsel / Gehaltssprung"},
-  {id:"selbst",l:"Selbstständig gemacht"},
-  {id:"immobilie",l:"Immobilie gekauft"},
-  {id:"pflege",l:"Pflege eines Angehörigen"},
+  {id:"nachwuchs",l:"Nachwuchs",display:"🍼 Nachwuchs ist unterwegs oder da"},
+  {id:"jobwechsel",l:"Jobwechsel",display:"💼 Ich habe den Job gewechselt oder mehr verdient"},
+  {id:"heirat",l:"Heirat / Trennung",display:"💍 Ich habe geheiratet oder mich getrennt"},
+  {id:"immobilie",l:"Immobilienkauf",display:"🏠 Ich habe eine Immobilie gekauft"},
+  {id:"elternzeit",l:"Elternzeit",display:"👶 Ich bin in Elternzeit"},
+  {id:"selbst",l:"Selbstständigkeit",display:"🚀 Ich habe mich selbstständig gemacht"},
+  {id:"pflege",l:"Pflege Angehöriger",display:"👴 Ich pflege jemanden aus meiner Familie"},
+  {id:"umzug",l:"Umzug",display:"📦 Ich bin umgezogen"},
 ];
 
 // ─── MATRIX — bestandsabhängig + kontextbewusst ───────────────────────────────
@@ -177,9 +170,23 @@ function buildEmpfehlungen(events, prods, kontext) {
 }
 
 
-function makeJahresCheckT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"}};}
+function makeJahresCheckT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"}};}
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 
+const SIMPLE_EVENTS_DEF=[
+  {id:"familie",l:"Familie",sub:"Kind, Heirat oder Trennung",icon:"👨‍👩‍👧",evIds:["nachwuchs","heirat"]},
+  {id:"beruf",l:"Beruf",sub:"Jobwechsel oder mehr Gehalt",icon:"💼",evIds:["jobwechsel"]},
+  {id:"immobilie",l:"Immobilie",sub:"Kauf oder Umzug",icon:"🏠",evIds:["immobilie","umzug"]},
+  {id:"selbst",l:"Selbstständigkeit",sub:"Freiberuflich oder Gewerbe",icon:"🚀",evIds:["selbst"]},
+  {id:"pflege",l:"Pflege eines Angehörigen",sub:"Häuslich oder stationär",icon:"👴",evIds:["pflege"]},
+];
+const SCHUTZ_KATS=[
+  {id:"gesundheit",l:"Gesundheit",icon:"🏥",prods:["Private Krankenversicherung (PKV)","Zahnzusatzversicherung","Krankenhauszusatzversicherung","Ambulante Zusatzversicherung","Pflegezusatzversicherung","Auslandskrankenversicherung"]},
+  {id:"einkommen",l:"Einkommen",icon:"💰",prods:["Berufsunfähigkeitsversicherung","Erwerbsunfähigkeitsversicherung","Krankentagegeld","Unfallversicherung"]},
+  {id:"familie",l:"Familie",icon:"👨‍👩‍👧",prods:["Risikolebensversicherung","Privathaftpflicht","Sterbegeldversicherung"]},
+  {id:"wohnen",l:"Wohnen",icon:"🏠",prods:["Hausratversicherung","Wohngebäudeversicherung","Rechtsschutzversicherung","Kfz-Versicherung","E-Bike / Fahrrad"]},
+  {id:"vorsorge",l:"Vorsorge",icon:"🌱",prods:["Altersvorsorge / private Rentenversicherung","Riester-Rente","Rürup-Rente","Betriebliche Altersvorsorge (bAV)","Sparen & Investieren","Bausparvertrag"]},
+];
 export default function JahresCheck(){
   const MAKLER=useCheckConfig();
   const C=MAKLER.primaryColor;
@@ -188,25 +195,25 @@ export default function JahresCheck(){
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);
   const[prods,setProds]=useState([]);const[events,setEvents]=useState([]);
   const[kontaktConsent,setKontaktConsent]=useState(false);
-  const[offene,setOffene]=useState(["sachen"]);
   const[fd,setFd]=useState({name:"",email:"",tel:""});
-  const[kontext,setKontext]=useState({housingStatus:"",employmentStatus:"",familyStatus:""});
-  const setK=(k,v)=>setKontext(x=>({...x,[k]:v}));
-  const toggleProd=(id)=>setProds(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
-  const toggleEv=(id)=>setEvents(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
-  const toggleOffen=(id)=>setOffene(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
+  const[kontext]=useState({housingStatus:"",employmentStatus:"",familyStatus:""});
+  const[scr,setScr]=useState(1);
+  const[selEvKats,setSelEvKats]=useState([]);
+  const[selSchutzKats,setSelSchutzKats]=useState([]);
+  const toggleSimpleEv=(catId)=>{const cat=SIMPLE_EVENTS_DEF.find(c=>c.id===catId);if(!cat)return;setSelEvKats(p=>{const next=p.includes(catId)?p.filter(x=>x!==catId):[...p,catId];setEvents(SIMPLE_EVENTS_DEF.filter(c=>next.includes(c.id)).flatMap(c=>c.evIds));return next;});};
+  const toggleSchutzKat=(katId)=>{const kat=SCHUTZ_KATS.find(k=>k.id===katId);if(!kat)return;setSelSchutzKats(p=>{const next=p.includes(katId)?p.filter(x=>x!==katId):[...p,katId];setProds(SCHUTZ_KATS.filter(k=>next.includes(k.id)).flatMap(k=>k.prods));return next;});};
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
   const E=buildEmpfehlungen(events,prods,kontext);
 
 
   if(danke)return(
-    <div style={{...T.page,"--accent":C}}><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Jahrescheck</span></div>
+    <div style={{...T.page,"--accent":C}}><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
     <div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in">
       <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
       <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
-      <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir bereiten das Gespräch mit Ihren Ergebnissen vor und melden uns innerhalb von 24 Stunden.</div>
+      <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
       <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div>
-      <button onClick={()=>setDanke(false)} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button>
+      <button onClick={()=>setDanke(false)} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neuen Check starten</button>
     </div></div>
   );
 
@@ -216,7 +223,7 @@ export default function JahresCheck(){
     return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
       <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Jahresgespräch</span></div>
       <div style={T.prog}><div style={T.progFil(100)}/></div>
-      <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={T.h1}>Wir bereiten alles vor</div><div style={T.body}>Ihr Ergebnis wird mit dem Gesprächstermin verknüpft — so können wir direkt loslegen.</div></div>
+      <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir dich erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div></div>
       {isDemo ? (
         <>
           <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
@@ -243,15 +250,15 @@ export default function JahresCheck(){
       <div style={T.section}>
         <CheckKontaktLeadLine />
         <div style={T.card}>
-          {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
-            <div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"4px"}}/></div>
-          ))}
+          {[{k:"name",l:"Dein Name",t:"text",ph:"Vor- und Nachname",req:true},{k:"email",l:"Deine E-Mail",t:"email",ph:"deine@email.de",req:true},{k:"tel",l:"Deine Nummer",t:"tel",ph:"Optional",req:false,hint:"Optional — für eine schnellere Rückmeldung"}].map(({k,l,t,ph,req,hint},i,arr)=>(
+              <div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"4px"}}/>{hint&&<div style={T.fldHint}>{hint}</div>}</div>
+            ))}
         </div>
         <div style={{marginTop:"14px",marginBottom:"100px"}}>
           <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
         </div>
       </div>
-      <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"lebenssituations-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>Termin vereinbaren</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"lebenssituations-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Situation gemeinsam prüfen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
       </>
       )}
     </div>);
@@ -279,13 +286,18 @@ export default function JahresCheck(){
     return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
       <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
       <div style={T.prog}><div style={T.progFil(80)}/></div>
+      {/* H1 Ergebnis */}
+      <div style={{margin:"20px 24px 0 24px"}}>
+        <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>Auf Basis Ihrer Angaben</div>
+        <div style={{fontSize:"20px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.4px",marginBottom:"12px"}}>Das kann sich aus Ihrer aktuellen Situation ergeben</div>
+      </div>
       {/* Zusammenfassung */}
-      <div style={{margin:"20px 24px 0",padding:"14px 16px",background:`${C}08`,borderRadius:"10px",border:`1px solid ${C}20`}}>
-        <div style={{fontSize:"11px",fontWeight:"600",color:C,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>Zusammenfassung</div>
+      <div style={{margin:"0 24px",padding:"14px 16px",background:`${C}08`,borderRadius:"10px",border:`1px solid ${C}20`}}>
+        <div style={{fontSize:"11px",fontWeight:"600",color:C,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>Überblick</div>
         <div style={{fontSize:"14px",color:"#111",lineHeight:1.55}}>
           {total===0&&E.ergaenzen.length===0
-            ?"Auf Basis Ihrer Angaben gibt es aktuell keine dringenden Änderungen."
-            :`Auf Basis Ihrer Angaben ergeben sich ${total>0?`${total} wichtige ${total===1?"Anpassung":"Anpassungen"}`:""}${total>0&&E.ergaenzen.length>0?" und ":""}${E.ergaenzen.length>0?`${E.ergaenzen.length} neue${E.ergaenzen.length===1?"s Thema":" Themen"}`:""}.`}
+            ?`Auf Basis Ihrer Angaben ergibt sich aktuell kein konkreter Handlungsbedarf.`
+            :`Auf Basis Ihrer Angaben ergibt sich ${total>0?`${total} ${total===1?"konkreter Punkt":"konkrete Punkte"}`:""}${total>0&&E.ergaenzen.length>0?" und ":""}${E.ergaenzen.length>0?`${E.ergaenzen.length} optionale${E.ergaenzen.length===1?"s Thema":" Themen"}`:""}.`}
         </div>
       </div>
 
@@ -319,10 +331,10 @@ export default function JahresCheck(){
         </div>
       )}
 
-      {/* Block 1: Jetzt prüfen — Anpassungen dringender Einträge */}
+      {/* Block 1: Jetzt wichtig */}
       {E.anpassen.length>0&&(
         <div style={{...T.section,marginTop:"20px"}}>
-          <div style={{fontSize:"11px",fontWeight:"700",color:WARN,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Das sollten Sie jetzt prüfen</div>
+          <div style={{fontSize:"11px",fontWeight:"700",color:WARN,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Jetzt relevant — In vergleichbaren Situationen besteht hier häufig konkreter Prüfbedarf</div>
           <div style={T.card}>
             {E.anpassen.map((item,i,arr)=>(
               <div key={i} style={{borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
@@ -333,10 +345,10 @@ export default function JahresCheck(){
         </div>
       )}
 
-      {/* Block 2: Für Ihre Situation relevant — neue Abschlüsse */}
+      {/* Block 2: Anpassen */}
       {E.abschliessen.length>0&&(
         <div style={T.section}>
-          <div style={{fontSize:"11px",fontWeight:"600",color:C,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Das ist für Ihre Situation relevant</div>
+          <div style={{fontSize:"11px",fontWeight:"600",color:C,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Prüfen / Anpassen — Diese Bereiche werden häufig bei Veränderungen angepasst</div>
           <div style={T.card}>
             {E.abschliessen.map((item,i,arr)=>(
               <div key={i} style={{borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
@@ -347,10 +359,10 @@ export default function JahresCheck(){
         </div>
       )}
 
-      {/* Block 3: Ergänzungen */}
+      {/* Block 3: Optional */}
       {E.ergaenzen.length>0&&(
         <div style={T.section}>
-          <div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Das kann zusätzlich sinnvoll sein</div>
+          <div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Optional — kann je nach persönlicher Zielsetzung sinnvoll sein</div>
           <div style={T.card}>
             {E.ergaenzen.map((item,i,arr)=>(
               <div key={i} style={{padding:"12px 16px",borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
@@ -364,7 +376,7 @@ export default function JahresCheck(){
       )}
 
       {total===0&&E.ergaenzen.length===0&&(
-        <div style={{...T.section,marginTop:"20px"}}><div style={T.infoBox}>Ihre Verträge sind auf dem aktuellen Stand — beim Jahresgespräch prüfen wir Details gemeinsam.</div></div>
+        <div style={{...T.section,marginTop:"20px"}}><div style={T.infoBox}>Gut so — aktuell kein dringender Handlungsbedarf.</div></div>
       )}
       <div style={{padding:"0 24px",marginBottom:"120px"}}>
         <CheckBerechnungshinweis>
@@ -375,159 +387,84 @@ export default function JahresCheck(){
         </CheckBerechnungshinweis>
         <div style={T.infoBox}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
       </div>
-      <div style={T.footer}><button style={T.btnPrim(false)} onClick={()=>goTo(4)}>Gespräch vereinbaren</button><button style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></div>
+      <div style={T.footer}><button style={T.btnPrim(false)} onClick={()=>goTo(4)}>Situation gemeinsam prüfen</button><button style={T.btnSec} onClick={()=>{setScr(3);goTo(1);}}>Zurück</button></div>
     </div>);
   }
 
-  // Phase 2: Lebensereignisse — Card Grid
-  if(phase===2){
-    const EV_ICONS={
-      umzug:<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10.5L10 3l7 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 17V11h4v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 11h4v6h-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-      heirat:<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 16s-7-4.5-7-9a4 4 0 0 1 7-2.65A4 4 0 0 1 17 7c0 4.5-7 9-7 9z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-      nachwuchs:<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="6.5" r="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M4 17c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="14.5" cy="5" r="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M14.5 7v1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
-      elternzeit:<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M3 17c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="15" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.3"/><path d="M13.5 11.5c0-1.5 1.5-2 3-1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
-      jobwechsel:<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="8" width="14" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><path d="M7 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M13 4l2 2-2 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-      selbst:<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="8" r="3" stroke="currentColor" strokeWidth="1.5"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M15 4l1.5 1.5L14 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-      immobilie:<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 17h16M4 17V9.5L10 4l6 5.5V17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><rect x="7.5" y="12" width="5" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.3"/></svg>,
-      pflege:<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 17s-6-3.5-6-8a4 4 0 0 1 6-3.46A4 4 0 0 1 16 9c0 4.5-6 8-6 8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 9v4M8 11h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
-    };
-    return(
-      <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-        <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Schritt 2 / 3</span></div>
-        <div style={T.prog}><div style={T.progFil(60)}/></div>
-        <div style={T.hero}><div style={T.eyebrow}>Schritt 2 von 3 · Lebenssituation</div><div style={T.h1}>Was bewegt Sie gerade?</div><div style={T.body}>Alles Zutreffende antippen — die Microsite passt sich Ihrer Situation an.</div></div>
+
+  // Phase 1: 1 Frage pro Screen (3 Screens)
+  const nextScr=()=>scr<3?setScr(s=>s+1):goTo(3);
+  const backScr=()=>scr>1&&setScr(s=>s-1);
+  return(
+    <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
+      <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Schritt {scr} / 3</span></div>
+      <div style={T.prog}><div style={T.progFil(scr*33)}/></div>
+
+      {scr===1&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>In wenigen Schritten</div>
+          <div style={T.h1}>Was hat sich bei Ihnen zuletzt verändert?</div>
+          <div style={T.body}>Lebensereignisse können Einfluss auf bestehende Absicherungen haben — wir zeigen Ihnen was.</div>
+        </div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(false)} onClick={nextScr}>Check starten</button></div>
+      </>}
+
+      {scr===2&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihre Situation</div>
+          <div style={T.h1}>Was hat sich bei Ihnen verändert?</div>
+          <div style={T.body}>Alles Zutreffende auswählen — mehreres möglich.</div>
+        </div>
         <div style={{padding:"0 20px",marginBottom:"16px"}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
-            {EREIGNISSE.map(ev=>(
-              <SelectionCard
-                key={ev.id}
-                value={ev.id}
-                label={ev.l}
-                icon={EV_ICONS[ev.id]||<svg width="20" height="20" viewBox="0 0 20 20"/>}
-                selected={events.includes(ev.id)}
-                accent={C}
-                onClick={()=>toggleEv(ev.id)}
-              />
-            ))}
+          <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+            {SIMPLE_EVENTS_DEF.map(ev=>{
+              const sel=selEvKats.includes(ev.id);
+              return(
+                <SelectionCard key={ev.id} value={ev.id} label={ev.l} description={ev.sub}
+                  icon={<span style={{fontSize:"22px",lineHeight:1}}>{ev.icon}</span>}
+                  selected={sel} accent={C} onClick={()=>toggleSimpleEv(ev.id)}/>
+              );
+            })}
           </div>
         </div>
         <div style={{padding:"0 20px",marginBottom:"120px"}}>
-          <div style={T.infoBox}>Keine Änderungen? Trotzdem fortfahren — wir prüfen ob Ihre Verträge noch aktuell sind.</div>
-          {events.length>0&&<div style={{marginTop:"8px",fontSize:"12px",color:C,fontWeight:"500",textAlign:"center"}}>{events.length} Ereignis{events.length!==1?"se":""} ausgewählt</div>}
+          <div style={T.infoBox}>Nichts Zutreffendes dabei? Einfach weitergehen — wir prüfen ob Ihre Verträge noch aktuell sind.</div>
+          {selEvKats.length>0&&<div style={{marginTop:"8px",fontSize:"12px",color:C,fontWeight:"500",textAlign:"center"}}>{selEvKats.length} Thema{selEvKats.length!==1?"s":""} ausgewählt</div>}
         </div>
-        <div style={T.footer}><button style={T.btnPrim(false)} onClick={()=>goTo(3)}>Ergebnis anzeigen{events.length>0?` · ${events.length} ausgewählt`:""}</button><button style={T.btnSec} onClick={()=>goTo(1)}>Zurück</button></div>
-      </div>
-    );
-  }
+        <div style={T.footer}>
+          <button style={T.btnPrim(false)} onClick={nextScr}>Weiter →{selEvKats.length>0?` · ${selEvKats.length} ausgewählt`:""}</button>
+          <button style={T.btnSec} onClick={backScr}>Zurück</button>
+        </div>
+      </>}
 
-    // Phase 1: Bestand + Kontext
-  return(
-    <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-      <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
-      <div style={T.prog}><div style={T.progFil(30)}/></div>
-      <div style={T.hero}><div style={T.eyebrow}>Schritt 1 von 3 · Bestandsaufnahme</div><div style={T.h1}>Was haben Sie bereits?</div><div style={T.body}>Vorhandene Versicherungen antippen — wird für Ihre persönliche Auswertung genutzt.</div></div>
-      {SPARTEN.map(sp=>{
-        const offen=offene.includes(sp.id);
-        const anz=sp.prods.filter(p=>prods.includes(p)).length;
-        return(
-          <div key={sp.id} style={T.section}>
-            <div style={T.card}>
-              <button onClick={()=>toggleOffen(sp.id)} style={{width:"100%",padding:"13px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",background:offen?`${C}04`:"#fff",textAlign:"left",cursor:"pointer"}}>
-                <div>
-                  <div style={{fontSize:"13px",fontWeight:"600",color:offen?C:"#111"}}>{sp.l}</div>
-                  <div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>{sp.beschr}</div>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:"8px",flexShrink:0,marginLeft:"12px"}}>
-                  {anz>0&&<span style={{fontSize:"11px",fontWeight:"700",padding:"2px 8px",borderRadius:"20px",background:`${C}12`,color:C}}>{anz}</span>}
-                  <span style={{fontSize:"12px",color:"#ccc"}}>{offen?"▲":"▼"}</span>
-                </div>
-              </button>
-              {offen&&<div style={{borderTop:"1px solid #f0f0f0"}}>
-                {sp.prods.map((prod,i)=>(
-                  <CheckRow
-                    key={prod}
-                    label={prod}
-                    checked={prods.includes(prod)}
-                    accent={C}
-                    showDivider={i<sp.prods.length-1}
-                    onClick={()=>toggleProd(prod)}
-                  />
-                ))}
-              </div>}
-            </div>
-          </div>
-        );
-      })}
-      <div style={{padding:"0 20px",marginBottom:"8px"}}>
-        <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"12px"}}>Kurze Angaben zur Situation</div>
-        {/* Wohnsituation */}
-        <div style={{marginBottom:"14px"}}>
-          <div style={{fontSize:"12px",fontWeight:"600",color:"#555",marginBottom:"8px"}}>Wohnsituation</div>
-          <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-            {[
-              {v:"mieter",l:"Mieter",d:"Mietwohnung oder zur Miete",icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="7" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1.3"/><path d="M1 7.5L8 2l7 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>},
-              {v:"eigentuemer",l:"Eigentümer",d:"Haus oder Eigentumswohnung",icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 15h12M4 15V8L8 3l4 5v7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><rect x="6" y="10" width="4" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.2"/></svg>},
-              {v:"",l:"Sonstiges",d:"z. B. WG, Untermiete, Sonderfall",icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3"/><path d="M8 5v3l2 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>},
-            ].map(({v,l,d,icon})=>(
-              <SelectionCard
-                key={v||"sonst"}
-                value={v||"sonst"}
-                label={l}
-                description={d}
-                icon={icon}
-                selected={v===""?kontext.housingStatus==="":kontext.housingStatus===v}
-                accent={C}
-                onClick={()=>setK("housingStatus",v)}
-              />
-            ))}
+      {scr===3&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Bestehende Absicherung</div>
+          <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
+          <div style={T.body}>Alles antippen, was bereits vorhanden ist.</div>
+        </div>
+        <div style={{padding:"0 20px",marginBottom:"16px"}}>
+          <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+            {SCHUTZ_KATS.map(kat=>{
+              const sel=selSchutzKats.includes(kat.id);
+              return(
+                <SelectionCard key={kat.id} value={kat.id} label={kat.l}
+                  icon={<span style={{fontSize:"22px",lineHeight:1}}>{kat.icon}</span>}
+                  selected={sel} accent={C} onClick={()=>toggleSchutzKat(kat.id)}/>
+              );
+            })}
           </div>
         </div>
-        {/* Berufsstatus */}
-        <div style={{marginBottom:"14px"}}>
-          <div style={{fontSize:"12px",fontWeight:"600",color:"#555",marginBottom:"8px"}}>Berufsstatus</div>
-          <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-            {[
-              {v:"angestellt",l:"Angestellt",d:"Festanstellung oder ähnlich",icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="6" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="1.3"/><path d="M5 6V5a3 3 0 0 1 6 0v1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>},
-              {v:"selbstständig",l:"Selbstständig",d:"Freiberufler, Gewerbe, GmbH-Gesellschafter",icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M12 2l1.2 1.2L11.5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>},
-            ].map(({v,l,d,icon})=>(
-              <SelectionCard
-                key={v}
-                value={v}
-                label={l}
-                description={d}
-                icon={icon}
-                selected={kontext.employmentStatus===v}
-                accent={C}
-                onClick={()=>setK("employmentStatus",v)}
-              />
-            ))}
-          </div>
+        <div style={{padding:"0 20px",marginBottom:"120px"}}>
+          {selSchutzKats.length>0&&<div style={{fontSize:"12px",color:C,fontWeight:"500",textAlign:"center"}}>{selSchutzKats.length} Bereich{selSchutzKats.length!==1?"e":""} ausgewählt</div>}
         </div>
-        {/* Familienstand */}
-        <div>
-          <div style={{fontSize:"12px",fontWeight:"600",color:"#555",marginBottom:"8px"}}>Familienstand</div>
-          <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-            {[
-              {v:"ledig",l:"Ledig",d:"Alleinstehend ohne Partner",icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>},
-              {v:"partnerschaft",l:"Partner",d:"Verheiratet, verpartnert oder feste Beziehung",icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="6" r="2" stroke="currentColor" strokeWidth="1.3"/><circle cx="10.5" cy="6" r="2" stroke="currentColor" strokeWidth="1.3"/><path d="M1 14c0-2.5 2-4.5 4.5-4.5S10 11.5 10 14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10.5 9.5c2.5 0 4.5 2 4.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>},
-              {v:"mit_kindern",l:"Kinder",d:"Ein oder mehrere Kinder im Haushalt",icon:<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2" stroke="currentColor" strokeWidth="1.3"/><path d="M1 13c0-2.5 2.2-4.5 5-4.5S11 10.5 11 13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><circle cx="12" cy="6" r="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M11 13c0-1.5 1-2.5 2.5-2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>},
-            ].map(({v,l,d,icon})=>(
-              <SelectionCard
-                key={v}
-                value={v}
-                label={l}
-                description={d}
-                icon={icon}
-                selected={kontext.familyStatus===v}
-                accent={C}
-                onClick={()=>setK("familyStatus",v)}
-              />
-            ))}
-          </div>
+        <div style={T.footer}>
+          <button style={T.btnPrim(false)} onClick={nextScr}>Mein Ergebnis ansehen</button>
+          <button style={T.btnSec} onClick={backScr}>Zurück</button>
         </div>
-      </div>
-      <div style={{padding:"0 24px",marginBottom:"120px"}}><div style={T.infoBox}>Nicht sicher? Einfach weitergehen — im nächsten Schritt sehen Sie was sich verändert hat.</div></div>
-      <div style={T.footer}><button style={T.btnPrim(false)} onClick={()=>goTo(2)}>Weiter zu den Lebensereignissen{prods.length>0?` · ${prods.length} vorhanden`:""}</button></div>
+      </>}
+
     </div>
   );
 }

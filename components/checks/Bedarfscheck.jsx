@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { textOnAccent } from "@/lib/utils";
-import { SelectionCard, CheckRow } from "@/components/ui/CheckComponents";
+import { checkStandardT } from "@/lib/checkStandardT";
+import { CheckHeader } from "@/components/checks/CheckHeader";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -54,14 +55,14 @@ const PRODUCTS=[
     visibilityRules:({age})=>age>=35,
     scoreModifiers:({age})=>age>=50?30:age>=40?18:8,
     shortDescription:"Gesetzliche Pflege deckt nur die Hälfte der echten Kosten — die Lücke ist riesig.",
-    reasonBuilder:({age})=>age>=50?"Pflege wird mit zunehmendem Alter das größte finanzielle Risiko — und Prämien steigen stark mit dem Alter.":age>=40?"Jetzt ist der optimale Zeitpunkt: Prämien noch günstig, Gesundheitsprüfung unkompliziert.":"Wer früh absichert, zahlt deutlich weniger — und schützt damit auch seine Familie vor Belastungen."},
+    reasonBuilder:({age})=>age>=50?"Pflege wird mit zunehmendem Alter das größte finanzielle Risiko — und Prämien steigen stark mit dem Alter.":age>=40?"Jetzt ist ein guter Zeitpunkt: Prämien noch günstig, Gesundheitsprüfung unkompliziert.":"Wer früh absichert, zahlt deutlich weniger — und schützt damit auch seine Familie vor Belastungen."},
 
   // Level 4 — SITUATIVE RISIKEN
   {id:"wohngebaeude",name:"Wohngebäudeversicherung",riskLevel:"situativ",
     visibilityRules:({housingStatus})=>housingStatus==="eigentuemer",
     scoreModifiers:()=>25,
     shortDescription:"Schützt Ihr Gebäude vor Feuer, Sturm, Leitungswasser und mehr.",
-    reasonBuilder:()=>"Das Gebäude ist meist das größte Vermögenswert — ein Brandschaden ohne Versicherung kann in Minuten alles vernichten."},
+    reasonBuilder:()=>"Das Gebäude ist meist der größte Vermögenswert — ein Brandschaden ohne Versicherung kann in Minuten alles vernichten."},
   {id:"hausrat",name:"Hausrat",riskLevel:"situativ",
     visibilityRules:({housingStatus})=>housingStatus!=="eltern_wg",
     scoreModifiers:({housingStatus,netIncome})=>{let s=0;if(housingStatus==="eigentuemer")s+=15;if(housingStatus==="mieter")s+=8;if(netIncome==="over_6000"||netIncome==="4000_6000")s+=8;return s;},
@@ -115,7 +116,6 @@ function runScoringEngine(profil,existing){
     .filter(p=>existingSet.has(p.id))
     .map(p=>({id:p.id,name:p.name,riskLevel:p.riskLevel}));
 
-  // 1–3: sichtbar + nicht vorhanden + score
   let scored=PRODUCTS
     .filter(p=>!existingSet.has(p.id))
     .filter(p=>p.visibilityRules(profil))
@@ -126,14 +126,13 @@ function runScoringEngine(profil,existing){
         shortDescription:p.shortDescription,reason:p.reasonBuilder(profil)};
     });
 
-  // 4: Harte Overrides
   const hatExistenzLuecke=scored.some(c=>EXISTENZ_IDS.includes(c.id));
   const istErwerbstaetig=["angestellt","selbstständig","verbeamtet","ausbildung_studium"].includes(profil.employmentStatus);
 
   scored=scored.map(c=>{
-    if(c.id==="privathaftpflicht")          return{...c,score:999};  // Regel 2
-    if(c.id==="berufsunfaehigkeit"&&istErwerbstaetig) return{...c,score:Math.max(c.score,200)};  // Regel 3
-    if(hatExistenzLuecke&&OPTIMIERUNG_IDS.includes(c.id)) return{...c,score:Math.min(c.score,19)};  // Regel 1+9
+    if(c.id==="privathaftpflicht")          return{...c,score:999};
+    if(c.id==="berufsunfaehigkeit"&&istErwerbstaetig) return{...c,score:Math.max(c.score,200)};
+    if(hatExistenzLuecke&&OPTIMIERUNG_IDS.includes(c.id)) return{...c,score:Math.min(c.score,19)};
     return c;
   });
   const istEigentuemer=profil.housingStatus==="eigentuemer";
@@ -142,58 +141,22 @@ function runScoringEngine(profil,existing){
     if(istEigentuemer&&c.id==="wohngebaeude") return{...c,score:Math.max(c.score,190)};
     return c;
   });
-  // Regel 7: sparen_investieren nur ohne Existenzlücke
   if(hatExistenzLuecke) scored=scored.filter(c=>c.id!=="sparen_investieren");
 
-  // 5: Sortieren
   scored.sort((a,b)=>b.score-a.score);
 
-  // 6: Package Builder — kumulativ, harte Gesamtlimits: 2 / 3 / 5
-  // Top 2 → Basis
   const basisPackage=scored.slice(0,2);
-
-  // Top 3 gesamt → Plus (Basis ⊂ Plus)
   const plusPackage=scored.slice(0,3);
-
-  // Top 5 gesamt → Komplett (Plus ⊂ Komplett)
   const completePackage=scored.slice(0,5);
 
   return{basisPackage,plusPackage,completePackage,alreadyCovered};
 }
 
-// ─── STYLES (C = Akzent aus MaklerContext / URL / Embed) ───────────────────
-function makeBedarfT(C, onAccent) {
-  return {
-    page: { minHeight: "100vh", background: "#fff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif" },
-    header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
-    logo: { display: "flex", alignItems: "center", gap: "10px" },
-    logoMk: { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
-    badge: { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
-    prog: { height: "2px", background: "#f0f0f0" },
-    progFil: (w) => ({ height: "100%", width: `${w}%`, background: C, transition: "width 0.4s ease" }),
-    hero: { padding: "32px 24px 16px" },
-    eyebrow: { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
-    h1: { fontSize: "22px", fontWeight: "700", color: "#111", lineHeight: 1.25, letterSpacing: "-0.5px" },
-    body: { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
-    section: { padding: "0 24px", marginBottom: "20px" },
-    card: { border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden" },
-    row: { padding: "14px 16px", borderBottom: "1px solid #f0f0f0" },
-    rowLast: { padding: "14px 16px" },
-    fldLbl: { fontSize: "12px", fontWeight: "600", color: "#444", display: "block", marginBottom: "8px" },
-    footer: { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid #e8e8e8", padding: "14px 24px 28px" },
-    btnPrim: (d) => ({ width: "100%", padding: "13px 20px", background: d ? "#e8e8e8" : C, color: d ? "#aaa" : onAccent, borderRadius: "8px", fontSize: "14px", fontWeight: "600", cursor: d ? "default" : "pointer" }),
-    btnSec: { width: "100%", padding: "10px", color: "#aaa", fontSize: "13px", marginTop: "6px", cursor: "pointer" },
-    inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
-    optBtn: (a) => ({ padding: "9px 14px", borderRadius: "6px", border: `1px solid ${a ? C : "#e8e8e8"}`, background: a ? C : "#fff", fontSize: "13px", fontWeight: a ? "600" : "400", color: a ? onAccent : "#444", transition: "all 0.15s", cursor: "pointer" }),
-    infoBox: { padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 },
-  };
-}
-
 function makePaketeDefs(C, onAccent) {
   return [
-    { key: "basisPackage", label: "Essentieller Schutz", badge: null, stripe: "#e0e0e0", desc: "Die wichtigsten Absicherungen — kompakt und klar.", btnBg: "#f5f5f5", btnTxt: "#333", btnBorder: "1px solid #e0e0e0" },
-    { key: "plusPackage", label: "Starker Rundumschutz", badge: "Empfohlen", stripe: C, desc: "Bewährtester Schutz für Ihre Situation — Basis plus die wichtigsten Ergänzungen.", btnBg: C, btnTxt: onAccent, btnBorder: "none" },
-    { key: "completePackage", label: "Maximale Sicherheit", badge: null, stripe: "#2d2d2d", desc: "Vollständig abgesichert — alle relevanten Bereiche auf einmal.", btnBg: "#1a1a1a", btnTxt: "#ffffff", btnBorder: "none" },
+    { key: "basisPackage", label: "Essentieller Schutz", badge: null, stripe: "#e0e0e0", desc: "Grundlegende Absicherungen für typische Risiken im Alltag.", btnBg: "#f5f5f5", btnTxt: "#333", btnBorder: "1px solid #e0e0e0" },
+    { key: "plusPackage", label: "Rundumschutz", badge: null, stripe: C, desc: "Erweiterte Absicherung über die wichtigsten Bereiche hinaus.", btnBg: C, btnTxt: onAccent, btnBorder: "none" },
+    { key: "completePackage", label: "Maximale Sicherheit", badge: null, stripe: "#2d2d2d", desc: "Umfassende Absicherung für eine möglichst vollständige Risikodeckung.", btnBg: "#1a1a1a", btnTxt: "#ffffff", btnBorder: "none" },
   ];
 }
 
@@ -208,82 +171,173 @@ function LogoSVG({ color = "#ffffff" }) {
   );
 }
 
-function Header({ progPct = 0, T, firma, logoIconColor }) {
+function Opts({ k, opts, profil, set, C, T, cols = 1 }) {
+  const sel = profil[k];
+  const mark = textOnAccent(C);
   return (
-    <>
-      <div style={T.header}>
-        <div style={T.logo}>
-          <div style={T.logoMk}>
-            <LogoSVG color={logoIconColor} />
-          </div>
-          <span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{firma}</span>
-        </div>
-        <span style={T.badge}>Bedarfscheck</span>
-      </div>
-      <div style={T.prog}>
-        <div style={T.progFil(progPct)} />
-      </div>
-    </>
+    <div style={cols > 1 ? T.optsGrid : T.opts}>
+      {opts.map(([v, l, sub]) => {
+        const active = sel === v;
+        const iconChar = Array.from(l)[0] ?? l[0];
+        const labelText = l.replace(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)\s*/u, "");
+        return (
+          <button type="button" key={v} onClick={() => set(k, v)} style={cols > 1 ? T.optGrid(active) : T.opt(active)}>
+            <div style={cols > 1 ? T.optGridIcon(active) : T.optIcon(active)}>
+              <span style={{ fontSize: cols > 1 ? 20 : 22, lineHeight: 1, color: active ? C : "#98A2B3" }}>{iconChar}</span>
+            </div>
+            {cols > 1 ? (
+              <div style={T.optGridLabel}>{labelText}</div>
+            ) : (
+              <>
+                <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+                  <div style={T.optLabel}>{labelText}</div>
+                  {sub ? <div style={T.optSub}>{sub}</div> : null}
+                </div>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, border: `1.5px solid ${active ? C : "#EAE5DC"}`, background: active ? C : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {active ? (
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                      <path d="M1 4L3.5 6.5L9 1" stroke={mark} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : null}
+                </div>
+              </>
+            )}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
-// Phase 1
-const EMP_OPTS=[["angestellt","Angestellt"],["selbstständig","Selbstständig"],["verbeamtet","Verbeamtet"],["ausbildung_studium","Ausbildung/Studium"],["sonstiges","Sonstiges"]];
-const JOB_OPTS=[["buero","Büro / Home Office"],["koerperlich","Körperlich"],["medizinisch_sozial","Medizin/Sozial"],["technisch_it","Technik/IT"],["sonstiges","Sonstiges"]];
-const INC_OPTS=[["under_1500","< 1.500 €"],["1500_2500","1.500–2.500 €"],["2500_4000","2.500–4.000 €"],["4000_6000","4.000–6.000 €"],["over_6000","> 6.000 €"]];
-const FAM_OPTS=[["ledig","Ledig"],["partnerschaft","Partnerschaft"],["verheiratet","Verheiratet"],["mit_kindern","Mit Kindern"]];
-const HSG_OPTS=[["eltern_wg","Eltern/WG"],["mieter","Mieter"],["eigentuemer","Eigentümer"]];
-const KV_OPTS=[["gkv","GKV"],["pkv","PKV"],["unsicher","Unklar"]];
-
-function Phase1({ profil, set, onWeiter, C, T, firma, logoIconColor }) {
-  const Opts=({k,opts})=><div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(min(100%, 120px), 1fr))",gap:"8px",width:"100%",minWidth:0}}>{opts.map(([v,l])=><SelectionCard key={v} value={v} label={l} selected={profil[k]===v} accent={C} onClick={()=>set(k,v)}/>)}</div>;
-  const ok=profil.age&&profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus&&profil.healthStatus;
-  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={25} T={T} firma={firma} logoIconColor={logoIconColor}/>
-    <div style={T.hero}><div style={T.eyebrow}>Schritt 1 von 2</div><div style={T.h1}>Welche Versicherungen brauche ich?</div><div style={T.body}>Wenige Angaben — persönliche Empfehlung in unter 2 Minuten.</div></div>
-    <div style={T.section}><div style={T.card}>
-      <div style={T.row}><label style={T.fldLbl}>Ihr Alter (18–65)</label><input type="text" inputMode="numeric" placeholder="z. B. 34" value={profil.age||""} onChange={e=>set("age",e.target.value.replace(/\D/g,""))} onBlur={e=>{const v=parseInt(e.target.value)||"";set("age",v>=18&&v<=65?v:"");}} style={{...T.inputEl}}/></div>
-      <div style={T.row}><label style={T.fldLbl}>Berufsstatus</label><Opts k="employmentStatus" opts={EMP_OPTS}/></div>
-      {profil.employmentStatus&&profil.employmentStatus!=="sonstiges"&&<div style={T.row}><label style={T.fldLbl}>Berufsart</label><Opts k="jobType" opts={JOB_OPTS}/></div>}
-      <div style={T.row}><label style={T.fldLbl}>Monatliches Nettoeinkommen</label><Opts k="netIncome" opts={INC_OPTS} cols={2}/></div>
-      <div style={T.row}><label style={T.fldLbl}>Familienstand</label><Opts k="familyStatus" opts={FAM_OPTS} cols={2}/></div>
-      <div style={T.row}><label style={T.fldLbl}>Wohnsituation</label><Opts k="housingStatus" opts={HSG_OPTS} cols={3}/></div>
-      <div style={T.rowLast}><label style={T.fldLbl}>Krankenversicherung</label><Opts k="healthStatus" opts={KV_OPTS} cols={3}/></div>
-    </div></div>
-    <div style={{height:"120px"}}/>
-    <div style={T.footer}><button style={T.btnPrim(!ok)} disabled={!ok} onClick={()=>ok&&onWeiter()}>Bestehende Verträge eingeben</button>{!ok&&<div style={{textAlign:"center",fontSize:"11px",color:"#ccc",marginTop:"8px"}}>Bitte alle Felder ausfüllen</div>}</div>
-  </div>);}
-
-// Phase 2
+// ─── Vereinfachte Optionen (1 Frage pro Screen) ───────────────────────────────
+const EMP_OPTS=[
+  ["angestellt","💼 Angestellt","Festanstellung oder ähnlich"],
+  ["selbstständig","🧑‍💻 Selbstständig","Freiberuflich oder Gewerbe"],
+  ["verbeamtet","🏛️ Beamter","Beamtenverhältnis"],
+  ["ausbildung_studium","🎓 In Ausbildung / Studium","Studium oder Ausbildung"],
+];
+const FAM_OPTS=[
+  ["ledig","🧍 Nur für mich selbst","Ich bin aktuell allein verantwortlich"],
+  ["partnerschaft","🤝 Partner / Beziehung","Wir tragen gemeinsam Verantwortung"],
+  ["mit_kindern","👨‍👩‍👧 Familie mit Kindern","Ich habe Kinder, die abgesichert sein müssen"],
+];
+const HSG_OPTS=[
+  ["mieter","🔑 Zur Miete","Ich miete meine Wohnung"],
+  ["eigentuemer","🏡 Eigentum","Ich besitze eine Immobilie"],
+  ["eltern_wg","🏠 Bei Eltern / WG","Ich wohne noch zu Hause oder in einer WG"],
+];
+const INC_OPTS=[
+  ["1500_2500","Unter 2.000 €"],
+  ["2500_4000","2.000 – 3.500 €"],
+  ["4000_6000","3.500 – 5.000 €"],
+  ["over_6000","Über 5.000 €"],
+];
 const EX_GROUPS=[
   {label:"Sachen & Wohnen",items:[{id:"privathaftpflicht",name:"Privathaftpflicht"},{id:"hausrat",name:"Hausrat"},{id:"wohngebaeude",name:"Wohngebäude"},{id:"rechtsschutz",name:"Rechtsschutz"}]},
   {label:"Einkommen & Zukunft",items:[{id:"berufsunfaehigkeit",name:"Berufsunfähigkeit (BU)"},{id:"erwerbsunfaehigkeit",name:"Erwerbsunfähigkeit (EU)"},{id:"krankentagegeld",name:"Krankentagegeld"},{id:"altersvorsorge",name:"Private Altersvorsorge"}]},
   {label:"Gesundheit",items:[{id:"pkv",name:"Private Krankenversicherung"},{id:"zahnzusatz",name:"Zahnzusatz"},{id:"krankenhauszusatz",name:"Krankenhauszusatz"},{id:"ambulante_zusatz",name:"Ambulante Zusatz"},{id:"pflegezusatz",name:"Pflegezusatz"}]},
   {label:"Familie & Vermögen",items:[{id:"unfall",name:"Unfallversicherung"},{id:"risikoleben",name:"Risikolebensversicherung"},{id:"sparen_investieren",name:"Sparen & Investieren"}]},
 ];
-function Phase2({ existing, toggle, onWeiter, onZurueck, C, T, firma, logoIconColor }) {
-  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={60} T={T} firma={firma} logoIconColor={logoIconColor}/>
-    <div style={T.hero}><div style={T.eyebrow}>Schritt 2 von 2</div><div style={T.h1}>Was haben Sie bereits?</div><div style={T.body}>Vorhandene Versicherungen werden nicht erneut empfohlen.</div></div>
-    {EX_GROUPS.map(group=>(
-      <div key={group.label} style={T.section}>
-        <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"8px"}}>{group.label}</div>
-        <div style={T.card}>
-          {group.items.map((item,i)=>(
-            <CheckRow
-              key={item.id}
-              label={item.name}
-              checked={existing.includes(item.id)}
-              accent={C}
-              showDivider={i < group.items.length - 1}
-              onClick={()=>toggle(item.id)}
-            />
-          ))}
+
+// ─── Phase 1: 1 Frage pro Screen (6 Screens) ─────────────────────────────────
+function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
+  const[scr,setScr]=useState(1);
+  const mark=textOnAccent(C);
+  const canNext=scr===1||scr===6?true:scr===2?!!profil.employmentStatus:scr===3?!!profil.familyStatus:scr===4?!!profil.housingStatus:!!profil.netIncome;
+  const next=()=>scr<6?setScr(s=>s+1):onWeiter();
+  const back=()=>scr>1&&setScr(s=>s-1);
+  return(
+    <div style={{...T.page,...T.fadeIn,"--accent":C}} className="fade-in">
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={scr} total={6} logo={<LogoSVG color={logoIconColor}/>}/>
+
+      {scr===1&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>In wenigen Schritten</div>
+          <div style={T.h1}>Wie gut sind Sie aktuell abgesichert?</div>
+          <div style={T.hint}>Wir schauen gemeinsam an, wo Ihr Schutz ausreicht — und wo Lücken bestehen.</div>
         </div>
-      </div>
-    ))}
-    <div style={{padding:"0 24px",marginBottom:"8px"}}><div style={T.infoBox}>Nicht sicher? Einfach weitergehen — nicht ausgewählte Produkte werden als möglicher Bedarf gewertet.</div></div>
-    <div style={{height:"120px"}}/>
-    <div style={T.footer}><button style={T.btnPrim(false)} onClick={onWeiter}>Meine Empfehlung ansehen{existing.length>0?` · ${existing.length} vorhanden`:""}</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
-  </div>);}
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(false)} onClick={next}>Check starten</button></div>
+      </>}
+
+      {scr===2&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihre Situation</div>
+          <div style={T.h1}>Wie sieht Ihre aktuelle Situation aus?</div>
+        </div>
+        <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="employmentStatus" opts={EMP_OPTS} profil={profil} set={set} C={C} T={T}/></div></div></div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(!canNext)} disabled={!canNext} onClick={next}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+      </>}
+
+      {scr===3&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihre Verantwortung</div>
+          <div style={T.h1}>Für wen tragen Sie aktuell Verantwortung?</div>
+        </div>
+        <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="familyStatus" opts={FAM_OPTS} profil={profil} set={set} C={C} T={T}/></div></div></div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(!canNext)} disabled={!canNext} onClick={next}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+      </>}
+
+      {scr===4&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihre Wohnsituation</div>
+          <div style={T.h1}>Wie wohnen Sie aktuell?</div>
+        </div>
+        <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="housingStatus" opts={HSG_OPTS} profil={profil} set={set} C={C} T={T}/></div></div></div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(!canNext)} disabled={!canNext} onClick={next}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+      </>}
+
+      {scr===5&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihr Einkommen</div>
+          <div style={T.h1}>Wie hoch ist Ihr monatliches Nettoeinkommen?</div>
+        </div>
+        <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="netIncome" opts={INC_OPTS} cols={2} profil={profil} set={set} C={C} T={T}/></div></div></div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(!canNext)} disabled={!canNext} onClick={next}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+      </>}
+
+      {scr===6&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Bestehende Absicherung</div>
+          <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
+          <div style={T.hint}>Alles antippen, was bereits vorhanden ist — was fehlt, sehen Sie im Ergebnis.</div>
+        </div>
+        {EX_GROUPS.map(group=>(
+          <div key={group.label} style={T.section}>
+            <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"8px"}}>{group.label}</div>
+            <div style={T.multiList}>
+              {group.items.map((item,i)=>{
+                const checked=existing.includes(item.id);
+                const isLast=i===group.items.length-1;
+                return(
+                  <div key={item.id} role="button" tabIndex={0}
+                    onClick={()=>toggle(item.id)}
+                    onKeyDown={(e)=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();toggle(item.id);}}}
+                    style={isLast?T.multiRowLast:T.multiRow}>
+                    <span style={T.multiLabel}>{item.name}</span>
+                    <div style={T.checkbox(checked)}>
+                      {checked?(<svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden><path d="M1 4L3.5 6.5L9 1" stroke={mark} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>):null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        <div style={{padding:"0 24px",marginBottom:"8px"}}><div style={T.infoBlue}>Nicht sicher? Einfach weitergehen — im Ergebnis sehen Sie was fehlt.</div></div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}>
+          <button style={T.btnPrim(false)} onClick={onWeiter}>Mein Ergebnis ansehen{existing.length>0?` · ${existing.length} vorhanden`:""}</button>
+          <button style={T.btnSec} onClick={back}>Zurück</button>
+        </div>
+      </>}
+    </div>
+  );
+}
 
 // Phase 3: Ergebnis — Fintech Carousel
 function PackageBadge({text,stripe}){
@@ -310,7 +364,6 @@ function PackageCard({ def, items, active, onCTA, isDemo, accent }) {
     opacity:active?1:0.72,
     transition:"transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease",
   }}>
-    {/* Header */}
     <div style={{padding:"18px 18px 14px",background:"#fff"}}>
       <PackageBadge text={def.badge} stripe={def.stripe}/>
       <div style={{fontSize:"16px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px",marginBottom:"4px"}}>
@@ -325,8 +378,6 @@ function PackageCard({ def, items, active, onCTA, isDemo, accent }) {
         </span>
       </div>
     </div>
-
-    {/* Produkt-Liste */}
     <div style={{flex:1,padding:"0 18px 14px",background:"#fff"}}>
       {items.map((rec,i)=>(
         <div key={rec.id} style={{display:"flex",alignItems:"flex-start",gap:"10px",
@@ -346,8 +397,6 @@ function PackageCard({ def, items, active, onCTA, isDemo, accent }) {
         </div>
       ))}
     </div>
-
-    {/* CTA */}
     <div style={{padding:"14px 18px",borderTop:"1px solid #f0f0f0",background:"#fafafa"}}>
       <button onClick={()=>onCTA(items[0])} style={{
         width:"100%",padding:"11px",
@@ -356,7 +405,7 @@ function PackageCard({ def, items, active, onCTA, isDemo, accent }) {
         borderRadius:"9px",fontSize:"13px",fontWeight:"600",
         cursor:"pointer",letterSpacing:"0.1px",
       }}>
-        {isDemo ? "Anpassen & kaufen" : `${def.label} anfragen`}
+        {isDemo ? "Anpassen & kaufen" : "Absicherung gemeinsam durchgehen"}
       </button>
     </div>
   </div>);}
@@ -405,12 +454,14 @@ function PackageCarousel({ result, onCTA, isDemo, accent, paketeDefs }) {
       {idx+1} / {pakete.length} — <span style={{color:"rgba(0,0,0,0.55)",fontWeight:"600"}}>{pakete[idx]?.label}</span>
     </div>
   </div>);}
+
 function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor, paketeDefs }) {
-  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={100} T={T} firma={firma} logoIconColor={logoIconColor}/>
+  return(<div style={{...T.page,...T.fadeIn,"--accent":C}} className="fade-in">
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={7} total={8} logo={<LogoSVG color={logoIconColor} />} />
     <div style={T.hero}>
-      <div style={T.eyebrow}>Ihre persönliche Empfehlung</div>
-      <div style={T.h1}>3 Pakete für Ihre Situation</div>
-      <div style={T.body}>Wählen Sie den Schutz, der zu Ihnen passt — von essentiell bis vollständig.</div>
+      <div style={T.eyebrow}>Auf Basis Ihrer Angaben</div>
+      <div style={T.h1}>So kann Ihre aktuelle Absicherung eingeordnet werden</div>
+      <div style={T.hint}>In Ihrer Situation sind insbesondere folgende Absicherungen typischerweise relevant.</div>
     </div>
     <div style={{padding:"0 20px",marginBottom:"16px"}}>
       <PackageCarousel result={result} onCTA={onCTA} isDemo={isDemo} accent={C} paketeDefs={paketeDefs}/>
@@ -428,26 +479,30 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor, pa
         </div>
       </div>
     )}
-
     <div style={{padding:"0 24px",marginBottom:"120px"}}>
-      <CheckBerechnungshinweis>
+      <CheckBerechnungshinweis t={T}>
         <>
-          Die Empfehlung basiert auf einem <strong>Risiko-Scoring</strong>: Jedes Produkt erhält ein Basisgewicht je nach Risikostufe (Existenz → Einkommen → Langfristig → Optimierung) plus Zuschläge aus Ihrem Profil.{" "}
+          Die Einschätzung basiert auf einem <strong>Risiko-Scoring</strong>: Jedes Produkt erhält ein Basisgewicht je nach Risikostufe (Existenz → Einkommen → Langfristig → Optimierung) plus Zuschläge aus Ihrem Profil.{" "}
           <strong>Privathaftpflicht</strong> ist immer Priorität 1. Optimierungsprodukte erscheinen erst wenn alle Existenzrisiken abgedeckt sind.
         </>
       </CheckBerechnungshinweis>
-      <div style={T.infoBox}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+      <div style={T.infoGold}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
     </div>
-    <div style={T.footer}><button style={T.btnSec} onClick={onReset}>Neue Berechnung starten</button></div>
+    <div style={T.footer}><button style={T.btnSec} onClick={onReset}>Neue Einschätzung starten</button></div>
   </div>);}
 
 // Phase 4: Kontakt
-function Phase4({ selectedRec, onAbsenden, onZurueck, isDemo, makler, C, T, firma, logoIconColor }) {
+function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, logoIconColor }) {
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[consent,setConsent]=useState(false);
   const valid=fd.name.trim()&&fd.email.trim()&&consent;
-  return(<div style={{...T.page,"--accent":C}} className="fade-in"><Header progPct={100} T={T} firma={firma} logoIconColor={logoIconColor}/>
-    <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={T.h1}>Über <span style={{color:C}}>{selectedRec?.name}</span> sprechen</div><div style={T.body}>Wir bereiten ein persönliches Angebot auf Basis Ihres Ergebnisses vor.</div></div>
+  return(<div style={{...T.page,...T.fadeIn,"--accent":C}} className="fade-in">
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={8} logo={<LogoSVG color={logoIconColor} />} />
+    <div style={T.hero}>
+      <div style={T.eyebrow}>Fast geschafft</div>
+      <div style={T.h1}>Wo können wir dich erreichen?</div>
+      <div style={T.hint}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div>
+    </div>
     {isDemo ? (
       <>
         <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
@@ -474,28 +529,42 @@ function Phase4({ selectedRec, onAbsenden, onZurueck, isDemo, makler, C, T, firm
     <div style={T.section}>
       <CheckKontaktLeadLine />
       <div style={T.card}>
-      {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
-        <div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"4px"}}/></div>
+      {[{k:"name",l:"Dein Name",t:"text",ph:"Vor- und Nachname",req:true},{k:"email",l:"Deine E-Mail",t:"email",ph:"deine@email.de",req:true},{k:"tel",l:"Deine Nummer",t:"tel",ph:"Optional",req:false,hint:"Optional — für eine schnellere Rückmeldung"}].map(({k,l,t,ph,req,hint},i,arr)=>(
+        <div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.input,marginTop:"4px"}}/>{hint&&<div style={T.fldHint}>{hint}</div>}</div>
       ))}
     </div>
     <div style={{marginTop:"14px",marginBottom:"100px"}}>
       <CheckKontaktBeforeSubmitBlock maklerName={makler.name} consent={consent} onConsentChange={setConsent} />
     </div>
     </div>
-    <div style={T.footer}><button style={T.btnPrim(!valid)} disabled={!valid} onClick={()=>valid&&onAbsenden(fd)}>Gespräch anfragen</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
+    <div style={T.footer}><button style={T.btnPrim(!valid)} disabled={!valid} onClick={()=>valid&&onAbsenden(fd)}>{valid?"Ergebnis gemeinsam durchgehen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
     </>
     )}
   </div>);}
 
 // Danke
 function DankeScreen({ name, onReset, makler, C, T, firma, logoIconColor }) {
-  return(<div style={{...T.page,"--accent":C}}><Header progPct={100} T={T} firma={firma} logoIconColor={logoIconColor}/>
-    <div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in">
-      <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-      <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{name?`Danke, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
-      <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir bereiten das Gespräch mit Ihrem persönlichen Ergebnis vor und melden uns innerhalb von 24 Stunden.</div>
-      <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{makler.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{makler.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${makler.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{makler.telefon}</a><a href={`mailto:${makler.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{makler.email}</a></div></div>
-      <button onClick={onReset} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button>
+  return(<div style={{...T.page,...T.fadeIn,"--accent":C}} className="fade-in">
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={8} logo={<LogoSVG color={logoIconColor} />} />
+    <div style={T.dankeScreen}>
+      <div style={T.dankeRing(C)}>
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden>
+          <path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+      <div style={T.dankeH}>{name?`Danke, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
+      <div style={T.dankeBody}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
+      <div style={T.maklerCard}>
+        <div style={T.maklerTop}>
+          <div style={T.maklerName}>{makler.name}</div>
+          <div style={T.maklerFirma}>{makler.firma}</div>
+        </div>
+        <div style={T.maklerLinks}>
+          <a href={`tel:${makler.telefon}`} style={T.maklerLink(C)}>{makler.telefon}</a>
+          <a href={`mailto:${makler.email}`} style={T.maklerLink(C)}>{makler.email}</a>
+        </div>
+      </div>
+      <button type="button" onClick={onReset} style={{...T.btnSec,marginTop:"16px"}}>Neuen Check starten</button>
     </div></div>);}
 
 // Root
@@ -504,22 +573,21 @@ export default function Bedarfscheck(){
   const makler = useCheckConfig();
   const C = makler.primaryColor;
   const onAccent = useMemo(() => textOnAccent(C), [C]);
-  const T = useMemo(() => makeBedarfT(C, onAccent), [C, onAccent]);
+  const T = useMemo(() => checkStandardT(C), [C]);
   const paketeDefs = useMemo(() => makePaketeDefs(C, onAccent), [C, onAccent]);
   const logoIconColor = onAccent;
   const firma = makler.firma;
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[selectedRec,setSelectedRec]=useState(null);const[kontaktName,setKontaktName]=useState("");
-  const[profil,setProfil]=useState({age:"",employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:""});
+  const[profil,setProfil]=useState({age:35,employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:"gkv"});
   const[existing,setExisting]=useState([]);
   const set=(k,v)=>setProfil(x=>({...x,[k]:v}));
   const toggle=(id)=>setExisting(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
-  const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setProfil({age:"",employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:""});setExisting([]);setSelectedRec(null);setKontaktName("");};
-  const profilReady=profil.age&&profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus&&profil.healthStatus;
+  const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setProfil({age:35,employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:"gkv"});setExisting([]);setSelectedRec(null);setKontaktName("");};
+  const profilReady=profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus;
   const result=profilReady?runScoringEngine(profil,existing):null;
   if(danke)return <DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
   if(phase===4)return <Phase4 key={ak} isDemo={isDemo} selectedRec={selectedRec} onAbsenden={async (fd)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
   if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={(rec)=>{setSelectedRec(rec);goTo(4);}} onReset={reset} C={C} T={T} firma={firma} logoIconColor={logoIconColor} paketeDefs={paketeDefs}/>;
-  if(phase===2)return <Phase2 key={ak} existing={existing} toggle={toggle} onWeiter={()=>goTo(3)} onZurueck={()=>goTo(1)} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
-  return <Phase1 key={ak} profil={profil} set={set} onWeiter={()=>goTo(2)} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
+  return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>goTo(3)} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
 }

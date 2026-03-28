@@ -4,81 +4,89 @@ export const CHECK_FLOW_META = [
   {
     slug: "bedarfscheck" as const,
     catClass: "ck-cat-neu",
-    cat: "Neukunden",
+    cat: "Neukunden · Erstgespräch",
     name: "Versicherungs-Check",
-    context: "Paketverkauf & Erstgespräch",
     erlebnis:
-      "Der Kunde sieht, welche Pakete zu seiner Situation passen: Basis, Rundumschutz oder komplett. Kein „was fehlt Ihnen noch“, sondern ein strukturierter Paketvorschlag, der direkt zur Anfrage führt.",
+      "Kunde gibt seine Situation ein und erhält eine strukturierte Empfehlung zu passenden Absicherungen.",
+    benefit:
+      "Vorqualifizierte Anfrage mit Bedarfsprofil statt leerem Erstgespräch.",
     price: "79",
   },
   {
     slug: "lebenssituations-check" as const,
     catClass: "ck-cat-neu",
-    cat: "Bestandskunden",
+    cat: "Bestand · Jahresgespräch",
     name: "Lebenssituations-Check",
-    context: "Digitales Jahresgespräch",
     erlebnis:
-      "Ersetzt den klassischen Jahresgesprächs-Anruf. Der Bestandskunde gibt aktuelle Lebensveränderungen ein (Nachwuchs, Jobwechsel, Immobilie) und sieht sofort, wo Anpassungsbedarf besteht.",
+      "Kunde gibt Veränderungen ein und sieht, welche Verträge geprüft werden sollten.",
+    benefit:
+      "Bestandskunden melden sich aktiv bei relevanten Veränderungen.",
     price: "79",
   },
   {
     slug: "einkommens-check" as const,
     catClass: "ck-cat-schutz",
-    cat: "Einkommensschutz",
+    cat: "Einkommensschutz · BU / KTG",
     name: "Einkommens-Check",
-    context: "Arbeitskraftverlust-Rechner",
     erlebnis:
-      "Zeigt dem Kunden auf einer Zeitachse wie sein Einkommen bei Krankheit oder BU Monat für Monat einbricht. Aus einem abstrakten Risiko wird eine konkrete Versorgungslücke in Euro.",
+      "Kunde sieht, wie sich sein Einkommen bei Krankheit oder BU entwickelt.",
+    benefit:
+      "Lücke wird konkret sichtbar — weniger Erklärungsaufwand im Gespräch.",
     price: "59",
   },
   {
     slug: "gkv-pkv" as const,
     catClass: "ck-cat-entscheidung",
-    cat: "Entscheidung",
+    cat: "KV-Beratung · Entscheidung",
     name: "GKV vs. PKV",
-    context: "Krankenversicherungs-Beratung",
     erlebnis:
-      "Strukturierte Entscheidungshilfe: GKV oder PKV, inkl. Zusatzversicherungen. Der Kunde bekommt eine klare Einordnung auf Basis seines Einkommens, Alters und seiner familiären Situation.",
+      "Kunde erhält eine strukturierte Einschätzung zur passenden Krankenversicherung.",
+    benefit:
+      "Gespräch startet nicht bei null, sondern bei der Entscheidung.",
     price: "49",
   },
   {
     slug: "vorsorge-check" as const,
     catClass: "ck-cat-vorsorge",
-    cat: "Altersvorsorge",
+    cat: "Altersvorsorge · Rentenlücke",
     name: "Vorsorge-Check",
-    context: "Altersvorsorge & Rentenlücke",
     erlebnis:
-      "Berechnet die individuelle Rentenlücke und zeigt, wie das Einkommen im Alter gesichert werden kann. Konkrete Strategien: steueroptimiert, flexibel oder renditeorientiert.",
+      "Kunde sieht seine Rentenlücke und mögliche Strategien zum Schließen.",
+    benefit:
+      "Direkter Einstieg in Strategie statt grundlegender Sensibilisierung.",
     price: "59",
   },
   {
     slug: "risikoleben" as const,
     catClass: "ck-cat-familie",
-    cat: "Familie",
+    cat: "Familie · Absicherung",
     name: "Risikoleben-Check",
-    context: "Familienabsicherung im Todesfall",
     erlebnis:
-      "Berechnet die Versorgungslücke, die entsteht, wenn der Hauptverdiener stirbt — unter Berücksichtigung von Witwen- und Waisenrente, Krediten und Partnereinkommen. Die empfohlene Versicherungssumme in Euro.",
+      "Kunde berechnet den Absicherungsbedarf seiner Familie.",
+    benefit:
+      "Klarer Handlungsbedarf entsteht vor dem Gespräch.",
     price: "59",
   },
   {
     slug: "pflege-check" as const,
     catClass: "ck-cat-pflege",
-    cat: "Pflegevorsorge",
+    cat: "Pflege · Eigenanteil",
     name: "Pflege-Check",
-    context: "Pflegebedarf & Eigenanteil",
     erlebnis:
-      "Zeigt dem Kunden, was Pflege tatsächlich kostet, abhängig von Pflegegrad, Region und Einrichtung. Der monatliche Eigenanteil wird greifbar; die Notwendigkeit privater Pflegevorsorge wird klar.",
-    price: "49",
+      "Kunde sieht den finanziellen Eigenanteil im Pflegefall.",
+    benefit:
+      "Relevanz wird sofort verständlich — ohne langen Erklärteil.",
+    price: "59",
   },
   {
     slug: "immobilien-check" as const,
     catClass: "ck-cat-immobilien",
-    cat: "Immobilien",
+    cat: "Immobilie · Finanzierung",
     name: "Immobilien-Check",
-    context: "Für Käufer, Eigentümer & Mieter",
     erlebnis:
-      "Drei Module in einem: Kaufen vs. Mieten Entscheidungshilfe, Anschlussfinanzierungs-Rechner und Wohngebäude-Absicherungs-Check. Je nach Situation des Kunden wird das passende Modul aktiviert.",
+      "Kunde berechnet Finanzierung, Absicherung oder Wohnwert je nach Situation.",
+    benefit:
+      "Öffnet mehrere Beratungsansätze gleichzeitig.",
     price: "59",
   },
 ] as const;

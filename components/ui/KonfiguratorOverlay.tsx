@@ -99,15 +99,18 @@ export default function KonfiguratorOverlay({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="flex max-h-[90vh] w-full max-w-[880px] flex-col overflow-hidden rounded-t-[22px] bg-white shadow-2xl md:mb-0 md:rounded-[22px]"
+        className="flex max-h-[96dvh] w-full max-w-[880px] flex-col overflow-hidden rounded-t-[22px] bg-white shadow-2xl md:max-h-[90vh] md:rounded-[22px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-[#f0f0f0] px-[26px] py-[18px]">
+        <div className="flex shrink-0 flex-col md:hidden">
+          <div className="mx-auto mt-2.5 mb-1 h-1 w-10 rounded-full bg-[#e0e0e0]" />
+        </div>
+        <div className="flex shrink-0 items-center justify-between border-b border-[#f0f0f0] px-[20px] py-[14px] md:px-[26px] md:py-[18px]">
           <div>
             <div className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#c9a96e]">
               Template anpassen
             </div>
-            <div className="text-lg font-bold tracking-[-0.04em] text-[#111]">
+            <div className="text-base font-bold tracking-[-0.04em] text-[#111] md:text-lg">
               {shortName}
             </div>
           </div>
@@ -122,7 +125,7 @@ export default function KonfiguratorOverlay({
         </div>
 
         <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-2">
-          <div className="max-h-[50vh] overflow-y-auto border-b border-[#f0f0f0] px-[26px] py-[22px] md:max-h-none md:border-b-0 md:border-r md:border-[#f0f0f0]">
+          <div className="max-h-[58vh] overflow-y-auto border-b border-[#f0f0f0] px-[20px] py-[18px] md:max-h-none md:border-b-0 md:border-r md:border-[#f0f0f0] md:px-[26px] md:py-[22px]">
             <div className="mb-5">
               <div className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#ccc]">
                 <span>Branding</span>
@@ -285,29 +288,32 @@ export default function KonfiguratorOverlay({
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-[#f0f0f0] bg-white px-[26px] py-3.5">
-          <div>
+        <div
+          className="flex shrink-0 flex-col gap-2 border-t border-[#f0f0f0] bg-white px-[20px] pt-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:px-[26px] md:py-3.5"
+          style={{ paddingBottom: "max(14px, env(safe-area-inset-bottom, 14px))" }}
+        >
+          <div className="flex items-baseline gap-2">
             <div className="text-xl font-bold tracking-[-0.05em] text-[#111]">
               {template.preis} €
             </div>
             <div className="text-[11px] text-[#bbb]">einmalig</div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
             {(err.name || err.email || err.telefon) && (
               <span className="text-[11px] text-[#e53e3e]">
-                Name, E-Mail und Telefon nötig
+                · Name, E-Mail &amp; Telefon nötig
               </span>
             )}
+          </div>
+          <div className="flex gap-2">
             <button
               type="button"
-              className="rounded-lg border-[1.5px] border-[#ebebeb] bg-transparent px-3.5 py-2.5 text-[13px] text-[#888] transition hover:border-[#bbb] hover:text-[#111]"
+              className="flex-1 rounded-lg border-[1.5px] border-[#ebebeb] bg-transparent px-3.5 py-2.5 text-[13px] text-[#888] transition hover:border-[#bbb] hover:text-[#111] md:flex-none"
               onClick={onClose}
             >
               Abbrechen
             </button>
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-[#111] px-[22px] py-2.5 text-[13px] font-bold text-white transition hover:bg-[#c9a96e]"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#111] px-[22px] py-2.5 text-[13px] font-bold text-white transition active:bg-[#c9a96e] hover:bg-[#c9a96e] md:flex-none"
               onClick={() => {
                 if (err.name || err.email || err.telefon) return;
                 onCheckout(form);

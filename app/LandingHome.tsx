@@ -41,7 +41,6 @@ const FAQ_ITEMS = [
   },
 ];
 
-/** Modals an `document.body` — nicht von `.flow-leads-landing` (overflow/z-index) eingeschränkt */
 function LandingModalsPortal({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -119,6 +118,8 @@ export default function LandingHome() {
 
   return (
     <div className="flow-leads-landing">
+
+      {/* ── NAV ─────────────────────────────────────────────────────────────── */}
       <nav>
         <div className="logo">
           <div className="logo-mark">
@@ -132,8 +133,9 @@ export default function LandingHome() {
           <span>FlowLeads</span>
         </div>
         <div className="nav-links">
+          <a href="#problem">Warum FlowLeads</a>
           <a href="#how">Wie es funktioniert</a>
-          <a href="#tools">Microsites</a>
+          <a href="#tools">Checks</a>
           <a href="#faq">FAQ</a>
         </div>
         <div className="nav-right">
@@ -141,11 +143,12 @@ export default function LandingHome() {
             Fragen?
           </a>
           <a href="#tools" className="btn-cta">
-            Microsites ansehen
+            Checks ansehen
           </a>
         </div>
       </nav>
 
+      {/* ── HERO ────────────────────────────────────────────────────────────── */}
       <section style={{ background: "var(--bg)", paddingBottom: 0 }}>
         <div className="hero">
           <div className="hero-tag au d1">
@@ -154,24 +157,18 @@ export default function LandingHome() {
           </div>
 
           <h1 className="au d2">
-            Fertige Microsites auf denen Kunden
-            <br />
-            ihren Bedarf selbst berechnen.
+            Digitale Erstberatung<br />
+            für Versicherungsmakler
           </h1>
 
           <p className="hero-sub au d3">
-            Für jeden Beratungsanlass eine fertige Microsite —<br />
-            auf Ihrer Website einbetten, per Link teilen oder als QR-Code auf<br />
-            Visitenkarte und Flyer drucken.
-            <br />
-            Kunden berechnen ihre Lücke.
-            <br />
-            Sie bekommen die Anfrage.
+            Ihre Kunden beantworten die wichtigsten Fragen vor dem Gespräch —<br />
+            und kommen mit konkretem Bedarf statt offenen Fragen.
           </p>
 
           <div className="hero-btns au d4">
             <a href="#tools" className="btn-primary-lg">
-              Microsites ansehen
+              Checks ansehen
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
                 <path
                   d="M3 7h8M7 3l4 4-4 4"
@@ -183,203 +180,214 @@ export default function LandingHome() {
               </svg>
             </a>
             <a href="#how" className="btn-demo-lg">
-              Wie es funktioniert
+              So funktioniert es
             </a>
           </div>
-
-          <div className="wf-wrap au d4">
-            <div className="wf-row">
-              <div className="wf-ico" aria-hidden>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M9 1L3 9h5l-1 6 7-9H9L9 1z"
-                    stroke="#b8884a"
-                    strokeWidth="1.4"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <div className="wf-body">
-                <div className="wf-title">Eigenständige Microsite</div>
-                <p className="wf-text">
-                  Direkt erreichbar per Link oder QR-Code — auch ohne eigene Website.
-                </p>
-              </div>
-            </div>
-            <div className="wf-row">
-              <div className="wf-ico" aria-hidden>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M2 8h12M9 3l5 5-5 5"
-                    stroke="#b8884a"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <div className="wf-body">
-                <div className="wf-title">Einbetten, teilen oder drucken</div>
-                <p className="wf-text">
-                  iFrame auf der Website, Link in E-Mail und WhatsApp, oder QR-Code auf Visitenkarte und Flyer.
-                </p>
-              </div>
-            </div>
-            <div className="wf-row">
-              <div className="wf-ico" aria-hidden>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <rect x="3" y="1" width="10" height="14" rx="2" stroke="#b8884a" strokeWidth="1.4" />
-                  <path d="M7 12h2" stroke="#b8884a" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
-              </div>
-              <div className="wf-body">
-                <div className="wf-title">Leads direkt an Sie</div>
-                <p className="wf-text">
-                  Keine Plattform, kein Portal, keine Provision. Anfragen landen direkt in Ihrem Postfach.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
-      <section id="einsatz" className="dark-s">
+      {/* ── PROBLEM → LÖSUNG ────────────────────────────────────────────────── */}
+      <section id="problem" className="s" style={{ background: "#ffffff" }}>
         <div className="inner">
-          <div className="s-label">Warum FlowLeads</div>
-          <h2>Mehr Anfragen — auf drei Wegen</h2>
-          <p className="s-sub">Eine Microsite. Drei Wege sie einzusetzen.</p>
-          <div className="use-grid use-grid--single">
-            {[
-              {
-                t: "Auf der Website einbetten",
-                p: "Per iFrame auf jeder Website — WordPress, Jimdo, Webflow, Wix. Kein Entwickler nötig.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden>
-                    <rect
-                      x="1"
-                      y="2"
-                      width="12"
-                      height="9"
-                      rx="1.5"
-                      stroke="currentColor"
-                      strokeWidth="1.3"
-                    />
-                    <path
-                      d="M5 6l-2 1.5L5 9M9 6l2 1.5L9 9"
-                      stroke="currentColor"
-                      strokeWidth="1.3"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                ),
-              },
-              {
-                t: "Als Link teilen",
-                p: "Direkt-Link in E-Mail, WhatsApp oder Social-Media-Bio. Auch ohne eigene Website nutzbar.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <path
-                      d="M6.5 9.5a2.5 2.5 0 0 1 0-3.5l2-2a2.5 2.5 0 0 1 3.5 3.5l-1 1"
-                      stroke="currentColor"
-                      strokeWidth="1.3"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M9.5 6.5a2.5 2.5 0 0 1 0 3.5l-2 2a2.5 2.5 0 0 1-3.5-3.5l1-1"
-                      stroke="currentColor"
-                      strokeWidth="1.3"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                ),
-              },
-              {
-                t: "Als QR-Code drucken",
-                p: "QR-Code herunterladen und auf Visitenkarte, Flyer oder Messestand platzieren. Kunde scannt — Microsite öffnet sich direkt.",
-                icon: (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                    <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                    <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                    <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-                    <path
-                      d="M10 10h1.5v1.5H10V10zm2.5 0H14v1.5h-1.5V10zM10 12.5h1.5V14H10v-1.5zm2.5 0H14V14h-1.5v-1.5z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                ),
-              },
-            ].map((u) => (
+          <div className="prob-sol-grid">
+
+            {/* LEFT: Problem */}
+            <div>
+              <div className="s-label">Das Problem</div>
+              <h2 style={{ fontSize: "clamp(24px, 3vw, 34px)", marginBottom: "28px", lineHeight: 1.2 }}>
+                Warum Erstgespräche<br />oft ineffizient sind
+              </h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {[
+                  "Kunden wissen nicht, was sie brauchen",
+                  "Grundlagen müssen jedes Mal neu erklärt werden",
+                  "Gespräche starten ohne klare Struktur",
+                  "Potenzial bleibt ungenutzt",
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "12px",
+                      padding: "14px 16px",
+                      background: "#F8F6F2",
+                      borderRadius: "12px",
+                      borderLeft: "3px solid rgba(220,38,38,0.25)",
+                    }}
+                  >
+                    <span style={{ fontSize: "13px", color: "#ef4444", flexShrink: 0, fontWeight: "700", marginTop: "2px" }}>✕</span>
+                    <span style={{ fontSize: "14px", color: "#374151", lineHeight: 1.55 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT: Lösung */}
+            <div
+              style={{
+                background: "#F8F6F2",
+                borderRadius: "20px",
+                padding: "36px 32px",
+                border: "1px solid rgba(31,41,55,0.07)",
+              }}
+            >
               <div
-                key={u.t}
-                className="use-card"
                 style={{
-                  border: "1px solid rgba(184,136,74,0.3)",
-                  background: "rgba(184,136,74,0.06)",
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                  color: "#059669",
+                  marginBottom: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
                 }}
               >
-                <div className="use-icon">{u.icon}</div>
-                <h3>{u.t}</h3>
-                <p>{u.p}</p>
+                <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#059669", display: "inline-block" }} />
+                Die Lösung
               </div>
-            ))}
+              <h3
+                style={{
+                  fontSize: "clamp(20px, 2.5vw, 26px)",
+                  fontWeight: "700",
+                  color: "#1F2937",
+                  letterSpacing: "-0.3px",
+                  lineHeight: 1.25,
+                  marginBottom: "16px",
+                  fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif",
+                }}
+              >
+                Genau hier setzen<br />die Checks an
+              </h3>
+              <p style={{ fontSize: "15px", color: "#6B7280", lineHeight: 1.7, marginBottom: "28px" }}>
+                Ihre Kunden beantworten die wichtigsten Fragen selbst —
+                Sie starten direkt mit einem klaren Bedarf.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "32px" }}>
+                {[
+                  "Kunden qualifizieren sich selbst vor",
+                  "Weniger Erklärungsaufwand im Gespräch",
+                  "Gespräch startet mit konkretem Bedarf",
+                ].map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div
+                      style={{
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        background: "#d1fae5",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                        <path d="M1 4.5l2.5 2.5L8 1" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <span style={{ fontSize: "14px", color: "#374151", fontWeight: "500" }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+              <a href="#tools" className="btn-primary-lg">
+                Checks ansehen
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                  <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+            </div>
+
           </div>
         </div>
       </section>
 
-      <section id="how" style={{ background: "#0f1a14" }}>
-        <div className="tl-wrap">
-          <div className="tl-header">
-            <div className="tl-label">So funktioniert&apos;s</div>
-            <h2 className="tl-headline">Vom Besucher zur Beratungsanfrage</h2>
-            <p className="tl-sub">
-              Egal ob Website, Link oder QR-Code —<br />
-              der Ablauf ist immer gleich.
-            </p>
-          </div>
-
-          <div className="tl-items">
-            <div className="tl-line" />
-
+      {/* ── HOW IT WORKS ────────────────────────────────────────────────────── */}
+      <section id="how" className="s" style={{ background: "var(--bg)" }}>
+        <div className="inner">
+          <div className="s-label" style={{ justifyContent: "center" }}>So funktioniert&apos;s</div>
+          <h2 style={{ textAlign: "center", marginBottom: "12px" }}>So funktioniert es</h2>
+          <p style={{ textAlign: "center", fontSize: "17px", color: "#6B7280", lineHeight: 1.65, maxWidth: "460px", margin: "0 auto 48px" }}>
+            Drei Schritte — von der ersten Frage zur qualifizierten Anfrage.
+          </p>
+          <div className="how-3-grid">
             {[
               {
                 num: "01",
-                label: "Einbindung",
-                title: "Microsite einbetten, teilen oder drucken",
-                desc: "Eine Microsite kaufen, mit Ihrem Namen und Ihrer Farbe konfigurieren — dann per iFrame einbetten, als Link teilen oder als QR-Code drucken. Sie entscheiden wie Ihre Kunden sie erreichen.",
-                badge: "3 Wege · Kein Entwickler nötig",
+                title: "Kunde startet Check",
+                sub: "über Link, Website oder QR-Code",
+                detail: "Kein Onboarding, kein Login — der Kunde öffnet den Check und legt direkt los.",
+                icon: (
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                    <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M6.5 9h5M9 6.5l2.5 2.5L9 11.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ),
               },
               {
                 num: "02",
-                label: "Kundenerlebnis",
-                title: "Kunde startet die Microsite",
-                desc: "In 3 Minuten beantwortet der Kunde einfache Fragen zu seiner Situation — ohne Fachwissen, ohne Tarifvergleich.",
-                badge: "Mobile-first · Touch-optimiert",
+                title: "Kunde beantwortet Fragen",
+                sub: "strukturierter Ablauf in wenigen Minuten",
+                detail: "Einfache, verständliche Fragen. Kein Fachwissen nötig.",
+                icon: (
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                    <rect x="3" y="2" width="12" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M6 7h6M6 10h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                  </svg>
+                ),
               },
               {
                 num: "03",
-                label: "Ergebnis",
-                title: "Kunde sieht seine Lücke",
-                desc: "Am Ende steht eine klare Zahl — Rentenlücke, Einkommenseinbruch oder Versorgungslücke. Handlungsbedarf in Euro, nicht in Produktlisten.",
-                badge: "Konkret · Personalisiert · Verständlich",
-              },
-              {
-                num: "04",
-                label: "Lead",
-                title: "Anfrage geht direkt an Sie",
-                desc: "Der Kunde fragt ein Gespräch an — direkt an Ihre E-Mail. Kein Portal, kein Umweg, keine Provision an Dritte.",
-                badge: "Direkt · Qualifiziert · Kein Kaltstart",
+                title: "Sie erhalten die Anfrage",
+                sub: "mit konkretem Bedarf und Ausgangssituation",
+                detail: "Direkt in Ihrem Postfach — kein Portal, kein Umweg.",
+                icon: (
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                    <path d="M3 6l6 4.5L15 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
+                  </svg>
+                ),
               },
             ].map((step) => (
-              <div key={step.num} className="tl-item">
-                <div className="tl-num">{step.num}</div>
-                <div className="tl-right">
-                  <div className="tl-step-label">{step.label}</div>
-                  <div className="tl-title">{step.title}</div>
-                  <div className="tl-desc">{step.desc}</div>
-                  <div className="tl-badge">
-                    <span className="tl-badge-dot" />
-                    {step.badge}
-                  </div>
+              <div
+                key={step.num}
+                style={{
+                  background: "#ffffff",
+                  border: "1px solid rgba(31,41,55,0.07)",
+                  borderRadius: "20px",
+                  padding: "28px 24px",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.05)",
+                }}
+              >
+                <div style={{ fontSize: "11px", fontWeight: "800", letterSpacing: "1.5px", color: "#b8884a", marginBottom: "16px" }}>
+                  {step.num}
+                </div>
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "12px",
+                    background: "rgba(201,169,110,0.12)",
+                    border: "1px solid rgba(201,169,110,0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#b8884a",
+                    marginBottom: "16px",
+                  }}
+                >
+                  {step.icon}
+                </div>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.2px", lineHeight: 1.3, marginBottom: "8px" }}>
+                  {step.title}
+                </div>
+                <div style={{ fontSize: "12px", fontWeight: "600", color: "#b8884a", marginBottom: "12px" }}>
+                  → {step.sub}
+                </div>
+                <div style={{ fontSize: "14px", color: "#6B7280", lineHeight: 1.6 }}>
+                  {step.detail}
                 </div>
               </div>
             ))}
@@ -387,16 +395,16 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section id="tools" className="s checks-section checks-section--dark" style={{ background: "#ffffff" }}>
+      {/* ── CHECKS ──────────────────────────────────────────────────────────── */}
+      <section id="tools" className="s checks-section">
         <div className="inner">
-          <div className="s-label">Die 8 Microsites</div>
+          <div className="s-label">8 Gesprächsöffner</div>
           <h2 className="checks-section-headline">
-            8 fertige Microsites —<br />
-            für jeden Beratungsanlass eine
+            Ihre wichtigsten Vertriebssituationen<br />
+            digital abgedeckt
           </h2>
           <p className="checks-section-tagline">
-            Jede Microsite führt Ihren Kunden<br />
-            in 3 Minuten von der ersten Frage zur konkreten Anfrage.
+            Jeder Check ist auf einen konkreten Beratungsanlass ausgelegt.
           </p>
           <div className="ck-cards">
             {CHECK_FLOW_META.map((c) => {
@@ -410,8 +418,17 @@ export default function LandingHome() {
                     <div>
                       <div className={`ck-card-cat ${c.catClass}`}>{c.cat}</div>
                       <div className="ck-card-name">{c.name}</div>
-                      <div className="ck-card-context">{c.context}</div>
-                      <p className="ck-card-erlebnis">{c.erlebnis}</p>
+                      <p style={{ fontSize: "13px", color: "#4B5563", lineHeight: 1.6, marginBottom: "10px" }}>
+                        {c.erlebnis}
+                      </p>
+                      <div style={{ borderTop: "1px solid #EAE5DC", paddingTop: "10px", marginTop: "2px" }}>
+                        <span style={{ fontSize: "10px", fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", marginBottom: "4px" }}>
+                          Ihr Vorteil im Vertrieb
+                        </span>
+                        <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", lineHeight: 1.5, margin: 0 }}>
+                          {c.benefit}
+                        </p>
+                      </div>
                     </div>
                     <div className="ck-card-foot">
                       <div className="ck-card-price">
@@ -444,6 +461,87 @@ export default function LandingHome() {
         </div>
       </section>
 
+      {/* ── TRUST ───────────────────────────────────────────────────────────── */}
+      <section id="trust" className="dark-s">
+        <div className="inner">
+          <div className="s-label">Warum es funktioniert</div>
+          <h2>Warum das im Vertrieb funktioniert</h2>
+          <div className="trust-grid">
+            {[
+              "Kunde versteht seine Situation selbst",
+              "Weniger Erklärungsaufwand im Gespräch",
+              "Klarer Bedarf statt vager Anfrage",
+              "Höhere Abschlusswahrscheinlichkeit",
+            ].map((text, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "14px",
+                  padding: "20px",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.09)",
+                  borderRadius: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    background: "rgba(201,169,110,0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden>
+                    <path d="M1 5l3.5 3.5L11 1" stroke="#b8884a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <span style={{ fontSize: "15px", fontWeight: "500", color: "rgba(255,255,255,0.82)", lineHeight: 1.5 }}>
+                  {text}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ─────────────────────────────────────────────────────────────── */}
+      <section className="cta-s">
+        <div className="cta-left">
+          <h2>
+            Sehen Sie selbst,<br />
+            wie Ihre Kunden den Check durchlaufen.
+          </h2>
+          <p>
+            Testen Sie die Checks oder integrieren Sie sie<br />
+            direkt in Ihre Website.
+          </p>
+        </div>
+        <div className="cta-right">
+          <a href="#tools" className="btn-primary-lg">
+            Demo ansehen
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+              <path
+                d="M3 7h8M7 3l4 4-4 4"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </a>
+          <a href="#tools" className="btn-wh">
+            Checks testen
+          </a>
+        </div>
+      </section>
+
+      {/* ── FAQ ─────────────────────────────────────────────────────────────── */}
       <section id="faq" className="s faq-section" style={{ background: "var(--bg)" }}>
         <div className="inner">
           <div className="s-label">FAQ</div>
@@ -482,38 +580,7 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section className="cta-s">
-        <div className="cta-left">
-          <h2>
-            Ihre erste Microsite.
-            <br />
-            Ihre ersten qualifizierten Anfragen.
-          </h2>
-          <p>
-            Einmalig kaufen — dauerhaft einsetzen.
-            <br />
-            Einbetten, verlinken oder drucken.
-          </p>
-        </div>
-        <div className="cta-right">
-          <a href="#tools" className="btn-primary-lg">
-            Microsites ansehen
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-              <path
-                d="M3 7h8M7 3l4 4-4 4"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </a>
-          <a href="#tools" className="btn-wh">
-            Demo ansehen
-          </a>
-        </div>
-      </section>
-
+      {/* ── FOOTER ──────────────────────────────────────────────────────────── */}
       <footer>
         <div>
           <div className="footer-logo">
@@ -531,12 +598,12 @@ export default function LandingHome() {
               lineHeight: 1.45,
             }}
           >
-            Fertige Microsites für Versicherungsmakler.
+            Digitale Erstberatung für Versicherungsmakler.
           </div>
         </div>
         <div className="footer-links">
           <Link href="/">Startseite</Link>
-          <a href="#tools">Microsites</a>
+          <a href="#tools">Checks</a>
           <a href="#how">Wie es funktioniert</a>
           <a href="#faq">FAQ</a>
           <a href="#">Kontakt</a>

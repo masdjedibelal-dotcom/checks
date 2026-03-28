@@ -25,66 +25,19 @@ import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshin
 
 const alpha = (hex,a) => { const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; };
 const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
-const fmtK = (n) => n>=10000 ? Math.round(n/1000)+"0".repeat(0)+".000 €" : fmt(n);
-const FREIBETRAG_WITWE = 1038;
+const fmtK = (n) => n>=10000 ? Math.round(n/1000)+".000 €" : fmt(n);
 const WARN_RL = "#c0392b";
 
 function berechne(p) {
-  const { bruttoVerstorben, alterJuengstesKind, kinder, partnerEinkommen, vorhandeneVS, kredite } = p;
-
-  // Gesetzliche Witwen-/Witwerrente
-  // Große Witwe/r: 55% der Rentenanwartschaft (vereinfacht: 55% × 48% Netto × Brutto)
-  const renteAnwartschaft = bruttoVerstorben * 0.48; // ca. gesetzl. Rente
-  const witweRente        = renteAnwartschaft * 0.55;
-
-  // Waisenrente: 10% (Halbwaise) pro Kind, bis 18 (25 in Ausbildung)
-  const jahreWaisenrente  = Math.max(0, 25 - alterJuengstesKind);
-  const waisenRenteJKind  = renteAnwartschaft * 0.10;
-  const waisenRenteGesamt = waisenRenteJKind * Math.min(kinder, 3); // max. 3 Kinder
-
-  // §97 SGB VI: Eigenes Einkommen wird auf Witwenrente angerechnet wenn über Freibetrag
-  const anrechnung =
-    partnerEinkommen > FREIBETRAG_WITWE
-      ? Math.round((partnerEinkommen - FREIBETRAG_WITWE) * 0.4)
-      : 0;
-  const gesWitwe = Math.max(0, witweRente - anrechnung);
-  const gesGesetzl = gesWitwe + waisenRenteGesamt;
-
-  // Monatlicher Eingang nach Tod
-  const eingang = gesWitwe + waisenRenteGesamt + partnerEinkommen;
-
-  // Bedarf: Haushalt läuft weiter bis jüngstes Kind 25 ist, dann Witwenbedarf
-  const familienBedarf    = bruttoVerstorben * 0.67 * 0.75; // 75% des Nettos als Familienbedarf
-  const lueckeMonat       = Math.max(0, familienBedarf - eingang);
-
-  // Absicherungszeitraum: bis jüngstes Kind 25 Jahre alt
-  const absicherungsjahre = Math.max(5, Math.min(30, 25 - alterJuengstesKind + 5));
-
-  // Kapitalbedarf Barwert (3% Diskontierung)
-  const diskont = 0.03;
-  const barwert = lueckeMonat * 12 * ((1 - Math.pow(1+diskont, -absicherungsjahre)) / diskont);
-
-  const gesamtBedarf      = barwert + kredite;
-  const lueckeVS          = Math.max(0, gesamtBedarf - vorhandeneVS);
-  const deckungsgrad      = gesamtBedarf > 0 ? Math.min(100, Math.round((vorhandeneVS / gesamtBedarf) * 100)) : 100;
-
-  return {
-    witweRente,
-    gesWitwe,
-    anrechnung,
-    gesGesetzl,
-    waisenRenteGesamt,
-    waisenRenteJKind,
-    jahreWaisenrente,
-    eingang,
-    familienBedarf,
-    lueckeMonat,
-    absicherungsjahre,
-    barwert,
-    gesamtBedarf,
-    lueckeVS,
-    deckungsgrad,
-  };
+  const { monatsBedarf, absicherungsjahre, witweRente, waisenRenten, partnerEinkommen, vorhandeneVS, kredite } = p;
+  const eingang     = witweRente + waisenRenten + partnerEinkommen;
+  const lueckeMonat = Math.max(0, monatsBedarf - eingang);
+  const diskont     = 0.03;
+  const barwert     = lueckeMonat > 0 ? lueckeMonat * 12 * ((1 - Math.pow(1 + diskont, -absicherungsjahre)) / diskont) : 0;
+  const gesamtBedarf = barwert + kredite;
+  const lueckeVS     = Math.max(0, gesamtBedarf - vorhandeneVS);
+  const deckungsgrad = gesamtBedarf > 0 ? Math.min(100, Math.round((vorhandeneVS / gesamtBedarf) * 100)) : 100;
+  return { eingang, lueckeMonat, barwert, gesamtBedarf, lueckeVS, deckungsgrad };
 }
 
 export default function RisikolebenRechner() {
@@ -93,12 +46,15 @@ export default function RisikolebenRechner() {
   const isDemo = isCheckDemoMode();
   const [phase, setPhase] = useState(1);
   const [animKey, setAnimKey] = useState(0);
-  const [p, setP] = useState({ bruttoVerstorben:4500, alterJuengstesKind:8, kinder:2, partnerEinkommen:1800, vorhandeneVS:0, kredite:0 });
+  const [p, setP] = useState({ monatsBedarf:3000, absicherungsjahre:20, witweRente:700, waisenRenten:300, partnerEinkommen:1200, vorhandeneVS:0, kredite:0 });
   const [formData, setFormData] = useState({ name:"", email:"", telefon:"" });
+  const [scr, setScr] = useState(1);
+  const nextScr = () => scr < 5 ? setScr(s => s+1) : goTo(2);
+  const backScr = () => scr > 1 && setScr(s => s-1);
   const goTo = (ph) => { setAnimKey(k=>k+1); setPhase(ph); window.scrollTo({top:0}); };
   const set  = (k,v) => setP(x=>({...x,[k]:v}));
   const R = berechne(p);
-  const progPct = {1:25,2:78,3:94,4:100}[phase]||0;
+  const progPct = phase===1 ? scr*5 : {2:78,3:94,4:100}[phase]||0;
 
   const cardLift = {
     background:"#fff",
@@ -129,7 +85,7 @@ export default function RisikolebenRechner() {
     fldWrap: { marginBottom:"20px" },
     opt3:    { display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"6px", marginTop:"8px" },
     optBtn:  (a) => ({ padding:"9px 8px", borderRadius:"6px", border:`1px solid ${a?C:"#e8e8e8"}`, background:a?C:"#fff", fontSize:"13px", fontWeight:a?"600":"400", color:a?"#fff":"#444", transition:"all 0.15s", textAlign:"center", cursor:"pointer" }),
-    footer:  { position:"sticky", bottom:0, background:"rgba(255,255,255,0.97)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", borderTop:"1px solid #e8e8e8", padding:"14px 24px 28px" },
+    footer:  { position:"sticky", bottom:0, background:"rgba(255,255,255,0.97)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", borderTop:"1px solid #e8e8e8", padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
     btnMain: (d) => ({ width:"100%", padding:"13px 20px", background:d?"#e8e8e8":C, color:d?"#aaa":"#fff", borderRadius:"8px", fontSize:"14px", fontWeight:"600", cursor:d?"default":"pointer" }),
     btnBack: { width:"100%", padding:"10px", color:"#aaa", fontSize:"13px", marginTop:"6px", cursor:"pointer" },
     iLabel:  { display:"block", fontSize:"12px", fontWeight:"600", color:"#444", marginBottom:"6px" },
@@ -150,120 +106,147 @@ export default function RisikolebenRechner() {
   );
 
   if (phase===1) return (
-    <Shell eyebrow="Risikoleben · Absicherungs-Rechner" title="Ist Ihre Familie wirklich abgesichert?" lead="Wir rechnen mit gesetzlichen Witwen-/Waisenrenten — nicht nur mit dem Kapitalbedarf. So entsteht das realistische Bild."
-      footer={<button style={T.btnMain(false)} onClick={()=>goTo(2)}>Ergebnis berechnen →</button>}>
-      <div style={{ padding:"0 16px" }}><div style={T.card}><div style={{ padding:"20px" }}>
-
-        <div style={T.fldWrap}>
-          <label style={T.fldLbl}>Bruttogehalt der abzusichernden Person</label>
-          <div style={T.fldVal}>{fmt(p.bruttoVerstorben)}/Monat</div>
-          <input type="range" min={1500} max={12000} step={100} value={p.bruttoVerstorben} onChange={e=>set("bruttoVerstorben",+e.target.value)} style={{width:"100%"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>1.500 €</span><span>12.000 €</span></div>
-          <div style={T.fldHint}>Basis für gesetzliche Witwen-/Waisenrente (55% der Rentenanwartschaft)</div>
+    <Shell eyebrow={scr===1?"Risikoleben-Check":undefined}
+      title={
+        scr===1?"Wie ist Ihre Familie aktuell abgesichert?":
+        scr===2?"Wie viel braucht Ihre Familie monatlich?":
+        scr===3?"Wie lange soll die Absicherung laufen?":
+        scr===4?"Haben Sie bestehende Kredite?":
+        "Wie hoch ist das Einkommen Ihres Partners?"
+      }
+      lead={
+        scr===1?"Wir berechnen Ihren persönlichen Absicherungsbedarf – in weniger als 2 Minuten.":
+        scr===2?"Miete, Lebenshaltung, Kinderkosten – alles zusammen.":
+        scr===3?"Zum Beispiel bis Ihr jüngstes Kind 25 ist oder bis zur Rente.":
+        scr===4?"Offene Kredite müssen im Todesfall sofort abgelöst werden.":
+        "Dieses Einkommen steht Ihrer Familie im Ernstfall zur Verfügung."
+      }
+      footer={
+        <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+          <button style={T.btnMain(false)} onClick={nextScr}>
+            {scr<5?"Weiter":"Ergebnis anzeigen"}
+          </button>
+          {scr>1&&<button style={T.btnBack} onClick={backScr}>Zurück</button>}
         </div>
+      }>
+      <div style={{padding:"0 16px"}}>
 
-        <div style={T.fldWrap}>
-          <label style={T.fldLbl}>Kinder</label>
-          <div style={T.opt3}>{[0,1,2,3].map(n=><button key={n} style={T.optBtn(p.kinder===n)} onClick={()=>set("kinder",n)}>{n===0?"Keine":n===3?"3+":n}</button>)}</div>
-        </div>
+        {scr===1&&(
+          <div style={{...T.card,marginTop:"16px"}}><div style={{padding:"24px"}}>
+            <div style={{textAlign:"center",fontSize:"40px",marginBottom:"16px"}}>❤️</div>
+            <p style={{fontSize:"14px",color:"#555",lineHeight:1.6,textAlign:"center",margin:0}}>
+              Was würde Ihrer Familie fehlen, wenn Sie plötzlich nicht mehr da wären?
+              Finden Sie in 5 Schritten heraus, wie hoch Ihr Bedarf wirklich ist.
+            </p>
+          </div></div>
+        )}
 
-        {p.kinder>0&&<div style={T.fldWrap}>
-          <label style={T.fldLbl}>Alter des jüngsten Kindes</label>
-          <div style={T.fldVal}>{p.alterJuengstesKind} Jahre · Waisenrente noch {Math.max(0,25-p.alterJuengstesKind)} Jahre</div>
-          <input type="range" min={0} max={24} step={1} value={p.alterJuengstesKind} onChange={e=>set("alterJuengstesKind",+e.target.value)} style={{width:"100%"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>0 Jahre</span><span>24 Jahre</span></div>
-        </div>}
+        {scr===2&&(
+          <div style={{...T.card,marginTop:"16px"}}><div style={{padding:"20px"}}>
+            <div style={T.fldWrap}>
+              <label style={T.fldLbl}>Monatlicher Bedarf der Familie</label>
+              <div style={T.fldVal}>{fmt(p.monatsBedarf)}/Monat</div>
+              <input type="range" min={1000} max={8000} step={100} value={p.monatsBedarf} onChange={e=>set("monatsBedarf",+e.target.value)} style={{width:"100%"}}/>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>1.000 €</span><span>8.000 €</span></div>
+            </div>
+          </div></div>
+        )}
 
-        <div style={T.fldWrap}>
-          <label style={T.fldLbl}>Eigenes Einkommen des Partners (Netto)</label>
-          <div style={T.fldVal}>{p.partnerEinkommen===0?"Kein Einkommen":fmt(p.partnerEinkommen)+"/Monat"}</div>
-          <input type="range" min={0} max={6000} step={100} value={p.partnerEinkommen} onChange={e=>set("partnerEinkommen",+e.target.value)} style={{width:"100%"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>0 €</span><span>6.000 €</span></div>
-          <div style={T.fldHint}>Fließt als Einnahme der Familie ein</div>
-        </div>
+        {scr===3&&(
+          <div style={{...T.card,marginTop:"16px"}}><div style={{padding:"20px"}}>
+            <div style={T.fldWrap}>
+              <label style={T.fldLbl}>Absicherungszeitraum</label>
+              <div style={T.fldVal}>{p.absicherungsjahre} Jahre</div>
+              <input type="range" min={5} max={35} step={1} value={p.absicherungsjahre} onChange={e=>set("absicherungsjahre",+e.target.value)} style={{width:"100%"}}/>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>5 Jahre</span><span>35 Jahre</span></div>
+            </div>
+          </div></div>
+        )}
 
-        <div style={T.fldWrap}>
-          <label style={T.fldLbl}>Bestehende Risikolebens-Versicherungssumme</label>
-          <div style={T.fldVal}>{p.vorhandeneVS===0?"Keine":fmtK(p.vorhandeneVS)}</div>
-          <input type="range" min={0} max={1000000} step={10000} value={p.vorhandeneVS} onChange={e=>set("vorhandeneVS",+e.target.value)} style={{width:"100%"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>0 €</span><span>1.000.000 €</span></div>
-        </div>
+        {scr===4&&(
+          <div style={{...T.card,marginTop:"16px"}}><div style={{padding:"20px"}}>
+            <div style={T.fldWrap}>
+              <label style={T.fldLbl}>Bestehende Kredite</label>
+              <div style={T.fldVal}>{p.kredite===0?"Keine":fmtK(p.kredite)}</div>
+              <input type="range" min={0} max={800000} step={5000} value={p.kredite} onChange={e=>set("kredite",+e.target.value)} style={{width:"100%"}}/>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>0 €</span><span>800.000 €</span></div>
+            </div>
+          </div></div>
+        )}
 
-        <div style={{...T.fldWrap,marginBottom:0}}>
-          <label style={T.fldLbl}>Bestehende Kredite / Restschuld</label>
-          <div style={T.fldVal}>{p.kredite===0?"Keine":fmtK(p.kredite)}</div>
-          <input type="range" min={0} max={800000} step={5000} value={p.kredite} onChange={e=>set("kredite",+e.target.value)} style={{width:"100%"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>0 €</span><span>800.000 €</span></div>
-          <div style={T.fldHint}>Werden bei Todesfall sofort fällig</div>
-        </div>
+        {scr===5&&(
+          <div style={{...T.card,marginTop:"16px"}}><div style={{padding:"20px"}}>
+            <div style={T.fldWrap}>
+              <label style={T.fldLbl}>Einkommen des Partners (monatlich netto)</label>
+              <div style={T.fldVal}>{p.partnerEinkommen===0?"Kein Einkommen":fmt(p.partnerEinkommen)+"/Monat"}</div>
+              <input type="range" min={0} max={6000} step={100} value={p.partnerEinkommen} onChange={e=>set("partnerEinkommen",+e.target.value)} style={{width:"100%"}}/>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:"11px",color:"#d1d5db",marginTop:"2px"}}><span>0 €</span><span>6.000 €</span></div>
+            </div>
+          </div></div>
+        )}
 
-      </div></div></div>
+      </div>
     </Shell>
   );
 
   if (phase===2) {
     const ok = R.lueckeVS<=0;
     return (
-      <Shell eyebrow="Ihre Absicherungs-Analyse" title={ok?"Familie gut abgesichert ✓":`${fmtK(R.lueckeVS)} fehlen zur Absicherung`} lead={ok?"Ihre vorhandene Versicherungssumme deckt den Familienbedarf.":null}
-        footer={<><button style={T.btnMain(false)} onClick={()=>goTo(3)}>Lücke schließen →</button><button style={T.btnBack} onClick={()=>goTo(1)}>← Anpassen</button></>}>
+      <Shell eyebrow="Auf Basis Ihrer Angaben" title="So kann der Absicherungsbedarf Ihrer Familie eingeschätzt werden"
+        lead={ok ? "Auf Basis Ihrer Angaben ergibt sich kein wesentlicher Absicherungsbedarf ✓" : `Es ergibt sich ein möglicher Absicherungsbedarf von ${fmtK(R.lueckeVS)}.`}
+        footer={<><button style={T.btnMain(false)} onClick={()=>goTo(3)}>Familie absichern</button><button style={T.btnBack} onClick={()=>goTo(1)}>Neue Berechnung starten</button></>}>
 
-        {/* Einkommensfluss nach Todesfall */}
-        <div style={T.secLbl}>📊 Was die Familie monatlich erhält</div>
+        {/* KPI Grid */}
         <div style={{padding:"0 16px 4px"}}>
-          <div style={{...cardLift,padding:"18px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"10px"}}>
-              <span style={{fontSize:"12px",color:"#9ca3af"}}>Familienbedarf (geschätzt)</span>
-              <span style={{fontSize:"13px",fontWeight:"800",color:"#111827"}}>{fmt(R.familienBedarf)}/Monat</span>
-            </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",marginBottom:"8px"}}>
             {[
-              {l:"Gesetzl. Witwen-/Witwerrente",  v:fmt(R.gesWitwe),        farbe:"#059669", sub:`55% der Rentenanwartschaft des Verstorbenen`},
-              {l:`Waisenrente (${p.kinder} Kind${p.kinder>1?"er":""})`,        v:fmt(R.waisenRenteGesamt),  farbe:"#059669", sub:`je ${fmt(R.waisenRenteJKind)}/Mon. × ${Math.min(p.kinder,3)} Kinder · noch ${R.jahreWaisenrente} Jahre`},
-              {l:"Eigenes Einkommen Partner",      v:fmt(p.partnerEinkommen),  farbe:"#059669", sub:"Bleibt der Familie erhalten"},
-              {l:"Gesamteingang",                  v:fmt(R.eingang),           farbe:C,         sub:"Summe aller Einnahmen", bold:true},
-              {l:"Monatliche Lücke",               v:fmt(R.lueckeMonat),       farbe:R.lueckeMonat>0?"#dc2626":"#059669", sub:"Differenz zum Familienbedarf", bold:true},
-            ].map((row,i)=>(
-              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"9px 0",borderBottom:i<4?"1px solid #f9fafb":"none"}}>
-                <div><div style={{fontSize:"13px",color:"#6b7280",fontWeight:row.bold?"600":"400"}}>{row.l}</div><div style={{fontSize:"11px",color:"#9ca3af",marginTop:"1px"}}>{row.sub}</div></div>
+              {l:"Gesamtbedarf", v:fmtK(R.gesamtBedarf), warn:false},
+              {l:"Vorhanden",    v:fmtK(p.vorhandeneVS),  warn:false},
+              {l:"Lücke",        v:fmtK(R.lueckeVS),      warn:R.lueckeVS>0},
+            ].map(({l,v,warn},i)=>(
+              <div key={i} style={{border:`1px solid ${warn?"#c0392b33":"#e8e8e8"}`,borderRadius:"10px",padding:"12px 8px",background:warn?"#fff5f5":"#fff",textAlign:"center"}}>
+                <div style={{fontSize:"13px",fontWeight:"700",color:warn?WARN_RL:C,letterSpacing:"-0.2px"}}>{v}</div>
+                <div style={{fontSize:"10px",color:"#aaa",marginTop:"2px",fontWeight:"500"}}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Berechnungs-Breakdown */}
+        <div style={T.secLbl}>📊 Wie sich der Bedarf zusammensetzt</div>
+        <div style={{padding:"0 16px 4px"}}>
+          <div style={{...cardLift,overflow:"hidden"}}>
+            {[
+              {l:"Was deine Familie monatlich braucht",    v:fmt(p.monatsBedarf)+"/Mon.",           farbe:"#111"},
+              {l:"Abzüglich gesetzlicher Leistungen",      v:"− "+fmt(p.witweRente+p.waisenRenten)+"/Mon.", farbe:"#059669"},
+              {l:"Abzüglich Partnereinkommen",             v:"− "+fmt(p.partnerEinkommen)+"/Mon.",  farbe:"#059669"},
+              {l:"Monatliche Lücke",                       v:fmt(R.lueckeMonat)+"/Mon.",            farbe:R.lueckeMonat>0?WARN_RL:"#059669", bold:true},
+              {l:"Plus Kredite die abgelöst werden müssen",v:"+ "+fmtK(p.kredite),                  farbe:"#111"},
+              {l:"Kalkulierter Absicherungsbedarf",         v:fmtK(R.gesamtBedarf),                  farbe:C, bold:true},
+            ].map((row,i,arr)=>(
+              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"10px 18px",borderBottom:i<arr.length-1?"1px solid #f9fafb":"none"}}>
+                <div style={{fontSize:"13px",color:"#6b7280",fontWeight:row.bold?"600":"400"}}>{row.l}</div>
                 <div style={{fontSize:"13px",fontWeight:"700",color:row.farbe,textAlign:"right",marginLeft:"12px",flexShrink:0}}>{row.v}</div>
               </div>
             ))}
-            {R.gesWitwe < R.witweRente && (
-              <div style={{fontSize:"11px",color:WARN_RL,marginTop:"4px",lineHeight:1.5}}>
-                Witwen-/Witwerrente durch Einkommensanrechnung auf {fmt(R.gesWitwe)}/Mon. reduziert (§97 SGB VI, Freibetrag {fmt(FREIBETRAG_WITWE)}/Mon.)
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Kapitalbedarf */}
-        <div style={T.secLbl}>💰 Kapitalbedarf gesamt</div>
-        <div style={{padding:"0 16px"}}>
-          <div style={{...cardLift,overflow:"hidden"}}>
-            {[
-              {l:"Barwert monatliche Lücke",   v:fmtK(R.barwert),         sub:`${fmt(R.lueckeMonat)}/Mon. × ${R.absicherungsjahre} Jahre (bis jüngstes Kind 30)`, rot:false},
-              {l:"Bestehende Kredite",          v:fmtK(p.kredite),         sub:"Werden bei Todesfall sofort fällig",                         rot:p.kredite>0},
-              {l:"Gesamtbedarf",               v:fmtK(R.gesamtBedarf),    sub:"Barwert Lücke + Kredite",                                    rot:true},
-              {l:"Vorhandene Versicherung",     v:fmtK(p.vorhandeneVS),    sub:"Bestehende Risikolebensversicherung",                         rot:false},
-              {l:"Fehlende Absicherung",        v:fmtK(R.lueckeVS),        sub:`Deckungsgrad: ${R.deckungsgrad}%`,                           rot:R.lueckeVS>0},
-            ].map((row,i,arr)=>(
-              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",padding:"12px 18px",borderBottom:i<arr.length-1?"1px solid #f3f4f6":"none"}}>
-                <div><div style={{fontSize:"13px",color:"#6b7280"}}>{row.l}</div><div style={{fontSize:"11px",color:"#9ca3af",marginTop:"2px"}}>{row.sub}</div></div>
-                <div style={{fontSize:"14px",fontWeight:"700",color:row.rot?"#dc2626":C,textAlign:"right",marginLeft:"12px",flexShrink:0}}>{row.v}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {!ok&&<div style={{margin:"8px 16px 0",padding:"14px 16px",background:alpha(C,0.06),borderRadius:"14px",border:`1.5px solid ${alpha(C,0.14)}`}}>
-          <div style={{fontSize:"12px",fontWeight:"700",color:C,marginBottom:"4px"}}>Empfehlung</div>
-          <div style={{fontSize:"13px",color:"#4b5563",lineHeight:1.55}}>Versicherungssumme von mindestens <strong>{fmtK(R.lueckeVS)}</strong> absichern. Als kostengünstige Risikolebensversicherung — für 30 Jahre ca. 20–50 €/Monat je nach Alter und Gesundheit.</div>
+        {!ok&&<div style={{margin:"12px 16px 0",padding:"14px 16px",background:alpha(C,0.06),borderRadius:"14px",border:`1.5px solid ${alpha(C,0.14)}`}}>
+          <div style={{fontSize:"12px",fontWeight:"700",color:C,marginBottom:"4px"}}>Einschätzung</div>
+          <div style={{fontSize:"13px",color:"#4b5563",lineHeight:1.55}}>Der mögliche Absicherungsbedarf liegt auf Basis Ihrer Angaben bei <strong>{fmtK(R.lueckeVS)}</strong>. Der tatsächliche Bedarf kann je nach Lebenssituation und finanziellen Zielen variieren.</div>
         </div>}
 
-        <div style={{ padding: "0 16px" }}>
+        {/* Info Box: Gesetzliche Witwenrente */}
+        <div style={{margin:"12px 16px 0",padding:"14px 16px",background:"#f0f9ff",borderRadius:"10px",border:"1px solid #bae6fd"}}>
+          <div style={{fontSize:"12px",fontWeight:"700",color:"#0369a1",marginBottom:"4px"}}>Gesetzliche Witwen-/Waisenrente</div>
+          <div style={{fontSize:"12px",color:"#444",lineHeight:1.65}}>Die große Witwenrente beträgt ca. 55 % der gesetzlichen Rentenanwartschaft. Pro Kind (Halbwaise) kommen ca. 10 % hinzu. Eigenes Einkommen des Partners wird nach §97 SGB VI angerechnet — ab ca. 1.038 €/Mon. reduziert sich die Witwenrente.</div>
+        </div>
+
+        <div style={{ padding: "12px 16px" }}>
           <CheckBerechnungshinweis>
             <>
-              Gesamtbedarf = monatlicher Eigenbedarf × 12 × Absicherungsjahre + Kredite. Eigenbedarf = Monatsbedarf minus Witwenrente minus Waisenrente minus Partnereinkommen.{" "}
-              Wichtig: Eigenes Einkommen des Partners wird nach <span style={{ color: "#b8884a" }}>§97 SGB VI</span> auf die Witwenrente angerechnet (Freibetrag 1.038 €/Mon., 40% Anrechnung darüber).{" "}
+              Gesamtbedarf = monatliche Lücke × 12 × Absicherungsjahre (Barwert, 3 % Diskontierung) + Kredite. Lücke = Familienbedarf minus Witwen-/Waisenrente minus Partnereinkommen.{" "}
               <span style={{ color: "#b8884a" }}>Grundlage: §46–48 SGB VI</span>
             </>
           </CheckBerechnungshinweis>
@@ -277,7 +260,7 @@ export default function RisikolebenRechner() {
   if (phase===3) {
     const valid = formData.name.trim()&&formData.email.trim();
     return (
-      <Shell eyebrow="Absicherung regeln" title="Gespräch vereinbaren" lead="Wir berechnen die günstigste Risikolebensversicherung für Ihre genaue Situation."
+      <Shell eyebrow="Fast geschafft" title="Wo können wir dich erreichen?" lead="Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis."
         footer={isDemo ? (
           <>
             <button
@@ -295,7 +278,7 @@ export default function RisikolebenRechner() {
             <button type="button" style={T.btnBack} onClick={()=>goTo(2)}>← Zurück</button>
           </>
         ) : (
-          <><button style={T.btnMain(!valid)} disabled={!valid} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"risikoleben",kundenName:formData.name,kundenEmail:formData.email,kundenTel:formData.telefon||""})}).catch(()=>{});}goTo(4);}}>Anfrage senden</button><button style={T.btnBack} onClick={()=>goTo(2)}>← Zurück</button></>
+          <><button style={T.btnMain(!valid)} disabled={!valid} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"risikoleben",kundenName:formData.name,kundenEmail:formData.email,kundenTel:formData.telefon||""})}).catch(()=>{});}goTo(4);}}>{valid?"Familie absichern":"Bitte alle Angaben machen"}</button><button style={T.btnBack} onClick={()=>goTo(2)}>Zurück</button></>
         )}>
         <div style={{padding:"0 16px"}}>
           {isDemo && (
@@ -304,15 +287,15 @@ export default function RisikolebenRechner() {
             </div>
           )}
           <div style={{background:alpha(C,0.06),border:`1.5px solid ${alpha(C,0.14)}`,borderRadius:"10px",padding:"14px 16px",marginBottom:"12px"}}>
-            <div style={{fontSize:"12px",fontWeight:"700",color:C,marginBottom:"4px"}}>Ihre Berechnung</div>
+            <div style={{fontSize:"12px",fontWeight:"700",color:C,marginBottom:"4px"}}>Deine Berechnung</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
               <div><div style={{fontSize:"11px",color:"#9ca3af"}}>Fehlende Summe</div><div style={{fontSize:"16px",fontWeight:"800",color:"#dc2626"}}>{fmtK(R.lueckeVS)}</div></div>
-              <div><div style={{fontSize:"11px",color:"#9ca3af"}}>Absicherungszeitraum</div><div style={{fontSize:"16px",fontWeight:"800",color:C}}>{R.absicherungsjahre} Jahre</div></div>
+              <div><div style={{fontSize:"11px",color:"#9ca3af"}}>Absicherungszeitraum</div><div style={{fontSize:"16px",fontWeight:"800",color:C}}>{p.absicherungsjahre} Jahre</div></div>
             </div>
           </div>
           <div style={T.card}><div style={{padding:"20px"}}>
-            {[{k:"name",l:"Ihr Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"telefon",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req})=>(
-              <div key={k} style={T.iWrap}><label style={T.iLabel}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={formData[k]} onChange={e=>setFormData(f=>({...f,[k]:e.target.value}))} style={T.input}/></div>
+            {[{k:"name",l:"Dein Name",t:"text",ph:"Vor- und Nachname",req:true},{k:"email",l:"Deine E-Mail",t:"email",ph:"deine@email.de",req:true},{k:"telefon",l:"Deine Nummer",t:"tel",ph:"Optional",req:false,hint:"Optional — für eine schnellere Rückmeldung"}].map(({k,l,t,ph,req,hint})=>(
+              <div key={k} style={T.iWrap}><label style={T.iLabel}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={formData[k]} onChange={e=>setFormData(f=>({...f,[k]:e.target.value}))} style={T.input}/>{hint&&<div style={{fontSize:"11px",color:"#aaa",marginTop:"4px"}}>{hint}</div>}</div>
             ))}
             <p style={{fontSize:"11px",color:"#aaa",marginTop:"4px"}}>Vertraulich behandelt.</p>
           </div></div>
@@ -325,13 +308,13 @@ export default function RisikolebenRechner() {
     <Shell>
       <div style={{padding:"48px 20px 0",textAlign:"center"}} className="anim-fadeup">
         <div style={{width:"72px",height:"72px",borderRadius:"50%",background:alpha(C,0.1),color:C,fontSize:"28px",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}>✓</div>
-        <h1 style={{fontSize:"22px",fontWeight:"700",color:"#111",letterSpacing:"-0.5px",marginBottom:"8px"}}>Danke, {formData.name.split(" ")[0]||""}!</h1>
-        <p style={{fontSize:"14px",color:"#666",lineHeight:1.65}}>Wir melden uns innerhalb von 24 Stunden<br/>mit konkreten Tarifen.</p>
+        <h1 style={{fontSize:"22px",fontWeight:"700",color:"#111",letterSpacing:"-0.5px",marginBottom:"8px"}}>{formData.name?`Danke, ${formData.name.split(" ")[0]}.`:"Anfrage gesendet."}</h1>
+        <p style={{fontSize:"14px",color:"#666",lineHeight:1.65}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</p>
       </div>
       <div style={{padding:"24px 16px 0"}}>
         <div style={{...cardLift,overflow:"hidden"}}>
           <div style={{padding:"16px 18px",borderBottom:"1px solid #f0f0f0"}}>
-            <div style={{fontSize:"11px",fontWeight:"600",letterSpacing:"0.5px",textTransform:"uppercase",color:"#999",marginBottom:"5px"}}>Ihr Berater</div>
+            <div style={{fontSize:"11px",fontWeight:"600",letterSpacing:"0.5px",textTransform:"uppercase",color:"#999",marginBottom:"5px"}}>Dein Berater</div>
             <div style={{fontSize:"15px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div>
             <div style={{fontSize:"13px",color:"#888"}}>{MAKLER.firma}</div>
           </div>
@@ -340,6 +323,9 @@ export default function RisikolebenRechner() {
             <a href={`mailto:${MAKLER.email}`} style={{display:"flex",alignItems:"center",gap:"10px",fontSize:"14px",color:C,fontWeight:"500"}}><span style={{width:"34px",height:"34px",borderRadius:"9px",background:alpha(C,0.08),display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px"}}>✉️</span>{MAKLER.email}</a>
           </div>
         </div>
+      </div>
+      <div style={{textAlign:"center",marginTop:"20px"}}>
+        <button onClick={()=>goTo(1)} style={{fontSize:"13px",color:"#aaa",cursor:"pointer",background:"none",border:"none"}}>Neuen Check starten</button>
       </div>
     </Shell>
   );

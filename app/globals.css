@@ -4,6 +4,12 @@
 
 :root {
   --font-sans: "DM Sans", system-ui, sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Check-Footer mit Safe-Area für iOS-Homebutton */
+.ck-footer-safe {
+  padding-bottom: max(28px, env(safe-area-inset-bottom, 28px)) !important;
 }
 
 html {
@@ -36,11 +42,17 @@ button:active {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -48,21 +60,35 @@ button:active {
   animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+/* Slider global (Checks / Formulare) */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  background: transparent;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: #eae5dc;
   cursor: pointer;
+  outline: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: var(--accent, #1a3a5c);
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px var(--accent, #1a3a5c);
+  background: var(--c, var(--accent, #1a3a5c));
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(26, 58, 92, 0.4);
+}
+
+.fl-btn-primary {
+  transition: filter 0.18s ease, transform 0.18s ease;
+}
+
+.fl-btn-primary:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px) scale(1.01);
 }
 
 @keyframes fadeUp {

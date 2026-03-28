@@ -1,7 +1,7 @@
 /** Rechtstexte Szenario 1 (FlowLeads = Microsite-Anbieter). Vor Livegang juristisch prüfen. */
 
 export const CHECK_LEGAL_DISCLAIMER_FOOTER =
-  "Hinweis: Dieser Rechner dient ausschließlich der unverbindlichen Orientierung und ersetzt keine individuelle Beratung. Die Verantwortung für die Einbindung und Nutzung liegt beim jeweiligen Anbieter.";
+  "Die Ergebnisse basieren auf Ihren Angaben und dienen der ersten Orientierung. Sie stellen keine individuelle Beratung dar und ersetzen kein persönliches Gespräch.";
 
 /** Direkt über den Formularfeldern */
 export const CHECK_LEAD_NOTICE =

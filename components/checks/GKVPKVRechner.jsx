@@ -40,7 +40,7 @@ function berechne(p){
   return{gkvBeitrag,pkv,famBonus:kinder>0&&partner&&beruf!=="selbst"&&beruf!=="beamter",
     score,total,empfehlung,diff:Math.abs(gkvBeitrag-pkv),pkuZugang,unterGrenze};
 }
-function makeGKVPKVT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px 28px"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?(c||C):"#e8e8e8"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"})};}
+function makeGKVPKVT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?(c||C):"#e8e8e8"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"})};}
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 export default function GKVPKVRechner(){
   const MAKLER=useCheckConfig();
@@ -52,6 +52,9 @@ export default function GKVPKVRechner(){
   const[kontaktConsent,setKontaktConsent]=useState(false);
   const[p,setP]=useState({brutto:4500,alter:32,kinder:0,partner:false,beruf:"angestellt",gesundheit:"gut"});
   const set=(k,v)=>setP(x=>({...x,[k]:v}));
+  const[scr,setScr]=useState(1);
+  const nextScr=()=>scr<5?setScr(s=>s+1):goTo(2);
+  const backScr=()=>scr>1&&setScr(s=>s-1);
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
   const R=berechne(p);
   /** Unter JAEG ist PKV für Angestellte nicht wählbar — Anzeige immer GKV, unabhängig vom Score. */
@@ -71,23 +74,23 @@ export default function GKVPKVRechner(){
   const buildKontext=()=>{
     const items=[];
     if(p.kinder>0&&!p.partner)
-      items.push({icon:"👶",text:`Mit ${p.kinder} ${p.kinder===1?"Kind":"Kindern"} können diese in der GKV unter Voraussetzungen beitragsfrei familienversichert sein. In der PKV entstehen in der Regel eigene Beiträge je Kind — das macht die GKV hier kostengünstiger.`});
+      items.push({icon:"👶",text:`Mit ${p.kinder} ${p.kinder===1?"Kind":"Kindern"} können diese in der GKV unter Voraussetzungen beitragsfrei familienversichert sein. In der PKV entstehen in der Regel eigene Beiträge je Kind — das macht die GKV hier für dich kostengünstiger.`});
     if(p.partner)
-      items.push({icon:"👫",text:"Die GKV-Familienversicherung kann Ihren Partner ohne eigenes Einkommen beitragsfrei mitversichern. In der PKV wäre ein eigener Tarif nötig — das ist ein zentraler GKV-Vorteil in Ihrer Situation."});
+      items.push({icon:"👫",text:"Die GKV-Familienversicherung kann deinen Partner ohne eigenes Einkommen beitragsfrei mitversichern. In der PKV wäre ein eigener Tarif nötig — das ist ein zentraler GKV-Vorteil in deiner Situation."});
     if(p.kinder>0&&p.partner)
-      items.push({icon:"🏠",text:`Partner und ${p.kinder} ${p.kinder===1?"Kind":"Kinder"} könnten in der GKV beitragsfrei mitversichert sein. In der PKV würde jeder separate Tarife benötigen — das addiert sich erheblich.`});
+      items.push({icon:"🏠",text:`Dein Partner und ${p.kinder} ${p.kinder===1?"Kind":"Kinder"} könnten in der GKV beitragsfrei mitversichert sein. In der PKV würde jede Person separate Tarife benötigen — das addiert sich erheblich.`});
     if(p.gesundheit==="gut"&&p.kinder===0&&!p.partner&&p.alter<40)
       items.push({icon:"💪",text:"Für gesunde Personen ohne Familienverpflichtungen kann die PKV beim Leistungsniveau und je nach Tarif auch beim Beitrag interessant sein — besonders bei frühem Einstieg."});
     if(p.gesundheit==="schlecht")
-      items.push({icon:"⚕️",text:"Bei eingeschränktem Gesundheitszustand prüft die PKV bei Aufnahme genau — Risikoaufschläge oder Ablehnungen sind möglich. Die GKV nimmt jeden ohne Gesundheitsprüfung auf."});
+      items.push({icon:"⚕️",text:"Bei eingeschränktem Gesundheitszustand prüft die PKV bei Aufnahme genau — Risikoaufschläge oder Ablehnungen sind möglich. Die GKV nimmt dich ohne Gesundheitsprüfung auf."});
     if(p.alter>=50)
-      items.push({icon:"📅",text:"Mit steigendem Alter werden PKV-Tarife teurer und ein Wechsel zurück in die GKV ist im Alter schwierig. Die langfristige Perspektive sollte in Ihre Entscheidung einfließen."});
+      items.push({icon:"📅",text:"Wechsel wird mit dem Alter teurer — jetzt entscheiden lohnt sich. Ein Wechsel zurück in die GKV ist im Alter schwierig, daher sollte die langfristige Perspektive in deine Entscheidung einfließen."});
     if(p.beruf==="beamter")
-      items.push({icon:"🏛️",text:"Als Beamter erhalten Sie Beihilfe vom Dienstherrn (50–70 % der Kosten) — die PKV ergänzt nur den Restanteil. Das macht die PKV für Beamte typischerweise deutlich attraktiver."});
+      items.push({icon:"🏛️",text:"Als Beamter erhältst du Beihilfe vom Dienstherrn (50–70 % der Kosten) — die PKV ergänzt nur den Restanteil. Das macht die PKV für Beamte typischerweise deutlich attraktiver."});
     if(p.beruf==="selbst")
-      items.push({icon:"🧑‍💼",text:"Als Selbstständiger sind Sie nicht pflichtversichert und müssen den vollen GKV-Beitrag selbst tragen. Die PKV kann je nach Gesundheitszustand und Tarif eine relevante Alternative sein."});
+      items.push({icon:"🧑‍💼",text:"Als Selbstständiger bist du nicht pflichtversichert und trägst den vollen GKV-Beitrag selbst. PKV wäre jetzt möglich — günstiger Einstiegszeitpunkt, je nach Gesundheitszustand und Tarif."});
     if(items.length===0)
-      items.push({icon:"⚖️",text:"Ihre Situation ist ausgewogen — keine der typischen Stärken von GKV oder PKV überwiegt deutlich. Eine individuelle Tarifprüfung lohnt sich."});
+      items.push({icon:"⚖️",text:"Deine Situation ist ausgewogen — keine der typischen Stärken von GKV oder PKV überwiegt deutlich. Eine individuelle Tarifprüfung lohnt sich."});
     return items;
   };
 
@@ -98,8 +101,8 @@ export default function GKVPKVRechner(){
       <div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in">
         <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
         <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
-        <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir melden uns innerhalb von 24 Stunden mit einer individuellen Einschätzung.</div>
-        <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",color:"#999",fontWeight:"600",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>Ihr Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div>
+        <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
+        <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",color:"#999",fontWeight:"600",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div>
         <button onClick={()=>{setDanke(false);setPhase(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button>
       </div>
     </div>
@@ -112,12 +115,12 @@ export default function GKVPKVRechner(){
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
         <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>GKV vs. PKV</span></div>
         <div style={T.prog}><div style={T.progFil(100)}/></div>
-        <div style={T.hero}><div style={T.eyebrow}>Gespräch vereinbaren</div><div style={T.h1}>Individuelle Tarif­prüfung</div><div style={T.body}>Wir bereiten eine konkrete Gegenüberstellung auf Basis Ihrer Situation vor.</div></div>
+        <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir dich erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div></div>
         <div style={T.section}>
           <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",padding:"12px 14px",background:"#fafafa",marginBottom:"16px",display:"flex",gap:"20px"}}>
-            <div><div style={{fontSize:"15px",fontWeight:"700",color:C,letterSpacing:"-0.3px"}}>{tendenzAnzeige}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>Tendenz{R.unterGrenze?" (GKV-pflichtig)":""}</div></div>
-            <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.gkvBeitrag)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>GKV Ø/Mon.</div></div>
-            <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.pkv)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>PKV Ø-Beitrag 2026 (Komfort-Tarif, einkommensunabhängig)</div></div>
+            <div><div style={{fontSize:"15px",fontWeight:"700",color:C,letterSpacing:"-0.3px"}}>{tendenzAnzeige}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>Deine Tendenz{R.unterGrenze?" (GKV-pflichtig)":""}</div></div>
+            <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.gkvBeitrag)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>Dein GKV-Beitrag</div></div>
+            <div><div style={{fontSize:"15px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px"}}>{fmt(R.pkv)}</div><div style={{fontSize:"11px",color:"#aaa",marginTop:"1px"}}>PKV-Schätzung 2026</div></div>
           </div>
           {isDemo && (
             <div style={{ fontSize: "13px", color: "#999", textAlign: "center", marginBottom: "14px", lineHeight: 1.5 }}>
@@ -126,8 +129,8 @@ export default function GKVPKVRechner(){
           )}
           <CheckKontaktLeadLine />
           <div style={T.card}>
-            {[{k:"name",l:"Name",t:"text",ph:"Max Mustermann",req:true},{k:"email",l:"E-Mail",t:"email",ph:"max@beispiel.de",req:true},{k:"tel",l:"Telefon",t:"tel",ph:"089 123 456 78",req:false}].map(({k,l,t,ph,req},i,arr)=>(
-              <div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"6px"}}/></div>
+            {[{k:"name",l:"Dein Name",t:"text",ph:"Vor- und Nachname",req:true},{k:"email",l:"Deine E-Mail",t:"email",ph:"deine@email.de",req:true},{k:"tel",l:"Deine Nummer",t:"tel",ph:"Optional",req:false,hint:"Optional — für eine schnellere Rückmeldung"}].map(({k,l,t,ph,req,hint},i,arr)=>(
+              <div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"6px"}}/>{hint&&<div style={T.fldHint}>{hint}</div>}</div>
             ))}
           </div>
           <div style={{marginTop:"14px",marginBottom:"100px"}}>
@@ -152,7 +155,7 @@ export default function GKVPKVRechner(){
               <button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
             </>
           ) : (
-            <><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"gkv-pkv",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>Gespräch anfragen</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
+            <><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"gkv-pkv",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Individuelle Einschätzung erhalten":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
           )}
         </div>
       </div>
@@ -169,16 +172,16 @@ export default function GKVPKVRechner(){
 
         {/* Block 1: Tendenz + Eligibility */}
         <div style={T.hero}>
-          <div style={T.eyebrow}>Ihre Einschätzung</div>
+          <div style={T.eyebrow}>Auf Basis Ihrer Angaben</div>
           {R.unterGrenze ? (
             <>
-              <div style={T.h1}>Aktuell GKV-pflichtig</div>
-              <div style={T.body}>Als angestellte Person mit {fmt(p.brutto)}/Monat liegen Sie unter der Versicherungspflichtgrenze — ein Wechsel in die PKV steht derzeit nicht frei offen.</div>
+              <div style={T.h1}>Das ergibt sich für Ihre aktuelle Situation</div>
+              <div style={T.body}>PKV aktuell nicht möglich — Einkommen unter der Versicherungspflichtgrenze ({fmt(p.brutto)}/Monat).</div>
             </>
           ):(
             <>
-              <div style={T.h1}>Tendenz: {R.empfehlung}</div>
-              <div style={T.body}>{R.score[R.empfehlung.toLowerCase()]} von {R.total} Faktoren sprechen für {R.empfehlung} · Beitragsdifferenz {fmt(R.diff)}/Monat</div>
+              <div style={T.h1}>Das ergibt sich für Ihre aktuelle Situation</div>
+              <div style={T.body}>Auf Basis Ihrer Angaben ergibt sich eine Tendenz in Richtung {R.empfehlung} · Beitragsdifferenz {fmt(R.diff)}/Monat</div>
             </>
           )}
         </div>
@@ -187,8 +190,8 @@ export default function GKVPKVRechner(){
         {R.unterGrenze&&(
           <div style={T.section}>
             <div style={{border:`1px solid ${WARN}44`,borderRadius:"10px",padding:"14px 16px",background:`${WARN}04`,borderLeft:`3px solid ${WARN}`}}>
-              <div style={{fontSize:"13px",fontWeight:"600",color:WARN,marginBottom:"4px"}}>PKV aktuell nicht frei wählbar</div>
-              <div style={{fontSize:"12px",color:"#555",lineHeight:1.65}}>Die Versicherungspflichtgrenze 2026 liegt bei 6.450 € brutto/Monat (77.400 €/Jahr). Sie liegen mit {fmt(p.brutto)}/Monat darunter. Ein PKV-Wechsel ist für Angestellte erst ab diesem Einkommen möglich.</div>
+              <div style={{fontSize:"13px",fontWeight:"600",color:WARN,marginBottom:"4px"}}>PKV aktuell nicht möglich — du liegst unter der Einkommensgrenze</div>
+              <div style={{fontSize:"12px",color:"#555",lineHeight:1.65}}>Die Versicherungspflichtgrenze 2026 liegt bei 6.450 € brutto/Monat (77.400 €/Jahr). Du liegst mit {fmt(p.brutto)}/Monat darunter. Ein PKV-Wechsel ist für Angestellte erst ab diesem Einkommen möglich.</div>
               <div style={{marginTop:"8px",fontSize:"11px",color:"#888"}}>Ausnahme: Beamte und Selbstständige sind nicht versicherungspflichtig.</div>
             </div>
           </div>
@@ -199,8 +202,8 @@ export default function GKVPKVRechner(){
           <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Beitragsvergleich</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"8px"}}>
             {[
-              {label:"GKV",beitrag:R.gkvBeitrag,sub:"Ø-Zusatzbeitrag 2026",empf:gkvHervorgehoben},
-              {label:"PKV",beitrag:R.pkv,sub:"PKV Ø-Beitrag 2026 (Komfort-Tarif, einkommensunabhängig)",empf:pkvHervorgehoben},
+              {label:"Dein GKV-Beitrag",beitrag:R.gkvBeitrag,sub:"Ø-Zusatzbeitrag 2026",empf:gkvHervorgehoben},
+              {label:"PKV-Schätzung",beitrag:R.pkv,sub:"PKV Ø-Beitrag 2026 (Komfort-Tarif, einkommensunabhängig)",empf:pkvHervorgehoben},
             ].map(({label,beitrag,sub,empf},i)=>(
               <div key={i} style={{border:`2px solid ${empf?C:"#e8e8e8"}`,borderRadius:"10px",padding:"14px",background:empf?`${C}06`:"#fff"}}>
                 <div style={{fontSize:"11px",fontWeight:"700",color:empf?C:"#aaa",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>{empf?"Tendenz · ":""}{label}</div>
@@ -214,7 +217,7 @@ export default function GKVPKVRechner(){
 
         {/* Block 3: Faktor-Tabelle */}
         <div style={T.section}>
-          <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Darum passt das eher zu Ihrer Situation</div>
+          <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Darum passt das eher zu deiner Situation</div>
           <div style={T.card}>
             {FAKTOREN.map(({l,gkv,pkv,fav},i,arr)=>(
               <div key={i} style={{padding:"12px 16px",borderBottom:i<arr.length-1?"1px solid #f0f0f0":"none"}}>
@@ -236,7 +239,7 @@ export default function GKVPKVRechner(){
 
         {/* Block 4: Kontext-Übersetzung */}
         <div style={T.section}>
-          <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Was das für Sie konkret bedeutet</div>
+          <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Was das für dich konkret bedeutet</div>
           <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
             {kontextItems.map(({icon,text},i)=>(
               <div key={i} style={{border:"1px solid #e8e8e8",borderRadius:"10px",padding:"12px 14px",display:"flex",gap:"10px",alignItems:"flex-start"}}>
@@ -262,46 +265,99 @@ export default function GKVPKVRechner(){
 
         {/* Block 5: CTA */}
         <div style={T.footer}>
-          <button style={T.btnPrim(false)} onClick={()=>goTo(3)}>Individuelle Prüfung anfragen</button>
-          <button style={T.btnSec} onClick={()=>goTo(1)}>Zurück</button>
+          <button style={T.btnPrim(false)} onClick={()=>goTo(3)}>Individuelle Einschätzung erhalten</button>
+          <button style={T.btnSec} onClick={()=>goTo(1)}>Neue Berechnung starten</button>
         </div>
       </div>
     );
   }
 
-  // ── Phase 1: Eingabe ─────────────────────────────────────────────────────
+  // ── Phase 1: 1 Frage pro Screen (5 Screens) ─────────────────────────────
   return(
     <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
       <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>GKV vs. PKV</span></div>
-      <div style={T.prog}><div style={T.progFil(33)}/></div>
-      <div style={T.hero}><div style={T.eyebrow}>GKV vs. PKV Entscheidungshilfe</div><div style={T.h1}>Was lohnt sich für Sie?</div><div style={T.body}>Einschätzung auf Basis Ihrer Situation — inkl. Zugangsvoraussetzung für die PKV.</div></div>
-      <div style={T.section}>
-        <div style={T.card}>
-          <div style={T.row}><SliderCard label="Monatliches Bruttoeinkommen" value={p.brutto} min={1000} max={12000} step={100} unit="€" display={p.beruf==="angestellt"?p.brutto>=JAEG_MONAT?"✓ Über der Versicherungspflichtgrenze":"Unter der Versicherungspflichtgrenze (6.450 €/Mon.)":""} accent={C} onChange={v=>set("brutto",v)}/></div>
-          <div style={T.row}><SliderCard label="Aktuelles Alter" value={p.alter} min={18} max={60} step={1} unit="Jahre" accent={C} onChange={v=>set("alter",v)}/></div>
-          <div style={T.row}><SliderCard label="Kinder" value={p.kinder} min={0} max={5} step={1} unit="Kinder" accent={C} onChange={v=>set("kinder",v)}/></div>
-          <div style={T.row}><label style={T.fldLbl}>Partner mitversichern?</label><div style={{display:"flex",flexDirection:"column",gap:"8px",marginTop:"8px"}}>
-            <SelectionCard value="no" label="Nein / arbeitet selbst" description="Partner hat eigenes Einkommen oder keine Mitversicherung" selected={!p.partner} accent={C} onClick={()=>set("partner",false)}/>
-            <SelectionCard value="yes" label="Ja, ohne eigenes Einkommen" description="Familienversicherung in der GKV möglich" selected={p.partner} accent={C} onClick={()=>set("partner",true)}/>
-          </div></div>
-          <div style={T.row}><label style={T.fldLbl}>Berufsstatus</label><div style={{display:"flex",flexDirection:"column",gap:"8px",marginTop:"8px"}}>
-            {[
-              {v:"angestellt",l:"Angestellt",d:"Arbeitgeberanteil zur GKV"},
-              {v:"selbst",l:"Selbstständig",d:"Voller Beitrag, PKV oft relevant"},
-              {v:"beamter",l:"Beamter",d:"Beihilfe + PKV-Logik"},
-            ].map(({v,l,d})=>(<SelectionCard key={v} value={v} label={l} description={d} selected={p.beruf===v} accent={C} onClick={()=>set("beruf",v)}/>))}
-          </div></div>
-          <div style={T.rowLast}><label style={T.fldLbl}>Gesundheitszustand</label><div style={{display:"flex",flexDirection:"column",gap:"8px",marginTop:"8px"}}>
-            {[
-              {v:"gut",l:"Gut",d:"Günstiger PKV-Einstieg möglich"},
-              {v:"mittel",l:"Mittel",d:"Risikoaufschläge in der PKV"},
-              {v:"schlecht",l:"Eingeschränkt",d:"GKV ohne Gesundheitsprüfung"},
-            ].map(({v,l,d})=>(<SelectionCard key={v} value={v} label={l} description={d} selected={p.gesundheit===v} accent={C} onClick={()=>set("gesundheit",v)}/>))}
-          </div></div>
+      <div style={T.prog}><div style={T.progFil(scr*20)}/></div>
+
+      {scr===1&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Krankenversicherungs-Check</div>
+          <div style={T.h1}>Welche Krankenversicherung passt zu Ihrer Situation?</div>
+          <div style={T.body}>Wir schauen uns Ihre Situation an und geben Ihnen eine Einordnung.</div>
         </div>
-      </div>
-      <div style={{height:"120px"}}/>
-      <div style={T.footer}><button style={T.btnPrim(false)} onClick={()=>goTo(2)}>Empfehlung anzeigen</button></div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(false)} onClick={nextScr}>Check starten</button></div>
+      </>}
+
+      {scr===2&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihre Ausgangssituation</div>
+          <div style={T.h1}>Wie sind Sie aktuell angestellt?</div>
+        </div>
+        <div style={T.section}>
+          <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+            {[
+              {v:"angestellt",l:"💼 Angestellt",    d:"Pflichtversichert bis zur Einkommensgrenze"},
+              {v:"selbst",    l:"🧑‍💻 Selbstständig", d:"Freie Wahl zwischen GKV und PKV"},
+              {v:"beamter",   l:"🏛️ Beamter",        d:"Beihilfe — PKV fast immer sinnvoller"},
+            ].map(({v,l,d})=>{
+              const icon=<span style={{fontSize:"20px",lineHeight:1}}>{Array.from(l)[0]}</span>;
+              const label=l.replace(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)\s*/u,"");
+              return <SelectionCard key={v} value={v} label={label} description={d} icon={icon} selected={p.beruf===v} accent={C} onClick={()=>set("beruf",v)}/>;
+            })}
+          </div>
+        </div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(false)} onClick={nextScr}>Weiter →</button><button style={T.btnSec} onClick={backScr}>Zurück</button></div>
+      </>}
+
+      {scr===3&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihr Einkommen</div>
+          <div style={T.h1}>Was verdienen Sie aktuell brutto pro Monat?</div>
+          {p.beruf==="angestellt"&&<div style={T.body}>{p.brutto>=JAEG_MONAT?"✓ Über der Versicherungspflichtgrenze (6.450 €)":"Unter der Versicherungspflichtgrenze — PKV aktuell nicht möglich"}</div>}
+        </div>
+        <div style={T.section}>
+          <SliderCard label="Monatliches Bruttogehalt" value={p.brutto} min={1000} max={12000} step={100} unit="€" accent={C} onChange={v=>set("brutto",v)}/>
+        </div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(false)} onClick={nextScr}>Weiter →</button><button style={T.btnSec} onClick={backScr}>Zurück</button></div>
+      </>}
+
+      {scr===4&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihr Alter</div>
+          <div style={T.h1}>Wie alt sind Sie aktuell?</div>
+          <div style={T.body}>Das Alter beeinflusst die PKV-Beiträge erheblich.</div>
+        </div>
+        <div style={T.section}>
+          <SliderCard label="Ihr aktuelles Alter" value={p.alter} min={18} max={60} step={1} unit="Jahre" accent={C} onChange={v=>set("alter",v)}/>
+        </div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(false)} onClick={nextScr}>Weiter →</button><button style={T.btnSec} onClick={backScr}>Zurück</button></div>
+      </>}
+
+      {scr===5&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihre Familie</div>
+          <div style={T.h1}>Wie ist Ihre familiäre Situation?</div>
+          <div style={T.body}>GKV-Familienversicherung kann Kinder und Partner beitragsfrei mitversichern.</div>
+        </div>
+        <div style={T.section}>
+          <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+            {[
+              {l:"Keine Kinder",d:"Allein oder mit Partner, der selbst versichert ist",fn:()=>{set("kinder",0);set("partner",false);}},
+              {l:"Mit Kindern",d:"Ein oder mehrere Kinder im Haushalt",fn:()=>{set("kinder",2);set("partner",false);}},
+              {l:"Partner ohne Einkommen",d:"Partner ist beitragsfrei familienzuversichern",fn:()=>set("partner",true)},
+            ].map(({l,d,fn})=>{
+              const sel=(l==="Keine Kinder"&&p.kinder===0&&!p.partner)||(l==="Mit Kindern"&&p.kinder>0&&!p.partner)||(l==="Partner ohne Einkommen"&&p.partner);
+              return <SelectionCard key={l} value={l} label={l} description={d} selected={sel} accent={C} onClick={fn}/>;
+            })}
+          </div>
+        </div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(false)} onClick={nextScr}>Meine Einschätzung anzeigen</button><button style={T.btnSec} onClick={backScr}>Zurück</button></div>
+      </>}
+
     </div>
   );
 }

@@ -38,11 +38,11 @@ const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 
 // ─── SZENARIEN ────────────────────────────────────────────────────────────────
 const SZENARIEN = [
-  { id: "psyche",  label: "Psyche",    desc: "Burnout, Depression",     dauer: 42, buWahrsch: 52 },
-  { id: "ruecken", label: "Rücken",    desc: "Bandscheibe, Chronisch",  dauer: 25, buWahrsch: 38 },
-  { id: "krebs",   label: "Krebs",     desc: "Behandlung + Reha",       dauer: 50, buWahrsch: 68 },
-  { id: "herz",    label: "Herz",      desc: "Infarkt, Herzinsuffizienz",dauer: 36, buWahrsch: 74 },
-  { id: "unfall",  label: "Unfall",    desc: "Fraktur, Lähmung",        dauer: 18, buWahrsch: 45 },
+  { id: "psyche",  emoji: "🧠", label: "Psyche",  desc: "Burnout oder Depression",               dauer: 42, buWahrsch: 52 },
+  { id: "ruecken", emoji: "🦴", label: "Rücken",  desc: "Bandscheibe oder chronische Schmerzen", dauer: 25, buWahrsch: 38 },
+  { id: "krebs",   emoji: "🎗️", label: "Krebs",   desc: "Diagnose und Behandlung",               dauer: 50, buWahrsch: 68 },
+  { id: "herz",    emoji: "❤️", label: "Herz",    desc: "Infarkt oder Herzinsuffizienz",          dauer: 36, buWahrsch: 74 },
+  { id: "unfall",  emoji: "🤕", label: "Unfall",  desc: "Fraktur oder Lähmung",                  dauer: 18, buWahrsch: 45 },
 ];
 
 // ─── BERECHNUNG ───────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ function makeBUKTGT(C) {
   fldVal:  { fontSize: "20px", fontWeight: "700", color: C, letterSpacing: "-0.5px", marginBottom: "8px" },
   fldHint: { fontSize: "11px", color: "#aaa", marginTop: "6px" },
   optRow:  { display: "grid", gap: "8px", marginTop: "6px" },
-  footer:  { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid #e8e8e8", padding: "14px 24px 28px" },
+  footer:  { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid #e8e8e8", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
   btnPrim: (dis) => ({ width: "100%", padding: "13px 20px", background: dis ? "#e8e8e8" : C, color: dis ? "#aaa" : "#fff", borderRadius: "8px", fontSize: "14px", fontWeight: "600", cursor: dis ? "default" : "pointer", transition: "opacity 0.15s", letterSpacing: "-0.1px" }),
   btnSec:  { width: "100%", padding: "10px", color: "#aaa", fontSize: "13px", marginTop: "6px", cursor: "pointer" },
   bigNum:  (warn) => ({ fontSize: "36px", fontWeight: "700", color: warn ? "#c0392b" : C, letterSpacing: "-1px", lineHeight: 1 }),
@@ -157,7 +157,7 @@ function Header({ phase, total, makler, T }) {
   );
 }
 
-function Footer({ onNext, onBack, nextLabel = "Weiter", disabled = false, T }) {
+function Footer({ onNext, onBack, nextLabel = "Weiter →", disabled = false, T }) {
   return (
     <div style={T.footer}>
       <button style={T.btnPrim(disabled)} onClick={onNext} disabled={disabled}>{nextLabel}</button>
@@ -204,15 +204,16 @@ function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
         <CheckKontaktLeadLine />
         <div style={T.card}>
           {[
-            { k: "name",  l: "Name",    t: "text",  ph: "Max Mustermann",   req: true },
-            { k: "email", l: "E-Mail",  t: "email", ph: "max@beispiel.de",  req: true },
-            { k: "tel",   l: "Telefon", t: "tel",   ph: "089 123 456 78",   req: false },
-          ].map(({ k, l, t, ph, req }, i, arr) => (
+            { k: "name",  l: "Dein Name",    t: "text",  ph: "Vor- und Nachname",  req: true },
+            { k: "email", l: "Deine E-Mail", t: "email", ph: "deine@email.de",      req: true },
+            { k: "tel",   l: "Deine Nummer", t: "tel",   ph: "Optional",            req: false, hint: "Optional — für eine schnellere Rückmeldung" },
+          ].map(({ k, l, t, ph, req, hint }, i, arr) => (
             <div key={k} style={i < arr.length - 1 ? T.row : T.rowLast}>
               <label style={T.fldLbl}>{l}{req ? " *" : ""}</label>
               <input type={t} placeholder={ph} value={fd[k]}
                 onChange={e => setFd(f => ({ ...f, [k]: e.target.value }))}
                 style={T.inputEl} />
+              {hint && <div style={T.fldHint}>{hint}</div>}
             </div>
           ))}
         </div>
@@ -226,7 +227,7 @@ function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
       </div>
       <div style={T.footer}>
         <button style={T.btnPrim(!valid)} onClick={() => valid && onSubmit(fd)} disabled={!valid}>
-          Gespräch anfragen
+          {valid ? "Absicherung prüfen lassen" : "Bitte alle Angaben machen"}
         </button>
         <button style={T.btnSec} onClick={onBack}>Zurück</button>
       </div>
@@ -246,11 +247,11 @@ function DankeScreen({ name, onBack, makler, C }) {
         {name ? `Danke, ${name.split(" ")[0]}.` : "Anfrage gesendet."}
       </div>
       <div style={{ fontSize: "14px", color: "#666", lineHeight: 1.65, marginBottom: "32px" }}>
-        Wir melden uns innerhalb von 24 Stunden mit Ihrer persönlichen Analyse.
+        Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.
       </div>
       <div style={{ border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden", textAlign: "left" }}>
         <div style={{ padding: "14px 16px", borderBottom: "1px solid #f0f0f0" }}>
-          <div style={{ fontSize: "11px", color: "#999", fontWeight: "600", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "4px" }}>Ihr Berater</div>
+          <div style={{ fontSize: "11px", color: "#999", fontWeight: "600", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "4px" }}>Dein Berater</div>
           <div style={{ fontSize: "14px", fontWeight: "600", color: "#111" }}>{makler.name}</div>
           <div style={{ fontSize: "12px", color: "#888", marginTop: "1px" }}>{makler.firma}</div>
         </div>
@@ -286,6 +287,9 @@ export default function BUKTGRechner() {
   });
 
   const set = (k, v) => setP(x => ({ ...x, [k]: v }));
+  const [scr, setScr] = useState(1);
+  const nextScr = () => scr < 5 ? setScr(s => s + 1) : goTo(2);
+  const backScr = () => scr > 1 && setScr(s => s - 1);
   const goTo = (ph) => { setAk(k => k + 1); setPhase(ph); window.scrollTo({ top: 0 }); };
 
   const R = berechne(p);
@@ -304,9 +308,9 @@ export default function BUKTGRechner() {
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={4} total={TOTAL_PHASES} makler={MAKLER} T={T} />
       <div style={T.hero}>
-        <div style={T.label}>Beratungsgespräch</div>
-        <div style={T.h1}>Lücke schliessen</div>
-        <div style={T.body}>Wir bereiten das Gespräch mit Ihrer Analyse vor.</div>
+        <div style={T.label}>Fast geschafft</div>
+        <div style={T.h1}>Wo können wir dich erreichen?</div>
+        <div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div>
       </div>
       <ContactForm
         isDemo={isDemo}
@@ -333,7 +337,7 @@ export default function BUKTGRechner() {
         onBack={() => goTo(2)}
         summary={
           <div>
-            <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Ihre Berechnung</div>
+            <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Deine Berechnung</div>
             <div style={{ display: "flex", gap: "20px" }}>
               <div><div style={{ fontSize: "18px", fontWeight: "700", color: "#c0392b", letterSpacing: "-0.5px" }}>{fmt(R.lueckeKG)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Lücke Krankengeld</div></div>
               <div><div style={{ fontSize: "18px", fontWeight: "700", color: "#c0392b", letterSpacing: "-0.5px" }}>{fmt(R.lueckeBU)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Lücke BU-Rente</div></div>
@@ -359,15 +363,15 @@ export default function BUKTGRechner() {
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={2} total={TOTAL_PHASES} makler={MAKLER} T={T} />
         <div style={T.hero}>
-          <div style={T.label}>Ihr Einkommensschutz · {R.sz.label}</div>
-          <div style={T.h1}>{groesseLueckeMon > 0 ? `${fmt(groesseLueckeMon)}/Monat ungesichert` : "Gut abgesichert"}</div>
-          <div style={T.body}>Ø {R.sz.dauer} Monate Ausfall · BU-Anerkennung in {R.sz.buWahrsch}% der Fälle</div>
+          <div style={T.label}>Deine Einkommenslücke · {R.sz.emoji} {R.sz.label}</div>
+          <div style={T.h1}>So stellt sich Ihre Einkommenssituation im Ausfall dar</div>
+          <div style={T.body}>{groesseLueckeMon > 0 ? `Auf Basis Ihrer Angaben ergibt sich eine mögliche monatliche Lücke von: ${fmt(groesseLueckeMon)}` : "Ihre Absicherung deckt das Nettoeinkommen auf Basis Ihrer Angaben weitgehend ab."} · Ø {R.sz.dauer} Monate Ausfall</div>
         </div>
 
         {/* Block 1: Größte Lücke */}
         {groesseLueckeMon > 0 && (
           <div style={T.section}>
-            <div style={{ fontSize: "11px", fontWeight: "700", color: WARN, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" }}>Ihre größte Lücke</div>
+            <div style={{ fontSize: "11px", fontWeight: "700", color: WARN, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" }}>Deine größte Lücke</div>
             <div style={{ border: `1px solid ${WARN}44`, borderRadius: "10px", padding: "14px 16px", background: `${WARN}04`, borderLeft: `3px solid ${WARN}` }}>
               <div style={{ fontSize: "13px", fontWeight: "600", color: "#111", marginBottom: "4px" }}>{R.groessteluecke.label}</div>
               <div style={{ fontSize: "26px", fontWeight: "700", color: WARN, letterSpacing: "-0.8px", marginBottom: "4px" }}>
@@ -386,7 +390,7 @@ export default function BUKTGRechner() {
             <div style={{ border: `1px solid ${WARN}44`, borderRadius: "10px", padding: "14px 16px", background: `${WARN}04` }}>
               <div style={{ fontSize: "12px", fontWeight: "700", color: WARN, marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Wichtig für Selbstständige</div>
               <div style={{ fontSize: "13px", color: "#444", lineHeight: 1.6 }}>
-                Sie haben <strong>kein gesetzliches Krankengeld</strong> — die Lücke beginnt ab Tag 1. Krankentagegeld und BU sind für Sie existenziell, nicht optional.
+                Du hast <strong>kein gesetzliches Krankengeld</strong> — die Lücke beginnt ab Tag 1. Krankentagegeld und BU sind für dich existenziell, nicht optional.
               </div>
             </div>
           </div>
@@ -421,7 +425,7 @@ export default function BUKTGRechner() {
 
         {/* Block 2: Empfohlene Absicherung */}
         <div style={T.section}>
-          <div style={{ fontSize: "11px", fontWeight: "600", color: C, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" }}>Das sollten Sie absichern</div>
+          <div style={{ fontSize: "11px", fontWeight: "600", color: C, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" }}>Mögliche Absicherungsoptionen</div>
           <div style={T.card}>
             {R.empfKTG > 0 && (
               <div style={T.row}>
@@ -429,7 +433,7 @@ export default function BUKTGRechner() {
                   <div>
                     <div style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>Krankentagegeld</div>
                     <div style={{ fontSize: "12px", color: "#888", marginTop: "2px", lineHeight: 1.5 }}>
-                      Schließt die Lücke ab Tag 43 (Selbstständige ab Tag 1)
+                      Schließt die Lücke ab Tag 43 (als Selbstständige/r ab Tag 1)
                     </div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
@@ -450,7 +454,7 @@ export default function BUKTGRechner() {
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
                     <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>{fmt(R.empfBU)}/Mon.</div>
-                    <div style={{ fontSize: "11px", color: "#aaa" }}>empfohlen</div>
+                    <div style={{ fontSize: "11px", color: "#aaa" }}>kalkulierter Richtwert</div>
                   </div>
                 </div>
               </div>
@@ -477,7 +481,7 @@ export default function BUKTGRechner() {
 
         {/* Block 4: Timeline */}
         <div style={T.section}>
-          <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "12px" }}>Einkommensverlauf im Zeitverlauf</div>
+          <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "12px" }}>Dein Einkommensverlauf</div>
           <div style={T.card}>
             {phasen.map((ph, i) => {
               const isLast = i === phasen.length - 1;
@@ -513,7 +517,7 @@ export default function BUKTGRechner() {
 
         {/* Szenario wechseln */}
         <div style={T.section}>
-          <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Szenario wechseln</div>
+          <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Anderes Szenario durchrechnen</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {SZENARIEN.map(sz => (
               <SelectionCard
@@ -521,6 +525,7 @@ export default function BUKTGRechner() {
                 value={sz.id}
                 label={sz.label}
                 description={`${sz.desc} · Ø ${sz.dauer} Mon. · BU ${sz.buWahrsch}%`}
+                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{sz.emoji}</span>}
                 selected={p.szenario === sz.id}
                 accent={C}
                 onClick={() => set("szenario", sz.id)}
@@ -541,92 +546,106 @@ export default function BUKTGRechner() {
           <div style={{ ...T.infoBox, marginTop: "10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
 
-        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Lücke schliessen — Gespräch anfragen" T={T} />
+        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Absicherung prüfen lassen" T={T} />
       </div>
     );
   }
 
-  // ── Phase 1: Basisdaten + Absicherung (zusammengelegt) ────────────────────
+  // ── Phase 1: 1 Frage pro Screen (5 Screens) ──────────────────────────────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={1} total={TOTAL_PHASES} makler={MAKLER} T={T} />
-      <div style={T.hero}>
-        <div style={T.label}>Schritt 1 von 2 · Ihre Situation</div>
-        <div style={T.h1}>Was passiert, wenn Sie ausfallen?</div>
-        <div style={T.body}>Lohnfortzahlung endet nach 6 Wochen. Wie groß ist die Lücke — und was haben Sie bereits?</div>
-      </div>
+      <Header phase={scr} total={5} makler={MAKLER} T={T} />
 
-      {/* Einkommen + Beruf */}
-      <div style={T.section}>
-        <div style={T.card}>
-          <div style={T.row}>
-            <SliderCard
-              label="Monatliches Bruttogehalt"
-              value={p.brutto} min={1500} max={12000} step={100} unit="€"
-              display={`ca. ${fmt(R.netto)} netto`}
-              accent={C}
-              onChange={v => set("brutto", v)}
-            />
+      {scr === 1 && <>
+        <div style={T.hero}>
+          <div style={T.label}>Einkommens-Check</div>
+          <div style={T.h1}>Was würde passieren, wenn Ihr Einkommen wegfällt?</div>
+          <div style={T.body}>Wir berechnen wie groß die mögliche Lücke wäre — und was Sie bereits haben.</div>
+        </div>
+        <div style={{ height: "120px" }} />
+        <Footer onNext={nextScr} nextLabel="Check starten" T={T} showBack={false} />
+      </>}
+
+      {scr === 2 && <>
+        <div style={T.hero}>
+          <div style={T.label}>Ihre Situation</div>
+          <div style={T.h1}>Wie sind Sie aktuell angestellt?</div>
+        </div>
+        <div style={T.section}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {[
+              { v: "angestellt", l: "💼 Angestellt",    d: "Lohnfortzahlung + Krankengeld" },
+              { v: "selbst",     l: "🧑‍💻 Selbstständig", d: "Kein gesetzliches Sicherheitsnetz" },
+              { v: "beamter",    l: "🏛️ Beamter",        d: "Beihilfe + besondere Tarife" },
+            ].map(({ v, l, d }) => {
+              const icon = <span style={{ fontSize: "20px", lineHeight: 1 }}>{Array.from(l)[0]}</span>;
+              const label = l.replace(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)\s*/u, "");
+              return <SelectionCard key={v} value={v} label={label} description={d} icon={icon} selected={p.beruf === v} accent={C} onClick={() => set("beruf", v)} />;
+            })}
           </div>
-          <div style={T.row}>
-            <label style={T.fldLbl}>Berufsstatus</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
-              {[
-                { v: "angestellt", l: "Angestellt", d: "Arbeitgeberzuschuss zur Sozialversicherung" },
-                { v: "selbst", l: "Selbstständig", d: "Voller Beitrag, kein gesetzliches Krankengeld" },
-                { v: "beamter", l: "Beamter", d: "Beihilfe + besondere Tarife" },
-              ].map(({ v, l, d }) => (
-                <SelectionCard key={v} value={v} label={l} description={d} selected={p.beruf === v} accent={C} onClick={() => set("beruf", v)} />
-              ))}
+        </div>
+        <div style={{ height: "120px" }} />
+        <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+      </>}
+
+      {scr === 3 && <>
+        <div style={T.hero}>
+          <div style={T.label}>Ihr Einkommen</div>
+          <div style={T.h1}>Was verdienen Sie aktuell brutto pro Monat?</div>
+        </div>
+        <div style={T.section}>
+          <SliderCard label="Monatliches Bruttogehalt" value={p.brutto} min={1500} max={12000} step={100} unit="€"
+            display={`ca. ${fmt(R.netto)} netto`} accent={C} onChange={v => set("brutto", v)} />
+          {istSelbst && (
+            <div style={{ ...T.infoBox, marginTop: "10px", borderLeft: `3px solid #c0392b`, background: "#fff9f9", borderRadius: "0 8px 8px 0" }}>
+              <strong style={{ color: "#c0392b" }}>Selbstständig:</strong> Kein gesetzliches Krankengeld — die Lücke beginnt ab Tag 1 der Krankheit.
             </div>
-          </div>
-          <div style={T.row}>
-            <SliderCard
-              label="Vorhandenes Krankentagegeld"
-              value={p.ktgTag} min={0} max={150} step={5} unit="€/Tag"
-              display={p.ktgTag > 0 ? `= ${fmt(p.ktgTag * 30)}/Monat` : "Kein KTG vorhanden"}
-              accent={C}
-              onChange={v => set("ktgTag", v)}
-              hint="Tagessatz aus Ihrem Krankentagegeld-Vertrag — 0 wenn keiner vorhanden"
-            />
-          </div>
-          <div style={T.rowLast}>
-            <SliderCard
-              label="Vorhandene BU-Rente"
-              value={p.buRente} min={0} max={4000} step={100} unit="€/Mon"
-              display={p.buRente === 0 ? "Keine BU-Versicherung" : ""}
-              accent={C}
-              onChange={v => set("buRente", v)}
-              hint="Monatliche Rente aus bestehender BU-Versicherung"
-            />
+          )}
+        </div>
+        <div style={{ height: "120px" }} />
+        <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+      </>}
+
+      {scr === 4 && <>
+        <div style={T.hero}>
+          <div style={T.label}>Bestehende Absicherung</div>
+          <div style={T.h1}>Was haben Sie bereits für den Ausfall?</div>
+          <div style={T.body}>0 eingeben wenn kein Vertrag vorhanden ist.</div>
+        </div>
+        <div style={T.section}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <SliderCard label="Tägliches Krankentagegeld (KTG)" value={p.ktgTag} min={0} max={150} step={5} unit="€/Tag"
+              display={p.ktgTag > 0 ? `= ${fmt(p.ktgTag * 30)}/Monat` : "Kein KTG vorhanden"} accent={C}
+              onChange={v => set("ktgTag", v)} hint="0 wenn kein Vertrag vorhanden" />
+            <SliderCard label="Monatliche BU-Rente" value={p.buRente} min={0} max={4000} step={100} unit="€/Mon"
+              display={p.buRente === 0 ? "Keine BU-Versicherung" : ""} accent={C}
+              onChange={v => set("buRente", v)} hint="0 wenn keine BU vorhanden" />
           </div>
         </div>
-        {istSelbst && (
-          <div style={{ ...T.infoBox, marginTop: "10px", borderLeft: `3px solid #c0392b`, background: "#fff9f9", borderRadius: "0 8px 8px 0" }}>
-            <strong style={{ color: "#c0392b" }}>Selbstständig:</strong> Kein gesetzliches Krankengeld — die Lücke beginnt ab Tag 1 der Krankheit.
-          </div>
-        )}
-      </div>
+        <div style={{ height: "120px" }} />
+        <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+      </>}
 
-      {/* Szenario Cards */}
-      <div style={T.section}>
-        <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" }}>Welches Szenario betrifft Sie am meisten?</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          {SZENARIEN.map(sz => (
-            <SelectionCard
-              key={sz.id}
-              value={sz.id}
-              label={sz.label}
-              description={`${sz.desc} · Ø ${sz.dauer} Mon. · BU ${sz.buWahrsch}%`}
-              selected={p.szenario === sz.id}
-              accent={C}
-              onClick={() => set("szenario", sz.id)}
-            />
-          ))}
+      {scr === 5 && <>
+        <div style={T.hero}>
+          <div style={T.label}>Ihr Szenario</div>
+          <div style={T.h1}>Welches Szenario beschäftigt Sie am meisten?</div>
         </div>
-      </div>
+        <div style={T.section}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {SZENARIEN.map(sz => (
+              <SelectionCard key={sz.id} value={sz.id} label={sz.label}
+                description={`${sz.desc} · Ø ${sz.dauer} Mon.`}
+                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{sz.emoji}</span>}
+                selected={p.szenario === sz.id} accent={C} onClick={() => set("szenario", sz.id)} />
+            ))}
+          </div>
+        </div>
+        <div style={{ height: "120px" }} />
+        <Footer onNext={nextScr} onBack={backScr} nextLabel="Meine Lücke berechnen" T={T} />
+      </>}
 
-      <Footer onNext={() => goTo(2)} nextLabel="Lücke berechnen" T={T} />
+      {/* Dead-code placeholder to prevent empty return */}
     </div>
   );
 }

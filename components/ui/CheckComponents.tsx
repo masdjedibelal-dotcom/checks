@@ -2,6 +2,104 @@
 
 import { useState, type ReactNode } from "react";
 import { textOnAccent } from "@/lib/utils";
+import type { CheckT } from "@/lib/checkStandardT";
+
+/** Farbe für Gesetzes-/Normverweise in Berechnungshinweisen (siehe CheckBerechnungshinweis) */
+export const CHECK_GES_REF_STYLE = { color: "#B8884A" } as const;
+
+export function CheckGesetzRef({ children }: { children: ReactNode }) {
+  return <span style={CHECK_GES_REF_STYLE}>{children}</span>;
+}
+
+// ─── PROGRESS (ohne Header-Zeile; gleiche Tokens wie CheckHeader) ────────────
+export function CheckProgressDots({
+  T,
+  current,
+  total,
+  fillPct,
+}: {
+  T: CheckT;
+  /** 1-basierter Schritt */
+  current: number;
+  total: number;
+  /** Optional 0–100; sonst (current/total)*100 */
+  fillPct?: number;
+}) {
+  const pct = fillPct != null ? fillPct : total > 0 ? (current / total) * 100 : 0;
+  const metaText = `Fast geschafft · Schritt ${current} von ${total}`;
+
+  return (
+    <div style={T.progWrap}>
+      <div
+        style={{
+          ...T.progTrack,
+          borderRadius: "999px",
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        <div style={T.progFill(Math.min(100, Math.max(0, pct)))} />
+      </div>
+      <div style={T.progMeta}>{metaText}</div>
+    </div>
+  );
+}
+
+// ─── DANKE (Standard-Layout mit checkStandardT) ──────────────────────────────
+export function DankeScreen({
+  T,
+  C,
+  name,
+  makler,
+  onBack,
+  message = "Wir melden uns innerhalb von 24 Stunden.",
+  resetLabel = "Neue Berechnung starten",
+}: {
+  T: CheckT;
+  C: string;
+  name?: string;
+  makler: { name: string; firma: string; telefon: string; email: string };
+  onBack: () => void;
+  message?: string;
+  resetLabel?: string;
+}) {
+  return (
+    <div style={T.dankeScreen}>
+      <div style={T.dankeRing(C)}>
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden>
+          <path
+            d="M4 10l4.5 4.5L16 6"
+            stroke={C}
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+      <div style={T.dankeH}>
+        {name ? `Danke, ${name.split(" ")[0]}.` : "Anfrage gesendet."}
+      </div>
+      <div style={T.dankeBody}>{message}</div>
+      <div style={T.maklerCard}>
+        <div style={T.maklerTop}>
+          <div style={T.maklerName}>{makler.name}</div>
+          <div style={T.maklerFirma}>{makler.firma}</div>
+        </div>
+        <div style={T.maklerLinks}>
+          <a href={`tel:${makler.telefon}`} style={T.maklerLink(C)}>
+            {makler.telefon}
+          </a>
+          <a href={`mailto:${makler.email}`} style={T.maklerLink(C)}>
+            {makler.email}
+          </a>
+        </div>
+      </div>
+      <button type="button" onClick={onBack} style={{ ...T.btnSec, marginTop: "16px" }}>
+        {resetLabel}
+      </button>
+    </div>
+  );
+}
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type InputCardProps = {
@@ -48,11 +146,13 @@ export function InputCard({ children, focused, accent }: InputCardProps) {
   return (
     <div
       style={{
-        padding: "16px",
-        borderRadius: "12px",
-        border: `1px solid ${focused ? accent : "#e8e8e8"}`,
-        background: "#fff",
-        boxShadow: focused ? `0 0 0 3px ${accent}12` : "none",
+        padding: "18px 20px",
+        borderRadius: "18px",
+        border: `1px solid ${focused ? accent : "rgba(17,24,39,0.06)"}`,
+        background: "rgba(255,255,255,0.96)",
+        boxShadow: focused
+          ? `0 8px 24px rgba(17,24,39,0.08), 0 0 0 1px ${accent}33`
+          : "0 2px 10px rgba(17,24,39,0.04)",
         transition: "border-color 0.2s ease, box-shadow 0.2s ease",
         marginBottom: "10px",
       }}
@@ -107,7 +207,13 @@ export function SliderCard({
         }}
       >
         <label
-          style={{ fontSize: "12px", fontWeight: "600", color: "#444" }}
+          style={{
+            fontSize: "11px",
+            fontWeight: "700",
+            color: "#6B7280",
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
+          }}
         >
           {label}
         </label>
@@ -125,22 +231,23 @@ export function SliderCard({
             aria-label={label}
             style={{
               width: "96px",
-              padding: "6px 10px",
-              border: `1.5px solid ${focused ? accent : "#e8e8e8"}`,
-              borderRadius: "8px",
+              padding: "8px 12px",
+              border: `1px solid ${focused ? accent : "rgba(31,41,55,0.08)"}`,
+              borderRadius: "14px",
               fontSize: "15px",
               fontWeight: "700",
-              color: focused ? "#111" : accent,
+              color: focused ? "#1F2937" : accent,
               textAlign: "right",
               outline: "none",
-              background: focused ? "#fff" : `${accent}08`,
-              fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif",
+              background: focused ? "#fff" : `color-mix(in srgb, ${accent} 8%, white)`,
+              fontFamily: "'DM Sans', system-ui, sans-serif",
+              boxShadow: "inset 0 1px 2px rgba(17,24,39,0.03)",
               transition: "border-color 0.15s, background 0.15s",
             }}
           />
           {unit ? (
             <span
-              style={{ fontSize: "12px", color: "#999", flexShrink: 0 }}
+              style={{ fontSize: "12px", color: "#9CA3AF", flexShrink: 0 }}
             >
               {unit}
             </span>
@@ -152,7 +259,7 @@ export function SliderCard({
         <div
           style={{
             fontSize: "12px",
-            color: "#888",
+            color: "#6B7280",
             marginBottom: "10px",
             marginTop: "-8px",
           }}
@@ -164,7 +271,7 @@ export function SliderCard({
       <div
         style={{
           position: "relative",
-          height: "20px",
+          height: "22px",
           display: "flex",
           alignItems: "center",
         }}
@@ -174,19 +281,19 @@ export function SliderCard({
             position: "absolute",
             left: 0,
             right: 0,
-            height: "5px",
-            background: "#efefef",
-            borderRadius: "3px",
+            height: "6px",
+            background: "rgba(31,41,55,0.08)",
+            borderRadius: "999px",
           }}
         />
         <div
           style={{
             position: "absolute",
             left: 0,
-            height: "5px",
+            height: "6px",
             width: `${pct}%`,
             background: accent,
-            borderRadius: "3px",
+            borderRadius: "999px",
             transition: "width 0.1s ease",
           }}
         />
@@ -221,8 +328,8 @@ export function SliderCard({
             height: "20px",
             borderRadius: "50%",
             background: "#fff",
-            border: `2.5px solid ${accent}`,
-            boxShadow: `0 2px 6px ${accent}40`,
+            border: `2px solid ${accent}`,
+            boxShadow: "0 2px 8px rgba(17,24,39,0.12)",
             pointerEvents: "none",
             transition: "left 0.1s ease",
           }}
@@ -233,9 +340,9 @@ export function SliderCard({
         style={{
           display: "flex",
           justifyContent: "space-between",
-          fontSize: "10px",
-          color: "#ccc",
-          marginTop: "6px",
+          fontSize: "11px",
+          color: "#9CA3AF",
+          marginTop: "8px",
         }}
       >
         <span>
@@ -249,7 +356,7 @@ export function SliderCard({
       </div>
 
       {hint ? (
-        <div style={{ fontSize: "11px", color: "#aaa", marginTop: "8px" }}>
+        <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "10px" }}>
           {hint}
         </div>
       ) : null}
@@ -279,22 +386,27 @@ export function SelectionCard({
         minWidth: 0,
         display: "flex",
         alignItems: "center",
-        gap: "10px",
-        padding: "14px 12px",
-        borderRadius: "10px",
-        border: `1.5px solid ${selected ? accent : "#e8e8e8"}`,
-        background: selected ? `${accent}08` : "#fff",
+        gap: "14px",
+        padding: "18px",
+        borderRadius: "18px",
+        border: `1.5px solid ${selected ? accent : "rgba(17,24,39,0.06)"}`,
+        background: selected
+          ? `color-mix(in srgb, ${accent} 8%, white)`
+          : "rgba(255,255,255,0.96)",
         cursor: "pointer",
         textAlign: "left",
-        transition: "all 0.15s ease",
-        boxShadow: selected ? `0 2px 8px ${accent}20` : "none",
-        transform: selected ? "scale(1.01)" : "scale(1)",
+        transition:
+          "transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease",
+        boxShadow: selected
+          ? "0 10px 28px rgba(26,58,92,0.12)"
+          : "0 2px 10px rgba(17,24,39,0.04)",
+        minHeight: "66px",
       }}
     >
       {icon ? (
         <div
           style={{
-            color: selected ? accent : "#aaa",
+            color: selected ? accent : "#98A2B3",
             flexShrink: 0,
             transition: "color 0.15s",
           }}
@@ -311,9 +423,9 @@ export function SelectionCard({
       >
         <div
           style={{
-            fontSize: "13px",
+            fontSize: "15px",
             fontWeight: "600",
-            color: selected ? accent : "#111",
+            color: selected ? accent : "#1F2937",
             lineHeight: 1.3,
             overflowWrap: "break-word",
             wordBreak: "break-word",
@@ -324,10 +436,10 @@ export function SelectionCard({
         {description ? (
           <div
             style={{
-              fontSize: "11px",
-              color: "#aaa",
-              marginTop: "2px",
-              lineHeight: 1.4,
+              fontSize: "13px",
+              color: "#6B7280",
+              marginTop: "3px",
+              lineHeight: 1.45,
             }}
           >
             {description}
@@ -340,7 +452,7 @@ export function SelectionCard({
           height: "20px",
           borderRadius: "50%",
           flexShrink: 0,
-          border: `1.5px solid ${selected ? accent : "#ddd"}`,
+          border: `1.5px solid ${selected ? accent : "#EAE5DC"}`,
           background: selected ? accent : "#fff",
           display: "flex",
           alignItems: "center",
@@ -389,8 +501,10 @@ export function CheckRow({
         display: "flex",
         alignItems: checked && description ? "flex-start" : "center",
         gap: "14px",
-        padding: "14px 16px",
-        background: checked ? `${accent}07` : "#fff",
+        padding: "14px 18px",
+        background: checked
+          ? `color-mix(in srgb, ${accent} 6%, white)`
+          : "rgba(255,255,255,0.96)",
         cursor: "pointer",
         transition: "background 0.15s",
         borderBottom: showDivider ? "1px solid #f5f5f5" : "none",
@@ -400,10 +514,10 @@ export function CheckRow({
         style={{
           width: "22px",
           height: "22px",
-          borderRadius: "6px",
+          borderRadius: "7px",
           flexShrink: 0,
-          border: `1.5px solid ${checked ? accent : "#e0e0e0"}`,
-          background: checked ? accent : "#fafafa",
+          border: `1.5px solid ${checked ? accent : "#EAE5DC"}`,
+          background: checked ? accent : "#FFFFFF",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -427,9 +541,9 @@ export function CheckRow({
       <div>
         <div
           style={{
-            fontSize: "13px",
+            fontSize: "14px",
             fontWeight: checked ? "600" : "400",
-            color: checked ? "#111" : "#555",
+            color: "#1F2937",
             letterSpacing: checked ? "-0.1px" : "0",
             lineHeight: 1.3,
           }}
@@ -439,10 +553,10 @@ export function CheckRow({
         {description ? (
           <div
             style={{
-              fontSize: "11px",
-              color: "#aaa",
+              fontSize: "13px",
+              color: "#6B7280",
               marginTop: "2px",
-              lineHeight: 1.4,
+              lineHeight: 1.45,
             }}
           >
             {description}
@@ -456,7 +570,7 @@ export function CheckRow({
 // ─── 5. SECTION HEADER ────────────────────────────────────────────────────────
 export function SectionHeader({
   label,
-  color = "#999",
+  color = "#9CA3AF",
 }: {
   label: string;
   color?: string;
@@ -467,7 +581,7 @@ export function SectionHeader({
         fontSize: "11px",
         fontWeight: "700",
         color,
-        letterSpacing: "0.8px",
+        letterSpacing: "0.5px",
         textTransform: "uppercase",
         marginBottom: "10px",
         marginTop: "4px",
