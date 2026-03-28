@@ -626,6 +626,227 @@ export const checkStandardT = (C: string) => {
       background: "#FFFFFF",
     },
 
+    // ── RESULT HERO ───────────────────────────
+    resultHero: {
+      padding: "52px 24px 40px",
+      textAlign: "center" as const,
+      background: "#F8F6F2",
+    },
+    resultEyebrow: {
+      fontSize: "12px",
+      fontWeight: "500" as const,
+      color: "#9CA3AF",
+      letterSpacing: "0.2px",
+      marginBottom: "14px",
+    },
+    resultNumber: (warn: boolean) => ({
+      fontSize: "52px",
+      fontWeight: "800" as const,
+      color: warn ? "#C0392B" : C,
+      letterSpacing: "-2.5px",
+      lineHeight: 1,
+      marginBottom: "8px",
+    }),
+    resultNumberNeutral: {
+      fontSize: "52px",
+      fontWeight: "800" as const,
+      color: C,
+      letterSpacing: "-2.5px",
+      lineHeight: 1,
+      marginBottom: "8px",
+    },
+    resultUnit: {
+      fontSize: "14px",
+      fontWeight: "400" as const,
+      color: "#9CA3AF",
+      letterSpacing: "0",
+      marginBottom: "18px",
+    },
+    statusBadgeOk: {
+      display: "inline-flex" as const,
+      alignItems: "center" as const,
+      gap: "5px",
+      padding: "5px 13px",
+      background: "#F0FDF4",
+      border: "1px solid #BBF7D0",
+      borderRadius: "999px",
+      fontSize: "12px",
+      fontWeight: "600" as const,
+      color: "#15803D",
+    },
+    statusBadgeWarn: {
+      display: "inline-flex" as const,
+      alignItems: "center" as const,
+      gap: "5px",
+      padding: "5px 13px",
+      background: "#FFF6F5",
+      border: "1px solid #F2D4D0",
+      borderRadius: "999px",
+      fontSize: "12px",
+      fontWeight: "600" as const,
+      color: "#C0392B",
+    },
+    statusBadgeInfo: {
+      display: "inline-flex" as const,
+      alignItems: "center" as const,
+      gap: "5px",
+      padding: "5px 13px",
+      background: "#F0F9FF",
+      border: "1px solid #BAE6FD",
+      borderRadius: "999px",
+      fontSize: "12px",
+      fontWeight: "600" as const,
+      color: "#0369A1",
+    },
+    resultSub: {
+      fontSize: "13px",
+      color: "#9CA3AF",
+      lineHeight: 1.55,
+      marginTop: "12px",
+    },
+
+    // ── CARD HIERARCHY ────────────────────────
+    cardPrimary: {
+      border: "1px solid rgba(17,24,39,0.08)",
+      borderRadius: "20px",
+      overflow: "hidden",
+      background: "#FFFFFF",
+      boxShadow: "0 6px 24px rgba(17,24,39,0.08)",
+    },
+    cardContext: {
+      background: "#FAFAF8",
+      border: "1px solid rgba(17,24,39,0.05)",
+      borderRadius: "16px",
+      padding: "18px 20px",
+    },
+    warnCard: {
+      background: "#FFF6F5",
+      border: "1px solid #F2D4D0",
+      borderLeft: "3px solid #C0392B",
+      borderRadius: "14px",
+      padding: "18px 20px",
+    },
+    warnCardTitle: {
+      fontSize: "13px",
+      fontWeight: "700" as const,
+      color: "#C0392B",
+      marginBottom: "6px",
+    },
+    warnCardText: {
+      fontSize: "13px",
+      color: "#7B2A2A",
+      lineHeight: 1.65,
+    },
+
+    // ── SECTION LABEL (UPGRADED) ──────────────
+    sectionLbl: {
+      fontSize: "13px",
+      fontWeight: "600" as const,
+      color: "#6B7280",
+      marginBottom: "12px",
+      letterSpacing: "0",
+    },
+
+    // ── PROGRESS BAR (UPGRADED) ───────────────
+    progBarTrack: {
+      height: "10px",
+      background: "#F3F4F6",
+      borderRadius: "999px",
+      overflow: "hidden",
+    },
+    progBarFill: (pct: number, color: string) => ({
+      height: "100%",
+      width: `${pct}%`,
+      background: color,
+      borderRadius: "999px",
+      transition: "width 0.7s cubic-bezier(0.34,1.56,0.64,1)",
+    }),
+
+    // ── DATA ROWS (EDITORIAL) ─────────────────
+    dataRow: {
+      padding: "14px 20px",
+      borderBottom: "1px solid rgba(17,24,39,0.04)",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    dataRowLast: {
+      padding: "14px 20px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    dataLabel: {
+      fontSize: "14px",
+      color: "#6B7280",
+    },
+    dataValue: {
+      fontSize: "15px",
+      fontWeight: "600" as const,
+      color: "#1F2937",
+      letterSpacing: "-0.2px",
+    },
+    dataValueAccent: {
+      fontSize: "15px",
+      fontWeight: "700" as const,
+      color: C,
+      letterSpacing: "-0.3px",
+    },
+    dataValueWarn: {
+      fontSize: "15px",
+      fontWeight: "700" as const,
+      color: "#C0392B",
+      letterSpacing: "-0.3px",
+    },
+
+    // ── RECOMMENDATION ROW ────────────────────
+    recCard: {
+      border: "1px solid rgba(17,24,39,0.08)",
+      borderRadius: "18px",
+      overflow: "hidden",
+      background: "#FFFFFF",
+      boxShadow: "0 4px 16px rgba(17,24,39,0.06)",
+    },
+    recRow: {
+      padding: "18px 20px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      borderBottom: "1px solid rgba(17,24,39,0.04)",
+    },
+    recRowLast: {
+      padding: "18px 20px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+    },
+    recLabel: {
+      fontSize: "14px",
+      fontWeight: "600" as const,
+      color: "#1F2937",
+    },
+    recSub: {
+      fontSize: "12px",
+      color: "#9CA3AF",
+      marginTop: "3px",
+      lineHeight: 1.4,
+    },
+    recValue: (C2: string) => ({
+      fontSize: "18px",
+      fontWeight: "700" as const,
+      color: C2,
+      letterSpacing: "-0.5px",
+      textAlign: "right" as const,
+      flexShrink: 0,
+      marginLeft: "12px",
+    }),
+    recValueSub: {
+      fontSize: "11px",
+      color: "#9CA3AF",
+      textAlign: "right" as const,
+      marginTop: "2px",
+    },
+
     // ── FADE IN ANIMATION ─────────────────────
     fadeIn: {
       animation: "fadeIn 0.28s ease",

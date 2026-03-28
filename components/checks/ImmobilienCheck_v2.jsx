@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
-import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
+import { SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -125,18 +125,31 @@ function makeImmobilienT(C){return{
   btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},
   infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},
   inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},
+  resultHero:{padding:"52px 24px 40px",textAlign:"center",background:"#fff"},
+  resultEyebrow:{fontSize:"12px",fontWeight:"500",color:"#9CA3AF",letterSpacing:"0.2px",marginBottom:"14px"},
+  resultNumber:(warn,C2)=>({fontSize:"52px",fontWeight:"800",color:warn?WARN:(C2||C),letterSpacing:"-2.5px",lineHeight:1,marginBottom:"8px"}),
+  resultUnit:{fontSize:"14px",color:"#9CA3AF",marginBottom:"18px"},
+  resultSub:{fontSize:"13px",color:"#9CA3AF",lineHeight:1.55,marginTop:"12px"},
+  statusOk:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#15803D"},
+  statusWarn:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#FFF6F5",border:"1px solid #F2D4D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#C0392B"},
+  statusInfo:(C2)=>({display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:`${C2}0d`,border:`1px solid ${C2}33`,borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:C2}),
+  cardPrimary:{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"20px",overflow:"hidden",background:"#FFFFFF",boxShadow:"0 6px 24px rgba(17,24,39,0.08)"},
+  cardContext:{background:"#FAFAF8",border:"1px solid rgba(17,24,39,0.05)",borderRadius:"16px",padding:"18px 20px"},
+  warnCard:{background:"#FFF6F5",border:"1px solid #F2D4D0",borderLeft:"3px solid #C0392B",borderRadius:"14px",padding:"18px 20px"},
+  warnCardTitle:{fontSize:"13px",fontWeight:"700",color:"#C0392B",marginBottom:"6px"},
+  sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"},
 };}
 
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 
 // ─── ABSICHERUNGS-BLOCK ───────────────────────────────────────────────────────
-function AbsicherungBlock({modul,T,C}){
+function AbsicherungBlock({modul,T}){
   const cards=ABSICHERUNG[modul]||[];
   const prioColor={kritisch:WARN,sinnvoll:"#d97706",optional:"#888"};
   const prioBg={kritisch:"#fff5f5",sinnvoll:"#fffbf0",optional:"#f9f9f9"};
   return(
     <div style={T.section}>
-      <div style={{fontSize:"11px",fontWeight:"700",color:C,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Absicherung rund um deine Immobilie</div>
+      <div style={{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"}}>Absicherung rund um Ihre Immobilie</div>
       <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
         {cards.map(({t,n,p},i)=>(
           <div key={i} style={{border:`1px solid ${prioColor[p]}33`,borderRadius:"10px",padding:"12px 14px",background:prioBg[p],display:"flex",gap:"12px",alignItems:"flex-start"}}>
@@ -161,23 +174,30 @@ export default function ImmobilienCheck(){
   const T=useMemo(()=>makeImmobilienT(C),[C]);
   const isDemo = isCheckDemoMode();
   const[phase,setPhase]=useState(1);
+  const[scr2,setScr2]=useState(1);           // sub-screen within phase 2
   const[ak,setAk]=useState(0);
   const[danke,setDanke]=useState(false);
   const[detailsOpen,setDetailsOpen]=useState(false);
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[kontaktConsent,setKontaktConsent]=useState(false);
   // Phase 1 State
-  const[situation,setSituation]=useState(""); // mieter | eigentuemer | kaufplan
+  const[,setSituation]=useState(""); // mieter | eigentuemer | kaufplan
   const[modul,setModul]=useState("");         // mk | anschluss | wg
   // Modul-States
   const[mk,setMk]=useState({kaufpreis:350000,eigenkapital:70000,miete:1200,mietSteigerung:2,zinsen:3.5,tilgung:2,instandhaltung:150,jahre:20});
   const[anschluss,setAnschluss]=useState({restschuld:220000,altZins:1.2,neuZins:3.8,tilgung:2,laufzeit:10});
   const[wg,setWg]=useState({flaeche:140,baujahr:1985,bauart:"massiv",versSum:320000,elementar:false,photovoltaik:false});
   const setM=(s,k,v)=>{if(s==="mk")setMk(x=>({...x,[k]:v}));else if(s==="anschluss")setAnschluss(x=>({...x,[k]:v}));else setWg(x=>({...x,[k]:v}));};
-  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
-  const TOTAL=4;
+  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);setScr2(1);window.scrollTo({top:0,behavior:"smooth"});};
+  const SCR2_TOTAL={mk:4,anschluss:3,wg:3};
+  const scr2Total=SCR2_TOTAL[modul]||3;
+  const nextScr2=()=>{if(scr2<scr2Total){setAk(k=>k+1);setScr2(s=>s+1);window.scrollTo({top:0,behavior:"smooth"});}else goTo(3);};
+  const backScr2=()=>{if(scr2>1){setAk(k=>k+1);setScr2(s=>s-1);window.scrollTo({top:0,behavior:"smooth"});}else goTo(1);};
+  // Fortschritt über alle Phasen: Phase 1 = 1 Screen, Phase 2 = n Screens, Phase 3 = 1
+  const totalSteps=1+scr2Total+1;
+  const curStep=phase===1?1:phase===2?1+scr2:1+scr2Total+1;
 
-  const Header=()=>(<><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Immobilien-Check</span></div><div style={T.prog}><div style={T.progFil(phase/TOTAL*100)}/></div></>);
+  const Header=()=>(<><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Immobilien-Check</span></div><div style={T.prog}><div style={T.progFil(Math.round(curStep/totalSteps*100))}/></div></>);
 
   // Danke
   if(danke)return(<div style={{...T.page,"--accent":C}}><Header/><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);setPhase(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
@@ -237,29 +257,27 @@ export default function ImmobilienCheck(){
 
       {/* MODUL: Mieten vs. Kaufen */}
       {modul==="mk"&&RMK&&(<>
-        <div style={T.hero}>
-          <div style={T.eyebrow}>Kaufen oder Mieten?</div>
-          <div style={T.h1}>So kann Ihre aktuelle Situation eingeordnet werden</div>
-          <div style={T.body}>{RMK.diffMonatl<=0?"Kaufen lohnt sich — günstiger als Miete.":RMK.breakeven?`Langfristig rechnet sich Kaufen — ab Jahr ${RMK.breakeven} wirst du günstiger sein.`:"Kaufen ist teurer — aber du baust Vermögen auf."}</div>
+        <div style={T.resultHero}>
+          <div style={T.resultEyebrow}>Kaufen vs. Mieten · Ihre Situation</div>
+          <div style={T.resultNumber(RMK.diffMonatl>0, RMK.diffMonatl<=0?"#059669":undefined)}>
+            {(RMK.diffMonatl>0?"+":"")+fmt(Math.abs(RMK.diffMonatl))}
+          </div>
+          <div style={T.resultUnit}>
+            {RMK.diffMonatl>0?"monatlich teurer als Mieten":"monatlich günstiger als Mieten"}
+          </div>
+          {RMK.diffMonatl<=0
+            ? <div style={T.statusOk}>Kaufen lohnt sich</div>
+            : RMK.breakeven
+              ? <div style={T.statusInfo(C)}>Break-even ab Jahr {RMK.breakeven}</div>
+              : <div style={T.statusWarn}>Derzeit teurer als Mieten</div>
+          }
+          <div style={T.resultSub}>Rate {fmt(RMK.rate)}/Mon. · Miete {fmt(mk.miete)}/Mon. · auf Basis Ihrer Angaben</div>
         </div>
         <div style={T.section}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",marginBottom:"12px"}}>
-            {[
-              {l:"Monatliche Rate",v:fmt(RMK.rate),sub:"Zins + Tilgung",warn:false,accent:false},
-              {l:"Aktuelle Miete",v:fmt(mk.miete),sub:"/Monat",warn:false,accent:false},
-              {l:"Differenz",v:(RMK.diffMonatl>0?"+":"-")+fmt(Math.abs(RMK.diffMonatl)),sub:"/Monat",warn:RMK.diffMonatl>0,accent:RMK.diffMonatl<=0},
-            ].map(({l,v,sub,warn,accent},i)=>(
-              <div key={i} style={{border:`1px solid ${warn?WARN+"33":accent?C+"33":"#e8e8e8"}`,borderRadius:"10px",padding:"12px 10px",background:warn?"#fff5f5":accent?`${C}06`:"#fff",textAlign:"center"}}>
-                <div style={{fontSize:"15px",fontWeight:"700",color:warn?WARN:accent?C:"#111",letterSpacing:"-0.3px"}}>{v}</div>
-                <div style={{fontSize:"10px",color:"#aaa",marginTop:"2px",fontWeight:"500"}}>{sub}</div>
-                <div style={{fontSize:"10px",color:warn?WARN:accent?C:"#888",marginTop:"4px",fontWeight:"600",lineHeight:1.3}}>{l}</div>
-              </div>
-            ))}
-          </div>
           {RMK.breakeven&&(
-            <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",padding:"14px 16px",background:"#f9f9f9",marginBottom:"12px"}}>
-              <div style={{fontSize:"13px",fontWeight:"600",color:"#111",marginBottom:"4px"}}>Ab Jahr {RMK.breakeven} wird Kaufen günstiger als Mieten</div>
-              <div style={{fontSize:"12px",color:"#666",lineHeight:1.55}}>Bis dahin überwiegen Nebenkosten und Zinsen. Danach profitierst du von gesunkener Restschuld und Wertsteigerung.</div>
+            <div style={T.cardContext}>
+              <div style={{fontSize:"14px",fontWeight:"600",color:"#1F2937",marginBottom:"6px"}}>Ab Jahr {RMK.breakeven} günstiger als Mieten</div>
+              <div style={{fontSize:"13px",color:"#6B7280",lineHeight:1.65}}>Bis dahin überwiegen Nebenkosten und Zinsen. Danach profitierst du von gesunkener Restschuld und Wertsteigerung der Immobilie.</div>
             </div>
           )}
           <button onClick={()=>setDetailsOpen(x=>!x)} style={{display:"flex",alignItems:"center",gap:"6px",fontSize:"12px",color:"#aaa",cursor:"pointer",marginBottom:"8px"}}>
@@ -280,28 +298,35 @@ export default function ImmobilienCheck(){
 
       {/* MODUL: Anschlussfinanzierung */}
       {modul==="anschluss"&&RA&&(<>
-        <div style={T.hero}>
-          <div style={T.eyebrow}>Deine neue Rate</div>
-          <div style={T.h1}>So stellt sich Ihre monatliche Belastung dar</div>
-          <div style={T.body}>Restschuld {fmtK(anschluss.restschuld)} · Neuer Zins {anschluss.neuZins}% · {anschluss.laufzeit} Jahre</div>
+        <div style={T.resultHero}>
+          <div style={T.resultEyebrow}>Anschlussfinanzierung · Ihre neue Rate</div>
+          <div style={T.resultNumber(RA.diffMonatl>0)}>{fmt(RA.neuRate)}</div>
+          <div style={T.resultUnit}>neue monatliche Rate</div>
+          {RA.diffMonatl>0
+            ? <div style={T.statusWarn}>+{fmt(RA.diffMonatl)}/Monat mehr als bisher</div>
+            : <div style={T.statusOk}>Rate günstiger als bisher</div>
+          }
+          <div style={T.resultSub}>Restschuld {fmtK(anschluss.restschuld)} · {anschluss.neuZins}% Zins · {anschluss.laufzeit} Jahre</div>
         </div>
         <div style={T.section}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"12px"}}>
-            <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",padding:"14px"}}>
-              <div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"6px"}}>Deine aktuelle Rate</div>
-              <div style={{fontSize:"22px",fontWeight:"700",color:"#111",letterSpacing:"-0.5px"}}>{fmt(RA.altRate)}</div>
-              <div style={{fontSize:"11px",color:"#aaa",marginTop:"2px"}}>/Monat</div>
+            <div style={{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"16px",padding:"16px 14px",background:"#fff"}}>
+              <div style={{fontSize:"12px",color:"#9CA3AF",marginBottom:"8px"}}>Aktuelle Rate</div>
+              <div style={{fontSize:"26px",fontWeight:"800",color:"#1F2937",letterSpacing:"-1px"}}>{fmt(RA.altRate)}</div>
+              <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"4px"}}>/Monat</div>
             </div>
-            <div style={{border:`1px solid ${RA.diffMonatl>0?WARN:"#e8e8e8"}`,borderRadius:"10px",padding:"14px",background:RA.diffMonatl>0?"#fff5f5":"#fff"}}>
-              <div style={{fontSize:"11px",fontWeight:"600",color:RA.diffMonatl>0?WARN:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"6px"}}>Deine neue Rate</div>
-              <div style={{fontSize:"22px",fontWeight:"700",color:RA.diffMonatl>0?WARN:"#111",letterSpacing:"-0.5px"}}>{fmt(RA.neuRate)}</div>
-              <div style={{fontSize:"11px",color:"#aaa",marginTop:"2px"}}>/Monat</div>
+            <div style={{border:`${RA.diffMonatl>0?"1.5px":"1px"} solid ${RA.diffMonatl>0?"#F2D4D0":"rgba(17,24,39,0.08)"}`,borderRadius:"16px",padding:"16px 14px",background:RA.diffMonatl>0?"#FFF6F5":"#fff",boxShadow:RA.diffMonatl>0?"0 4px 16px rgba(192,57,43,0.08)":"none"}}>
+              <div style={{fontSize:"12px",color:RA.diffMonatl>0?"#C0392B":"#9CA3AF",marginBottom:"8px"}}>Neue Rate</div>
+              <div style={{fontSize:"26px",fontWeight:"800",color:RA.diffMonatl>0?WARN:"#1F2937",letterSpacing:"-1px"}}>{fmt(RA.neuRate)}</div>
+              <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"4px"}}>/Monat</div>
             </div>
           </div>
           {RA.diffMonatl>0&&(
-            <div style={{border:`1px solid ${WARN}33`,borderRadius:"10px",padding:"13px 16px",background:`${WARN}04`,borderLeft:`3px solid ${WARN}`,marginBottom:"12px"}}>
-              <div style={{fontSize:"13px",fontWeight:"600",color:WARN,marginBottom:"3px"}}>+{fmt(RA.diffMonatl)}/Monat Mehrbelastung</div>
-              <div style={{fontSize:"12px",color:"#555",lineHeight:1.55}}>Über {anschluss.laufzeit} Jahre summiert sich das auf <strong>{fmtK(Math.abs(RA.mehrGesamt))}</strong> Mehrkosten.</div>
+            <div style={T.warnCard}>
+              <div style={T.warnCardTitle}>+{fmt(RA.diffMonatl)}/Monat Mehrbelastung</div>
+              <div style={{fontSize:"13px",color:"#7B2A2A",lineHeight:1.65}}>
+                Über {anschluss.laufzeit} Jahre summiert sich das auf <strong style={{color:"#C0392B"}}>{fmtK(Math.abs(RA.mehrGesamt))}</strong> Mehrkosten.
+              </div>
             </div>
           )}
           <button onClick={()=>setDetailsOpen(x=>!x)} style={{display:"flex",alignItems:"center",gap:"6px",fontSize:"12px",color:"#aaa",cursor:"pointer",marginBottom:"8px"}}>
@@ -320,28 +345,27 @@ export default function ImmobilienCheck(){
 
       {/* MODUL: Wohngebäude */}
       {modul==="wg"&&RWG&&(<>
-        <div style={T.hero}>
-          <div style={T.eyebrow}>Deine Absicherung</div>
-          <div style={T.h1}>So kann Ihr Versicherungsschutz eingeordnet werden</div>
-          <div style={T.body}>{RWG.unterversichert?"Unterversichert — deine Summe reicht nicht aus.":!wg.elementar?"Elementarschutz fehlt — bitte ergänzen.":"Gut versichert — du bist ausreichend geschützt."}</div>
+        <div style={T.resultHero}>
+          <div style={T.resultEyebrow}>Wohngebäude · Ihr Versicherungsschutz</div>
+          <div style={T.resultNumber(RWG.unterversichert, !RWG.unterversichert&&wg.elementar?"#059669":undefined)}>
+            {RWG.unterversichert?fmtK(RWG.deckungsluecke):fmtK(RWG.empfohleneVS)}
+          </div>
+          <div style={T.resultUnit}>
+            {RWG.unterversichert?"mögliche Unterversicherung":"empfohlener Versicherungswert"}
+          </div>
+          {RWG.unterversichert
+            ? <div style={T.statusWarn}>Unterversicherung erkannt</div>
+            : !wg.elementar
+              ? <div style={T.statusInfo(C)}>Elementarschutz prüfen</div>
+              : <div style={T.statusOk}>Gut versichert</div>
+          }
+          <div style={T.resultSub}>{wg.flaeche} m² · Baujahr {wg.baujahr} · auf Basis Ihrer Angaben</div>
         </div>
         <div style={T.section}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px",marginBottom:"12px"}}>
-            {[
-              {l:"Geschätzter Neuwert",v:fmtK(RWG.neuwert),warn:false,accent:false},
-              {l:"Orientierungswert VS",v:fmtK(RWG.empfohleneVS),warn:false,accent:true},
-              {l:"Deine Versicherungssumme",v:wg.versSum>0?fmtK(wg.versSum):"Keine",warn:RWG.unterversichert,accent:false},
-            ].map(({l,v,warn,accent},i)=>(
-              <div key={i} style={{border:`1px solid ${warn?WARN+"33":accent?C+"33":"#e8e8e8"}`,borderRadius:"10px",padding:"12px 8px",background:warn?"#fff5f5":accent?`${C}06`:"#fff",textAlign:"center"}}>
-                <div style={{fontSize:"13px",fontWeight:"700",color:warn?WARN:accent?C:"#111",letterSpacing:"-0.2px"}}>{v}</div>
-                <div style={{fontSize:"10px",color:"#aaa",marginTop:"3px",fontWeight:"500"}}>{l}</div>
-              </div>
-            ))}
-          </div>
           {!wg.elementar&&(
-            <div style={{border:`1px solid ${WARN}44`,borderRadius:"10px",padding:"13px 16px",background:`${WARN}04`,borderLeft:`3px solid ${WARN}`,marginBottom:"12px"}}>
-              <div style={{fontSize:"13px",fontWeight:"600",color:WARN,marginBottom:"3px"}}>Elementarschutz fehlt — bitte ergänzen</div>
-              <div style={{fontSize:"12px",color:"#555",lineHeight:1.55}}>Überschwemmung, Rückstau und Erdrutsch sind im Standard nicht enthalten — und betreffen immer mehr Regionen in Deutschland.</div>
+            <div style={{...T.warnCard,marginBottom:"12px"}}>
+              <div style={T.warnCardTitle}>Elementarschutz fehlt</div>
+              <div style={{fontSize:"13px",color:"#7B2A2A",lineHeight:1.65}}>Überschwemmung, Rückstau und Erdrutsch sind im Standard nicht enthalten — und betreffen immer mehr Regionen in Deutschland.</div>
             </div>
           )}
           <button onClick={()=>setDetailsOpen(x=>!x)} style={{display:"flex",alignItems:"center",gap:"6px",fontSize:"12px",color:"#aaa",cursor:"pointer",marginBottom:"8px"}}>
@@ -361,7 +385,7 @@ export default function ImmobilienCheck(){
       </>)}
 
       {/* Absicherungs-Block */}
-      <AbsicherungBlock modul={modul} T={T} C={C}/>
+      <AbsicherungBlock modul={modul} T={T}/>
 
       <div style={{...T.section,marginBottom:"120px"}}>
         <div style={T.infoBox}>Orientierungs-Check — Näherungswerte. Für verbindliche Angebote empfehlen wir ein persönliches Gespräch.</div>
@@ -381,161 +405,308 @@ export default function ImmobilienCheck(){
     </div>);
   }
 
-  // ── Phase 2: Modul-Eingabe ───────────────────────────────────────────────
+  // ── Phase 2: Modul-Eingabe (1 Frage pro Screen) ─────────────────────────
   if(phase===2){
-    return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
-      <div style={T.hero}>
-        <div style={T.eyebrow}>{{mk:"Das Objekt",anschluss:"Deine aktuelle Finanzierung",wg:"Dein Gebäude"}[modul]}</div>
-        <div style={T.h1}>{{mk:"Was würde die Immobilie kosten — und was bringst du mit?",anschluss:"Wie hoch ist deine Restschuld bei Ablauf?",wg:"Ein paar Angaben zu deiner Immobilie"}[modul]}</div>
-        <div style={T.body}>{{mk:"Kaufpreis + Eigenkapital bestimmen deine Finanzierungssituation.",anschluss:"Das ist der Betrag der bei der Anschlussfinanzierung neu verhandelt wird.",wg:"Daraus berechnen wir den empfohlenen Versicherungswert."}[modul]}</div>
-      </div>
+    const stepLbl=`Schritt ${scr2} von ${scr2Total}`;
 
-      {/* MODUL 1: Mieten vs Kaufen */}
-      {modul==="mk"&&(
-        <div style={T.section}>
-          <div style={T.card}>
-            <div style={T.row}><SliderCard label="Kaufpreis" value={mk.kaufpreis} min={100000} max={1500000} step={10000} unit="€" accent={C} onChange={v=>setM("mk","kaufpreis",v)}/></div>
-            <div style={T.rowLast}><SliderCard label="Eigenkapital" value={mk.eigenkapital} min={0} max={500000} step={5000} unit="€" display={`= ${Math.round(mk.eigenkapital/mk.kaufpreis*100)}% Eigenkapitalquote`} accent={C} onChange={v=>setM("mk","eigenkapital",v)}/></div>
+    // ── MK: Kaufen vs. Mieten ──────────────────────────────────────────────
+    if(modul==="mk"){
+      const screens=[
+        {
+          eyebrow:"Das Objekt",
+          h1:"Was würde die Immobilie kosten?",
+          body:"Kaufpreis und Eigenkapital bestimmen, wie viel du finanzieren müsstest.",
+          content:(
+            <div style={T.card}>
+              <div style={T.row}><SliderCard label="Kaufpreis" value={mk.kaufpreis} min={100000} max={1500000} step={10000} unit="€" accent={C} onChange={v=>setM("mk","kaufpreis",v)}/></div>
+              <div style={T.rowLast}><SliderCard label="Eigenkapital" value={mk.eigenkapital} min={0} max={500000} step={5000} unit="€" display={`= ${Math.round(mk.eigenkapital/mk.kaufpreis*100)} % Eigenkapitalquote`} accent={C} onChange={v=>setM("mk","eigenkapital",v)}/></div>
+            </div>
+          ),
+        },
+        {
+          eyebrow:"Die Finanzierung",
+          h1:"Zu welchen Konditionen würdest du finanzieren?",
+          body:"Zinssatz und Tilgung bestimmen deine monatliche Rate.",
+          content:(
+            <div style={T.card}>
+              <div style={T.row}><SliderCard label="Zinssatz" value={mk.zinsen} min={1} max={8} step={0.1} unit="%" accent={C} onChange={v=>setM("mk","zinsen",v)}/></div>
+              <div style={T.rowLast}><SliderCard label="Tilgungsrate" value={mk.tilgung} min={1} max={5} step={0.5} unit="%" accent={C} onChange={v=>setM("mk","tilgung",v)}/></div>
+            </div>
+          ),
+        },
+        {
+          eyebrow:"Der Vergleich",
+          h1:"Was zahlst du aktuell für Miete?",
+          body:"Wir vergleichen Kaufen und Mieten auf Basis deiner aktuellen Miete.",
+          content:(
+            <div style={T.card}>
+              <div style={T.rowLast}><SliderCard label="Aktuelle Miete" value={mk.miete} min={300} max={4000} step={50} unit="€/Mon." accent={C} onChange={v=>setM("mk","miete",v)}/></div>
+            </div>
+          ),
+        },
+        {
+          eyebrow:"Der Zeitraum",
+          h1:"Über welchen Zeitraum soll verglichen werden?",
+          body:"Je länger der Zeitraum, desto klarer wird, ob sich Kaufen lohnt.",
+          content:(
+            <div style={T.card}>
+              <div style={T.row}><SliderCard label="Mietsteigerung p.a." value={mk.mietSteigerung} min={0} max={5} step={0.5} unit="%" accent={C} onChange={v=>setM("mk","mietSteigerung",v)}/></div>
+              <div style={T.rowLast}><SliderCard label="Betrachtungszeitraum" value={mk.jahre} min={5} max={30} step={1} unit="Jahre" accent={C} onChange={v=>setM("mk","jahre",v)}/></div>
+            </div>
+          ),
+        },
+      ];
+      const s=screens[scr2-1];
+      return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+        <div style={T.hero}>
+          <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
+            <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
+            <div style={{fontSize:"10px",color:"#ccc"}}>·</div>
+            <div style={{fontSize:"10px",color:"#bbb"}}>{stepLbl}</div>
           </div>
-          <div style={{padding:"20px 0 8px"}}>
-            <div style={{fontSize:"11px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:"2px"}}>Die Finanzierung</div>
-            <div style={{fontSize:"15px",fontWeight:"700",color:"#111",lineHeight:1.25}}>Zu welchen Konditionen würdest du finanzieren?</div>
-            <div style={{fontSize:"12px",color:"#888",marginTop:"3px"}}>Zinssatz und Tilgung bestimmen deine monatliche Rate.</div>
-          </div>
-          <div style={T.card}>
-            <div style={T.row}><SliderCard label="Zinssatz" value={mk.zinsen} min={1} max={8} step={0.1} unit="%" accent={C} onChange={v=>setM("mk","zinsen",v)}/></div>
-            <div style={T.rowLast}><SliderCard label="Tilgungsrate" value={mk.tilgung} min={1} max={5} step={0.5} unit="%" accent={C} onChange={v=>setM("mk","tilgung",v)}/></div>
-          </div>
-          <div style={{padding:"20px 0 8px"}}>
-            <div style={{fontSize:"11px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:"2px"}}>Der Vergleich</div>
-            <div style={{fontSize:"15px",fontWeight:"700",color:"#111",lineHeight:1.25}}>Was zahlst du aktuell für Miete?</div>
-            <div style={{fontSize:"12px",color:"#888",marginTop:"3px"}}>Wir vergleichen Kaufen und Mieten über den gesamten Zeitraum.</div>
-          </div>
-          <div style={T.card}>
-            <div style={T.row}><SliderCard label="Aktuelle Miete" value={mk.miete} min={300} max={4000} step={50} unit="€/Mon" accent={C} onChange={v=>setM("mk","miete",v)}/></div>
-            <div style={T.row}><SliderCard label="Mietsteigerung p.a." value={mk.mietSteigerung} min={0} max={5} step={0.5} unit="%" accent={C} onChange={v=>setM("mk","mietSteigerung",v)}/></div>
-            <div style={T.rowLast}><SliderCard label="Betrachtungszeitraum" value={mk.jahre} min={5} max={30} step={1} unit="Jahre" accent={C} onChange={v=>setM("mk","jahre",v)}/></div>
-          </div>
+          <div style={T.h1}>{s.h1}</div>
+          <div style={T.body}>{s.body}</div>
         </div>
-      )}
-
-      {/* MODUL 2: Anschlussfinanzierung */}
-      {modul==="anschluss"&&(
-        <div style={T.section}>
-          <div style={T.card}>
-            <div style={T.row}><SliderCard label="Restschuld bei Anschluss" value={anschluss.restschuld} min={50000} max={800000} step={5000} unit="€" accent={C} onChange={v=>setM("anschluss","restschuld",v)}/></div>
-            <div style={T.rowLast}><SliderCard label="Dein aktueller Zinssatz" value={anschluss.altZins} min={0.5} max={5} step={0.1} unit="%" hint="Aus deinem laufenden Darlehensvertrag" accent={C} onChange={v=>setM("anschluss","altZins",v)}/></div>
-          </div>
-          <div style={{padding:"20px 0 8px"}}>
-            <div style={{fontSize:"11px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:"2px"}}>Der neue Zinssatz</div>
-            <div style={{fontSize:"15px",fontWeight:"700",color:"#111",lineHeight:1.25}}>Zu welchem Zinssatz könntest du neu finanzieren?</div>
-            <div style={{fontSize:"12px",color:"#888",marginTop:"3px"}}>Aktueller Schätzwert — dein Berater gibt dir konkrete Konditionen.</div>
-          </div>
-          <div style={T.card}>
-            <div style={T.row}><SliderCard label="Neuer Zinssatz (Schätzung)" value={anschluss.neuZins} min={1} max={8} step={0.1} unit="%" hint="Aktuelles Marktniveau für deine Laufzeit" accent={C} onChange={v=>setM("anschluss","neuZins",v)}/></div>
-            <div style={T.row}><SliderCard label="Tilgungsrate" value={anschluss.tilgung} min={1} max={5} step={0.5} unit="%" accent={C} onChange={v=>setM("anschluss","tilgung",v)}/></div>
-            <div style={T.rowLast}><SliderCard label="Neue Zinsbindung" value={anschluss.laufzeit} min={5} max={20} step={1} unit="Jahre" accent={C} onChange={v=>setM("anschluss","laufzeit",v)}/></div>
-          </div>
+        <div style={T.section}>{s.content}</div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}>
+          <button style={T.btnPrim(false)} onClick={nextScr2}>{scr2<scr2Total?"Weiter":"Ergebnis anzeigen"}</button>
+          <button style={T.btnSec} onClick={backScr2}>Zurück</button>
         </div>
-      )}
+      </div>);
+    }
 
-      {/* MODUL 3: Wohngebäude */}
-      {modul==="wg"&&(
-        <div style={T.section}>
+    // ── Anschlussfinanzierung ──────────────────────────────────────────────
+    if(modul==="anschluss"){
+      const screens=[
+        {
+          eyebrow:"Deine aktuelle Finanzierung",
+          h1:"Wie hoch ist deine Restschuld bei Ablauf?",
+          body:"Das ist der Betrag, der bei der Anschlussfinanzierung neu verhandelt wird.",
+          content:(
+            <div style={T.card}>
+              <div style={T.rowLast}><SliderCard label="Restschuld bei Anschluss" value={anschluss.restschuld} min={50000} max={800000} step={5000} unit="€" accent={C} onChange={v=>setM("anschluss","restschuld",v)}/></div>
+            </div>
+          ),
+        },
+        {
+          eyebrow:"Die Zinsen",
+          h1:"Wie verändern sich deine Zinsen?",
+          body:"Trage deinen alten und einen realistischen neuen Zinssatz ein.",
+          content:(
+            <div style={T.card}>
+              <div style={T.row}><SliderCard label="Dein aktueller Zinssatz" value={anschluss.altZins} min={0.5} max={5} step={0.1} unit="%" hint="Aus deinem laufenden Darlehensvertrag" accent={C} onChange={v=>setM("anschluss","altZins",v)}/></div>
+              <div style={T.rowLast}><SliderCard label="Neuer Zinssatz (Schätzung)" value={anschluss.neuZins} min={1} max={8} step={0.1} unit="%" hint="Aktuelles Marktniveau für deine Laufzeit" accent={C} onChange={v=>setM("anschluss","neuZins",v)}/></div>
+            </div>
+          ),
+        },
+        {
+          eyebrow:"Die Laufzeit",
+          h1:"Wie lange soll die neue Zinsbindung laufen?",
+          body:"Längere Bindung gibt Planungssicherheit — kürzere mehr Flexibilität.",
+          content:(
+            <div style={T.card}>
+              <div style={T.row}><SliderCard label="Tilgungsrate" value={anschluss.tilgung} min={1} max={5} step={0.5} unit="%" accent={C} onChange={v=>setM("anschluss","tilgung",v)}/></div>
+              <div style={T.rowLast}><SliderCard label="Neue Zinsbindung" value={anschluss.laufzeit} min={5} max={20} step={1} unit="Jahre" accent={C} onChange={v=>setM("anschluss","laufzeit",v)}/></div>
+            </div>
+          ),
+        },
+      ];
+      const s=screens[scr2-1];
+      return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+        <div style={T.hero}>
+          <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
+            <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
+            <div style={{fontSize:"10px",color:"#ccc"}}>·</div>
+            <div style={{fontSize:"10px",color:"#bbb"}}>{stepLbl}</div>
+          </div>
+          <div style={T.h1}>{s.h1}</div>
+          <div style={T.body}>{s.body}</div>
+        </div>
+        <div style={T.section}>{s.content}</div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}>
+          <button style={T.btnPrim(false)} onClick={nextScr2}>{scr2<scr2Total?"Weiter":"Ergebnis anzeigen"}</button>
+          <button style={T.btnSec} onClick={backScr2}>Zurück</button>
+        </div>
+      </div>);
+    }
+
+    // ── Wohngebäude ────────────────────────────────────────────────────────
+    const screens=[
+      {
+        eyebrow:"Das Gebäude",
+        h1:"Wie groß ist deine Immobilie?",
+        body:"Wohnfläche und Baujahr sind die wichtigsten Faktoren für den Versicherungswert.",
+        content:(
           <div style={T.card}>
             <div style={T.row}><SliderCard label="Wohnfläche" value={wg.flaeche} min={40} max={500} step={5} unit="m²" accent={C} onChange={v=>setM("wg","flaeche",v)}/></div>
-            <div style={T.row}><SliderCard label="Baujahr" value={wg.baujahr} min={1900} max={2024} step={1} unit="" display={wg.baujahr<1950?"Altbau — höhere Wiederherstellungskosten":wg.baujahr<1990?"Bestandsbau":"Neuerer Bau"} accent={C} onChange={v=>setM("wg","baujahr",v)}/></div>
-            <div style={T.row}>
-              <label style={T.fldLbl}>Bauart</label>
-              <div style={{display:"flex",flexDirection:"column",gap:"8px",marginTop:"8px"}}>
-                {[
-                  {v:"massiv",l:"Massivbau",d:"Standard-Faktor für Neuwert"},
-                  {v:"fertig",l:"Fertighaus",d:"Oft günstigerer Wiederherstellungswert"},
-                  {v:"holz",l:"Holzbau",d:"Besondere Brand- und Feuchte-Risiken"},
-                  {v:"denkmal",l:"Denkmal",d:"Höherer Wiederherstellungsaufwand"},
-                ].map(({v,l,d})=>(
-                  <SelectionCard key={v} value={v} label={l} description={d} selected={wg.bauart===v} accent={C} onClick={()=>setM("wg","bauart",v)}/>
-                ))}
-              </div>
-            </div>
-            <div style={T.rowLast}><SliderCard label="Deine aktuelle Versicherungssumme" value={wg.versSum} min={0} max={2000000} step={10000} unit="€" hint="Aus deinem laufenden Wohngebäudevertrag" accent={C} onChange={v=>setM("wg","versSum",v)}/></div>
+            <div style={T.rowLast}><SliderCard label="Baujahr" value={wg.baujahr} min={1900} max={2024} step={1} unit="" display={wg.baujahr<1950?"Altbau — höhere Kosten":wg.baujahr<1990?"Bestandsbau":"Neuerer Bau"} accent={C} onChange={v=>setM("wg","baujahr",v)}/></div>
           </div>
-          <div style={{padding:"20px 0 8px"}}>
-            <div style={{fontSize:"11px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:"2px"}}>Besonderheiten</div>
-            <div style={{fontSize:"15px",fontWeight:"700",color:"#111",lineHeight:1.25}}>Gibt es besondere Merkmale bei dir?</div>
-          </div>
+        ),
+      },
+      {
+        eyebrow:"Die Bauart",
+        h1:"Wie ist dein Haus gebaut?",
+        body:"Die Bauart beeinflusst die Wiederherstellungskosten im Schadensfall.",
+        content:(
           <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-            <button onClick={()=>setM("wg","photovoltaik",!wg.photovoltaik)} style={{display:"flex",alignItems:"flex-start",gap:"14px",padding:"14px 16px",borderRadius:"12px",border:`1.5px solid ${wg.photovoltaik?C:"#e8e8e8"}`,background:wg.photovoltaik?`${C}08`:"#fff",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:"24px",lineHeight:1,flexShrink:0}}>☀️</div>
-              <div>
-                <div style={{fontSize:"14px",fontWeight:"600",color:wg.photovoltaik?C:"#111"}}>Ich habe eine Photovoltaik-Anlage</div>
-                <div style={{fontSize:"12px",color:"#888",marginTop:"2px",lineHeight:1.5}}>Muss in der Wohngebäudeversicherung separat abgesichert werden</div>
-              </div>
-              <div style={{marginLeft:"auto",flexShrink:0,width:"20px",height:"20px",borderRadius:"50%",border:`1.5px solid ${wg.photovoltaik?C:"#ddd"}`,background:wg.photovoltaik?C:"#fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                {wg.photovoltaik&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-              </div>
-            </button>
-            <button onClick={()=>setM("wg","elementar",!wg.elementar)} style={{display:"flex",alignItems:"flex-start",gap:"14px",padding:"14px 16px",borderRadius:"12px",border:`1.5px solid ${wg.elementar?C:"#e8e8e8"}`,background:wg.elementar?`${C}08`:"#fff",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:"24px",lineHeight:1,flexShrink:0}}>🌊</div>
-              <div>
-                <div style={{fontSize:"14px",fontWeight:"600",color:wg.elementar?C:"#111"}}>Ich möchte Elementarschutz prüfen</div>
-                <div style={{fontSize:"12px",color:"#888",marginTop:"2px",lineHeight:1.5}}>Überschwemmung, Rückstau und Erdrutsch sind oft nicht im Standard enthalten</div>
-              </div>
-              <div style={{marginLeft:"auto",flexShrink:0,width:"20px",height:"20px",borderRadius:"50%",border:`1.5px solid ${wg.elementar?C:"#ddd"}`,background:wg.elementar?C:"#fff",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                {wg.elementar&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-              </div>
-            </button>
+            {[
+              {v:"massiv",l:"Massivbau",d:"Standard-Faktor für Neuwert"},
+              {v:"fertig",l:"Fertighaus",d:"Oft günstigerer Wiederherstellungswert"},
+              {v:"holz",l:"Holzbau",d:"Besondere Brand- und Feuchte-Risiken"},
+              {v:"denkmal",l:"Denkmal",d:"Höherer Wiederherstellungsaufwand"},
+            ].map(({v,l,d})=>(
+              <button key={v} onClick={()=>{setM("wg","bauart",v);}} style={{display:"flex",alignItems:"center",gap:"14px",padding:"16px 18px",borderRadius:"14px",border:`1.5px solid ${wg.bauart===v?C:"rgba(17,24,39,0.1)"}`,background:wg.bauart===v?`${C}07`:"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.18s",boxShadow:wg.bauart===v?`0 4px 14px ${C}18`:"none"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:"15px",fontWeight:"700",color:wg.bauart===v?C:"#111"}}>{l}</div>
+                  <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"3px"}}>{d}</div>
+                </div>
+                <div style={{width:"22px",height:"22px",borderRadius:"50%",border:`1.5px solid ${wg.bauart===v?C:"#ddd"}`,background:wg.bauart===v?C:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  {wg.bauart===v&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+              </button>
+            ))}
           </div>
+        ),
+      },
+      {
+        eyebrow:"Deine Absicherung",
+        h1:"Wie hoch ist deine aktuelle Versicherungssumme?",
+        body:"Und gibt es besondere Merkmale an deiner Immobilie?",
+        content:(
+          <>
+            <div style={{...T.card,marginBottom:"14px"}}>
+              <div style={T.rowLast}><SliderCard label="Aktuelle Versicherungssumme" value={wg.versSum} min={0} max={2000000} step={10000} unit="€" hint="Aus deinem laufenden Wohngebäudevertrag" accent={C} onChange={v=>setM("wg","versSum",v)}/></div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+              <button onClick={()=>setM("wg","photovoltaik",!wg.photovoltaik)} style={{display:"flex",alignItems:"center",gap:"14px",padding:"16px 18px",borderRadius:"14px",border:`1.5px solid ${wg.photovoltaik?C:"rgba(17,24,39,0.1)"}`,background:wg.photovoltaik?`${C}07`:"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.18s"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:"14px",fontWeight:"600",color:wg.photovoltaik?C:"#111"}}>Photovoltaik-Anlage vorhanden</div>
+                  <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"3px",lineHeight:1.5}}>Muss in der Wohngebäudeversicherung separat berücksichtigt werden</div>
+                </div>
+                <div style={{width:"22px",height:"22px",borderRadius:"50%",border:`1.5px solid ${wg.photovoltaik?C:"#ddd"}`,background:wg.photovoltaik?C:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  {wg.photovoltaik&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+              </button>
+              <button onClick={()=>setM("wg","elementar",!wg.elementar)} style={{display:"flex",alignItems:"center",gap:"14px",padding:"16px 18px",borderRadius:"14px",border:`1.5px solid ${wg.elementar?C:"rgba(17,24,39,0.1)"}`,background:wg.elementar?`${C}07`:"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.18s"}}>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:"14px",fontWeight:"600",color:wg.elementar?C:"#111"}}>Elementarschutz prüfen</div>
+                  <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"3px",lineHeight:1.5}}>Überschwemmung, Rückstau und Erdrutsch sind im Standard oft nicht enthalten</div>
+                </div>
+                <div style={{width:"22px",height:"22px",borderRadius:"50%",border:`1.5px solid ${wg.elementar?C:"#ddd"}`,background:wg.elementar?C:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  {wg.elementar&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+              </button>
+            </div>
+          </>
+        ),
+      },
+    ];
+    const s=screens[scr2-1];
+    return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+      <div style={T.hero}>
+        <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
+          <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
+          <div style={{fontSize:"10px",color:"#ccc"}}>·</div>
+          <div style={{fontSize:"10px",color:"#bbb"}}>{stepLbl}</div>
         </div>
-      )}
-
+        <div style={T.h1}>{s.h1}</div>
+        <div style={T.body}>{s.body}</div>
+      </div>
+      <div style={T.section}>{s.content}</div>
       <div style={{height:"120px"}}/>
       <div style={T.footer}>
-        <button style={T.btnPrim(false)} onClick={()=>goTo(3)}>Ergebnis berechnen</button>
-        <button style={T.btnSec} onClick={()=>goTo(1)}>Zurück</button>
+        <button style={T.btnPrim(false)} onClick={nextScr2}>{scr2<scr2Total?"Weiter":"Ergebnis anzeigen"}</button>
+        <button style={T.btnSec} onClick={backScr2}>Zurück</button>
       </div>
     </div>);
   }
 
-  // ── Phase 1: Situation + Thema ───────────────────────────────────────────
-  const INTENT_OPTS=[
-    {sit:"mieter",   mod:"mk",       emoji:"🏢",l:"Kaufen vs. Mieten",      d:"Breakeven-Analyse: Wann lohnt sich Kaufen?"},
-    {sit:"kaufplan",  mod:"anschluss",emoji:"📊",l:"Finanzierung prüfen",    d:"Monatliche Rate und Restschuld berechnen"},
-    {sit:"eigentuemer",mod:"wg",     emoji:"🛡️",l:"Absicherung prüfen",     d:"Wohngebäude und Unterversicherung checken"},
+  // ── Phase 1: Premium Modulwahl ───────────────────────────────────────────
+  const MOD_OPTS=[
+    {
+      sit:"mieter",mod:"mk",letter:"A",
+      label:"Kaufen oder mieten",
+      sub:"Break-even-Analyse",
+      desc:"Sie sehen sofort, ob sich Kaufen langfristig lohnt — oder ob Mieten die bessere Wahl bleibt.",
+      kpi:"Monatlicher Unterschied",
+      accent:"#1D4ED8",
+    },
+    {
+      sit:"kaufplan",mod:"anschluss",letter:"B",
+      label:"Finanzierung prüfen",
+      sub:"Ratenvergleich",
+      desc:"Wie verändert sich Ihre Rate bei der Anschlussfinanzierung? Was bleibt nach Ablauf der Zinsbindung?",
+      kpi:"Rate alt vs. neu",
+      accent:"#0369A1",
+    },
+    {
+      sit:"eigentuemer",mod:"wg",letter:"C",
+      label:"Wohngebäude prüfen",
+      sub:"Versicherungssumme",
+      desc:"Ist Ihre Wohngebäudeversicherung ausreichend? Unterversicherung ist häufiger als gedacht.",
+      kpi:"Empfohlener Versicherungswert",
+      accent:"#065F46",
+    },
   ];
-  const canProceed=situation&&modul;
 
   return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
-    <div style={T.hero}>
-      <div style={T.h1}>Was möchten Sie prüfen?</div>
-      <div style={T.body}>Wählen Sie ein Thema — der Check passt sich automatisch an.</div>
+    <div style={{padding:"36px 24px 20px"}}>
+      <div style={{fontSize:"11px",fontWeight:"700",color:"#9CA3AF",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:"8px"}}>Immobilien-Check</div>
+      <div style={{fontSize:"24px",fontWeight:"800",color:"#111",letterSpacing:"-0.8px",lineHeight:1.2,marginBottom:"6px"}}>Was möchten Sie prüfen?</div>
+      <div style={{fontSize:"14px",color:"#9CA3AF",lineHeight:1.6}}>Wählen Sie ein Thema — der Check passt sich automatisch an.</div>
     </div>
 
-    <div style={T.section}>
-      <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-        {INTENT_OPTS.map(({sit,mod,emoji,l,d})=>{
-          const sel=situation===sit&&modul===mod;
-          return(
-            <button key={mod} onClick={()=>{setSituation(sit);setModul(mod);}} style={{display:"flex",alignItems:"center",gap:"14px",padding:"16px",borderRadius:"12px",border:`1.5px solid ${sel?C:"#e8e8e8"}`,background:sel?`${C}08`:"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.15s",boxShadow:sel?`0 3px 10px ${C}20`:"none"}}>
-              <div style={{fontSize:"26px",flexShrink:0,lineHeight:1}}>{emoji}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:"14px",fontWeight:"600",color:sel?C:"#111",lineHeight:1.3}}>{l}</div>
-                <div style={{fontSize:"12px",color:"#999",marginTop:"2px"}}>{d}</div>
+    <div style={{padding:"0 24px",display:"flex",flexDirection:"column",gap:"14px",paddingBottom:"40px"}}>
+      {MOD_OPTS.map(({sit,mod,letter,label,sub,desc,kpi,accent:ac})=>(
+        <button
+          key={mod}
+          onClick={()=>{setSituation(sit);setModul(mod);goTo(2);}}
+          style={{
+            display:"block",width:"100%",padding:"0",
+            borderRadius:"18px",
+            border:`1.5px solid rgba(17,24,39,0.1)`,
+            background:"#fff",
+            cursor:"pointer",textAlign:"left",
+            boxShadow:"0 4px 16px rgba(17,24,39,0.06)",
+            transition:"all 0.22s",
+            overflow:"hidden",
+          }}
+        >
+          {/* Farbige Top-Bar */}
+          <div style={{height:"3px",background:ac,borderRadius:"18px 18px 0 0"}}/>
+          <div style={{padding:"22px 22px 20px"}}>
+            {/* Letter + KPI */}
+            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:"14px"}}>
+              <div style={{
+                width:"38px",height:"38px",borderRadius:"10px",
+                background:`${ac}12`,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:"18px",fontWeight:"800",color:ac,
+              }}>{letter}</div>
+              <div style={{
+                padding:"4px 10px",borderRadius:"20px",
+                background:`${ac}10`,
+                fontSize:"11px",fontWeight:"600",color:ac,
+                letterSpacing:"0.2px",marginTop:"2px",
+              }}>{kpi}</div>
+            </div>
+            {/* Titel */}
+            <div style={{fontSize:"18px",fontWeight:"800",color:"#111",letterSpacing:"-0.4px",lineHeight:1.2,marginBottom:"4px"}}>{label}</div>
+            <div style={{fontSize:"11px",fontWeight:"600",color:ac,letterSpacing:"0.3px",textTransform:"uppercase",marginBottom:"12px"}}>{sub}</div>
+            {/* Beschreibung */}
+            <div style={{fontSize:"13px",color:"#6B7280",lineHeight:1.65,marginBottom:"18px"}}>{desc}</div>
+            {/* CTA-Zeile */}
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontSize:"13px",fontWeight:"600",color:ac}}>Jetzt prüfen</div>
+              <div style={{width:"28px",height:"28px",borderRadius:"50%",background:ac,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
-              <div style={{width:"20px",height:"20px",borderRadius:"50%",border:`1.5px solid ${sel?C:"#ddd"}`,background:sel?C:"#fff",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:"8px"}}>
-                {sel&&<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-
-    <div style={{height:"120px"}}/>
-    <div style={T.footer}>
-      <button style={T.btnPrim(!canProceed)} onClick={()=>canProceed&&goTo(2)} disabled={!canProceed}>
-        {canProceed?"Weiter zu den Eingaben":"Bitte ein Thema wählen"}
-      </button>
+            </div>
+          </div>
+        </button>
+      ))}
     </div>
   </div>);
 }

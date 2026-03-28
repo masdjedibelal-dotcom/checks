@@ -46,54 +46,56 @@ const SZENARIEN = [
 ];
 
 // ─── BERECHNUNG ───────────────────────────────────────────────────────────────
-function berechne({ brutto, beruf, ktgTag, buRente, szenario }) {
-  const sz       = SZENARIEN.find(s => s.id === szenario) || SZENARIEN[0];
-  const netto    = brutto * 0.67;
-  const nettoTag = netto / 30;
+function berechne({ brutto, beruf, kv, ktgTag, buRente, szenario }) {
+  const sz    = SZENARIEN.find(s => s.id === szenario) || SZENARIEN[0];
+  const netto = Math.round(brutto * 0.72);
+  const ktgMon = ktgTag * 30;
 
-  // Phase 1: Lohnfortzahlung (Tag 1–42)
-  const lohnPhase = { start: 1, end: 42, pct: 100, monatl: netto, label: "Lohnfortzahlung" };
+  // Phase 1: Lohnfortzahlung (0–6 Wochen) — immer 100 %
+  const p1 = { label: "Lohnfortzahlung", sub: "Erste 6 Wochen (Arbeitgeber)", monatl: netto, pct: 100 };
 
-  // Phase 2: Krankengeld (Tag 43–546 = 18 Monate)
-  // BBG KV 2026: 5.812,50 €/Mon. → max KG 135,63 €/Tag brutto
-  // nach SV-Abzügen: ~120 €/Tag netto = ~3.600 €/Mon.
-  // Quelle: §47 SGB V, BBG KV 2026
-  const BBG_KV_MONAT = 5812.5;
-  const BBG_KV_TAG = BBG_KV_MONAT / 30;
-  const kgBruttoTag = Math.min(brutto / 30, BBG_KV_TAG) * 0.7;
-  const kgNettoTag = kgBruttoTag * 0.885;
-  const kg90Netto = (netto / 30) * 0.9;
-  const kgEffTag = Math.min(kgNettoTag, kg90Netto);
-  const gesKG = beruf === "selbst" ? 0 : kgEffTag * 30;
-  const ktgMonatl = ktgTag * 30;
-  const phase2    = { start: 43, end: 546, pct: Math.round(((gesKG + ktgMonatl) / netto) * 100), monatl: gesKG + ktgMonatl, label: beruf === "selbst" ? "Krankentagegeld" : "Krankengeld + KTG" };
+  // Phase 2: Krankengeld / KTG (ab Woche 7)
+  // GKV-Angestellte: min(brutto × 0,7 ; 3.000 €) + KTG
+  // PKV oder Selbstständige ohne GKV-KG: nur KTG
+  const kgBasis = (kv === "gkv" && beruf !== "selbst")
+    ? Math.min(Math.round(brutto * 0.7), 3000)
+    : 0;
+  const p2mon  = kgBasis + ktgMon;
+  const p2 = {
+    label: kv === "gkv" && beruf !== "selbst"
+      ? (ktgMon > 0 ? "Krankengeld + KTG" : "Krankengeld (GKV)")
+      : (ktgMon > 0 ? "Krankentagegeld" : "Kein Krankengeld"),
+    sub:    "Ab Woche 7",
+    monatl: p2mon,
+    pct:    Math.min(100, Math.round((p2mon / netto) * 100)),
+  };
 
-  // Phase 3: Wartezeit BU (546–720 = 6 Monate Wartezeit)
-  const phase3 = { start: 547, end: 720, pct: Math.round((ktgMonatl / netto) * 100), monatl: ktgMonatl, label: "KTG (Wartezeit BU)" };
+  // Phase 3: Wartezeit — nur noch KTG (GKV-KG läuft nach ~18 Monaten aus)
+  const p3 = {
+    label: ktgMon > 0 ? "Nur KTG (Wartezeit)" : "Keine Leistung",
+    sub:   "Nach ~18 Monaten",
+    monatl: ktgMon,
+    pct:   Math.min(100, Math.round((ktgMon / netto) * 100)),
+  };
 
-  // Phase 4: BU anerkannt
-  const phase4 = { start: 721, end: null, pct: Math.round(((buRente + (beruf === "selbst" ? 0 : 0)) / netto) * 100), monatl: buRente, label: "BU-Rente" };
+  // Phase 4: Langfristig — BU-Rente + EM-Schätzung (grob: 35 % des Nettos)
+  const emSchaetzung = Math.round(netto * 0.35);
+  const p4mon = buRente + emSchaetzung;
+  const p4 = {
+    label: buRente > 0 ? "BU-Rente + EM-Rente" : "Nur EM-Rente (gesetzlich)",
+    sub:   "Dauerhaft",
+    monatl: p4mon,
+    pct:   Math.min(100, Math.round((p4mon / netto) * 100)),
+  };
 
-  const lueckeKG  = Math.max(0, netto - phase2.monatl);
-  const lueckeBU  = Math.max(0, netto - phase4.monatl);
-  const ausfall   = sz.dauer; // Monate
+  const luecke   = Math.max(0, netto - p4mon);
+  const lueckeKG = Math.max(0, netto - p2mon);
 
-  let kostTotal = 0;
-  if (ausfall <= 1.4) kostTotal = lueckeKG * ausfall;
-  else if (ausfall <= 18) kostTotal = lueckeKG * ausfall;
-  else kostTotal = lueckeKG * 18 + lueckeBU * Math.max(0, ausfall - 18);
+  // Empfehlungen (nur wenn Lücke besteht)
+  const empfKTG = lueckeKG > 0 ? Math.max(0, Math.ceil((lueckeKG / 30) / 5) * 5) : 0;
+  const empfBU  = luecke   > 0 ? Math.max(0, Math.round(luecke / 50) * 50)       : 0;
 
-  // Empfehlungen berechnen
-  const empfKTG  = Math.max(0, Math.ceil((lueckeKG / 30) / 5) * 5); // €/Tag, auf 5 gerundet
-  const empfBU   = Math.max(0, Math.round(lueckeBU / 50) * 50);      // €/Mon, auf 50 gerundet
-  // Größte Lücke identifizieren
-  const phasenLuecken = [
-    { idx: 1, label: "Krankengeld-Phase",  luecke: lueckeKG },
-    { idx: 2, label: "Wartezeit",           luecke: Math.max(0, netto - phase3.monatl) },
-    { idx: 3, label: "BU-Rente",           luecke: lueckeBU },
-  ];
-  const groessteluecke = phasenLuecken.reduce((a, b) => b.luecke > a.luecke ? b : a);
-  return { netto, nettoTag, lohnPhase, phase2, phase3, phase4, lueckeKG, lueckeBU, kostTotal, sz, gesKG, ktgMonatl, empfKTG, empfBU, groessteluecke };
+  return { netto, p1, p2, p3, p4, luecke, lueckeKG, sz, kgBasis, ktgMon, emSchaetzung, empfKTG, empfBU };
 }
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
@@ -131,6 +133,29 @@ function makeBUKTGT(C) {
   infoBox: { padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 },
   timeBar: { height: "6px", borderRadius: "3px", transition: "width 0.5s ease" },
   inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
+  // ── Result Design System ──
+  resultHero: { padding: "52px 24px 40px", textAlign: "center", background: "#ffffff" },
+  resultEyebrow: { fontSize: "12px", fontWeight: "500", color: "#9CA3AF", letterSpacing: "0.2px", marginBottom: "14px" },
+  resultNumber: (warn) => ({ fontSize: "52px", fontWeight: "800", color: warn ? "#C0392B" : C, letterSpacing: "-2.5px", lineHeight: 1, marginBottom: "8px" }),
+  resultUnit: { fontSize: "14px", color: "#9CA3AF", marginBottom: "18px" },
+  resultSub: { fontSize: "13px", color: "#9CA3AF", lineHeight: 1.55, marginTop: "12px" },
+  statusOk: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: "#15803D" },
+  statusWarn: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: "#FFF6F5", border: "1px solid #F2D4D0", borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: "#C0392B" },
+  warnCard: { background: "#FFF6F5", border: "1px solid #F2D4D0", borderLeft: "3px solid #C0392B", borderRadius: "14px", padding: "18px 20px" },
+  warnCardTitle: { fontSize: "13px", fontWeight: "700", color: "#C0392B", marginBottom: "6px" },
+  warnCardText: { fontSize: "13px", color: "#7B2A2A", lineHeight: 1.65 },
+  cardPrimary: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "20px", overflow: "hidden", background: "#FFFFFF", boxShadow: "0 6px 24px rgba(17,24,39,0.08)" },
+  cardContext: { background: "#FAFAF8", border: "1px solid rgba(17,24,39,0.05)", borderRadius: "16px", padding: "18px 20px" },
+  sectionLbl: { fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" },
+  recCard: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "18px", overflow: "hidden", background: "#FFFFFF", boxShadow: "0 4px 16px rgba(17,24,39,0.06)" },
+  recRow: { padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid rgba(17,24,39,0.04)" },
+  recRowLast: { padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" },
+  recLabel: { fontSize: "14px", fontWeight: "600", color: "#1F2937" },
+  recSub: { fontSize: "12px", color: "#9CA3AF", marginTop: "3px", lineHeight: 1.4 },
+  recValue: { fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px", textAlign: "right", flexShrink: 0, marginLeft: "12px" },
+  recValueSub: { fontSize: "11px", color: "#9CA3AF", textAlign: "right", marginTop: "2px" },
+  progBarTrack: { height: "10px", background: "#F3F4F6", borderRadius: "999px", overflow: "hidden", marginTop: "10px" },
+  progBarFill: (pct, color) => ({ height: "100%", width: `${pct}%`, background: color, borderRadius: "999px", transition: "width 0.7s cubic-bezier(0.34,1.56,0.64,1)" }),
 };
 }
 
@@ -281,6 +306,7 @@ export default function BUKTGRechner() {
   const [p, setP] = useState({
     brutto:   4000,
     beruf:    "angestellt",
+    kv:       "gkv",
     ktgTag:   0,
     buRente:  0,
     szenario: "psyche",
@@ -288,12 +314,11 @@ export default function BUKTGRechner() {
 
   const set = (k, v) => setP(x => ({ ...x, [k]: v }));
   const [scr, setScr] = useState(1);
-  const nextScr = () => scr < 5 ? setScr(s => s + 1) : goTo(2);
-  const backScr = () => scr > 1 && setScr(s => s - 1);
+  const nextScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr < 5) { setScr(s => s + 1); } else { goTo(2); } };
+  const backScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr > 1) { setScr(s => s - 1); } };
   const goTo = (ph) => { setAk(k => k + 1); setPhase(ph); window.scrollTo({ top: 0 }); };
 
   const R = berechne(p);
-  const istSelbst = p.beruf === 'selbst';
   const TOTAL_PHASES = 3;
 
   if (danke) return (
@@ -337,10 +362,10 @@ export default function BUKTGRechner() {
         onBack={() => goTo(2)}
         summary={
           <div>
-            <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Deine Berechnung</div>
+            <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Ihre Berechnung</div>
             <div style={{ display: "flex", gap: "20px" }}>
-              <div><div style={{ fontSize: "18px", fontWeight: "700", color: "#c0392b", letterSpacing: "-0.5px" }}>{fmt(R.lueckeKG)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Lücke Krankengeld</div></div>
-              <div><div style={{ fontSize: "18px", fontWeight: "700", color: "#c0392b", letterSpacing: "-0.5px" }}>{fmt(R.lueckeBU)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Lücke BU-Rente</div></div>
+              <div><div style={{ fontSize: "18px", fontWeight: "700", color: "#c0392b", letterSpacing: "-0.5px" }}>{fmt(R.luecke)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Mögliche Lücke</div></div>
+              <div><div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{fmt(R.netto)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Ihr Netto</div></div>
             </div>
           </div>
         }
@@ -348,165 +373,56 @@ export default function BUKTGRechner() {
     </div>
   );
 
-  // ── Phase 3: Ergebnis ─────────────────────────────────────────────────────
+  // ── Phase 2: Ergebnis ─────────────────────────────────────────────────────
   if (phase === 2) {
-    const phasen = [
-      { label: "Lohnfortzahlung",           sub: "Tag 1–42",           monatl: R.netto,          pct: 100,         groesste: false },
-      { label: R.phase2.label,              sub: "ab Tag 43",          monatl: R.phase2.monatl,  pct: R.phase2.pct, groesste: R.groessteluecke.idx===1 },
-      { label: "Wartezeit / KTG",           sub: "Monate 18–24",       monatl: R.phase3.monatl,  pct: R.phase3.pct, groesste: R.groessteluecke.idx===2 },
-      { label: "BU-Rente (dauerhaft)",      sub: "nach Anerkennung",   monatl: R.phase4.monatl,  pct: R.phase4.pct, groesste: R.groessteluecke.idx===3 },
-    ];
-    const WARN = "#c0392b";
-    const groesseLueckeMon = Math.max(R.lueckeKG, R.lueckeBU);
+    const phasen = [R.p1, R.p2, R.p3, R.p4];
 
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={2} total={TOTAL_PHASES} makler={MAKLER} T={T} />
-        <div style={T.hero}>
-          <div style={T.label}>Deine Einkommenslücke · {R.sz.emoji} {R.sz.label}</div>
-          <div style={T.h1}>So stellt sich Ihre Einkommenssituation im Ausfall dar</div>
-          <div style={T.body}>{groesseLueckeMon > 0 ? `Auf Basis Ihrer Angaben ergibt sich eine mögliche monatliche Lücke von: ${fmt(groesseLueckeMon)}` : "Ihre Absicherung deckt das Nettoeinkommen auf Basis Ihrer Angaben weitgehend ab."} · Ø {R.sz.dauer} Monate Ausfall</div>
+
+        {/* ── Hero ──────────────────────────────────────────────────────────── */}
+        <div style={T.resultHero}>
+          <div style={T.resultEyebrow}>Ihre Absicherung im Überblick</div>
+          <div style={T.resultNumber(R.luecke > 0)}>
+            {R.luecke > 0 ? fmt(R.luecke) : "Gedeckt"}
+          </div>
+          <div style={T.resultUnit}>
+            {R.luecke > 0 ? "mögliche monatliche Lücke" : "Ihr Einkommen ist weitgehend abgesichert"}
+          </div>
+          {R.luecke > 0
+            ? <div style={T.statusWarn}>Absicherungslücke erkannt</div>
+            : <div style={T.statusOk}>Gut abgesichert</div>
+          }
+          <div style={T.resultSub}>Vereinfachte Einordnung · auf Basis Ihrer Angaben</div>
         </div>
 
-        {/* Block 1: Größte Lücke */}
-        {groesseLueckeMon > 0 && (
-          <div style={T.section}>
-            <div style={{ fontSize: "11px", fontWeight: "700", color: WARN, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" }}>Deine größte Lücke</div>
-            <div style={{ border: `1px solid ${WARN}44`, borderRadius: "10px", padding: "14px 16px", background: `${WARN}04`, borderLeft: `3px solid ${WARN}` }}>
-              <div style={{ fontSize: "13px", fontWeight: "600", color: "#111", marginBottom: "4px" }}>{R.groessteluecke.label}</div>
-              <div style={{ fontSize: "26px", fontWeight: "700", color: WARN, letterSpacing: "-0.8px", marginBottom: "4px" }}>
-                − {fmt(R.groessteluecke.luecke)}<span style={{ fontSize: "14px", fontWeight: "500", color: "#c0392b99" }}>/Monat</span>
-              </div>
-              <div style={{ fontSize: "12px", color: "#888" }}>
-                Hochrechnung über {R.sz.dauer} Monate: <strong style={{ color: WARN }}>{fmt(R.kostTotal)}</strong> Gesamtverlust
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Selbstständigen-Block */}
-        {istSelbst && (
-          <div style={T.section}>
-            <div style={{ border: `1px solid ${WARN}44`, borderRadius: "10px", padding: "14px 16px", background: `${WARN}04` }}>
-              <div style={{ fontSize: "12px", fontWeight: "700", color: WARN, marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Wichtig für Selbstständige</div>
-              <div style={{ fontSize: "13px", color: "#444", lineHeight: 1.6 }}>
-                Du hast <strong>kein gesetzliches Krankengeld</strong> — die Lücke beginnt ab Tag 1. Krankentagegeld und BU sind für dich existenziell, nicht optional.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Block EMR: Gesetzliche Erwerbsminderungsrente */}
+        {/* ── Section 1: Einkommensverlauf ──────────────────────────────────── */}
         <div style={T.section}>
-          <div style={{ border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden" }}>
-            <div style={{ padding: "12px 16px", background: "#f7f7f7", borderBottom: "1px solid #f0f0f0" }}>
-              <div style={{ fontSize: "11px", fontWeight: "700", color: "#888", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "2px" }}>Was die gesetzliche Absicherung leistet</div>
-              <div style={{ fontSize: "13px", fontWeight: "600", color: "#333" }}>Erwerbsminderungsrente — oft nicht genug</div>
-            </div>
-            <div style={{ padding: "12px 16px" }}>
-              <div style={{ fontSize: "12px", color: "#666", lineHeight: 1.65, marginBottom: "12px" }}>
-                Die gesetzliche Erwerbsminderungsrente greift nur unter strengen Bedingungen — und ersetzt Ihr Einkommen meist nur zu einem kleinen Teil.
-              </div>
-              {[
-                { text: "Greift nur bei starker Einschränkung — wer noch 3–6 Stunden täglich irgendeiner Arbeit nachgehen kann, bekommt oft nur die halbe Rente oder gar nichts." },
-                { text: "Ersetzt im Schnitt nur 30–40 % des letzten Nettoeinkommens — der Rest bleibt als Lücke bestehen." },
-                { text: "Reicht selten für den bisherigen Lebensstandard — Miete, Kredite und laufende Kosten laufen weiter." },
-              ].map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: i < 2 ? "8px" : "0" }}>
-                  <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: "1px" }}>
-                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M2 4h4M4 2v4" stroke="#999" strokeWidth="1.4" strokeLinecap="round"/></svg>
-                  </div>
-                  <span style={{ fontSize: "12px", color: "#555", lineHeight: 1.55 }}>{item.text}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Block 2: Empfohlene Absicherung */}
-        <div style={T.section}>
-          <div style={{ fontSize: "11px", fontWeight: "600", color: C, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" }}>Mögliche Absicherungsoptionen</div>
-          <div style={T.card}>
-            {R.empfKTG > 0 && (
-              <div style={T.row}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>Krankentagegeld</div>
-                    <div style={{ fontSize: "12px", color: "#888", marginTop: "2px", lineHeight: 1.5 }}>
-                      Schließt die Lücke ab Tag 43 (als Selbstständige/r ab Tag 1)
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
-                    <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>{R.empfKTG} €/Tag</div>
-                    <div style={{ fontSize: "11px", color: "#aaa" }}>= {fmt(R.empfKTG * 30)}/Mon.</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {R.empfBU > 0 && (
-              <div style={T.rowLast}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>BU-Rente</div>
-                    <div style={{ fontSize: "12px", color: "#888", marginTop: "2px", lineHeight: 1.5 }}>
-                      Dauerhafter Schutz bei {R.sz.buWahrsch}% BU-Wahrscheinlichkeit im Szenario
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
-                    <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>{fmt(R.empfBU)}/Mon.</div>
-                    <div style={{ fontSize: "11px", color: "#aaa" }}>kalkulierter Richtwert</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {R.empfKTG === 0 && R.empfBU === 0 && (
-              <div style={T.rowLast}>
-                <div style={{ fontSize: "13px", color: "#059669", fontWeight: "500" }}>Ihre Absicherung deckt das Nettoeinkommen vollständig ab.</div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Block 3: Alternative EU */}
-        <div style={T.section}>
-          <div style={{ fontSize: "11px", fontWeight: "600", color: "#aaa", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" }}>Alternative Absicherung</div>
-          <div style={{ border: "1px solid #e8e8e8", borderRadius: "10px", padding: "14px 16px", background: "#fafafa" }}>
-            <div style={{ fontSize: "13px", fontWeight: "600", color: "#333", marginBottom: "4px" }}>Erwerbsunfähigkeitsversicherung (EU)</div>
-            <div style={{ fontSize: "12px", color: "#777", lineHeight: 1.6 }}>
-              Falls eine BU-Versicherung nicht (mehr) abschließbar ist — z.B. durch Vorerkrankungen — ist die EU-Rente oft die einzige Alternative. Sie zahlt, wenn Sie gar keiner Arbeit mehr nachgehen können.
-            </div>
-            <div style={{ marginTop: "8px", fontSize: "11px", color: "#aaa" }}>Günstigere Prämien · Weniger strenge Gesundheitsprüfung · Kein Berufsschutz</div>
-          </div>
-        </div>
-
-        {/* Block 4: Timeline */}
-        <div style={T.section}>
-          <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "12px" }}>Dein Einkommensverlauf</div>
-          <div style={T.card}>
+          <div style={T.sectionLbl}>So entwickelt sich Ihr Einkommen</div>
+          <div style={T.cardPrimary}>
             {phasen.map((ph, i) => {
               const isLast = i === phasen.length - 1;
-              const barColor = ph.pct >= 90 ? "#2ecc71" : ph.pct >= 60 ? "#f39c12" : ph.pct >= 30 ? "#e67e22" : "#c0392b";
+              const barColor = ph.pct >= 90 ? "#22c55e" : ph.pct >= 60 ? "#f59e0b" : ph.pct >= 30 ? "#f97316" : "#C0392B";
+              const diff = R.netto - ph.monatl;
               return (
-                <div key={i} style={{ ...(isLast ? T.rowLast : T.row), background: ph.groesste ? `${WARN}04` : "#fff", borderLeft: ph.groesste ? `3px solid ${WARN}` : "3px solid transparent" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                <div key={i} style={{ padding: "16px 20px", borderBottom: isLast ? "none" : "1px solid rgba(17,24,39,0.04)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
                     <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <div style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{ph.label}</div>
-                        {ph.groesste && <span style={{ fontSize: "10px", fontWeight: "700", color: "#c0392b", background: "#c0392b15", padding: "1px 6px", borderRadius: "10px" }}>Größte Lücke</span>}
-                      </div>
-                      <div style={{ fontSize: "11px", color: "#aaa", marginTop: "1px" }}>{ph.sub}</div>
+                      <div style={{ fontSize: "14px", fontWeight: "600", color: "#111" }}>{ph.label}</div>
+                      <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "2px" }}>{ph.sub}</div>
                     </div>
                     <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
-                      <div style={{ fontSize: "15px", fontWeight: "700", color: ph.pct < 60 ? "#c0392b" : "#111", letterSpacing: "-0.3px" }}>{fmt(ph.monatl)}</div>
-                      <div style={{ fontSize: "11px", color: "#aaa" }}>{ph.pct}% des Nettos</div>
+                      <div style={{ fontSize: "16px", fontWeight: "700", color: ph.pct < 60 ? "#C0392B" : "#1F2937", letterSpacing: "-0.4px" }}>{fmt(ph.monatl)}</div>
+                      <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "1px" }}>{ph.pct} % des Nettos</div>
                     </div>
                   </div>
-                  <div style={{ background: "#f5f5f5", borderRadius: "2px", height: "4px", overflow: "hidden" }}>
-                    <div style={{ ...T.timeBar, width: `${Math.min(100, ph.pct)}%`, background: barColor }} />
+                  <div style={T.progBarTrack}>
+                    <div style={T.progBarFill(Math.min(100, ph.pct), barColor)} />
                   </div>
-                  {ph.monatl < R.netto && (
-                    <div style={{ fontSize: "11px", color: "#c0392b", marginTop: "5px", fontWeight: "500" }}>
-                      − {fmt(R.netto - ph.monatl)} / Monat Lücke
+                  {diff > 0 && (
+                    <div style={{ fontSize: "12px", color: "#C0392B", marginTop: "6px", fontWeight: "500" }}>
+                      − {fmt(diff)} / Monat Lücke
                     </div>
                   )}
                 </div>
@@ -515,90 +431,168 @@ export default function BUKTGRechner() {
           </div>
         </div>
 
-        {/* Szenario wechseln */}
+        {/* ── Section 2: Was aktuell abgesichert ist ────────────────────────── */}
         <div style={T.section}>
-          <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Anderes Szenario durchrechnen</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {SZENARIEN.map(sz => (
-              <SelectionCard
-                key={sz.id}
-                value={sz.id}
-                label={sz.label}
-                description={`${sz.desc} · Ø ${sz.dauer} Mon. · BU ${sz.buWahrsch}%`}
-                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{sz.emoji}</span>}
-                selected={p.szenario === sz.id}
-                accent={C}
-                onClick={() => set("szenario", sz.id)}
-              />
+          <div style={T.sectionLbl}>Was aktuell abgesichert ist</div>
+          <div style={T.cardContext}>
+            {[
+              {
+                label: p.kv === "gkv" && p.beruf !== "selbst" ? "Krankengeld (GKV)" : "GKV-Krankengeld",
+                val:   p.kv === "gkv" && p.beruf !== "selbst" ? fmt(R.kgBasis) : "–",
+                hint:  p.kv === "gkv" && p.beruf !== "selbst" ? "ca. 70 % des Bruttos, max. 3.000 €/Mon." : "Nicht anwendbar",
+              },
+              {
+                label: "Krankentagegeld (KTG)",
+                val:   R.ktgMon > 0 ? fmt(R.ktgMon) : "Nicht vorhanden",
+                hint:  R.ktgMon > 0 ? `${p.ktgTag} €/Tag × 30` : "Kein KTG-Vertrag angegeben",
+              },
+              {
+                label: "BU-Rente",
+                val:   p.buRente > 0 ? fmt(p.buRente) : "Nicht vorhanden",
+                hint:  p.buRente > 0 ? "Monatlich bei Berufsunfähigkeit" : "Kein BU-Vertrag angegeben",
+              },
+              {
+                label: "EM-Rente (gesetzlich, geschätzt)",
+                val:   fmt(R.emSchaetzung),
+                hint:  "ca. 35 % des Nettos — vereinfachte Schätzung (§ 43 SGB VI)",
+              },
+            ].map((row, i, arr) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingBottom: i < arr.length - 1 ? "12px" : "0", marginBottom: i < arr.length - 1 ? "12px" : "0", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.06)" : "none" }}>
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937" }}>{row.label}</div>
+                  <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "2px" }}>{row.hint}</div>
+                </div>
+                <div style={{ fontSize: "14px", fontWeight: "700", color: C, flexShrink: 0, marginLeft: "12px" }}>{row.val}</div>
+              </div>
             ))}
           </div>
         </div>
 
+        {/* ── Section 3: Größte Lücke (Warnblock) ──────────────────────────── */}
+        {R.luecke > 0 && (
+          <div style={T.section}>
+            <div style={T.sectionLbl}>Ihre größte Lücke</div>
+            <div style={T.warnCard}>
+              <div style={T.warnCardTitle}>Langfristige Absicherungslücke</div>
+              <div style={{ fontSize: "40px", fontWeight: "800", color: "#C0392B", letterSpacing: "-2px", lineHeight: 1, marginBottom: "6px" }}>
+                {fmt(R.luecke)}
+              </div>
+              <div style={{ fontSize: "13px", color: "#9CA3AF", marginBottom: "10px" }}>pro Monat · dauerhaft</div>
+              <div style={T.warnCardText}>
+                BU-Rente und EM-Rente zusammen ({fmt(R.p4.monatl)}) decken Ihr Netto ({fmt(R.netto)}) nicht vollständig ab. Die Lücke wächst mit der Zeit — je früher abgesichert, desto günstiger die Prämie.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Section 4: Das kann sinnvoll sein ────────────────────────────── */}
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Das kann sinnvoll sein</div>
+          <div style={T.recCard}>
+            {R.empfKTG > 0 && (
+              <div style={R.empfBU > 0 ? T.recRow : T.recRowLast}>
+                <div>
+                  <div style={T.recLabel}>Krankentagegeld prüfen</div>
+                  <div style={T.recSub}>
+                    {p.kv === "gkv" && p.beruf !== "selbst"
+                      ? "Schließt die Lücke nach Krankengeld-Ende"
+                      : "Existenzielle Absicherung — ab Tag 1 der Krankheit"}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
+                  <div style={T.recValue}>{R.empfKTG} €/Tag</div>
+                  <div style={T.recValueSub}>= {fmt(R.empfKTG * 30)}/Mon.</div>
+                </div>
+              </div>
+            )}
+            {R.empfBU > 0 && (
+              <div style={T.recRowLast}>
+                <div>
+                  <div style={T.recLabel}>BU-Rente anpassen</div>
+                  <div style={T.recSub}>Dauerhafter Schutz · {R.sz.buWahrsch} % BU-Wahrscheinlichkeit im Szenario</div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
+                  <div style={T.recValue}>{fmt(R.empfBU)}/Mon.</div>
+                  <div style={T.recValueSub}>kalkulierter Richtwert</div>
+                </div>
+              </div>
+            )}
+            {R.empfKTG === 0 && R.empfBU === 0 && (
+              <div style={T.recRowLast}>
+                <div style={{ fontSize: "14px", color: "#059669", fontWeight: "500" }}>Ihre Absicherung deckt das Nettoeinkommen vollständig ab.</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Berechnungshinweis + Legal ────────────────────────────────────── */}
         <div style={{ ...T.section, marginBottom: "120px" }}>
-          <div style={T.infoBox}>Näherungswerte. Exakte Berechnung abhängig von Tarif, Einstufung und Gesundheitszustand.</div>
           <CheckBerechnungshinweis>
             <>
-              Das <strong>Einkommen</strong> wird in 4 Phasen berechnet: Lohnfortzahlung (Tag 1–42), Krankengeld (Tag 43–546, max. 135,63 €/Tag brutto nach BBG KV 2026), Wartezeit BU (Monat 19–24, nur KTG), BU-Rente (dauerhaft).
-              Selbstständige erhalten kein gesetzliches Krankengeld.{" "}
-              <span style={{ color: "#b8884a" }}>Grundlage: §47 SGB V.</span>
+              Vereinfachte Einordnung auf Basis Ihrer Angaben. Netto = Brutto × 0,72 (Schätzwert).
+              GKV-Krankengeld: min(Brutto × 0,7 ; 3.000 €/Mon.) · Grundlage §47 SGB V.
+              EM-Rente: ca. 35 % des Nettos · Grundlage §43 SGB VI.
+              <span style={{ color: "#b8884a" }}> Keine Rechtsberatung.</span>
             </>
           </CheckBerechnungshinweis>
           <div style={{ ...T.infoBox, marginTop: "10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
 
-        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Absicherung prüfen lassen" T={T} />
+        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Absicherung gemeinsam prüfen" T={T} />
       </div>
     );
   }
 
-  // ── Phase 1: 1 Frage pro Screen (5 Screens) ──────────────────────────────
+  // ── Phase 1: 1 Frage pro Screen ──────────────────────────────────────────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={scr} total={5} makler={MAKLER} T={T} />
 
+      {/* Screen 1: Beschäftigung */}
       {scr === 1 && <>
         <div style={T.hero}>
-          <div style={T.label}>Einkommens-Check</div>
-          <div style={T.h1}>Was würde passieren, wenn Ihr Einkommen wegfällt?</div>
-          <div style={T.body}>Wir berechnen wie groß die mögliche Lücke wäre — und was Sie bereits haben.</div>
-        </div>
-        <div style={{ height: "120px" }} />
-        <Footer onNext={nextScr} nextLabel="Check starten" T={T} showBack={false} />
-      </>}
-
-      {scr === 2 && <>
-        <div style={T.hero}>
-          <div style={T.label}>Ihre Situation</div>
-          <div style={T.h1}>Wie sind Sie aktuell angestellt?</div>
+          <div style={T.label}>Einkommens-Check · 1 / 5</div>
+          <div style={T.h1}>Wie sind Sie aktuell beschäftigt?</div>
+          <div style={T.body}>Davon hängt ab, welche gesetzlichen Leistungen greifen.</div>
         </div>
         <div style={T.section}>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {[
-              { v: "angestellt", l: "💼 Angestellt",    d: "Lohnfortzahlung + Krankengeld" },
-              { v: "selbst",     l: "🧑‍💻 Selbstständig", d: "Kein gesetzliches Sicherheitsnetz" },
-              { v: "beamter",    l: "🏛️ Beamter",        d: "Beihilfe + besondere Tarife" },
-            ].map(({ v, l, d }) => {
-              const icon = <span style={{ fontSize: "20px", lineHeight: 1 }}>{Array.from(l)[0]}</span>;
-              const label = l.replace(/^(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)\s*/u, "");
-              return <SelectionCard key={v} value={v} label={label} description={d} icon={icon} selected={p.beruf === v} accent={C} onClick={() => set("beruf", v)} />;
-            })}
+              { v: "angestellt", l: "Angestellt",    d: "Lohnfortzahlung + Krankengeld (GKV)",  emoji: "💼" },
+              { v: "selbst",     l: "Selbstständig", d: "Kein gesetzliches Sicherheitsnetz",    emoji: "🧑‍💻" },
+              { v: "beamter",    l: "Beamter",       d: "Beihilfe + besondere Absicherungstarife", emoji: "🏛️" },
+            ].map(({ v, l, d, emoji }) => (
+              <SelectionCard key={v} value={v} label={l} description={d}
+                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
+                selected={p.beruf === v} accent={C} onClick={() => set("beruf", v)} />
+            ))}
           </div>
         </div>
         <div style={{ height: "120px" }} />
-        <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+        <Footer onNext={nextScr} nextLabel="Weiter →" T={T} showBack={false} />
       </>}
 
-      {scr === 3 && <>
+      {/* Screen 2: Krankenversicherung */}
+      {scr === 2 && <>
         <div style={T.hero}>
-          <div style={T.label}>Ihr Einkommen</div>
-          <div style={T.h1}>Was verdienen Sie aktuell brutto pro Monat?</div>
+          <div style={T.label}>Einkommens-Check · 2 / 5</div>
+          <div style={T.h1}>Wie sind Sie krankenversichert?</div>
+          <div style={T.body}>Das entscheidet, ob und wie viel Krankengeld Sie erhalten.</div>
         </div>
         <div style={T.section}>
-          <SliderCard label="Monatliches Bruttogehalt" value={p.brutto} min={1500} max={12000} step={100} unit="€"
-            display={`ca. ${fmt(R.netto)} netto`} accent={C} onChange={v => set("brutto", v)} />
-          {istSelbst && (
-            <div style={{ ...T.infoBox, marginTop: "10px", borderLeft: `3px solid #c0392b`, background: "#fff9f9", borderRadius: "0 8px 8px 0" }}>
-              <strong style={{ color: "#c0392b" }}>Selbstständig:</strong> Kein gesetzliches Krankengeld — die Lücke beginnt ab Tag 1 der Krankheit.
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {[
+              { v: "gkv", l: "Gesetzlich (GKV)", d: "Krankengeld nach §47 SGB V: ca. 70 % des Bruttos, max. 3.000 €/Mon.", emoji: "🏥" },
+              { v: "pkv", l: "Privat (PKV)",     d: "Kein gesetzliches Krankengeld — nur privates KTG sichert ab",          emoji: "🔒" },
+            ].map(({ v, l, d, emoji }) => (
+              <SelectionCard key={v} value={v} label={l} description={d}
+                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
+                selected={p.kv === v} accent={C} onClick={() => set("kv", v)} />
+            ))}
+          </div>
+          {p.beruf === "selbst" && p.kv === "gkv" && (
+            <div style={{ ...T.infoBox, marginTop: "12px", borderLeft: "3px solid #f59e0b", background: "#fffbf0", borderRadius: "0 8px 8px 0" }}>
+              <strong style={{ color: "#92400e" }}>Hinweis:</strong> Selbstständige erhalten GKV-Krankengeld nur mit gesonderter Option (§44 SGB V) — bitte prüfen Sie Ihren Tarif.
             </div>
           )}
         </div>
@@ -606,29 +600,46 @@ export default function BUKTGRechner() {
         <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
       </>}
 
+      {/* Screen 3: Einkommen */}
+      {scr === 3 && <>
+        <div style={T.hero}>
+          <div style={T.label}>Einkommens-Check · 3 / 5</div>
+          <div style={T.h1}>Was verdienen Sie aktuell brutto pro Monat?</div>
+          <div style={T.body}>Daraus berechnen wir Ihr Netto und die möglichen Leistungen.</div>
+        </div>
+        <div style={T.section}>
+          <SliderCard label="Monatliches Bruttogehalt" value={p.brutto} min={1500} max={12000} step={100} unit="€"
+            display={`ca. ${fmt(R.netto)} netto`} accent={C} onChange={v => set("brutto", v)} />
+        </div>
+        <div style={{ height: "120px" }} />
+        <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+      </>}
+
+      {/* Screen 4: Bestehende Absicherung */}
       {scr === 4 && <>
         <div style={T.hero}>
-          <div style={T.label}>Bestehende Absicherung</div>
-          <div style={T.h1}>Was haben Sie bereits für den Ausfall?</div>
-          <div style={T.body}>0 eingeben wenn kein Vertrag vorhanden ist.</div>
+          <div style={T.label}>Einkommens-Check · 4 / 5</div>
+          <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
+          <div style={T.body}>Beide Felder sind optional — 0 eingeben wenn kein Vertrag vorhanden.</div>
         </div>
         <div style={T.section}>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <SliderCard label="Tägliches Krankentagegeld (KTG)" value={p.ktgTag} min={0} max={150} step={5} unit="€/Tag"
-              display={p.ktgTag > 0 ? `= ${fmt(p.ktgTag * 30)}/Monat` : "Kein KTG vorhanden"} accent={C}
-              onChange={v => set("ktgTag", v)} hint="0 wenn kein Vertrag vorhanden" />
-            <SliderCard label="Monatliche BU-Rente" value={p.buRente} min={0} max={4000} step={100} unit="€/Mon"
-              display={p.buRente === 0 ? "Keine BU-Versicherung" : ""} accent={C}
-              onChange={v => set("buRente", v)} hint="0 wenn keine BU vorhanden" />
+            <SliderCard label="Krankentagegeld (KTG)" value={p.ktgTag} min={0} max={150} step={5} unit="€/Tag"
+              display={p.ktgTag > 0 ? `= ${fmt(p.ktgTag * 30)}/Monat` : "Kein KTG vorhanden"}
+              accent={C} onChange={v => set("ktgTag", v)} hint="0 wenn kein Vertrag vorhanden" />
+            <SliderCard label="BU-Rente" value={p.buRente} min={0} max={4000} step={100} unit="€/Mon"
+              display={p.buRente === 0 ? "Keine BU-Versicherung" : ""}
+              accent={C} onChange={v => set("buRente", v)} hint="0 wenn keine BU vorhanden" />
           </div>
         </div>
         <div style={{ height: "120px" }} />
         <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
       </>}
 
+      {/* Screen 5: Szenario */}
       {scr === 5 && <>
         <div style={T.hero}>
-          <div style={T.label}>Ihr Szenario</div>
+          <div style={T.label}>Einkommens-Check · 5 / 5</div>
           <div style={T.h1}>Welches Szenario beschäftigt Sie am meisten?</div>
         </div>
         <div style={T.section}>
@@ -644,8 +655,6 @@ export default function BUKTGRechner() {
         <div style={{ height: "120px" }} />
         <Footer onNext={nextScr} onBack={backScr} nextLabel="Meine Lücke berechnen" T={T} />
       </>}
-
-      {/* Dead-code placeholder to prevent empty return */}
     </div>
   );
 }

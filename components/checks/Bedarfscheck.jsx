@@ -145,20 +145,14 @@ function runScoringEngine(profil,existing){
 
   scored.sort((a,b)=>b.score-a.score);
 
-  const basisPackage=scored.slice(0,2);
-  const plusPackage=scored.slice(0,3);
-  const completePackage=scored.slice(0,5);
+  // Bucket by risk level (largest financial impact first)
+  const wichtig  = scored.filter(c => c.riskLevel === "existenz");
+  const relevant = scored.filter(c => c.riskLevel === "einkommen" || c.riskLevel === "langfristig");
+  const optional = scored.filter(c => c.riskLevel === "situativ"  || c.riskLevel === "optimierung");
 
-  return{basisPackage,plusPackage,completePackage,alreadyCovered};
+  return { wichtig, relevant, optional, alreadyCovered };
 }
 
-function makePaketeDefs(C, onAccent) {
-  return [
-    { key: "basisPackage", label: "Essentieller Schutz", badge: null, stripe: "#e0e0e0", desc: "Grundlegende Absicherungen für typische Risiken im Alltag.", btnBg: "#f5f5f5", btnTxt: "#333", btnBorder: "1px solid #e0e0e0" },
-    { key: "plusPackage", label: "Rundumschutz", badge: null, stripe: C, desc: "Erweiterte Absicherung über die wichtigsten Bereiche hinaus.", btnBg: C, btnTxt: onAccent, btnBorder: "none" },
-    { key: "completePackage", label: "Maximale Sicherheit", badge: null, stripe: "#2d2d2d", desc: "Umfassende Absicherung für eine möglichst vollständige Risikodeckung.", btnBg: "#1a1a1a", btnTxt: "#ffffff", btnBorder: "none" },
-  ];
-}
 
 function LogoSVG({ color = "#ffffff" }) {
   return (
@@ -339,157 +333,107 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
   );
 }
 
-// Phase 3: Ergebnis — Fintech Carousel
-function PackageBadge({text,stripe}){
-  if(!text)return null;
-  return(<span style={{display:"inline-flex",alignItems:"center",gap:"4px",
-    padding:"2px 9px",background:`${stripe}18`,borderRadius:"20px",
-    border:`1px solid ${stripe}44`,marginBottom:"10px",
-    fontSize:"10px",fontWeight:"700",color:stripe,letterSpacing:"0.5px",textTransform:"uppercase"}}>
-    {text}
-  </span>);}
 
-function PackageCard({ def, items, active, onCTA, isDemo, accent }) {
-  const isRecommended=def.key==="plusPackage";
-  return(<div style={{
-    background:"#fff",
-    border:`1px solid ${active?"#e0e0e0":"#ebebeb"}`,
-    borderRadius:"14px",overflow:"hidden",
-    display:"flex",flexDirection:"column",
-    borderLeft:`3px solid ${def.stripe}`,
-    transform:active?"scale(1.02)":"scale(0.97)",
-    boxShadow:active
-      ?(isRecommended?`0 12px 40px ${accent}28`:"0 6px 20px rgba(0,0,0,0.08)")
-      :"none",
-    opacity:active?1:0.72,
-    transition:"transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease",
-  }}>
-    <div style={{padding:"18px 18px 14px",background:"#fff"}}>
-      <PackageBadge text={def.badge} stripe={def.stripe}/>
-      <div style={{fontSize:"16px",fontWeight:"700",color:"#111",letterSpacing:"-0.3px",marginBottom:"4px"}}>
-        {def.label}
-      </div>
-      <div style={{fontSize:"12px",color:"#888",lineHeight:1.5}}>{def.desc}</div>
-      <div style={{display:"flex",alignItems:"center",gap:"6px",marginTop:"10px",
-        paddingTop:"10px",borderTop:"1px solid #f0f0f0"}}>
-        <span style={{width:"6px",height:"6px",borderRadius:"50%",background:def.stripe,flexShrink:0,display:"inline-block"}}/>
-        <span style={{fontSize:"11px",fontWeight:"600",color:"#999"}}>
-          {items.length} Leistung{items.length!==1?"en":""}
-        </span>
+// ── Phase 3: Ergebnis — 3-Tier Priorisierung ──────────────────────────────────
+function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) {
+  const { wichtig, relevant, optional, alreadyCovered } = result;
+  const totalCount = wichtig.length + relevant.length + optional.length;
+
+  const TIERS = [
+    { label: "Wichtig",   color: "#C0392B", bg: "#FFF6F5", items: wichtig,   sectionTitle: "Das ist aktuell am wichtigsten",         hint: "Level 1 — Existenzbedrohende Risiken" },
+    { label: "Relevant",  color: "#D97706", bg: "#FFFBEB", items: relevant,  sectionTitle: "Das sollten Sie prüfen",                  hint: "Level 2 + 3 — Einkommen & Gesundheit" },
+    { label: "Optional",  color: "#6B7280", bg: "#FAFAF8", items: optional,  sectionTitle: "Das kann ergänzend sinnvoll sein",        hint: "Level 4 — Sach & Optimierung" },
+  ].filter(t => t.items.length > 0);
+
+  const ProductRow = ({ item, accentColor }) => (
+    <div style={{ padding: "16px 20px", display: "flex", gap: "14px", alignItems: "flex-start" }}>
+      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: accentColor, flexShrink: 0, marginTop: "7px" }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: "14px", fontWeight: "600", color: "#1F2937", marginBottom: "3px" }}>{item.name}</div>
+        <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, marginBottom: "5px" }}>{item.reason}</div>
+        <div style={{ fontSize: "11px", color: "#9CA3AF", fontStyle: "italic" }}>In Ihrer Situation häufig relevant</div>
       </div>
     </div>
-    <div style={{flex:1,padding:"0 18px 14px",background:"#fff"}}>
-      {items.map((rec,i)=>(
-        <div key={rec.id} style={{display:"flex",alignItems:"flex-start",gap:"10px",
-          paddingTop:i===0?"0":"10px",
-          paddingBottom:"10px",
-          borderBottom:i<items.length-1?"1px solid #f5f5f5":"none"}}>
-          <div style={{width:"18px",height:"18px",borderRadius:"50%",background:`${def.stripe}12`,
-            display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
-            <svg width="9" height="8" viewBox="0 0 9 8" fill="none">
-              <path d="M1.5 4l2.2 2.2L7.5 1.5" stroke={def.stripe} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div>
-            <div style={{fontSize:"12px",fontWeight:"600",color:"#1a1a1a",lineHeight:1.3}}>{rec.name}</div>
-            <div style={{fontSize:"11px",color:"#999",lineHeight:1.4,marginTop:"1px"}}>{rec.shortDescription}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-    <div style={{padding:"14px 18px",borderTop:"1px solid #f0f0f0",background:"#fafafa"}}>
-      <button onClick={()=>onCTA(items[0])} style={{
-        width:"100%",padding:"11px",
-        background:def.btnBg,color:def.btnTxt,
-        border:def.btnBorder,
-        borderRadius:"9px",fontSize:"13px",fontWeight:"600",
-        cursor:"pointer",letterSpacing:"0.1px",
-      }}>
-        {isDemo ? "Anpassen & kaufen" : "Absicherung gemeinsam durchgehen"}
-      </button>
-    </div>
-  </div>);}
+  );
 
-function PackageCarousel({ result, onCTA, isDemo, accent, paketeDefs }) {
-  const[active,setActive]=useState(1);
-  const[touchX,setTouchX]=useState(null);
-  const pakete=paketeDefs.map(d=>({...d,items:result[d.key]||[]})).filter(d=>d.items.length>0);
-  if(pakete.length===0)return null;
-  const idx=Math.min(active,pakete.length-1);
-  const hts=(e)=>setTouchX(e.touches[0].clientX);
-  const hte=(e)=>{if(touchX===null)return;const dx=e.changedTouches[0].clientX-touchX;if(dx<-40&&idx<pakete.length-1)setActive(idx+1);if(dx>40&&idx>0)setActive(idx-1);setTouchX(null);};
-  const bgTints={"basisPackage":"#f4f4f4","plusPackage":`${accent}09`,"completePackage":"#f0f0ee"};
-  const activeBg=bgTints[pakete[idx]?.key]||"#f4f4f4";
-  const CW=82;const GAP=12;
-  const navBtn=48;
-  return(<div style={{background:activeBg,borderRadius:"16px",padding:"12px 0 14px",transition:"background 0.4s ease"}}>
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"20px",marginBottom:"12px",padding:"0 8px"}}>
-      {[{d:-1,p:"M10 3.5L5 8l5 4.5",label:"Vorheriges Paket"},{d:1,p:"M6 3.5L11 8l-5 4.5",label:"Nächstes Paket"}].map(({d,p,label})=>{
-        const dis=d===-1?idx===0:idx===pakete.length-1;
-        return(<button key={d} type="button" aria-label={label} disabled={dis} onClick={()=>!dis&&setActive(idx+d)} style={{
-          width:navBtn,height:navBtn,minWidth:navBtn,borderRadius:"50%",border:"1.5px solid rgba(0,0,0,0.12)",
-          background:"rgba(255,255,255,0.95)",boxShadow:"0 2px 10px rgba(0,0,0,0.06)",cursor:dis?"default":"pointer",opacity:dis?0.35:1,
-          display:"flex",alignItems:"center",justifyContent:"center",transition:"opacity 0.2s, transform 0.15s"}}>
-          <svg width="22" height="22" viewBox="0 0 16 16" fill="none" aria-hidden><path d={p} stroke="#333" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-        </button>);})}
-    </div>
-    <div style={{display:"flex",justifyContent:"center",gap:"5px",marginBottom:"14px"}}>
-      {pakete.map((_,i)=><button key={i} type="button" aria-label={`Paket ${i+1}`} onClick={()=>setActive(i)} style={{
-        width:i===idx?20:6,height:6,borderRadius:3,border:"none",cursor:"pointer",padding:0,
-        background:i===idx?accent:"rgba(0,0,0,0.14)",transition:"all 0.25s ease"}}/>)}
-    </div>
-    <div style={{overflow:"hidden",paddingLeft:`${(100-CW)/2}%`}} onTouchStart={hts} onTouchEnd={hte}>
-      <div style={{display:"flex",gap:`${GAP}px`,
-        transform:`translateX(calc(-${idx*(CW+GAP/4)}%))`,
-        transition:"transform 0.38s cubic-bezier(0.4,0,0.2,1)"}}>
-        {pakete.map((def,i)=>(
-          <div key={def.key} style={{width:`${CW}%`,flexShrink:0,cursor:i!==idx?"pointer":"default"}}
-            onClick={()=>i!==idx&&setActive(i)}>
-            <PackageCard def={def} items={def.items} active={i===idx} onCTA={onCTA} isDemo={isDemo} accent={accent}/>
-          </div>
-        ))}
+  return (
+    <div style={{ ...T.page, ...T.fadeIn, "--accent": C }} className="fade-in">
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={7} total={8} logo={<LogoSVG color={logoIconColor} />} />
+
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <div style={{ padding: "52px 24px 36px", textAlign: "center", background: "#F8F6F2" }}>
+        <div style={{ fontSize: "12px", fontWeight: "500", color: "#9CA3AF", letterSpacing: "0.2px", marginBottom: "14px" }}>Ihre Absicherung im Überblick</div>
+        <div style={{ fontSize: "52px", fontWeight: "800", color: C, letterSpacing: "-2.5px", lineHeight: 1, marginBottom: "8px" }}>{totalCount}</div>
+        <div style={{ fontSize: "14px", color: "#9CA3AF", marginBottom: "18px" }}>relevante Themen</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: `${C}14`, border: `1px solid ${C}33`, borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: C }}>Individuelle Einschätzung</div>
+        <div style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.55, marginTop: "12px" }}>auf Basis Ihrer Angaben · nach Risikostufe geordnet</div>
       </div>
-    </div>
-    <div style={{textAlign:"center",marginTop:"12px",fontSize:"11px",color:"rgba(0,0,0,0.35)",padding:"0 12px"}}>
-      {idx+1} / {pakete.length} — <span style={{color:"rgba(0,0,0,0.55)",fontWeight:"600"}}>{pakete[idx]?.label}</span>
-    </div>
-  </div>);}
 
-function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor, paketeDefs }) {
-  return(<div style={{...T.page,...T.fadeIn,"--accent":C}} className="fade-in">
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={7} total={8} logo={<LogoSVG color={logoIconColor} />} />
-    <div style={T.hero}>
-      <div style={T.eyebrow}>Auf Basis Ihrer Angaben</div>
-      <div style={T.h1}>So kann Ihre aktuelle Absicherung eingeordnet werden</div>
-      <div style={T.hint}>In Ihrer Situation sind insbesondere folgende Absicherungen typischerweise relevant.</div>
-    </div>
-    <div style={{padding:"0 20px",marginBottom:"16px"}}>
-      <PackageCarousel result={result} onCTA={onCTA} isDemo={isDemo} accent={C} paketeDefs={paketeDefs}/>
-    </div>
-    {result.alreadyCovered.length>0&&(
+      {/* ── Visual: 3-Tier Überblick ──────────────────────────────────────── */}
       <div style={T.section}>
-        <div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"8px"}}>Bereits abgesichert</div>
-        <div style={T.card}>
-          {result.alreadyCovered.map((item,i,arr)=>(
-            <div key={item.id} style={{display:"flex",alignItems:"center",gap:"10px",padding:"11px 16px",borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill={OK+"20"}/><path d="M4.5 7l1.8 1.8L9.5 5" stroke={OK} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <span style={{fontSize:"13px",color:"#777"}}>{item.name}</span>
+        <div style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" }}>Ihre Prioritäten im Überblick</div>
+        <div style={{ border: "1px solid rgba(17,24,39,0.08)", borderRadius: "16px", overflow: "hidden" }}>
+          {TIERS.map(({ label, color, bg, items }, i, arr) => (
+            <div key={label} style={{ padding: "12px 16px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none", background: bg, display: "flex", alignItems: "flex-start", gap: "12px" }}>
+              <div style={{ padding: "2px 10px", background: color + "18", border: `1px solid ${color}33`, borderRadius: "999px", fontSize: "11px", fontWeight: "700", color, flexShrink: 0, marginTop: "2px" }}>{label}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+                {items.map(r => (
+                  <span key={r.id} style={{ fontSize: "12px", color: "#4B5563", background: "#fff", border: "1px solid rgba(17,24,39,0.07)", borderRadius: "20px", padding: "2px 10px" }}>{r.name}</span>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </div>
-    )}
-    <div style={{padding:"0 24px",marginBottom:"120px"}}>
-      <CheckBerechnungshinweis t={T}>
-        <>
-          Die Einschätzung basiert auf einem <strong>Risiko-Scoring</strong>: Jedes Produkt erhält ein Basisgewicht je nach Risikostufe (Existenz → Einkommen → Langfristig → Optimierung) plus Zuschläge aus Ihrem Profil.{" "}
-          <strong>Privathaftpflicht</strong> ist immer Priorität 1. Optimierungsprodukte erscheinen erst wenn alle Existenzrisiken abgedeckt sind.
-        </>
-      </CheckBerechnungshinweis>
-      <div style={T.infoGold}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+
+      {/* ── Sektionen pro Tier ────────────────────────────────────────────── */}
+      {TIERS.map(({ label, color, items, sectionTitle, hint }) => (
+        <div key={label} style={T.section}>
+          <div style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "4px" }}>{sectionTitle}</div>
+          <div style={{ fontSize: "11px", color: "#9CA3AF", marginBottom: "12px" }}>{hint}</div>
+          <div style={{ border: "1px solid rgba(17,24,39,0.08)", borderRadius: "16px", overflow: "hidden", background: "#fff" }}>
+            {items.map((item, i, arr) => (
+              <div key={item.id} style={{ borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none" }}>
+                <ProductRow item={item} accentColor={color} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {/* ── Bereits abgesichert ───────────────────────────────────────────── */}
+      {alreadyCovered.length > 0 && (
+        <div style={T.section}>
+          <div style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" }}>Bereits abgesichert</div>
+          <div style={{ border: "1px solid rgba(17,24,39,0.06)", borderRadius: "16px", overflow: "hidden", background: "#fff" }}>
+            {alreadyCovered.map((item, i, arr) => (
+              <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 18px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none" }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill={OK + "18"} /><path d="M5 8l2 2L11 5.5" stroke={OK} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <span style={{ fontSize: "13px", color: "#6B7280" }}>{item.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Legal ─────────────────────────────────────────────────────────── */}
+      <div style={{ padding: "0 24px", marginBottom: "120px" }}>
+        <CheckBerechnungshinweis t={T}>
+          <>Vereinfachte Einschätzung auf Basis eines <strong>Risiko-Scorings</strong>: Produkte werden nach Risikostufe eingeordnet (Existenz → Einkommen → Langfristig → Optional) und anhand Ihres Profils gewichtet. <strong>Privathaftpflicht</strong> ist stets Priorität 1. Alle Angaben: in Ihrer Situation häufig relevant — kein Ersatz für individuelle Beratung.</>
+        </CheckBerechnungshinweis>
+        <div style={T.infoGold}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+      </div>
+
+      <div style={T.footer}>
+        {isDemo
+          ? <button style={T.btnPrim(false)} onClick={() => window.parent.postMessage({ type: "openConfig", slug: "bedarfscheck" }, "*")}>Anpassen & kaufen</button>
+          : <button style={T.btnPrim(false)} onClick={onCTA}>Absicherung gemeinsam durchgehen</button>
+        }
+        <button style={T.btnSec} onClick={onReset}>Neue Einschätzung starten</button>
+      </div>
     </div>
-    <div style={T.footer}><button style={T.btnSec} onClick={onReset}>Neue Einschätzung starten</button></div>
-  </div>);}
+  );
+}
 
 // Phase 4: Kontakt
 function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, logoIconColor }) {
@@ -574,20 +518,19 @@ export default function Bedarfscheck(){
   const C = makler.primaryColor;
   const onAccent = useMemo(() => textOnAccent(C), [C]);
   const T = useMemo(() => checkStandardT(C), [C]);
-  const paketeDefs = useMemo(() => makePaketeDefs(C, onAccent), [C, onAccent]);
   const logoIconColor = onAccent;
   const firma = makler.firma;
-  const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[selectedRec,setSelectedRec]=useState(null);const[kontaktName,setKontaktName]=useState("");
+  const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[kontaktName,setKontaktName]=useState("");
   const[profil,setProfil]=useState({age:35,employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:"gkv"});
   const[existing,setExisting]=useState([]);
   const set=(k,v)=>setProfil(x=>({...x,[k]:v}));
   const toggle=(id)=>setExisting(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
-  const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setProfil({age:35,employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:"gkv"});setExisting([]);setSelectedRec(null);setKontaktName("");};
+  const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setProfil({age:35,employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:"gkv"});setExisting([]);setKontaktName("");};
   const profilReady=profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus;
   const result=profilReady?runScoringEngine(profil,existing):null;
   if(danke)return <DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
   if(phase===4)return <Phase4 key={ak} isDemo={isDemo} selectedRec={selectedRec} onAbsenden={async (fd)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
-  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={(rec)=>{setSelectedRec(rec);goTo(4);}} onReset={reset} C={C} T={T} firma={firma} logoIconColor={logoIconColor} paketeDefs={paketeDefs}/>;
+  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
   return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>goTo(3)} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
 }

@@ -2,11 +2,9 @@
 
 import { alpha, textOnAccent } from "@/lib/utils";
 
-/** Hintergrund der Karten-Preview wie in der statischen HTML-Vorlage */
 const PREVIEW_BG: Record<string, string> = {
   bedarfscheck: "linear-gradient(160deg,#fdf8ee 0%,#f0e8cc 100%)",
-  "lebenssituations-check":
-    "linear-gradient(160deg,#edf7ed 0%,#c8e6c8 100%)",
+  "lebenssituations-check": "linear-gradient(160deg,#edf7ed 0%,#c8e6c8 100%)",
   "einkommens-check": "linear-gradient(160deg,#f0ecff 0%,#d9d0ff 100%)",
   "vorsorge-check": "linear-gradient(160deg,#ecfdf5 0%,#bbf7d0 100%)",
   risikoleben: "linear-gradient(160deg,#fdf2f8 0%,#f5c6e8 100%)",
@@ -15,13 +13,7 @@ const PREVIEW_BG: Record<string, string> = {
   "immobilien-check": "linear-gradient(160deg,#fffbeb 0%,#fde68a 100%)",
 };
 
-function PhoneShell({
-  c,
-  children,
-}: {
-  c: string;
-  children: React.ReactNode;
-}) {
+function PhoneShell({ c, children }: { c: string; children: React.ReactNode }) {
   return (
     <div className="w-[180px] shrink-0 overflow-hidden rounded-t-[22px] bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.12),0_0_0_1px_rgba(0,0,0,0.06)]">
       <div className="h-1 w-full" style={{ background: c }} />
@@ -33,10 +25,7 @@ function PhoneShell({
           >
             M
           </div>
-          <span
-            className="truncate text-[9px] font-bold"
-            style={{ color: c }}
-          >
+          <span className="truncate text-[9px] font-bold" style={{ color: c }}>
             Mustermann Vers.
           </span>
         </div>
@@ -44,7 +33,7 @@ function PhoneShell({
           className="shrink-0 rounded-[20px] px-1.5 py-0.5 text-[8px] font-semibold"
           style={{ background: alpha(c, 0.1), color: c }}
         >
-          Check
+          Ergebnis
         </div>
       </div>
       <div className="px-3 pb-3 pt-3">{children}</div>
@@ -52,321 +41,265 @@ function PhoneShell({
   );
 }
 
-function CtaBtn({ c, children }: { c: string; children: React.ReactNode }) {
+function ResultBadge({ label }: { label: string }) {
   return (
-    <div
-      className="block w-full rounded-lg py-2 text-center text-[9px] font-bold"
-      style={{ background: c, color: textOnAccent(c) }}
-    >
-      {children}
+    <div className="mt-2 rounded-full border border-[#e8e8e8] px-2 py-0.5 text-center text-[7px] font-medium text-[#9CA3AF]">
+      {label}
     </div>
   );
 }
 
 function MockInner({ slug, c }: { slug: string; c: string }) {
   switch (slug) {
+    /* ── 1. Bedarfscheck ──────────────────────────────────────── */
     case "bedarfscheck":
       return (
         <>
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Ihre Absicherung</div>
           <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
+            className="mb-0.5 text-[26px] font-black leading-none tracking-tight"
             style={{ color: c }}
           >
-            Schritt 1 von 3
+            Rundum
           </div>
-          <div className="mb-0.5 text-[11px] font-extrabold leading-tight text-[#111]">
-            Erzählen Sie uns von sich
+          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">
+            Ihr ideales Paket
           </div>
-          <div className="mb-2.5 text-[9px] leading-snug text-[#999]">
-            Für Ihre Empfehlung
-          </div>
-          <div className="mb-2 grid grid-cols-2 gap-[3px]">
-            <div
-              className="rounded px-1 py-1 text-center text-[8px] font-bold"
-              style={{ background: alpha(c, 0.15), color: c }}
-            >
-              Angestellt
-            </div>
-            <div className="rounded bg-black/[0.05] px-1 py-1 text-center text-[8px] text-[#666]">
-              Selbstständig
-            </div>
-            <div
-              className="rounded px-1 py-1 text-center text-[8px] font-bold"
-              style={{ background: alpha(c, 0.15), color: c }}
-            >
-              Familie
-            </div>
-            <div className="rounded bg-black/[0.05] px-1 py-1 text-center text-[8px] text-[#666]">
-              Single
-            </div>
-          </div>
-          <CtaBtn c={c}>Weiter →</CtaBtn>
-        </>
-      );
-    case "lebenssituations-check":
-      return (
-        <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Lebenssituations-Check
-          </div>
-          <div className="mb-0.5 text-[11px] font-extrabold leading-tight text-[#111]">
-            Was haben Sie bereits?
-          </div>
-          <div className="mb-2.5 text-[9px] leading-snug text-[#999]">
-            5 Sparten · 35 Produkte
-          </div>
-          <div className="mb-2.5 flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 rounded-md bg-[#f7f7f5] px-2 py-1">
+          <div className="mb-2 flex gap-1">
+            {(["Basis", "Rundum", "Maximal"] as const).map((t, i) => (
               <div
-                className="flex h-3 w-3 shrink-0 items-center justify-center rounded-[3px] text-[7px] font-bold text-black"
-                style={{ background: c }}
+                key={t}
+                className="flex-1 rounded py-1 text-center text-[7px] font-bold"
+                style={
+                  i === 1
+                    ? { background: c, color: "white" }
+                    : { background: "rgba(0,0,0,0.05)", color: "#9CA3AF" }
+                }
               >
-                ✓
-              </div>
-              <span className="text-[9px] font-medium text-[#444]">
-                BU vorhanden
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-md bg-[#f7f7f5] px-2 py-1">
-              <div
-                className="flex h-3 w-3 shrink-0 items-center justify-center rounded-[3px] text-[7px] font-bold text-black"
-                style={{ background: c }}
-              >
-                ✓
-              </div>
-              <span className="text-[9px] font-medium text-[#444]">
-                Haftpflicht
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-md bg-[#f7f7f5] px-2 py-1">
-              <div className="h-3 w-3 shrink-0 rounded-[3px] border border-[#ddd]" />
-              <span className="text-[9px] font-medium text-[#aaa]">
-                Hausrat
-              </span>
-            </div>
-          </div>
-          <CtaBtn c={c}>Weiter →</CtaBtn>
-        </>
-      );
-    case "einkommens-check":
-      return (
-        <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Einkommensverlauf
-          </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Was passiert wenn ich ausfalle?
-          </div>
-          <div className="mb-2 flex flex-col gap-[3px]">
-            {(
-              [
-                ["#059669", "30%", "100%"],
-                ["#d97706", "20%", "67%"],
-                ["#dc2626", "4%", "0%"],
-                [c, "18%", "45%"],
-              ] as const
-            ).map(([col, w, lab]) => (
-              <div key={lab} className="flex items-center gap-[3px]">
-                <div
-                  className="h-[5px] w-[5px] shrink-0 rounded-full"
-                  style={{ background: col }}
-                />
-                <div className="h-1 min-w-0 flex-1 rounded-[3px] bg-black/[0.06]">
-                  <div
-                    className="h-full rounded-[3px]"
-                    style={{ background: col, width: w }}
-                  />
-                </div>
-                <span
-                  className="w-[22px] shrink-0 text-right text-[7px] font-bold"
-                  style={{ color: col }}
-                >
-                  {lab}
-                </span>
+                {t}
               </div>
             ))}
           </div>
-          <CtaBtn c={c}>Lücke schließen →</CtaBtn>
+          <ResultBadge label="Ergebnis nach 2 Min." />
         </>
       );
-    case "vorsorge-check":
+
+    /* ── 2. Lebenssituations-Check ────────────────────────────── */
+    case "lebenssituations-check":
       return (
         <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Vorsorge-Check
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Das ist jetzt relevant</div>
+          <div className="mb-0.5 text-[26px] font-black leading-none tracking-tight text-[#111]">
+            3 Themen
           </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Wie groß ist meine Rentenlücke?
+          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">
+            konkrete Handlungspunkte
           </div>
-          <div className="mb-1 flex h-[5px] overflow-hidden rounded-[3px] bg-black/[0.07]">
-            <div
-              className="h-full w-[62%]"
-              style={{
-                background: "linear-gradient(90deg,#0369a1,#7c3aed,#059669)",
-              }}
-            />
+          <div className="mb-2 flex flex-col gap-1">
+            {["Einkommen absichern", "Familie prüfen", "Vorsorge anpassen"].map(
+              (t) => (
+                <div
+                  key={t}
+                  className="flex items-center gap-1.5 rounded-md bg-[#f7f7f5] px-2 py-[5px]"
+                >
+                  <div
+                    className="h-[5px] w-[5px] shrink-0 rounded-full"
+                    style={{ background: c }}
+                  />
+                  <span className="text-[8px] font-medium text-[#444]">{t}</span>
+                </div>
+              )
+            )}
           </div>
-          <div className="mb-2 grid grid-cols-2 gap-[3px]">
-            <div className="rounded bg-[#dbeafe] p-1 text-center">
-              <div className="text-[7px] text-[#aaa]">Schicht 1</div>
-              <div className="text-[10px] font-extrabold text-[#0369a1]">
-                1.200€
-              </div>
-            </div>
-            <div className="rounded bg-[#fee2e2] p-1 text-center">
-              <div className="text-[7px] text-[#aaa]">Lücke</div>
-              <div className="text-[10px] font-extrabold text-[#dc2626]">
-                1.040€
-              </div>
-            </div>
-          </div>
-          <CtaBtn c={c}>Strategie wählen</CtaBtn>
+          <ResultBadge label="Kunde sieht seinen Bedarf" />
         </>
       );
-    case "risikoleben":
+
+    /* ── 3. Einkommens-Check ──────────────────────────────────── */
+    case "einkommens-check":
       return (
         <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Risikoleben
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Ihre Einkommenslücke</div>
+          <div className="mb-0.5 text-[28px] font-black leading-none tracking-tight text-[#dc2626]">
+            1.850 €
           </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Familie absichern
+          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">monatliche Lücke</div>
+          <div className="mb-2 flex flex-col gap-[4px]">
+            {(
+              [
+                { label: "Netto", w: "100%", color: "#111" },
+                { label: "Leistung", w: "58%", color: "#059669" },
+                { label: "Lücke", w: "42%", color: "#dc2626" },
+              ] as const
+            ).map(({ label, w, color }) => (
+              <div key={label} className="flex items-center gap-1.5">
+                <span className="w-8 shrink-0 text-[7px] text-[#9CA3AF]">
+                  {label}
+                </span>
+                <div className="h-[5px] flex-1 overflow-hidden rounded-full bg-black/[0.06]">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: w, background: color }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
-          <div
-            className="mb-1.5 rounded-md border p-1.5"
-            style={{
-              background: alpha(c, 0.07),
-              borderColor: alpha(c, 0.2),
-            }}
-          >
-            <div
-              className="text-[15px] font-black tracking-tight"
-              style={{ color: c }}
-            >
-              285.000 €
-            </div>
-            <div className="mt-0.5 text-[8px] text-[#aaa]">
-              fehlende Versicherungssumme
-            </div>
-          </div>
-          <div className="mb-1.5 text-[8px] text-[#888]">
-            Witwen-/Waisenrente eingerechnet
-          </div>
-          <CtaBtn c={c}>Lücke schließen</CtaBtn>
+          <ResultBadge label="Ergebnis nach 2 Min." />
         </>
       );
+
+    /* ── 4. GKV vs. PKV ───────────────────────────────────────── */
     case "gkv-pkv":
       return (
         <>
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Ihre Tendenz</div>
           <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
+            className="mb-0.5 text-[32px] font-black leading-none tracking-tight"
             style={{ color: c }}
           >
-            GKV vs. PKV
+            PKV
           </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Was lohnt sich für mich?
+          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">
+            auf Basis Ihrer Angaben
           </div>
-          <div className="mb-1 flex h-[5px] overflow-hidden rounded-[3px]">
-            <div className="h-full w-[65%] bg-[#059669]" />
-            <div className="h-full flex-1 bg-[#7c3aed]" />
+          <div className="mb-2 rounded-lg border border-black/[0.06] bg-[#f9f9f9] px-2 py-1.5">
+            <div className="mb-1 flex justify-between text-[8px]">
+              <span className="text-[#9CA3AF]">GKV</span>
+              <span className="font-bold text-[#9CA3AF]">410 €/Mon.</span>
+            </div>
+            <div className="flex justify-between text-[8px]">
+              <span className="font-semibold" style={{ color: c }}>
+                PKV
+              </span>
+              <span className="font-bold" style={{ color: c }}>
+                290 €/Mon.
+              </span>
+            </div>
+            <div className="mt-1.5 rounded bg-[#f0fdf4] px-1.5 py-0.5 text-[7px] font-semibold text-[#059669]">
+              → 120 € Ersparnis / Monat
+            </div>
           </div>
-          <div className="mb-1.5 flex justify-between text-[8px] font-bold">
-            <span className="text-[#059669]">GKV 65%</span>
-            <span className="text-[#7c3aed]">PKV 35%</span>
-          </div>
-          <div className="mb-1.5 rounded bg-[#ecfdf5] px-1.5 py-0.5 text-[8px] font-bold text-[#059669]">
-            → Empfehlung: GKV
-          </div>
-          <CtaBtn c={c}>Gespräch anfragen</CtaBtn>
+          <ResultBadge label="Klare Entscheidung" />
         </>
       );
+
+    /* ── 5. Vorsorge-Check ────────────────────────────────────── */
+    case "vorsorge-check":
+      return (
+        <>
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Ihre Rentenlücke</div>
+          <div className="mb-0.5 text-[28px] font-black leading-none tracking-tight text-[#dc2626]">
+            1.200 €
+          </div>
+          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">
+            monatlich · ab Rentenalter
+          </div>
+          <div className="mb-1 flex h-[6px] overflow-hidden rounded-full bg-black/[0.06]">
+            <div className="h-full w-[58%]" style={{ background: c }} />
+            <div className="h-full flex-1 bg-[#dc2626]" />
+          </div>
+          <div className="mb-2 flex justify-between text-[7px]">
+            <span style={{ color: c }}>Gedeckt 58 %</span>
+            <span className="text-[#dc2626]">Lücke 42 %</span>
+          </div>
+          <ResultBadge label="Zukunft sichtbar machen" />
+        </>
+      );
+
+    /* ── 6. Risikoleben ───────────────────────────────────────── */
+    case "risikoleben":
+      return (
+        <>
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Absicherungsbedarf</div>
+          <div
+            className="mb-0.5 text-[24px] font-black leading-none tracking-tight"
+            style={{ color: c }}
+          >
+            250.000 €
+          </div>
+          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">für Ihre Familie</div>
+          <div className="mb-2 rounded-lg border border-black/[0.06] bg-[#f9f9f9] px-2 py-1.5">
+            <div className="mb-1 flex justify-between text-[8px]">
+              <span className="text-[#9CA3AF]">Vorhanden</span>
+              <span className="font-bold text-[#9CA3AF]">0 €</span>
+            </div>
+            <div className="flex justify-between text-[8px]">
+              <span className="text-[#9CA3AF]">Bedarf</span>
+              <span className="font-bold" style={{ color: c }}>
+                250.000 €
+              </span>
+            </div>
+          </div>
+          <ResultBadge label="Ergebnis nach 2 Min." />
+        </>
+      );
+
+    /* ── 7. Pflege-Check ──────────────────────────────────────── */
     case "pflege-check":
       return (
         <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Pflege-Check
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">
+            Eigenanteil Pflegeheim
           </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Eigenanteil nach Pflegegrad
+          <div className="mb-0.5 text-[24px] font-black leading-none tracking-tight text-[#dc2626]">
+            2.300 €
           </div>
-          <div
-            className="mb-1.5 rounded-md border p-1.5"
-            style={{
-              background: alpha(c, 0.08),
-              borderColor: alpha(c, 0.25),
-            }}
-          >
-            <div className="text-[15px] font-black" style={{ color: c }}>
-              ca. 1.850 €
+          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">
+            monatlich · Pflegegrad 3
+          </div>
+          <div className="mb-2 rounded-lg border border-[#F2D4D0] bg-[#FFF6F5] px-2 py-1.5">
+            <div className="mb-1 flex justify-between text-[8px]">
+              <span className="text-[#9CA3AF]">Pflegekasse</span>
+              <span className="font-bold text-[#111]">1.262 €</span>
             </div>
-            <div className="mt-0.5 text-[8px] text-[#aaa]">
-              Ø monatlicher Eigenanteil (PG 3)
+            <div className="flex justify-between text-[8px]">
+              <span className="text-[#9CA3AF]">Eigenanteil</span>
+              <span className="font-bold text-[#dc2626]">2.300 €</span>
             </div>
           </div>
-          <CtaBtn c={c}>Produkte ansehen</CtaBtn>
+          <ResultBadge label="Der Schockmoment" />
         </>
       );
+
+    /* ── 8. Immobilien-Check ──────────────────────────────────── */
     case "immobilien-check":
       return (
         <>
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Monatliche Rate</div>
           <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
+            className="mb-0.5 text-[28px] font-black leading-none tracking-tight"
             style={{ color: c }}
           >
-            Immobilien-Check
+            1.450 €
           </div>
-          <div className="mb-2 text-[11px] font-extrabold leading-tight text-[#111]">
-            Kaufen · Finanzieren · Absichern
-          </div>
-          <div className="mb-1.5 grid grid-cols-3 gap-[2px] text-center">
-            <div className="rounded bg-black/[0.06] px-0.5 py-1 text-[7px] font-bold text-[#444]">
-              Miete
+          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">Kaufen · Rate/Monat</div>
+          <div className="mb-2 rounded-lg border border-black/[0.06] bg-[#f9f9f9] px-2 py-1.5">
+            <div className="mb-1 flex justify-between text-[8px]">
+              <span className="text-[#9CA3AF]">Kaufen (Rate)</span>
+              <span className="font-bold" style={{ color: c }}>
+                1.450 €
+              </span>
             </div>
-            <div
-              className="rounded px-0.5 py-1 text-[7px] font-bold text-white"
-              style={{ background: c }}
-            >
-              Anschluss
+            <div className="flex justify-between text-[8px]">
+              <span className="text-[#9CA3AF]">Mieten</span>
+              <span className="font-bold text-[#059669]">1.200 €</span>
             </div>
-            <div className="rounded bg-black/[0.06] px-0.5 py-1 text-[7px] font-bold text-[#444]">
-              Gebäude
+            <div className="mt-1.5 text-[7px] text-[#9CA3AF]">
+              + 250 € · Break-even ab Jahr 12
             </div>
           </div>
-          <div className="mb-1.5 text-[8px] text-[#888]">
-            Neue Rate vs. alte Rate — in einem Flow
-          </div>
-          <CtaBtn c={c}>Modul wählen →</CtaBtn>
+          <ResultBadge label="Vergleich auf einen Blick" />
         </>
       );
+
     default:
       return (
         <>
-          <div
-            className="mb-1 text-[7px] font-bold uppercase tracking-[0.08em]"
-            style={{ color: c }}
-          >
-            Check
+          <div className="mb-1 text-[7px] text-[#9CA3AF]">Ergebnis</div>
+          <div className="mb-2 text-[22px] font-black leading-none tracking-tight text-[#111]">
+            —
           </div>
-          <div className="mb-2 text-[11px] font-extrabold text-[#111]">
-            Vorschau
-          </div>
-          <CtaBtn c={c}>Weiter →</CtaBtn>
         </>
       );
   }

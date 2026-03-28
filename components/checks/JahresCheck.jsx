@@ -6,8 +6,6 @@ import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCop
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
-const WARN="#c0392b";
-
 const EREIGNISSE=[
   {id:"nachwuchs",l:"Nachwuchs",display:"🍼 Nachwuchs ist unterwegs oder da"},
   {id:"jobwechsel",l:"Jobwechsel",display:"💼 Ich habe den Job gewechselt oder mehr verdient"},
@@ -170,22 +168,40 @@ function buildEmpfehlungen(events, prods, kontext) {
 }
 
 
-function makeJahresCheckT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"}};}
+function makeJahresCheckT(C){return{page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},
+resultHero:{padding:"52px 24px 40px",textAlign:"center",background:"#fff"},
+resultEyebrow:{fontSize:"12px",fontWeight:"500",color:"#9CA3AF",letterSpacing:"0.2px",marginBottom:"14px"},
+resultNumber:(C2)=>({fontSize:"52px",fontWeight:"800",color:C2,letterSpacing:"-2.5px",lineHeight:1,marginBottom:"8px"}),
+resultUnit:{fontSize:"14px",color:"#9CA3AF",marginBottom:"18px"},
+resultSub:{fontSize:"13px",color:"#9CA3AF",lineHeight:1.55,marginTop:"12px"},
+statusWarn:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#FFF6F5",border:"1px solid #F2D4D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#C0392B"},
+statusOk:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#15803D"},
+statusInfo:(C2)=>({display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:`${C2}0d`,border:`1px solid ${C2}33`,borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:C2}),
+cardPrimary:{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"20px",overflow:"hidden",background:"#FFFFFF",boxShadow:"0 6px 24px rgba(17,24,39,0.08)"},
+cardContext:{background:"#FAFAF8",border:"1px solid rgba(17,24,39,0.05)",borderRadius:"16px",padding:"18px 20px"},
+warnCard:{background:"#FFF6F5",border:"1px solid #F2D4D0",borderLeft:"3px solid #C0392B",borderRadius:"14px",padding:"18px 20px"},
+sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"},
+};}
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 
-const SIMPLE_EVENTS_DEF=[
-  {id:"familie",l:"Familie",sub:"Kind, Heirat oder Trennung",icon:"👨‍👩‍👧",evIds:["nachwuchs","heirat"]},
-  {id:"beruf",l:"Beruf",sub:"Jobwechsel oder mehr Gehalt",icon:"💼",evIds:["jobwechsel"]},
-  {id:"immobilie",l:"Immobilie",sub:"Kauf oder Umzug",icon:"🏠",evIds:["immobilie","umzug"]},
-  {id:"selbst",l:"Selbstständigkeit",sub:"Freiberuflich oder Gewerbe",icon:"🚀",evIds:["selbst"]},
-  {id:"pflege",l:"Pflege eines Angehörigen",sub:"Häuslich oder stationär",icon:"👴",evIds:["pflege"]},
+// ─── 6 konkrete Ereignisse (ohne Intro-Screen) ────────────────────────────────
+const SIMPLE_EVENTS_DEF = [
+  { id: "nachwuchs",  l: "Nachwuchs",           sub: "Kind unterwegs oder neu da",      icon: "🍼", evIds: ["nachwuchs"] },
+  { id: "jobwechsel", l: "Jobwechsel",           sub: "Neuer Arbeitgeber",               icon: "💼", evIds: ["jobwechsel"] },
+  { id: "gehalt",     l: "Gehalt gestiegen",     sub: "Deutlich mehr Einkommen",         icon: "📈", evIds: ["jobwechsel"] }, // gleiche Matrix
+  { id: "immobilie",  l: "Immobilie",            sub: "Kauf oder Eigenheim",             icon: "🏠", evIds: ["immobilie"] },
+  { id: "trennung",   l: "Trennung",             sub: "Scheidung oder Trennung",         icon: "💔", evIds: ["heirat"] },     // Familienmatrix
+  { id: "selbst",     l: "Selbstständigkeit",    sub: "Freiberuflich oder Gewerbe",      icon: "🚀", evIds: ["selbst"] },
 ];
-const SCHUTZ_KATS=[
-  {id:"gesundheit",l:"Gesundheit",icon:"🏥",prods:["Private Krankenversicherung (PKV)","Zahnzusatzversicherung","Krankenhauszusatzversicherung","Ambulante Zusatzversicherung","Pflegezusatzversicherung","Auslandskrankenversicherung"]},
-  {id:"einkommen",l:"Einkommen",icon:"💰",prods:["Berufsunfähigkeitsversicherung","Erwerbsunfähigkeitsversicherung","Krankentagegeld","Unfallversicherung"]},
-  {id:"familie",l:"Familie",icon:"👨‍👩‍👧",prods:["Risikolebensversicherung","Privathaftpflicht","Sterbegeldversicherung"]},
-  {id:"wohnen",l:"Wohnen",icon:"🏠",prods:["Hausratversicherung","Wohngebäudeversicherung","Rechtsschutzversicherung","Kfz-Versicherung","E-Bike / Fahrrad"]},
-  {id:"vorsorge",l:"Vorsorge",icon:"🌱",prods:["Altersvorsorge / private Rentenversicherung","Riester-Rente","Rürup-Rente","Betriebliche Altersvorsorge (bAV)","Sparen & Investieren","Bausparvertrag"]},
+
+// ─── Konkrete Produkte (nicht Bereiche!) ──────────────────────────────────────
+const PRODUKT_ITEMS = [
+  { id: "bu",           name: "BU / Berufsunfähigkeit",  icon: "💼", matrixNames: ["Berufsunfähigkeitsversicherung", "Erwerbsunfähigkeitsversicherung"] },
+  { id: "haftpflicht",  name: "Privathaftpflicht",       icon: "🛡️", matrixNames: ["Privathaftpflicht"] },
+  { id: "altersvorsorge",name:"Altersvorsorge",          icon: "🌱", matrixNames: ["Altersvorsorge / private Rentenversicherung", "Riester-Rente", "Rürup-Rente"] },
+  { id: "risikoleben",  name: "Risikoleben",             icon: "❤️", matrixNames: ["Risikolebensversicherung"] },
+  { id: "pflege",       name: "Pflegezusatz",            icon: "🏥", matrixNames: ["Pflegezusatzversicherung"] },
+  { id: "kv",           name: "Krankenversicherung",     icon: "⚕️", matrixNames: ["Private Krankenversicherung (PKV)"] },
 ];
 export default function JahresCheck(){
   const MAKLER=useCheckConfig();
@@ -199,10 +215,10 @@ export default function JahresCheck(){
   const[kontext]=useState({housingStatus:"",employmentStatus:"",familyStatus:""});
   const[scr,setScr]=useState(1);
   const[selEvKats,setSelEvKats]=useState([]);
-  const[selSchutzKats,setSelSchutzKats]=useState([]);
+  const[selProdukte,setSelProdukte]=useState([]);
   const toggleSimpleEv=(catId)=>{const cat=SIMPLE_EVENTS_DEF.find(c=>c.id===catId);if(!cat)return;setSelEvKats(p=>{const next=p.includes(catId)?p.filter(x=>x!==catId):[...p,catId];setEvents(SIMPLE_EVENTS_DEF.filter(c=>next.includes(c.id)).flatMap(c=>c.evIds));return next;});};
-  const toggleSchutzKat=(katId)=>{const kat=SCHUTZ_KATS.find(k=>k.id===katId);if(!kat)return;setSelSchutzKats(p=>{const next=p.includes(katId)?p.filter(x=>x!==katId):[...p,katId];setProds(SCHUTZ_KATS.filter(k=>next.includes(k.id)).flatMap(k=>k.prods));return next;});};
-  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
+  const toggleProdukt=(prodId)=>{const prod=PRODUKT_ITEMS.find(p=>p.id===prodId);if(!prod)return;setSelProdukte(p=>{const next=p.includes(prodId)?p.filter(x=>x!==prodId):[...p,prodId];setProds(PRODUKT_ITEMS.filter(p=>next.includes(p.id)).flatMap(p=>p.matrixNames));return next;});};
+  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0,behavior:"smooth"});};
   const E=buildEmpfehlungen(events,prods,kontext);
 
 
@@ -264,207 +280,228 @@ export default function JahresCheck(){
     </div>);
   }
 
-  // Phase 3: Ergebnis
-  if(phase===3){
-    const total=E.anpassen.length+E.abschliessen.length;
-    const HinweisCard=({item,accentColor})=>(
-      <div style={{padding:"13px 16px",borderLeft:`3px solid ${accentColor}`,background:"#fff",
-        borderBottom:"1px solid #f5f5f5"}}>
-        <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"4px"}}>
-          <span style={{fontSize:"10px",fontWeight:"700",color:accentColor,letterSpacing:"0.5px",
-            textTransform:"uppercase",padding:"1px 7px",background:`${accentColor}10`,borderRadius:"20px"}}>
-            {item.vorhanden?"Anpassen":"Neu abschließen"}
-          </span>
-          {item.h&&<span style={{fontSize:"10px",fontWeight:"700",color:WARN,letterSpacing:"0.5px",
-            textTransform:"uppercase",padding:"1px 7px",background:`${WARN}10`,borderRadius:"20px"}}>Dringend</span>}
+  // ── Phase 3: Ergebnis — 3 Prioritäts-Blöcke ──────────────────────────────
+  if (phase === 3) {
+    // Mapping: dringende Items → Jetzt relevant; nicht-dringende → Prüfen; ergaenzen → Optional
+    const jetztRelevant = [...E.anpassen.filter(x => x.h), ...E.abschliessen.filter(x => x.h)];
+    const pruefen       = [...E.anpassen.filter(x => !x.h), ...E.abschliessen.filter(x => !x.h)];
+    const optionalItems = E.ergaenzen;
+    const totalCount    = jetztRelevant.length + pruefen.length + optionalItems.length;
+
+    const ItemCard = ({ item, accentColor, badge }) => (
+      <div style={{ padding: "14px 18px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: accentColor, flexShrink: 0, marginTop: "6px" }} />
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px", flexWrap: "wrap" }}>
+            <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937" }}>{item.p}</div>
+            {badge && <span style={{ fontSize: "10px", fontWeight: "700", color: accentColor, background: accentColor + "14", border: `1px solid ${accentColor}33`, borderRadius: "20px", padding: "1px 7px", letterSpacing: "0.3px" }}>{badge}</span>}
+          </div>
+          <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, marginBottom: "3px" }}>{item.t}</div>
+          <div style={{ fontSize: "11px", color: "#9CA3AF" }}>Anlass: {item.ereignis}</div>
         </div>
-        <div style={{fontSize:"13px",fontWeight:"600",color:"#111",marginBottom:"3px"}}>{item.p}</div>
-        <div style={{fontSize:"12px",color:"#555",lineHeight:1.55,marginBottom:"4px"}}>{item.t}</div>
-        <div style={{fontSize:"11px",color:"#bbb"}}>Anlass: {item.ereignis}</div>
       </div>
     );
-    return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-      <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
-      <div style={T.prog}><div style={T.progFil(80)}/></div>
-      {/* H1 Ergebnis */}
-      <div style={{margin:"20px 24px 0 24px"}}>
-        <div style={{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>Auf Basis Ihrer Angaben</div>
-        <div style={{fontSize:"20px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.4px",marginBottom:"12px"}}>Das kann sich aus Ihrer aktuellen Situation ergeben</div>
-      </div>
-      {/* Zusammenfassung */}
-      <div style={{margin:"0 24px",padding:"14px 16px",background:`${C}08`,borderRadius:"10px",border:`1px solid ${C}20`}}>
-        <div style={{fontSize:"11px",fontWeight:"600",color:C,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px"}}>Überblick</div>
-        <div style={{fontSize:"14px",color:"#111",lineHeight:1.55}}>
-          {total===0&&E.ergaenzen.length===0
-            ?`Auf Basis Ihrer Angaben ergibt sich aktuell kein konkreter Handlungsbedarf.`
-            :`Auf Basis Ihrer Angaben ergibt sich ${total>0?`${total} ${total===1?"konkreter Punkt":"konkrete Punkte"}`:""}${total>0&&E.ergaenzen.length>0?" und ":""}${E.ergaenzen.length>0?`${E.ergaenzen.length} optionale${E.ergaenzen.length===1?"s Thema":" Themen"}`:""}.`}
-        </div>
-      </div>
 
-      {/* Elternzeit-Sonderblock */}
-      {events.includes("elternzeit")&&(
-        <div style={{...T.section,marginTop:"16px"}}>
-          <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"}}>
-            <div style={{padding:"10px 16px",background:"#f7f8ff",borderBottom:"1px solid #f0f0f0"}}>
-              <div style={{fontSize:"11px",fontWeight:"700",color:C,letterSpacing:"0.5px",textTransform:"uppercase"}}>Finanzielle Veränderung in der Elternzeit</div>
-            </div>
-            <div style={{padding:"13px 16px"}}>
-              <div style={{fontSize:"12px",color:"#555",lineHeight:1.65,marginBottom:"10px"}}>
-                Während der Elternzeit ersetzt das Elterngeld in der Regel ca. 65 % des letzten Nettoeinkommens — maximal 1.800 € pro Monat. Krankentagegeld und Krankengeld ruhen in dieser Zeit, da keine Arbeitspflicht besteht. Für Selbstständige und nach Wiederaufnahme der Arbeit gelten Sonderregelungen.
-              </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"8px"}}>
-                {[
-                  {l:"Elterngeld",v:"65 % des Nettos",sub:"max. 1.800 €/Mon."},
-                  {l:"Lücke",v:"ca. 35 %",sub:"aus Einkommen/Vermögen"},
-                  {l:"Dauer",v:"bis 14 Mon.",sub:"Basis-Elterngeld"},
-                ].map(({l,v,sub},i)=>(
-                  <div key={i} style={{textAlign:"center",padding:"8px",background:"#f9f9f9",borderRadius:"7px"}}>
-                    <div style={{fontSize:"13px",fontWeight:"700",color:"#333"}}>{v}</div>
-                    <div style={{fontSize:"10px",color:C,fontWeight:"600",marginTop:"2px"}}>{l}</div>
-                    <div style={{fontSize:"10px",color:"#aaa",marginTop:"1px"}}>{sub}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{fontSize:"11px",color:"#aaa",marginTop:"8px"}}>Grobe Orientierung — individuelle Werte können abweichen.</div>
+    return (
+      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+        <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG /></div><span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
+        <div style={T.prog}><div style={T.progFil(88)} /></div>
+
+        {/* ── Hero ──────────────────────────────────────────────────────────── */}
+        <div style={T.resultHero}>
+          <div style={T.resultEyebrow}>Ihre aktuelle Situation</div>
+          <div style={T.resultNumber(totalCount > 0 ? C : "#059669")}>{totalCount === 0 ? "✓" : totalCount}</div>
+          <div style={T.resultUnit}>{totalCount === 0 ? "kein Handlungsbedarf erkannt" : `relevante Punkt${totalCount !== 1 ? "e" : ""}`}</div>
+          {totalCount === 0
+            ? <div style={T.statusOk}>Alles in Ordnung</div>
+            : jetztRelevant.length > 0
+              ? <div style={T.statusWarn}>Handlungsbedarf erkannt</div>
+              : <div style={T.statusInfo(C)}>Prüfbedarf erkannt</div>
+          }
+          <div style={T.resultSub}>auf Basis Ihrer Angaben · nicht verbindlich</div>
+        </div>
+
+        {/* ── Visual: 3 Blöcke ──────────────────────────────────────────────── */}
+        {totalCount > 0 && (
+          <div style={T.section}>
+            <div style={T.sectionLbl}>Ihre Prioritäten im Überblick</div>
+            <div style={{ border: "1px solid rgba(17,24,39,0.08)", borderRadius: "16px", overflow: "hidden" }}>
+              {[
+                { label: "🔴 Jetzt relevant", count: jetztRelevant.length, color: "#C0392B", bg: "#FFF6F5" },
+                { label: "🟡 Prüfen",         count: pruefen.length,       color: "#D97706", bg: "#FFFBEB" },
+                { label: "⚪ Optional",        count: optionalItems.length, color: "#6B7280", bg: "#FAFAF8" },
+              ].filter(b => b.count > 0).map(({ label, count, color, bg }, i, arr) => (
+                <div key={label} style={{ padding: "12px 16px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none", background: bg, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: "600", color }}>{label}</span>
+                  <span style={{ fontSize: "13px", color: "#9CA3AF" }}>{count} Punkt{count !== 1 ? "e" : ""}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Block 1: Jetzt wichtig */}
-      {E.anpassen.length>0&&(
-        <div style={{...T.section,marginTop:"20px"}}>
-          <div style={{fontSize:"11px",fontWeight:"700",color:WARN,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Jetzt relevant — In vergleichbaren Situationen besteht hier häufig konkreter Prüfbedarf</div>
-          <div style={T.card}>
-            {E.anpassen.map((item,i,arr)=>(
-              <div key={i} style={{borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
-                <HinweisCard item={item} accentColor={item.h?WARN:C}/>
+        {/* ── Block 1: Was sich verändert hat ───────────────────────────────── */}
+        {selEvKats.length > 0 && (
+          <div style={T.section}>
+            <div style={T.sectionLbl}>Was sich verändert hat</div>
+            <div style={T.cardContext}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {selEvKats.map(id => {
+                  const ev = SIMPLE_EVENTS_DEF.find(e => e.id === id);
+                  return ev ? (
+                    <div key={id} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", background: "#fff", border: "1px solid rgba(17,24,39,0.08)", borderRadius: "20px" }}>
+                      <span style={{ fontSize: "16px" }}>{ev.icon}</span>
+                      <span style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937" }}>{ev.l}</span>
+                    </div>
+                  ) : null;
+                })}
               </div>
-            ))}
+              <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "10px", lineHeight: 1.5 }}>Diese Ereignisse beeinflussen Ihre bestehende und notwendige Absicherung.</div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Block 2: Anpassen */}
-      {E.abschliessen.length>0&&(
-        <div style={T.section}>
-          <div style={{fontSize:"11px",fontWeight:"600",color:C,letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Prüfen / Anpassen — Diese Bereiche werden häufig bei Veränderungen angepasst</div>
-          <div style={T.card}>
-            {E.abschliessen.map((item,i,arr)=>(
-              <div key={i} style={{borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
-                <HinweisCard item={item} accentColor={item.h?WARN:C}/>
+        {/* ── Block 2: Jetzt relevant ───────────────────────────────────────── */}
+        {jetztRelevant.length > 0 && (
+          <div style={T.section}>
+            <div style={T.sectionLbl}>🔴 Jetzt relevant — direkte Risiken</div>
+            <div style={T.cardPrimary}>
+              {jetztRelevant.map((item, i, arr) => (
+                <div key={i} style={{ borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none" }}>
+                  <ItemCard item={item} accentColor="#C0392B" badge={item.vorhanden ? "Anpassen" : "Fehlend"} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Block 3: Prüfen ───────────────────────────────────────────────── */}
+        {pruefen.length > 0 && (
+          <div style={T.section}>
+            <div style={T.sectionLbl}>🟡 Prüfen — Anpassung sinnvoll</div>
+            <div style={T.cardPrimary}>
+              {pruefen.map((item, i, arr) => (
+                <div key={i} style={{ borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none" }}>
+                  <ItemCard item={item} accentColor="#D97706" badge={item.vorhanden ? "Anpassen" : "Prüfen"} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Block 4: Optional ─────────────────────────────────────────────── */}
+        {optionalItems.length > 0 && (
+          <div style={T.section}>
+            <div style={T.sectionLbl}>⚪ Optional — sinnvolle Ergänzungen</div>
+            <div style={T.cardContext}>
+              {optionalItems.map((item, i, arr) => (
+                <div key={i} style={{ paddingBottom: "12px", marginBottom: "12px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.06)" : "none" }}>
+                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", marginBottom: "3px" }}>{item.p}</div>
+                  <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55 }}>{item.t}</div>
+                  <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "3px" }}>Anlass: {item.ereignis}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {totalCount === 0 && (
+          <div style={{ ...T.section, marginTop: "20px" }}><div style={T.infoBox}>Gut so — aktuell kein dringender Handlungsbedarf erkannt.</div></div>
+        )}
+
+        {/* ── Was das bedeutet ──────────────────────────────────────────────── */}
+        {totalCount > 0 && (
+          <div style={T.section}>
+            <div style={T.sectionLbl}>Das kann sinnvoll sein</div>
+            <div style={T.cardContext}>
+              <div style={{ fontSize: "13px", color: "#4B5563", lineHeight: 1.7 }}>
+                Lebensereignisse verändern Ihren Absicherungsbedarf — bestehende Verträge müssen häufig angepasst, neue Risiken neu abgesichert werden. Ein Gespräch klärt, was konkret zu tun ist.
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Block 3: Optional */}
-      {E.ergaenzen.length>0&&(
-        <div style={T.section}>
-          <div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"10px"}}>Optional — kann je nach persönlicher Zielsetzung sinnvoll sein</div>
-          <div style={T.card}>
-            {E.ergaenzen.map((item,i,arr)=>(
-              <div key={i} style={{padding:"12px 16px",borderBottom:i<arr.length-1?"1px solid #f5f5f5":"none"}}>
-                <div style={{fontSize:"13px",fontWeight:"500",color:"#333",marginBottom:"2px"}}>{item.p}</div>
-                <div style={{fontSize:"12px",color:"#888",lineHeight:1.5}}>{item.t}</div>
-                <div style={{fontSize:"11px",color:"#ccc",marginTop:"3px"}}>Anlass: {item.ereignis}</div>
-              </div>
-            ))}
-          </div>
+        <div style={{ padding: "0 24px", marginBottom: "120px" }}>
+          <CheckBerechnungshinweis>
+            <>Die Empfehlungen basieren auf einer <strong>Ereignis-Matrix</strong>: Jedes Lebensereignis löst definierte Prüfpunkte aus — sortiert nach Dringlichkeit. <span style={{ color: "#b8884a" }}>Grundlage: Anlassbezogene Beratungsempfehlungen. Keine individuelle Rechtsberatung.</span></>
+          </CheckBerechnungshinweis>
+          <div style={T.infoBox}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
-      )}
-
-      {total===0&&E.ergaenzen.length===0&&(
-        <div style={{...T.section,marginTop:"20px"}}><div style={T.infoBox}>Gut so — aktuell kein dringender Handlungsbedarf.</div></div>
-      )}
-      <div style={{padding:"0 24px",marginBottom:"120px"}}>
-        <CheckBerechnungshinweis>
-          <>
-            Die Empfehlungen basieren auf einer <strong>Ereignis-Matrix</strong>: Jedes Lebensereignis löst definierte Prüfpunkte aus — aufgeteilt in bestehende Verträge die angepasst werden müssen und fehlende Absicherungen die neu abgeschlossen werden sollten.{" "}
-            <span style={{ color: "#b8884a" }}>Grundlage: BVK-Empfehlungen für anlassbezogene Beratung.</span>
-          </>
-        </CheckBerechnungshinweis>
-        <div style={T.infoBox}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+        <div style={T.footer}>
+          <button style={T.btnPrim(false)} onClick={() => goTo(4)}>Situation gemeinsam prüfen</button>
+          <button style={T.btnSec} onClick={() => { setScr(2); goTo(1); }}>Zurück</button>
+        </div>
       </div>
-      <div style={T.footer}><button style={T.btnPrim(false)} onClick={()=>goTo(4)}>Situation gemeinsam prüfen</button><button style={T.btnSec} onClick={()=>{setScr(3);goTo(1);}}>Zurück</button></div>
-    </div>);
+    );
   }
 
 
-  // Phase 1: 1 Frage pro Screen (3 Screens)
-  const nextScr=()=>scr<3?setScr(s=>s+1):goTo(3);
-  const backScr=()=>scr>1&&setScr(s=>s-1);
-  return(
-    <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-      <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Schritt {scr} / 3</span></div>
-      <div style={T.prog}><div style={T.progFil(scr*33)}/></div>
+  // ── Phase 1: Eingabe (2 Screens, kein Intro) ──────────────────────────────
+  const nextScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr < 2) { setScr(s => s + 1); } else { goTo(3); } };
+  const backScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr > 1) { setScr(s => s - 1); } };
+  return (
+    <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div style={T.header}>
+        <div style={T.logo}><div style={T.logoMk}><LogoSVG /></div><span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{MAKLER.firma}</span></div>
+        <span style={T.badge}>Schritt {scr} / 2</span>
+      </div>
+      <div style={T.prog}><div style={T.progFil(scr * 44)} /></div>
 
-      {scr===1&&<>
+      {/* Screen 1: Was hat sich verändert? */}
+      {scr === 1 && <>
         <div style={T.hero}>
-          <div style={T.eyebrow}>In wenigen Schritten</div>
-          <div style={T.h1}>Was hat sich bei Ihnen zuletzt verändert?</div>
-          <div style={T.body}>Lebensereignisse können Einfluss auf bestehende Absicherungen haben — wir zeigen Ihnen was.</div>
-        </div>
-        <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(false)} onClick={nextScr}>Check starten</button></div>
-      </>}
-
-      {scr===2&&<>
-        <div style={T.hero}>
-          <div style={T.eyebrow}>Ihre Situation</div>
+          <div style={T.eyebrow}>Lebenssituations-Check · 1 / 2</div>
           <div style={T.h1}>Was hat sich bei Ihnen verändert?</div>
           <div style={T.body}>Alles Zutreffende auswählen — mehreres möglich.</div>
         </div>
-        <div style={{padding:"0 20px",marginBottom:"16px"}}>
-          <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-            {SIMPLE_EVENTS_DEF.map(ev=>{
-              const sel=selEvKats.includes(ev.id);
-              return(
+        <div style={{ padding: "0 20px", marginBottom: "16px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {SIMPLE_EVENTS_DEF.map(ev => {
+              const sel = selEvKats.includes(ev.id);
+              return (
                 <SelectionCard key={ev.id} value={ev.id} label={ev.l} description={ev.sub}
-                  icon={<span style={{fontSize:"22px",lineHeight:1}}>{ev.icon}</span>}
-                  selected={sel} accent={C} onClick={()=>toggleSimpleEv(ev.id)}/>
+                  icon={<span style={{ fontSize: "22px", lineHeight: 1 }}>{ev.icon}</span>}
+                  selected={sel} accent={C} onClick={() => toggleSimpleEv(ev.id)} />
               );
             })}
           </div>
         </div>
-        <div style={{padding:"0 20px",marginBottom:"120px"}}>
-          <div style={T.infoBox}>Nichts Zutreffendes dabei? Einfach weitergehen — wir prüfen ob Ihre Verträge noch aktuell sind.</div>
-          {selEvKats.length>0&&<div style={{marginTop:"8px",fontSize:"12px",color:C,fontWeight:"500",textAlign:"center"}}>{selEvKats.length} Thema{selEvKats.length!==1?"s":""} ausgewählt</div>}
+        <div style={{ padding: "0 20px", marginBottom: "120px" }}>
+          <div style={T.infoBox}>Nichts Zutreffendes dabei? Einfach weitergehen — wir prüfen ob Ihre Absicherung noch passt.</div>
+          {selEvKats.length > 0 && <div style={{ marginTop: "8px", fontSize: "12px", color: C, fontWeight: "500", textAlign: "center" }}>{selEvKats.length} Ereignis{selEvKats.length !== 1 ? "se" : ""} ausgewählt</div>}
         </div>
         <div style={T.footer}>
-          <button style={T.btnPrim(false)} onClick={nextScr}>Weiter →{selEvKats.length>0?` · ${selEvKats.length} ausgewählt`:""}</button>
-          <button style={T.btnSec} onClick={backScr}>Zurück</button>
+          <button style={T.btnPrim(false)} onClick={nextScr}>Weiter{selEvKats.length > 0 ? ` · ${selEvKats.length} ausgewählt` : ""}</button>
         </div>
       </>}
 
-      {scr===3&&<>
+      {/* Screen 2: Was ist bereits vorhanden? (konkrete Produkte) */}
+      {scr === 2 && <>
         <div style={T.hero}>
-          <div style={T.eyebrow}>Bestehende Absicherung</div>
+          <div style={T.eyebrow}>Lebenssituations-Check · 2 / 2</div>
           <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
-          <div style={T.body}>Alles antippen, was bereits vorhanden ist.</div>
+          <div style={T.body}>Alles antippen, was vorhanden ist — auch wenn Sie unsicher sind.</div>
         </div>
-        <div style={{padding:"0 20px",marginBottom:"16px"}}>
-          <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-            {SCHUTZ_KATS.map(kat=>{
-              const sel=selSchutzKats.includes(kat.id);
-              return(
-                <SelectionCard key={kat.id} value={kat.id} label={kat.l}
-                  icon={<span style={{fontSize:"22px",lineHeight:1}}>{kat.icon}</span>}
-                  selected={sel} accent={C} onClick={()=>toggleSchutzKat(kat.id)}/>
+        <div style={{ padding: "0 20px", marginBottom: "16px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {PRODUKT_ITEMS.map(prod => {
+              const sel = selProdukte.includes(prod.id);
+              return (
+                <SelectionCard key={prod.id} value={prod.id} label={prod.name}
+                  icon={<span style={{ fontSize: "22px", lineHeight: 1 }}>{prod.icon}</span>}
+                  selected={sel} accent={C} onClick={() => toggleProdukt(prod.id)} />
               );
             })}
           </div>
         </div>
-        <div style={{padding:"0 20px",marginBottom:"120px"}}>
-          {selSchutzKats.length>0&&<div style={{fontSize:"12px",color:C,fontWeight:"500",textAlign:"center"}}>{selSchutzKats.length} Bereich{selSchutzKats.length!==1?"e":""} ausgewählt</div>}
+        <div style={{ padding: "0 20px", marginBottom: "120px" }}>
+          {selProdukte.length > 0 && <div style={{ fontSize: "12px", color: C, fontWeight: "500", textAlign: "center" }}>{selProdukte.length} Produkt{selProdukte.length !== 1 ? "e" : ""} vorhanden</div>}
         </div>
         <div style={T.footer}>
           <button style={T.btnPrim(false)} onClick={nextScr}>Mein Ergebnis ansehen</button>
           <button style={T.btnSec} onClick={backScr}>Zurück</button>
         </div>
       </>}
-
     </div>
   );
 }
