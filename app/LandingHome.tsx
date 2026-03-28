@@ -238,7 +238,7 @@ function FactsSection() {
   return (
     <section className="facts-section" aria-labelledby="facts-heading">
       <div className="facts-inner">
-        <p className="facts-bridge fade-up">Für unabhängige Versicherungsmakler in Deutschland.</p>
+        <p className="facts-bridge fade-up">Für Versicherungsagenturen.</p>
         <h2 id="facts-heading" className="facts-h2 fade-up d1">
           Mehr Anfragen. Weniger Aufwand. Mehr Abschluss.
         </h2>
@@ -405,7 +405,7 @@ export default function LandingHome() {
           {/* Left: Text */}
           <div className="hero-text">
             <h1 className="au d1">
-              Mehr Leads durch<br />Microsites
+              Mehr Anfragen durch<br />Microsites
             </h1>
 
             <p className="hero-sub au d2">
@@ -592,10 +592,12 @@ export default function LandingHome() {
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <section id="faq" className="faq-section">
         <div className="faq-inner">
-          <div className="fade-up">
-            <div className="s-label">FAQ</div>
-            <h2 className="faq-h2">Häufige Fragen</h2>
-            <p className="faq-sub">Alles Wichtige auf einen Blick.</p>
+          <div>
+            <div className="s-label fade-up">FAQ</div>
+            <h2 className="checks-section-headline fade-up d1">Häufige Fragen</h2>
+            <div className="checks-section-taglines fade-up d2">
+              <p className="checks-section-tagline">Alles Wichtige auf einen Blick.</p>
+            </div>
           </div>
           <div className="faq fade-up d1">
             {FAQ_ITEMS.map((item, i) => (
@@ -633,47 +635,18 @@ export default function LandingHome() {
         aria-labelledby="cta-final-heading"
       >
         <div className="cta-final-inner">
+          <div className="s-label cta-final-s-label">Acht Microsites</div>
           <h2 id="cta-final-heading" className="cta-final-h2">
             Starten Sie mit Ihrer ersten Microsite
           </h2>
           <p className="cta-final-sub">
-            Wählen Sie den passenden Check und setzen Sie ihn direkt ein.
+            Wählen Sie die passende Microsite und setzen Sie sie direkt ein.
           </p>
           <div className="cta-final-btn-wrap">
-            <a href="#tools" className="btn-cta-final">
-              Demo starten
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-                <path
-                  d="M3.5 8h9M9 3.5l4.5 4.5L9 12.5"
-                  stroke="currentColor"
-                  strokeWidth="1.35"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+            <a href="#tools" className="btn-cta">
+              Microsites ansehen
             </a>
           </div>
-          <ul className="cta-final-trust" role="list">
-            {[
-              "Einmalig kaufen · kein Abo",
-              "Direkt per iFrame einbinden",
-              "Leads direkt in Ihr Postfach",
-            ].map((t) => (
-              <li key={t} className="cta-final-trust-item">
-                <svg className="cta-final-trust-check" viewBox="0 0 16 16" fill="none" aria-hidden>
-                  <path
-                    d="M3.5 8.2L6.8 11.5L12.5 4.5"
-                    stroke="currentColor"
-                    strokeWidth="1.15"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                </svg>
-                {t}
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 

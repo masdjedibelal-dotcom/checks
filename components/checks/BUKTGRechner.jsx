@@ -57,8 +57,8 @@ const phaseBarColor = (pct) =>
 
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 
-/** Orientierender Netto-Regelbedarf (Grundsicherung) für Studenten-Vergleich */
-const GRUNDSICHERUNG_NETTO_ORIENTIERUNG = 1150;
+/** Geschätzter Arbeitgeber-Anteil am PKV-Gesamtbeitrag (nach Entfall des Zuschusses ab Woche 7) */
+const PKV_AG_ANTEIL_SCHAETZUNG = 0.5;
 
 /** Priorität für genau einen zweiten Einordnungs-Hinweis (nach Szenario-Kosten). */
 const EINORDNUNG_SECONDARY_PRIORITY = ["emNull", "beamterWiderruf"];
@@ -71,7 +71,7 @@ function pickSecondaryEinordnungHint(p, R) {
       text:
         p.beruf === "azubi" && p.szenario !== "unfall"
           ? "Die fünfjährige Wartezeit für die EMR ist in der Ausbildung in der Regel noch nicht erfüllt — im Modell daher 0 € EMR (Ausnahme: Unfall-Szenario)."
-          : "Keine gesetzliche EMR aus Erwerbstätigkeit im Modell — Phase 3 nur über private Vorsorge (z. B. BU).",
+          : "Keine gesetzliche EMR aus Erwerbstätigkeit im Modell — Absicherung nur über private Vorsorge (z. B. BU).",
     });
   }
   if (p.beruf === "beamter" && p.beamterWiderruf && p.szenario !== "unfall") {
@@ -118,6 +118,7 @@ function berechne({
   szenario,
   pkvBeitrag = 0,
   beamterWiderruf = false,
+  gkvKrankengeldJa = false,
 }) {
   const sz = SZENARIEN.find((s) => s.id === szenario) || SZENARIEN[0];
 
@@ -125,11 +126,12 @@ function berechne({
   const isAzubi = beruf === "azubi";
   const isBeamter = beruf === "beamter";
   const isAngestellt = beruf === "angestellt";
+  const isSelbst = beruf === "selbst";
   const isAngestelltLike = isAngestellt || isAzubi;
 
-  /** Student/Schüler: Ziel-Brutto → Netto-Schätzung (× 0,72), Lücke zu Grundsicherung */
+  /** Student/Schüler: Ziel-Netto direkt — Fokus 0 € staatliche Absicherung, keine Grundsicherungs-Vergleichslogik */
   if (isStudent) {
-    const netto = Math.max(0, Math.round(Number(brutto) * 0.72));
+    const netto = Math.max(0, Math.round(Number(brutto)));
     const p1 = {
       label: "Kein laufendes Arbeitseinkommen",
       sub: "Modell Student/in — kein Lohn aus unselbständiger Arbeit (keine Lohnfortzahlung)",
@@ -153,7 +155,7 @@ function berechne({
       monatl: p3mon,
       pct: netto > 0 ? Math.min(100, Math.round((p3mon / netto) * 100)) : 0,
     };
-    const luecke = Math.max(0, netto - GRUNDSICHERUNG_NETTO_ORIENTIERUNG);
+    const luecke = Math.max(0, netto - p3mon);
     const lueckeKG = netto;
     const empfKTG = lueckeKG > 0 ? Math.max(0, Math.ceil((lueckeKG / 30) / 5) * 5) : 0;
     const empfBU = luecke > 0 ? Math.max(0, Math.round(luecke / 50) * 50) : 0;
@@ -164,6 +166,7 @@ function berechne({
       p1,
       p2,
       p3,
+      phasesDisplay: [p1, p2, p3],
       luecke,
       lueckeKG,
       sz,
@@ -172,12 +175,16 @@ function berechne({
       ktgMon: 0,
       ktgNetNachPkv: 0,
       pkvAbzugMon: 0,
+      pkvAgZuschussSchaetzungMonat: 0,
       emSchaetzung,
       empfKTG,
       empfBU,
       gesamtschadenSzenario,
-      grundsicherungOrientierung: GRUNDSICHERUNG_NETTO_ORIENTIERUNG,
+      grundsicherungOrientierung: null,
       isStudentModus: true,
+      hideLohnfortzahlungChart: false,
+      showPkvAgZuschussWarn: false,
+      showDrvEmrHinweisSelbst: false,
     };
   }
 
@@ -186,9 +193,17 @@ function berechne({
   const pkvAb = kv === "pkv" ? Math.max(0, Number(pkvBeitrag) || 0) : 0;
   const ktgNetNachPkv = Math.max(0, ktgMon - pkvAb);
 
+  const pkvGesamtMonat = pkvAb;
+  const pkvAgZuschussSchaetzungMonat =
+    kv === "pkv" && isAngestellt ? Math.round(pkvGesamtMonat * PKV_AG_ANTEIL_SCHAETZUNG) : 0;
+
+  const hatGkvKrankengeld =
+    kv === "gkv" &&
+    (isAngestelltLike || (isSelbst && gkvKrankengeldJa));
+
   let kgVorSozial = 0;
   let kgNachSozial = 0;
-  if (kv === "gkv" && isAngestelltLike) {
+  if (hatGkvKrankengeld) {
     const brKg = Math.min(brutto, KG_BBG_MONATLICH);
     kgVorSozial = Math.round(brKg * 0.7);
     kgNachSozial = Math.round(kgVorSozial * (1 - KG_KRANKENGELD_SOZIAL_SATZ));
@@ -224,19 +239,35 @@ function berechne({
     p2mon = netto;
     p2Sub = "Ab Woche 7 · Bezüge werden weitergezahlt (vereinfachtes Beamtenmodell, keine Lücke)";
   } else {
-    p2mon =
-      (kv === "gkv" && isAngestelltLike ? kgNachSozial : 0) +
-      (kv === "gkv" && isAngestelltLike ? ktgMon : ktgInPhasen);
+    const ktgTeil =
+      kv === "gkv" && isAngestelltLike
+        ? ktgMon
+        : kv === "gkv" && isSelbst && gkvKrankengeldJa
+          ? ktgMon
+          : ktgInPhasen;
+    p2mon = (hatGkvKrankengeld ? kgNachSozial : 0) + ktgTeil;
     p2Sub = "Ab Woche 7";
     if (kv === "gkv" && isAngestelltLike) {
       p2Sub =
         ktgMon > 0
           ? "Krankengeld (GKV, netto) + privates KTG"
           : "Krankengeld (GKV) nach Sozialabzug durch die Kasse";
+    } else if (kv === "gkv" && isSelbst && gkvKrankengeldJa) {
+      p2Sub =
+        ktgMon > 0
+          ? "Krankengeld (GKV, bis BBG) + privates KTG"
+          : "Krankengeld (GKV) nach Sozialabzug — Bemessung bis Beitragsbemessungsgrenze";
+    } else if (kv === "gkv" && isSelbst && !gkvKrankengeldJa) {
+      p2Sub =
+        ktgMon > 0
+          ? "Ohne GKV-Krankengeld im Modell — nur privates KTG"
+          : "Kein Krankengeld gewählt — prüfen Sie Ihren Tarif (§44 SGB V)";
     } else if (kv === "pkv") {
       p2Sub =
         pkvAb > 0
-          ? "Privates KTG abzüglich PKV (Arbeitgeberzuschuss entfällt)"
+          ? isSelbst
+            ? "Privates KTG abzüglich Ihres PKV-Gesamtbeitrags"
+            : "Privates KTG abzüglich PKV-Gesamtbeitrag (nach Entfall des AG-Zuschusses zahlen Sie den vollen Betrag)"
           : "Privates Krankentagegeld";
     } else {
       p2Sub = ktgMon > 0 ? "Privates Krankentagegeld" : "Kein gesetzliches Krankengeld";
@@ -303,13 +334,18 @@ function berechne({
   const empfKTG = lueckeKG > 0 ? Math.max(0, Math.ceil((lueckeKG / 30) / 5) * 5) : 0;
   const empfBU = luecke > 0 ? Math.max(0, Math.round(luecke / 50) * 50) : 0;
 
-  const gesamtschadenSzenario = Math.round(luecke * sz.dauer);
+  const zuschussPkVSzenario =
+    pkvAgZuschussSchaetzungMonat > 0 ? Math.round(pkvAgZuschussSchaetzungMonat * sz.dauer) : 0;
+  const gesamtschadenSzenario = Math.round(luecke * sz.dauer) + zuschussPkVSzenario;
+
+  const phasesDisplay = isSelbst ? [p2, p3] : [p1, p2, p3];
 
   return {
     netto,
     p1,
     p2,
     p3,
+    phasesDisplay,
     luecke,
     lueckeKG,
     sz,
@@ -318,12 +354,16 @@ function berechne({
     ktgMon,
     ktgNetNachPkv,
     pkvAbzugMon: pkvAb,
+    pkvAgZuschussSchaetzungMonat,
     emSchaetzung,
     empfKTG,
     empfBU,
     gesamtschadenSzenario,
     grundsicherungOrientierung: null,
     isStudentModus: false,
+    hideLohnfortzahlungChart: isSelbst,
+    showPkvAgZuschussWarn: isAngestellt && kv === "pkv" && pkvAgZuschussSchaetzungMonat > 0,
+    showDrvEmrHinweisSelbst: isSelbst,
   };
 }
 
@@ -570,6 +610,7 @@ export default function BUKTGRechner() {
     beamterWiderruf: false,
     kv:       "gkv",
     pkvBeitrag: 400,
+    gkvKrankengeldJa: false,
     ktgTag:   0,
     buRente:  0,
     szenario: "psyche",
@@ -583,10 +624,17 @@ export default function BUKTGRechner() {
       return ["beruf", "brutto", "szenario"];
     }
     const ids = ["beruf", "kv"];
-    if (p.kv === "pkv") ids.push("pkvBeitrag");
+    if (p.kv === "pkv" && p.beruf !== "azubi") ids.push("pkvBeitrag");
+    if (p.beruf === "selbst" && p.kv === "gkv") ids.push("selbstGkvKg");
     ids.push("brutto", "ktgBu", "szenario");
     return ids;
   }, [p.kv, p.beruf]);
+
+  useEffect(() => {
+    if (p.beruf === "azubi" && p.kv === "pkv") {
+      setP((x) => ({ ...x, kv: "gkv" }));
+    }
+  }, [p.beruf]);
 
   const stepCount = STEP_IDS.length;
   const sid = STEP_IDS[scr - 1] ?? "beruf";
@@ -621,7 +669,10 @@ export default function BUKTGRechner() {
     setPhase(ph);
   };
 
-  const R = berechne(p);
+  const R = berechne({
+    ...p,
+    gkvKrankengeldJa: p.beruf === "selbst" && p.kv === "gkv" ? p.gkvKrankengeldJa : false,
+  });
   const TOTAL_PHASES = 3;
 
   const [phaseBarsReady, setPhaseBarsReady] = useState(false);
@@ -691,9 +742,12 @@ export default function BUKTGRechner() {
 
   // ── Phase 2: Ergebnis (mobile-first, Swiper + Grid + Accordion) ───────────
   if (phase === 2) {
-    const phasen = [R.p1, R.p2, R.p3];
+    const phasen = R.phasesDisplay ?? [R.p1, R.p2, R.p3];
 
-    const isAngLike = p.beruf === "angestellt" || p.beruf === "azubi";
+    const isAngLike =
+      p.beruf === "angestellt" ||
+      p.beruf === "azubi" ||
+      (p.beruf === "selbst" && p.kv === "gkv" && p.gkvKrankengeldJa);
 
     const massiveUnterdeckung = p.buRente < R.netto * 0.5;
 
@@ -710,22 +764,22 @@ export default function BUKTGRechner() {
         text: "Hinweis: Die fünfjährige Wartezeit für die EMR ist während der Ausbildung in der Regel noch nicht erfüllt — im Modell daher 0 € EMR (Ausnahme: Unfall-Szenario).",
       });
     }
-    if (R.isStudentModus && R.luecke > 0) {
-      detailHintRows.push({
-        key: "studModell",
-        text: `Vergleich: Ziel-Netto minus orientierender Grundsicherung (ca. ${fmt(R.grundsicherungOrientierung)} netto) — stark vereinfacht, kein individueller SGB-II-Check.`,
-      });
-    }
     if (p.beruf === "beamter" && p.beamterWiderruf && p.szenario !== "unfall") {
       detailHintRows.push({
         key: "beamterWiderruf",
         text: "Bei Beamten auf Widerruf bzw. in der Probezeit entfällt das Ruhegeld bei Dienstunfähigkeit in der Regel — hier mit 0 € angenommen (Ausnahme z. B. Dienstunfall im gewählten Szenario).",
       });
     }
-    if (!R.isStudentModus && p.brutto < 2500) {
+    if (!R.isStudentModus && p.beruf !== "azubi" && p.brutto < 2500) {
       detailHintRows.push({
         key: "grusi",
         text: "Bei niedrigem Krankengeld kann es zur Verrechnung mit Grundsicherung kommen — ein persönlicher Check lohnt sich.",
+      });
+    }
+    if (R.showPkvAgZuschussWarn && R.pkvAgZuschussSchaetzungMonat > 0) {
+      detailHintRows.push({
+        key: "pkvAgZuschuss",
+        text: `Achtung: Der Arbeitgeberzuschuss zur PKV von ca. ${fmt(R.pkvAgZuschussSchaetzungMonat)} entfällt nach 6 Wochen — Sie tragen die Kosten allein. Der geschätzte Mehrbedarf ist in den Szenario-Kosten berücksichtigt.`,
       });
     }
     if (!R.isStudentModus && p.ktgTag === 0 && p.kv === "gkv") {
@@ -772,8 +826,8 @@ export default function BUKTGRechner() {
             <div style={{ ...T.resultUnit, marginBottom: "14px" }}>
               {R.isStudentModus
                 ? R.luecke > 0
-                  ? "Lücke zwischen Ziel-Netto und orientierendem Regelbedarf (Grundsicherung)"
-                  : "Ziel erreicht oder unter dem angenommenen Regelbedarf"
+                  ? "Lücke zwischen Ziel-Netto und privater Absicherung (staatliche EMR im Modell 0 €)"
+                  : "Ziel-Netto im Modell durch private Absicherung gedeckt"
                 : R.luecke > 0
                   ? "mögliche monatliche Lücke"
                   : "Ihr Einkommen ist weitgehend abgesichert"}
@@ -815,11 +869,21 @@ export default function BUKTGRechner() {
                   <span style={{ fontWeight: "700", color: "#B45309" }}>{fmt(R.gesamtschadenSzenario)}</span>
                   <span style={{ display: "block", marginTop: "6px", fontWeight: "500", opacity: 0.88, fontSize: "12px" }}>
                     {R.sz.label} · Monatslücke {fmt(R.luecke)} × Ø {R.sz.dauer} Monate
+                    {R.showPkvAgZuschussWarn && R.pkvAgZuschussSchaetzungMonat > 0 && (
+                      <span style={{ display: "block", marginTop: "4px" }}>
+                        zzgl. geschätzt {fmt(R.pkvAgZuschussSchaetzungMonat)}/Mon. entfallener AG-PKV-Zuschuss × {R.sz.dauer} Mon.
+                      </span>
+                    )}
                   </span>
                 </SmartHintCard>
               )}
               {secondaryEinordnung && (
                 <SmartHintCard icon="💡">{secondaryEinordnung.text}</SmartHintCard>
+              )}
+              {R.showDrvEmrHinweisSelbst && (
+                <SmartHintCard icon="📋">
+                  Hinweis: Anspruch auf Erwerbsminderungsrente besteht nur, wenn Sie pflichtversichert in der DRV sind oder freiwillig einzahlen.
+                </SmartHintCard>
               )}
             </div>
           )}
@@ -834,7 +898,8 @@ export default function BUKTGRechner() {
                 const diff = R.netto - ph.monatl;
                 const barW = phaseBarsReady ? Math.min(100, ph.pct) : 0;
                 const barCol = phaseBarColor(ph.pct);
-                const showEmZeroWarn = i === 2 && (R.emSchaetzung === 0 || R.isStudentModus);
+                const emrIdx = phasen.length - 1;
+                const showEmZeroWarn = i === emrIdx && (R.emSchaetzung === 0 || R.isStudentModus);
                 return (
                   <div key={i} className="buktg-swiper-card">
                     <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
@@ -981,7 +1046,7 @@ export default function BUKTGRechner() {
               </button>
               {legalOpen === "calc" && (
                 <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
-                  Vereinfachte Einordnung auf Basis Ihrer Angaben — drei Phasen: (1) Lohnfortzahlung bzw. 100 % Netto in den ersten Wochen, (2) Krankengeldphase ab Woche 7 (GKV: 70 % des relevanten Bruttos bis BBG Krankengeld, orientierend 4.068 €/Mon. 2026, abzüglich Sozialabzug durch die Kasse ca. 12,2–12,5 %; zzgl. privates KTG falls angegeben), (3) langfristig staatliche EMR (bzw. Ruhegehalt bei Beamten) plus private BU/DU — ohne separate Aussteuerungs-Zwischenphase. Netto = Brutto bzw. Gewinn bzw. Bezüge × 0,72 (Schätzwert). Auszubildende: Phasen 1–2 wie Angestellte; EMR in Phase 3 im Modell 0 € außer Szenario „Unfall“ (Wartezeit). Student/Schüler: Ziel-Netto vs. pauschaler Regelbedarf ({fmt(GRUNDSICHERUNG_NETTO_ORIENTIERUNG)} netto, orientierend); keine Lohnfortzahlung/KG/EMR aus Erwerbstätigkeit, Phase 3 = private BU. Beamte: Bezüge in Phase 1–2; Phase 3 Ruhegehalt pauschal 35 % Netto, außer Widerruf/Probe ohne Dienstunfall (0 €). PKV: KTG abzüglich PKV-Eigenanteil ab Woche 7. · Grundlage §47 SGB V. EMR szenariobasiert (Psyche 0 €, Herz 34 % Netto, sonst 17 % Netto) · vereinfacht, §43 SGB VI.
+                  Vereinfachte Einordnung auf Basis Ihrer Angaben — Angestellte/Beamte/Auszubildende: (1) Lohnfortzahlung bzw. 100 % Netto in den ersten Wochen, (2) Krankengeldphase ab Woche 7 (GKV: 70 % des relevanten Bruttos bis BBG Krankengeld, orientierend 4.068 €/Mon. 2026, abzüglich Sozialabzug durch die Kasse ca. 12,2–12,5 %; zzgl. privates KTG falls angegeben), (3) langfristig staatliche EMR (bzw. Ruhegehalt bei Beamten) plus private BU/DU. Selbstständige GKV: im Chart ohne Phase 1 — Start mit Krankengeldphase (Tag 43 bzw. Tarif); Krankengeld nur bei gewähltem Anspruch, Bemessung bis BBG; sonst Phase 2 = 0 €. Netto = Brutto bzw. Gewinn bzw. Bezüge × 0,72 (Schätzwert). Auszubildende: nur GKV im Modell; Phasen 1–2 wie Angestellte; EMR in Phase 3 im Modell 0 € außer Szenario „Unfall“. Student/Schüler: Ziel-Netto; keine Lohnfortzahlung/KG/EMR aus Erwerbstätigkeit, Phase 3 = private BU (0 € staatlich). Beamte: Bezüge in Phase 1–2; Phase 3 Ruhegehalt pauschal 35 % Netto, außer Widerruf/Probe ohne Dienstunfall (0 €). PKV Angestellte: Gesamtbeitrag inkl. AG-Zuschuss; nach 6 Wochen entfällt der Zuschuss — im Szenario mit angenommen. PKV sonst: KTG abzüglich PKV-Eigenanteil ab Woche 7. · Grundlage §47 SGB V. EMR szenariobasiert (Psyche 0 €, Herz 34 % Netto, sonst 17 % Netto) · vereinfacht, §43 SGB VI.
                   <span style={{ color: "#b8884a" }}> Keine Rechtsberatung.</span>
                 </div>
               )}
@@ -1046,8 +1111,8 @@ export default function BUKTGRechner() {
                   />
                   <SelectionCard
                     value="widerruf"
-                    label="Auf Widerruf / Probezeit"
-                    description="Ruhegehalt bei DU oft ausgeschlossen — Modell setzt 0 €, außer Szenario „Unfall“ (Dienstunfall)."
+                    label="Auf Widerruf / Probezeit (BaP)"
+                    description="Bei DU meist kein Ruhegehalt (außer Dienstunfall) — Entlassung und Nachversicherung in der Rente sind typisch. Modell: 0 € Ruhegeld, außer Szenario „Unfall“."
                     icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>📋</span>}
                     selected={p.beamterWiderruf}
                     accent={C}
@@ -1079,31 +1144,71 @@ export default function BUKTGRechner() {
           </div>
           <div style={T.section}>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {[
-                {
-                  v: "gkv",
-                  l: "Gesetzlich (GKV)",
-                  d:
-                    p.beruf === "beamter"
-                      ? `Orientierung: BBG KG ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon. — Ihre Bezüge laufen im Rechner gesondert`
-                      : `Krankengeld: ca. 70 % des relevanten Bruttos (BBG KG orientierend ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon.)`,
-                  emoji: "🏥",
-                },
-                { v: "pkv", l: "Privat (PKV)",     d: "Kein gesetzliches Krankengeld — nur privates KTG sichert ab", emoji: "🔒" },
-              ].map(({ v, l, d, emoji }) => (
+              {(p.beruf === "azubi"
+                ? [
+                    {
+                      v: "gkv",
+                      l: "Gesetzlich (GKV)",
+                      d: `Ausbildung: Versicherungspflicht — Krankengeld wie bei Angestellten (BBG KG orientierend ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon.)`,
+                      emoji: "🏥",
+                    },
+                  ]
+                : [
+                    {
+                      v: "gkv",
+                      l: "Gesetzlich (GKV)",
+                      d:
+                        p.beruf === "beamter"
+                          ? `Orientierung: BBG KG ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon. — Ihre Bezüge laufen im Rechner gesondert`
+                          : p.beruf === "selbst"
+                            ? `Krankengeld nur mit gewählter Option — Bemessung bis BBG (orientierend ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon.)`
+                            : `Krankengeld: ca. 70 % des relevanten Bruttos (BBG KG orientierend ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon.)`,
+                      emoji: "🏥",
+                    },
+                    { v: "pkv", l: "Privat (PKV)", d: "Kein gesetzliches Krankengeld — nur privates KTG sichert ab", emoji: "🔒" },
+                  ]
+              ).map(({ v, l, d, emoji }) => (
                 <SelectionCard key={v} value={v} label={l} description={d}
                   icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
                   selected={p.kv === v} accent={C} onClick={() => set("kv", v)} />
               ))}
             </div>
-            {p.beruf === "selbst" && p.kv === "gkv" && (
-              <div style={{ marginTop: "12px" }}>
-                <SmartHintCard>
-                  <strong style={{ fontWeight: "700" }}>Hinweis:</strong> Selbstständige erhalten GKV-Krankengeld nur mit
-                  gesonderter Option (§44 SGB V) — bitte prüfen Sie Ihren Tarif.
-                </SmartHintCard>
-              </div>
-            )}
+          </div>
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+        </>
+      )}
+
+      {sid === "selbstGkvKg" && (
+        <>
+          <div style={T.hero}>
+            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.h1}>Haben Sie in Ihrem GKV-Tarif Anspruch auf Krankengeld gewählt?</div>
+            <div style={T.body}>
+              Ohne diese Option gibt es im Krankheitsfall in der Regel kein gesetzliches Krankengeld — nur privates KTG zählt.
+            </div>
+          </div>
+          <div style={T.section}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <SelectionCard
+                value="ja"
+                label="Ja"
+                description="Ich habe Krankengeld in der GKV mitgewählt (z. B. nach §44 SGB V) — Bemessung im Modell bis zur BBG."
+                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>✓</span>}
+                selected={p.gkvKrankengeldJa}
+                accent={C}
+                onClick={() => set("gkvKrankengeldJa", true)}
+              />
+              <SelectionCard
+                value="nein"
+                label="Nein"
+                description="Kein Anspruch auf GKV-Krankengeld modelliert — Phase Krankengeld basiert nur auf privatem KTG."
+                icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>—</span>}
+                selected={!p.gkvKrankengeldJa}
+                accent={C}
+                onClick={() => set("gkvKrankengeldJa", false)}
+              />
+            </div>
           </div>
           <div style={{ height: "120px" }} />
           <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
@@ -1114,16 +1219,26 @@ export default function BUKTGRechner() {
         <>
           <div style={T.hero}>
             <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
-            <div style={T.h1}>Wie hoch ist Ihr monatlicher PKV-Beitrag?</div>
+            <div style={T.h1}>
+              {p.beruf === "angestellt"
+                ? "Wie hoch ist Ihr privater Krankenversicherungs-Beitrag (Gesamtbetrag)?"
+                : "Wie hoch ist Ihr monatlicher PKV-Beitrag?"}
+            </div>
             <div style={T.body}>
-              {p.beruf === "beamter"
-                ? "Eigenanteil ohne Zuschuss des Dienstherren — ab Woche 7 der Krankheit voll aus Ihrem Tagegeld."
-                : "Eigenanteil ohne Arbeitgeberzuschuss — ab Woche 7 der Krankheit fließt er voll aus Ihrem Tagegeld."}
+              {p.beruf === "angestellt"
+                ? "Gesamtbetrag inkl. Arbeitgeberzuschuss — ab Woche 7 entfällt der Zuschuss; der volle Betrag muss aus Ihrem KTG finanziert werden."
+                : p.beruf === "beamter"
+                  ? "Eigenanteil ohne Zuschuss des Dienstherren — ab Woche 7 der Krankheit voll aus Ihrem Tagegeld."
+                  : "Gesamtbetrag — wird vom privaten Krankentagegeld abgezogen."}
             </div>
           </div>
           <div style={T.section}>
             <SliderCard
-              label="PKV-Beitrag (Monat)"
+              label={
+                p.beruf === "angestellt"
+                  ? "PKV-Gesamtbetrag (Monat, inkl. AG-Zuschuss)"
+                  : "PKV-Beitrag (Monat)"
+              }
               value={p.pkvBeitrag}
               min={0}
               max={1200}
@@ -1132,13 +1247,19 @@ export default function BUKTGRechner() {
               display={p.pkvBeitrag > 0 ? "wird vom KTG abgezogen" : "Bitte wählen Sie einen realistischen Wert"}
               accent={C}
               onChange={(v) => set("pkvBeitrag", v)}
-              hint="Inkl. ggf. Pflege- und Krankenversicherungsanteil, die Sie selbst zahlen"
+              hint={
+                p.beruf === "angestellt"
+                  ? "Summe aus Ihrem Anteil und Arbeitgeberzuschuss (Gesamt-PKV pro Monat)"
+                  : "Inkl. ggf. Pflege- und Krankenversicherungsanteil"
+              }
             />
-            <SmartHintCard>
-              {p.beruf === "beamter"
-                ? "Achtung: Der Zuschuss des Dienstherren zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch den laufenden KV-Beitrag decken."
-                : "Achtung: Der Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch den laufenden KV-Beitrag decken."}
-            </SmartHintCard>
+            {p.beruf !== "selbst" && (
+              <SmartHintCard>
+                {p.beruf === "beamter"
+                  ? "Achtung: Der Zuschuss des Dienstherren zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch den laufenden KV-Beitrag decken."
+                  : "Nach 6 Wochen tragen Sie den vollen Gesamtbeitrag allein — im Ergebnis weisen wir auf den entfallenden Arbeitgeberzuschuss hin."}
+              </SmartHintCard>
+            )}
           </div>
           <div style={{ height: "120px" }} />
           <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
@@ -1149,7 +1270,7 @@ export default function BUKTGRechner() {
         <>
           <div style={T.hero}>
             <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
-            <div style={T.h1}>Welches Brutto-Einkommen streben Sie nach dem Abschluss an?</div>
+            <div style={T.h1}>Welches Netto-Einkommen streben Sie nach dem Studium an?</div>
             <div
               style={{
                 fontSize: "14px",
@@ -1159,25 +1280,22 @@ export default function BUKTGRechner() {
                 marginTop: "10px",
               }}
             >
-              Wir berechnen Ihren Schutz für den Berufsstart.
+              Fokus: keine gesetzliche EMR aus Erwerbstätigkeit im Modell — private Vorsorge (z. B. BU) schließt die Lücke.
             </div>
           </div>
           <div style={T.section}>
             <SliderCard
-              label="Monatliches Ziel-Brutto"
+              label="Ziel-Netto (Monat)"
               value={p.brutto}
-              min={1100}
+              min={800}
               max={8500}
               step={50}
               unit="€"
-              display={`ca. ${fmt(Math.round(p.brutto * 0.72))} netto · Lücke zur Grundsicherung (${fmt(GRUNDSICHERUNG_NETTO_ORIENTIERUNG)}): ${fmt(Math.max(0, Math.round(p.brutto * 0.72) - GRUNDSICHERUNG_NETTO_ORIENTIERUNG))}`}
+              display={p.brutto > 0 ? `${fmt(p.brutto)} Ziel-Netto` : ""}
               accent={C}
               onChange={(v) => set("brutto", v)}
-              hint="Im Modell: Netto-Schätzung aus Brutto × 0,72"
+              hint="Direkt als Netto — ohne Brutto-Umrechnung"
             />
-            <SmartHintCard>
-              Grundsicherung im Modell pauschal {fmt(GRUNDSICHERUNG_NETTO_ORIENTIERUNG)} € netto — tatsächliche Leistungen (SGB II) sind individuell und können abweichen.
-            </SmartHintCard>
           </div>
           <div style={{ height: "120px" }} />
           <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
@@ -1190,7 +1308,7 @@ export default function BUKTGRechner() {
             <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
             <div style={T.h1}>
               {p.beruf === "selbst"
-                ? "Welchen Brutto-Gewinn erzielen Sie im Monat?"
+                ? "Wie hoch ist Ihr monatlicher Gewinn (vor Steuern)?"
                 : p.beruf === "beamter"
                   ? "Wie hoch sind Ihre monatlichen Dienstbezüge (Brutto)?"
                   : p.beruf === "azubi"
@@ -1207,7 +1325,7 @@ export default function BUKTGRechner() {
               }}
             >
               {p.beruf === "selbst"
-                ? "Davon entfällt im Ernstfall jeder Euro."
+                ? "Grundlage für Krankengeld (GKV, falls gewählt) bis BBG und für Ihre Netto-Schätzung (× 0,72)."
                 : p.beruf === "beamter"
                   ? "Relevant für Ihre Beihilfe und Dienstunfähigkeit."
                   : p.beruf === "azubi"
@@ -1219,7 +1337,7 @@ export default function BUKTGRechner() {
             <SliderCard
               label={
                 p.beruf === "selbst"
-                  ? "Monatlicher Brutto-Gewinn"
+                  ? "Monatlicher Gewinn (vor Steuern)"
                   : p.beruf === "beamter"
                     ? "Monatliche Dienstbezüge (Brutto)"
                     : p.beruf === "azubi"
@@ -1265,11 +1383,11 @@ export default function BUKTGRechner() {
                 Anders als Angestellte haben Sie keinen Anspruch auf Lohnfortzahlung durch einen Arbeitgeber — in den ersten Wochen einer Krankheit fehlt dieser Betrag vollständig, sofern Sie nicht privat vorsorgen. Prüfen Sie eine Absicherung ab dem 15. oder 43. Tag.
               </SmartHintCard>
             )}
-            {p.kv === "pkv" && (
+            {p.kv === "pkv" && p.beruf !== "selbst" && (
               <SmartHintCard>
                 {p.beruf === "beamter"
                   ? "Achtung: Der Zuschuss des Dienstherren zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch Ihren KV-Beitrag decken."
-                  : "Achtung: Ihr Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch Ihren KV-Beitrag decken."}
+                  : "Achtung: Der Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen — im Ergebnis gesondert ausgewiesen."}
               </SmartHintCard>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
