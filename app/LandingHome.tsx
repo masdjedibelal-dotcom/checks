@@ -145,17 +145,17 @@ function FactsCardIcon({ name }: { name: (typeof FACTS_CARDS)[number]["icon"] })
 
 const HOW_TIMELINE_STEPS = [
   {
-    num: "01",
+    emoji: "✨",
     title: "Aufmerksamkeit entsteht",
     desc: "Der Nutzer bleibt an einem Thema hängen, das ihn direkt betrifft.",
   },
   {
-    num: "02",
+    emoji: "🔥",
     title: "Interesse wird konkret",
     desc: "Die Microsite macht seine Situation greifbar und zeigt, warum das Thema für ihn relevant ist.",
   },
   {
-    num: "03",
+    emoji: "📩",
     title: "Anfrage wird ausgelöst",
     desc: "Aus einem abstrakten Gedanken wird ein konkreter nächster Schritt und der Nutzer meldet sich bei Ihnen.",
   },
@@ -201,15 +201,17 @@ function HowAnfragenTimelineSection() {
             <div className="how-timeline-steps">
               {HOW_TIMELINE_STEPS.map((step, i) => (
                 <div
-                  key={step.num}
-                  className="how-tl-step"
+                  key={step.title}
+                  className={`how-tl-step how-tl-step--${i + 1}`}
                   style={
                     {
                       "--how-step-delay": `${0.14 + i * 0.08}s`,
                     } as CSSProperties
                   }
                 >
-                  <div className="how-tl-step-marker">{step.num}</div>
+                  <div className="how-tl-step-marker" aria-hidden="true">
+                    {step.emoji}
+                  </div>
                   <div className="how-tl-step-content">
                     <h3 className="how-tl-content-title">{step.title}</h3>
                     <p className="how-tl-content-desc">{step.desc}</p>
