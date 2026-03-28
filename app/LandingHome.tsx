@@ -3,12 +3,14 @@
 import Link from "next/link";
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { scrollCheckDocumentToTop } from "@/lib/checkScrollToTop";
 import { KATALOG, type Template } from "@/lib/katalog";
 import { CHECK_FLOW_META, CheckFlowPhoneMock, HeroResultMockup } from "./check-flow-checks";
 import { VertriebCardVisual } from "./VertriebCardVisuals";
@@ -276,6 +278,11 @@ export default function LandingHome() {
   const ctaFinalRef = useRef<HTMLElement | null>(null);
   const demoTRef = useRef<Template | null>(null);
   demoTRef.current = demoT;
+
+  // Nach Reload oder erneutem Mount der Startseite: immer ganz oben (inkl. #anker / iOS).
+  useLayoutEffect(() => {
+    scrollCheckDocumentToTop();
+  }, []);
 
   // ── CTA final: bewusstes „Ankommen“ mit kurzer Verzögerung ───────────────
   useEffect(() => {

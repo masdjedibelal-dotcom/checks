@@ -15,9 +15,9 @@ export type MaklerConfig = {
 
 // ─── Default (Fallback wenn kein URL-Parameter) ────────────────────────────────
 export const MAKLER_DEFAULT: MaklerConfig = {
-  name:         'Max Mustermann',
-  firma:        'Mustermann Versicherungen',
-  email:        'kontakt@mustermann-versicherungen.de',
+  name:         'Ihre Agentur',
+  firma:        'Ihre Agentur',
+  email:        'kontakt@ihre-agentur.de',
   telefon:      '089 123 456 78',
   primaryColor: '#1a3a5c',
   isDemoMode:   false,

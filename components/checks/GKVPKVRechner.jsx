@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
@@ -83,9 +84,10 @@ export default function GKVPKVRechner(){
   const set = (k, v) => setP(x => ({ ...x, [k]: v }));
 
   const [scr, setScr] = useState(1);
-  const nextScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr < 5) { setScr(s => s + 1); } else { goTo(2); } };
-  const backScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr > 1) { setScr(s => s - 1); } };
-  const goTo   = (ph) => { setAk(k => k + 1); setPhase(ph); window.scrollTo({ top: 0 }); };
+  const goTo   = (ph) => { setAk(k => k + 1); setPhase(ph); };
+  const nextScr = () => { if (scr < 5) { setScr(s => s + 1); } else { goTo(2); } };
+  const backScr = () => { if (scr > 1) { setScr(s => s - 1); } };
+  useCheckScrollToTop([phase, ak, danke, scr]);
 
   const R = berechne(p);
 

@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SelectionCard } from "@/components/ui/CheckComponents";
@@ -97,10 +98,11 @@ export default function PflegekostenplanungRechner(){
   const [loadStep, setLoadStep] = useState(0);
   const [scr, setScr] = useState(1);
   const set = (k, v) => setP(x => ({ ...x, [k]: v }));
-  const goTo    = (ph) => { setAk(k => k + 1); setPhase(ph); window.scrollTo({ top: 0 }); };
-  const nextScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr < 4) { setScr(s => s + 1); } else { setLoading(true); } };
-  const backScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr > 1) { setScr(s => s - 1); } };
+  const goTo    = (ph) => { setAk(k => k + 1); setPhase(ph); };
+  const nextScr = () => { if (scr < 4) { setScr(s => s + 1); } else { setLoading(true); } };
+  const backScr = () => { if (scr > 1) { setScr(s => s - 1); } };
   const R = berechne(p);
+  useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
   useEffect(()=>{
     if(!loading)return;

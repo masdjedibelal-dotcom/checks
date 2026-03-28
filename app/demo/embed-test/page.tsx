@@ -14,9 +14,9 @@ function EmbedTestContent() {
   const [copied, setCopied] = useState(false);
 
   const slug  = params.get('slug')  || 'bedarfscheck';
-  const name  = params.get('name')  || 'Max Mustermann';
-  const firma = params.get('firma') || 'Mustermann Versicherungen';
-  const email = params.get('email') || 'kontakt@mustermann-versicherungen.de';
+  const name  = params.get('name')  || 'Ihre Agentur';
+  const firma = params.get('firma') || 'Ihre Agentur';
+  const email = params.get('email') || 'kontakt@ihre-agentur.de';
   const farbe = params.get('farbe') || '1a3a5c';
 
   const config: IFrameConfig = { slug, name, firma, email, farbe };

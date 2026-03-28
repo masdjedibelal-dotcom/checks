@@ -316,28 +316,22 @@ export const CHECK_FLOW_META = [
 
 export type CheckFlowSlug = (typeof CHECK_FLOW_META)[number]["slug"];
 
-function PhMark9(): ReactNode {
-  return (
-    <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden>
-      <rect x=".5" y=".5" width="3" height="3" rx=".5" fill="white" />
-      <rect x="5.5" y=".5" width="3" height="3" rx=".5" fill="white" opacity=".5" />
-      <rect x=".5" y="5.5" width="3" height="3" rx=".5" fill="white" opacity=".5" />
-      <rect x="5.5" y="5.5" width="3" height="3" rx=".5" fill="white" />
-    </svg>
-  );
-}
-
 /** Minimales Phone-Chrome — nur Ergebnis-Screens, keine Fragen oder CTAs */
 function ResultPhoneShell({ accent, children }: { accent: string; children: ReactNode }): ReactNode {
   return (
     <div className="ck-phone-wrap">
       <div className="ph-bar" style={{ height: 2, background: accent }} />
-      <div className="ph-hd" style={{ padding: "6px 8px", gap: 5, borderBottom: "1px solid #f3f4f6" }}>
-        <div className="ph-logo" style={{ width: 18, height: 18, borderRadius: 5, background: accent }}>
-          <PhMark9 />
-        </div>
-        <span className="ph-firm" style={{ fontSize: 6.5 }}>
-          Mustermann Versicherungen
+      <div
+        className="ph-hd"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "6px 8px 6px 6px",
+          borderBottom: "1px solid #f3f4f6",
+        }}
+      >
+        <span className="ph-firm" style={{ fontSize: 6.5, lineHeight: 1.2, color: "#111" }}>
+          Ihre Agentur
         </span>
       </div>
       <div className="ph-body" style={{ padding: "10px 8px 11px" }}>

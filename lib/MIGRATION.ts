@@ -4,8 +4,8 @@
  * VORHER (JSX standalone — MAKLER hardcoded oben im File):
  *
  *   const MAKLER = {
- *     name: "Max Mustermann",
- *     firma: "Mustermann Versicherungen",
+ *     name: "Ihre Agentur",
+ *     firma: "Ihre Agentur",
  *     ...
  *   };
  *   const C = MAKLER.primaryColor;

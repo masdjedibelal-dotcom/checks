@@ -280,7 +280,7 @@ export default function KonfiguratorOverlay({
                     Weiter →
                   </button>
                   <p className="mt-2 text-center text-[9px] text-black/30">
-                    Von <strong>{form.name || "Max Mustermann"}</strong>
+                    Von <strong>{form.name || "Ihre Agentur"}</strong>
                   </p>
                 </div>
               </div>

@@ -166,17 +166,39 @@ html {
 .flow-leads-landing .s { padding: 100px 32px; }
 .flow-leads-landing .inner { max-width: 1080px; margin: 0 auto; }
 
-/* Einheitliche Eyebrows: 11px / 700 / 0.2em / uppercase */
-.flow-leads-landing .s-label {
+/* Einheitlicher Eyebrow-Standard (Gold-Familie, keine Transparenz) */
+.flow-leads-landing .eyebrow,
+.flow-leads-landing .how-tl-eyebrow,
+.flow-leads-landing .facts-bridge,
+.flow-leads-landing .vertrieb-ec-eyebrow,
+.flow-leads-landing .benefits-premium-eyebrow {
+  color: #b8884a !important;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold);
+  margin: 0 0 12px;
+  display: block;
+  opacity: 1 !important;
+}
+
+/* Benefits-Premium (dunkle Karte): helleres Gold — gleiche Typo, besserer Kontrast */
+.flow-leads-landing .benefits-premium-eyebrow {
+  color: #e8d0b0 !important;
+}
+
+/* Sektions-Label mit Strich: gleiche Typo, Layout bleibt Flex */
+.flow-leads-landing .s-label {
+  color: #b8884a !important;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin: 0 0 12px;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
+  opacity: 1 !important;
 }
 .flow-leads-landing .s-label::before {
   content: "";
@@ -426,12 +448,6 @@ html {
   margin: 0 auto;
 }
 .flow-leads-landing .facts-bridge {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  margin: 0 0 20px;
   max-width: 65ch;
 }
 .flow-leads-landing .facts-h2 {
@@ -545,14 +561,6 @@ html {
 .flow-leads-landing .how-tl-header {
   text-align: left;
   margin: 0 0 0;
-}
-.flow-leads-landing .how-tl-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  margin: 0 0 14px;
 }
 .flow-leads-landing .how-h2 {
   margin: 0 0 16px;
@@ -992,14 +1000,6 @@ html {
   max-width: 640px;
   margin: 0 auto 52px;
 }
-.flow-leads-landing .vertrieb-ec-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #6B7280;
-  margin: 0 0 18px;
-}
 .flow-leads-landing .vertrieb-ec-h2 {
   color: var(--heading);
   margin: 0 0 16px;
@@ -1400,14 +1400,6 @@ html {
   width: 0;
   height: 0;
   overflow: hidden;
-}
-.flow-leads-landing .benefits-premium-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
-  margin: 0 0 20px;
 }
 .flow-leads-landing .benefits-premium-h2 {
   color: #fff;

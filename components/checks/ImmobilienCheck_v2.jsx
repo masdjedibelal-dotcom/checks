@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard } from "@/components/ui/CheckComponents";
@@ -188,14 +189,15 @@ export default function ImmobilienCheck(){
   const[anschluss,setAnschluss]=useState({restschuld:220000,altZins:1.2,neuZins:3.8,tilgung:2,laufzeit:10});
   const[wg,setWg]=useState({flaeche:140,baujahr:1985,bauart:"massiv",versSum:320000,elementar:false,photovoltaik:false});
   const setM=(s,k,v)=>{if(s==="mk")setMk(x=>({...x,[k]:v}));else if(s==="anschluss")setAnschluss(x=>({...x,[k]:v}));else setWg(x=>({...x,[k]:v}));};
-  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);setScr2(1);window.scrollTo({top:0,behavior:"smooth"});};
+  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);setScr2(1);};
   const SCR2_TOTAL={mk:4,anschluss:3,wg:3};
   const scr2Total=SCR2_TOTAL[modul]||3;
-  const nextScr2=()=>{if(scr2<scr2Total){setAk(k=>k+1);setScr2(s=>s+1);window.scrollTo({top:0,behavior:"smooth"});}else goTo(3);};
-  const backScr2=()=>{if(scr2>1){setAk(k=>k+1);setScr2(s=>s-1);window.scrollTo({top:0,behavior:"smooth"});}else goTo(1);};
+  const nextScr2=()=>{if(scr2<scr2Total){setAk(k=>k+1);setScr2(s=>s+1);}else goTo(3);};
+  const backScr2=()=>{if(scr2>1){setAk(k=>k+1);setScr2(s=>s-1);}else goTo(1);};
   // Fortschritt über alle Phasen: Phase 1 = 1 Screen, Phase 2 = n Screens, Phase 3 = 1
   const totalSteps=1+scr2Total+1;
   const curStep=phase===1?1:phase===2?1+scr2:1+scr2Total+1;
+  useCheckScrollToTop([phase, ak, danke, scr2]);
 
   const Header=()=>(<><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Immobilien-Check</span></div><div style={T.prog}><div style={T.progFil(Math.round(curStep/totalSteps*100))}/></div></>);
 

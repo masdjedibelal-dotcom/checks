@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SelectionCard } from "@/components/ui/CheckComponents";
@@ -218,9 +219,9 @@ export default function JahresCheck(){
   const[selProdukte,setSelProdukte]=useState([]);
   const toggleSimpleEv=(catId)=>{const cat=SIMPLE_EVENTS_DEF.find(c=>c.id===catId);if(!cat)return;setSelEvKats(p=>{const next=p.includes(catId)?p.filter(x=>x!==catId):[...p,catId];setEvents(SIMPLE_EVENTS_DEF.filter(c=>next.includes(c.id)).flatMap(c=>c.evIds));return next;});};
   const toggleProdukt=(prodId)=>{const prod=PRODUKT_ITEMS.find(p=>p.id===prodId);if(!prod)return;setSelProdukte(p=>{const next=p.includes(prodId)?p.filter(x=>x!==prodId):[...p,prodId];setProds(PRODUKT_ITEMS.filter(p=>next.includes(p.id)).flatMap(p=>p.matrixNames));return next;});};
-  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0,behavior:"smooth"});};
+  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);};
   const E=buildEmpfehlungen(events,prods,kontext);
-
+  useCheckScrollToTop([phase, ak, danke, scr]);
 
   if(danke)return(
     <div style={{...T.page,"--accent":C}}><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
@@ -437,8 +438,8 @@ export default function JahresCheck(){
 
 
   // ── Phase 1: Eingabe (2 Screens, kein Intro) ──────────────────────────────
-  const nextScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr < 2) { setScr(s => s + 1); } else { goTo(3); } };
-  const backScr = () => { window.scrollTo({ top: 0, behavior: "smooth" }); if (scr > 1) { setScr(s => s - 1); } };
+  const nextScr = () => { if (scr < 2) { setScr(s => s + 1); } else { goTo(3); } };
+  const backScr = () => { if (scr > 1) { setScr(s => s - 1); } };
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <div style={T.header}>

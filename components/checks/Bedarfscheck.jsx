@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { textOnAccent } from "@/lib/utils";
@@ -236,6 +237,7 @@ const EX_GROUPS=[
 // ─── Phase 1: 1 Frage pro Screen (6 Screens) ─────────────────────────────────
 function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
   const[scr,setScr]=useState(1);
+  useCheckScrollToTop([scr]);
   const mark=textOnAccent(C);
   const canNext=scr===1||scr===6?true:scr===2?!!profil.employmentStatus:scr===3?!!profil.familyStatus:scr===4?!!profil.housingStatus:!!profil.netIncome;
   const next=()=>scr<6?setScr(s=>s+1):onWeiter();
@@ -525,7 +527,8 @@ export default function Bedarfscheck(){
   const[existing,setExisting]=useState([]);
   const set=(k,v)=>setProfil(x=>({...x,[k]:v}));
   const toggle=(id)=>setExisting(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
-  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);window.scrollTo({top:0});};
+  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);};
+  useCheckScrollToTop([phase, ak, danke]);
   const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setProfil({age:35,employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:"gkv"});setExisting([]);setKontaktName("");};
   const profilReady=profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus;
   const result=profilReady?runScoringEngine(profil,existing):null;

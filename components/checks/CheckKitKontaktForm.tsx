@@ -26,7 +26,7 @@ export default function CheckKitKontaktForm({ fd, setFd, onSubmit, onBack, T }: 
 
   const valid = Boolean(fd.name.trim() && fd.email.trim() && consent);
   const fields = [
-    { k: "name" as const, l: "Name", t: "text" as const, ph: "Max Mustermann", req: true },
+    { k: "name" as const, l: "Name", t: "text" as const, ph: "Ihre Agentur", req: true },
     { k: "email" as const, l: "E-Mail", t: "email" as const, ph: "max@beispiel.de", req: true },
     { k: "tel" as const, l: "Telefon", t: "tel" as const, ph: "089 123 456 78", req: false },
   ];

@@ -1,6 +1,6 @@
 "use client";
 
-import { alpha, textOnAccent } from "@/lib/utils";
+import { alpha } from "@/lib/utils";
 
 const PREVIEW_BG: Record<string, string> = {
   bedarfscheck: "linear-gradient(160deg,#fdf8ee 0%,#f0e8cc 100%)",
@@ -17,16 +17,10 @@ function PhoneShell({ c, children }: { c: string; children: React.ReactNode }) {
   return (
     <div className="w-[180px] shrink-0 overflow-hidden rounded-t-[22px] bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.12),0_0_0_1px_rgba(0,0,0,0.06)]">
       <div className="h-1 w-full" style={{ background: c }} />
-      <div className="flex items-center justify-between border-b border-black/[0.05] px-3 pb-2 pt-2.5">
-        <div className="flex min-w-0 flex-1 items-center gap-1.5">
-          <div
-            className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] text-[9px] font-extrabold"
-            style={{ background: c, color: textOnAccent(c) }}
-          >
-            M
-          </div>
-          <span className="truncate text-[9px] font-bold" style={{ color: c }}>
-            Mustermann Vers.
+      <div className="flex items-center justify-between border-b border-black/[0.05] px-2.5 pb-2 pt-2.5">
+        <div className="min-w-0 flex-1">
+          <span className="block truncate text-[9px] font-bold" style={{ color: c }}>
+            Ihre Agentur
           </span>
         </div>
         <div
