@@ -47,6 +47,19 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
       background: transparent; cursor: pointer;
     }
     .buktg-acc-panel { padding: 0 16px 14px; font-size: 12px; color: #6B7280; line-height: 1.6; border-top: 1px solid rgba(17,24,39,0.06); }
+    .buktg-em-zero-warn {
+      margin-top: 10px;
+      padding: 11px 12px;
+      border-radius: 8px;
+      background: #0a0a0a;
+      color: #FFEB3B;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      border: 3px solid #FFEB3B;
+      line-height: 1.45;
+      box-shadow: 0 0 0 1px #000;
+    }
   `;
   document.head.appendChild(s);
 })();
@@ -55,6 +68,9 @@ const phaseBarColor = (pct) =>
   pct >= 75 ? "#22c55e" : pct >= 45 ? "#eab308" : "#C0392B";
 
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
+
+/** Orientierender Netto-Regelbedarf (Grundsicherung) für Studenten-Vergleich */
+const GRUNDSICHERUNG_NETTO_ORIENTIERUNG = 1150;
 
 /** Krankengeld-Bemessung: relevantes Brutto bis BBG (2026, orientierend) */
 const KG_BBG_MONATLICH = 4068;
@@ -70,9 +86,99 @@ const SZENARIEN = [
   { id: "unfall",  emoji: "🤕", label: "Unfall",  desc: "Fraktur oder Lähmung",                  dauer: 18, buWahrsch: 45 },
 ];
 
+/** EM-Rente je Szenario (vereinfacht): Psyche 0, Herz 34 %, sonst 17 % des Nettos */
+function emRenteNachSzenario(szenarioId, netto) {
+  if (szenarioId === "psyche") return 0;
+  if (szenarioId === "herz") return Math.round(netto * 0.34);
+  return Math.round(netto * 0.17);
+}
+
 // ─── BERECHNUNG ───────────────────────────────────────────────────────────────
-function berechne({ brutto, beruf, kv, ktgTag, buRente, szenario, pkvBeitrag = 0 }) {
+function berechne({
+  brutto,
+  beruf,
+  kv,
+  ktgTag,
+  buRente,
+  szenario,
+  pkvBeitrag = 0,
+  beamterWiderruf = false,
+  zielNetto = 2500,
+  nutzerAlter = 20,
+}) {
   const sz = SZENARIEN.find((s) => s.id === szenario) || SZENARIEN[0];
+  const alter = Math.max(16, Math.min(66, Math.round(Number(nutzerAlter) || 20)));
+  const jahreBis67 = Math.max(0, 67 - alter);
+
+  const isStudent = beruf === "student";
+  const isAzubi = beruf === "azubi";
+  const isBeamter = beruf === "beamter";
+  const isAngestellt = beruf === "angestellt";
+  const isAngestelltLike = isAngestellt || isAzubi;
+
+  /** Student/Schüler: Zielnetto, alle Phasen 0, Lücke zu Grundsicherung */
+  if (isStudent) {
+    const netto = Math.max(0, Math.round(Number(zielNetto) || 2500));
+    const p1 = {
+      label: "Kein laufendes Arbeitseinkommen",
+      sub: "Modell Student/in — kein Lohn aus unselbständiger Arbeit",
+      monatl: 0,
+      pct: 0,
+    };
+    const p2 = {
+      label: "Krankengeld",
+      sub: "Kein typischer GKV-Anspruch aus Erwerbstätigkeit (vereinfacht)",
+      monatl: 0,
+      pct: 0,
+    };
+    const p3 = {
+      label: "Keine Leistung",
+      sub: "Nach ~18 Monaten · im Modell ohne Einkommensersatz",
+      monatl: 0,
+      pct: 0,
+    };
+    const emSchaetzung = 0;
+    const p4mon = buRente;
+    const p4 = {
+      label: buRente > 0 ? "BU-Rente (private Vorsorge)" : "Keine private Absicherung",
+      sub: "Dauerhaft",
+      monatl: p4mon,
+      pct: netto > 0 ? Math.min(100, Math.round((p4mon / netto) * 100)) : 0,
+    };
+    const luecke = Math.max(0, netto - GRUNDSICHERUNG_NETTO_ORIENTIERUNG);
+    const lueckeKG = netto;
+    const empfKTG = lueckeKG > 0 ? Math.max(0, Math.ceil((lueckeKG / 30) / 5) * 5) : 0;
+    const empfBU = luecke > 0 ? Math.max(0, Math.round(luecke / 50) * 50) : 0;
+    const inflationLuecke20 = luecke > 0 ? Math.round(luecke * 1.02 ** 20) : 0;
+    const gesamtschadenSzenario = Math.round(luecke * sz.dauer);
+    const verlorenesLebensEinkommen = Math.round(luecke * 12 * jahreBis67);
+
+    return {
+      netto,
+      p1,
+      p2,
+      p3,
+      p4,
+      luecke,
+      lueckeKG,
+      sz,
+      kgBasis: 0,
+      kgVorSozial: 0,
+      ktgMon: 0,
+      ktgNetNachPkv: 0,
+      pkvAbzugMon: 0,
+      emSchaetzung,
+      empfKTG,
+      empfBU,
+      inflationLuecke20,
+      gesamtschadenSzenario,
+      verlorenesLebensEinkommen,
+      grundsicherungOrientierung: GRUNDSICHERUNG_NETTO_ORIENTIERUNG,
+      isStudentModus: true,
+      jahreBis67,
+    };
+  }
+
   const netto = Math.round(brutto * 0.72);
   const ktgMon = ktgTag * 30;
   const pkvAb = kv === "pkv" ? Math.max(0, Number(pkvBeitrag) || 0) : 0;
@@ -80,54 +186,117 @@ function berechne({ brutto, beruf, kv, ktgTag, buRente, szenario, pkvBeitrag = 0
 
   let kgVorSozial = 0;
   let kgNachSozial = 0;
-  if (kv === "gkv" && beruf !== "selbst") {
+  if (kv === "gkv" && isAngestelltLike) {
     const brKg = Math.min(brutto, KG_BBG_MONATLICH);
     kgVorSozial = Math.round(brKg * 0.7);
     kgNachSozial = Math.round(kgVorSozial * (1 - KG_KRANKENGELD_SOZIAL_SATZ));
   }
 
   const ktgInPhasen = kv === "pkv" ? ktgNetNachPkv : ktgMon;
+  /** Phase 3: nur privates KTG (nicht Beamte — siehe Beamten-Zweig) */
+  const p3monDefault = ktgTag > 0 ? ktgInPhasen : 0;
 
-  const p1 = { label: "Lohnfortzahlung", sub: "Erste 6 Wochen (Arbeitgeber)", monatl: netto, pct: 100 };
+  const p1 =
+    beruf === "selbst"
+      ? {
+          label: "Keine Lohnfortzahlung",
+          sub: "Erste 6 Wochen — kein Arbeitgeber-Ersatz wie bei Angestellten",
+          monatl: 0,
+          pct: 0,
+        }
+      : isBeamter
+        ? {
+            label: "Weiterzahlung der Bezüge",
+            sub: "Erste 6 Wochen (Dienstherr)",
+            monatl: netto,
+            pct: 100,
+          }
+        : {
+            label: "Lohnfortzahlung",
+            sub: "Erste 6 Wochen (Arbeitgeber)",
+            monatl: netto,
+            pct: 100,
+          };
 
-  const p2mon =
-    (kv === "gkv" && beruf !== "selbst" ? kgNachSozial : 0) +
-    (kv === "gkv" && beruf !== "selbst" ? ktgMon : ktgInPhasen);
-
-  let p2Label;
-  let p2Sub = "Ab Woche 7";
-  if (kv === "gkv" && beruf !== "selbst") {
-    p2Label = ktgMon > 0 ? "Krankengeld + KTG" : "Krankengeld (GKV)";
-    p2Sub = "Ab Woche 7 · Krankengeld nach Sozialabzug durch die Kasse";
-  } else if (kv === "pkv") {
-    p2Label = ktgMon > 0 ? "Krankentagegeld" : "Kein Krankengeld";
-    p2Sub =
-      pkvAb > 0
-        ? "Ab Woche 7 · KTG abzüglich PKV (Arbeitgeberzuschuss entfällt)"
-        : "Ab Woche 7";
+  let p2mon;
+  let p2Sub;
+  if (isBeamter) {
+    p2mon = netto;
+    p2Sub = "Ab Woche 7 · Bezüge werden weitergezahlt (vereinfachtes Beamtenmodell, keine Lücke)";
   } else {
-    p2Label = ktgMon > 0 ? "Krankentagegeld" : "Kein Krankengeld";
+    p2mon =
+      (kv === "gkv" && isAngestelltLike ? kgNachSozial : 0) +
+      (kv === "gkv" && isAngestelltLike ? ktgMon : ktgInPhasen);
+    p2Sub = "Ab Woche 7";
+    if (kv === "gkv" && isAngestelltLike) {
+      p2Sub =
+        ktgMon > 0
+          ? "Krankengeld (GKV, netto) + privates KTG"
+          : "Krankengeld (GKV) nach Sozialabzug durch die Kasse";
+    } else if (kv === "pkv") {
+      p2Sub =
+        pkvAb > 0
+          ? "Privates KTG abzüglich PKV (Arbeitgeberzuschuss entfällt)"
+          : "Privates Krankentagegeld";
+    } else {
+      p2Sub = ktgMon > 0 ? "Privates Krankentagegeld" : "Kein gesetzliches Krankengeld";
+    }
   }
 
   const p2 = {
-    label: p2Label,
+    label: "Krankengeld",
     sub: p2Sub,
     monatl: p2mon,
     pct: Math.min(100, Math.round((p2mon / netto) * 100)),
   };
 
+  let p3mon;
+  let p3Label;
+  let p3Sub;
+  if (isBeamter) {
+    p3mon = netto;
+    p3Label = "Weiterbezüge";
+    p3Sub = "Nach ~18 Monaten · vereinfacht fortlaufende Bezüge (ohne Kürzung im Modell)";
+  } else {
+    p3mon = p3monDefault;
+    p3Label = p3mon > 0 ? "Nur privates KTG" : "Keine Leistung";
+    p3Sub = "Nach ~18 Monaten · gesetzliches Krankengeld entfällt";
+  }
+
   const p3 = {
-    label: ktgInPhasen > 0 ? "Nur KTG (Wartezeit)" : "Keine Leistung",
-    sub: "Nach ~18 Monaten",
-    monatl: ktgInPhasen,
-    pct: Math.min(100, Math.round((ktgInPhasen / netto) * 100)),
+    label: p3Label,
+    sub: p3Sub,
+    monatl: p3mon,
+    pct: Math.min(100, Math.round((p3mon / netto) * 100)),
   };
 
-  const emSchaetzung = Math.round(netto * 0.35);
+  let emSchaetzung;
+  if (isBeamter) {
+    const widerrufOhneDienstunfall = beamterWiderruf && szenario !== "unfall";
+    emSchaetzung = widerrufOhneDienstunfall ? 0 : Math.round(netto * 0.35);
+  } else if (isAzubi) {
+    emSchaetzung = szenario === "unfall" ? emRenteNachSzenario(szenario, netto) : 0;
+  } else {
+    emSchaetzung = emRenteNachSzenario(szenario, netto);
+  }
+
   const p4mon = buRente + emSchaetzung;
-  let p4Label = buRente > 0 ? "BU-Rente + EM-Rente" : "Nur EM-Rente (gesetzlich)";
-  if (beruf === "beamter") {
-    p4Label = buRente > 0 ? "BU-Rente + Ruhegehalt/DU" : "Ruhegehalt / Dienstunfähigkeit (geschätzt)";
+  let p4Label;
+  if (isBeamter) {
+    p4Label =
+      buRente > 0
+        ? "Dienstunfähigkeits-Absicherung + Ruhegehalt bei Dienstunfähigkeit"
+        : "Ruhegehalt bei Dienstunfähigkeit";
+  } else if (isAzubi) {
+    const emShort =
+      szenario === "unfall"
+        ? "EM: Schätzung nach Unfall-Szenario"
+        : "EM: 0 € (noch keine 5-Jahres-Wartezeit)";
+    p4Label = buRente > 0 ? `BU-Rente + ${emShort}` : emShort;
+  } else {
+    const emShort =
+      szenario === "psyche" ? "EM: 0 €" : szenario === "herz" ? "EM: 34 %" : "EM: 17 %";
+    p4Label = buRente > 0 ? `BU-Rente + ${emShort}` : emShort;
   }
   const p4 = {
     label: p4Label,
@@ -143,6 +312,9 @@ function berechne({ brutto, beruf, kv, ktgTag, buRente, szenario, pkvBeitrag = 0
   const empfBU = luecke > 0 ? Math.max(0, Math.round(luecke / 50) * 50) : 0;
 
   const inflationLuecke20 = luecke > 0 ? Math.round(luecke * 1.02 ** 20) : 0;
+  const gesamtschadenSzenario = Math.round(luecke * sz.dauer);
+  const verlorenesLebensEinkommen =
+    isAzubi && jahreBis67 > 0 ? Math.round(luecke * 12 * jahreBis67) : 0;
 
   return {
     netto,
@@ -162,6 +334,11 @@ function berechne({ brutto, beruf, kv, ktgTag, buRente, szenario, pkvBeitrag = 0
     empfKTG,
     empfBU,
     inflationLuecke20,
+    gesamtschadenSzenario,
+    verlorenesLebensEinkommen,
+    grundsicherungOrientierung: null,
+    isStudentModus: false,
+    jahreBis67,
   };
 }
 
@@ -395,22 +572,28 @@ export default function BUKTGRechner() {
   const [p, setP] = useState({
     brutto:   4000,
     beruf:    "angestellt",
+    beamterWiderruf: false,
     kv:       "gkv",
     pkvBeitrag: 400,
     ktgTag:   0,
     buRente:  0,
     szenario: "psyche",
+    zielNetto: 2500,
+    nutzerAlter: 20,
   });
 
   const set = (k, v) => setP((x) => ({ ...x, [k]: v }));
   const [scr, setScr] = useState(1);
 
   const STEP_IDS = useMemo(() => {
+    if (p.beruf === "student") {
+      return ["beruf", "brutto", "szenario"];
+    }
     const ids = ["beruf", "kv"];
     if (p.kv === "pkv") ids.push("pkvBeitrag");
     ids.push("brutto", "ktgBu", "szenario");
     return ids;
-  }, [p.kv]);
+  }, [p.kv, p.beruf]);
 
   const stepCount = STEP_IDS.length;
   const sid = STEP_IDS[scr - 1] ?? "beruf";
@@ -422,8 +605,12 @@ export default function BUKTGRechner() {
 
   useEffect(() => {
     const prev = prevKvRef.current;
-    if (prev === "pkv" && p.kv === "gkv") setScr((s) => Math.max(1, s - 1));
-    else if (prev === "gkv" && p.kv === "pkv") setScr((s) => (s >= 3 ? s + 1 : s));
+    if (prev === "pkv" && p.kv === "gkv") {
+      /* Nur zurückspringen, wenn der PKV-Zusatzschritt schon „durchlaufen“ war — sonst bleibt man z. B. auf Schritt 2 (KV) */
+      setScr((s) => (s > 3 ? Math.max(1, s - 1) : s));
+    } else if (prev === "gkv" && p.kv === "pkv") {
+      setScr((s) => (s >= 3 ? s + 1 : s));
+    }
     prevKvRef.current = p.kv;
   }, [p.kv]);
 
@@ -498,7 +685,7 @@ export default function BUKTGRechner() {
             <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Ihre Berechnung</div>
             <div style={{ display: "flex", gap: "20px" }}>
               <div><div style={{ fontSize: "18px", fontWeight: "700", color: "#c0392b", letterSpacing: "-0.5px" }}>{fmt(R.luecke)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Mögliche Lücke</div></div>
-              <div><div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{fmt(R.netto)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Ihr Netto</div></div>
+              <div><div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{fmt(R.netto)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>{R.isStudentModus ? "Ziel-Netto" : "Ihr Netto"}</div></div>
             </div>
           </div>
         }
@@ -515,53 +702,125 @@ export default function BUKTGRechner() {
     const ktgSub =
       p.kv === "pkv" && R.pkvAbzugMon > 0 && R.ktgMon > 0 ? "nach PKV-Beitrag" : "Krankentagegeld";
 
-    const buildingBlocks = [
-      {
-        key: "kg",
-        title: "Krankengeld",
-        short: "GKV (netto)",
-        active: p.kv === "gkv" && p.beruf !== "selbst" && R.kgBasis > 0,
-        val: p.kv === "gkv" && p.beruf !== "selbst" ? fmt(R.kgBasis) : "—",
-      },
-      {
-        key: "ktg",
-        title: "KTG",
-        short: ktgSub,
-        active: R.ktgMon > 0,
-        val: ktgAnzeige,
-      },
-      {
-        key: "bu",
-        title: "BU-Rente",
-        short: "Berufsunfähigkeit",
-        active: p.buRente > 0,
-        val: p.buRente > 0 ? fmt(p.buRente) : "—",
-      },
-      {
-        key: "em",
-        title: p.beruf === "beamter" ? "Ruhegehalt / DU" : "EM-Rente",
-        short: "geschätzt",
-        active: true,
-        val: fmt(R.emSchaetzung),
-      },
-    ];
+    const isAngLike = p.beruf === "angestellt" || p.beruf === "azubi";
+
+    const buildingBlocks = R.isStudentModus
+      ? [
+          {
+            key: "ziel",
+            title: "Ziel-Netto",
+            short: "angestrebt",
+            active: true,
+            val: fmt(R.netto),
+          },
+          {
+            key: "gs",
+            title: "Grundsicherung",
+            short: "orientierend",
+            active: true,
+            val: fmt(R.grundsicherungOrientierung),
+          },
+          {
+            key: "luecke",
+            title: "Monatslücke",
+            short: "Ziel minus Regelbedarf",
+            active: R.luecke > 0,
+            val: fmt(R.luecke),
+          },
+          {
+            key: "bu",
+            title: "BU-Rente",
+            short: "private Vorsorge",
+            active: p.buRente > 0,
+            val: p.buRente > 0 ? fmt(p.buRente) : "—",
+          },
+        ]
+      : [
+          {
+            key: "kg",
+            title: "Krankengeld",
+            short: p.beruf === "beamter" ? "Weiterbezüge" : "GKV (netto)",
+            active:
+              p.beruf === "beamter"
+                ? true
+                : p.kv === "gkv" && isAngLike && R.kgBasis > 0,
+            val:
+              p.beruf === "beamter"
+                ? fmt(R.netto)
+                : p.kv === "gkv" && isAngLike
+                  ? fmt(R.kgBasis)
+                  : "—",
+          },
+          {
+            key: "ktg",
+            title: "KTG",
+            short: ktgSub,
+            active: R.ktgMon > 0,
+            val: ktgAnzeige,
+          },
+          {
+            key: "bu",
+            title: p.beruf === "beamter" ? "Dienstunfähigkeits-Absicherung" : "BU-Rente",
+            short: p.beruf === "beamter" ? "zusätzlich zum Ruhegeld" : "Berufsunfähigkeit",
+            active: p.buRente > 0,
+            val: p.buRente > 0 ? fmt(p.buRente) : "—",
+          },
+          {
+            key: "em",
+            title: p.beruf === "beamter" ? "Ruhegehalt bei DU" : "EM-Rente",
+            short:
+              p.beruf === "azubi"
+                ? p.szenario === "unfall"
+                  ? "Schätzung Unfall"
+                  : "0 € · Wartezeit"
+                : p.beruf === "beamter"
+                  ? p.beamterWiderruf && p.szenario !== "unfall"
+                    ? "0 € (Widerruf)"
+                    : "35 % Netto"
+                  : p.szenario === "psyche"
+                    ? "Szenario: 0 €"
+                    : p.szenario === "herz"
+                      ? "34 % Netto"
+                      : "17 % Netto",
+            active: R.emSchaetzung > 0,
+            val: fmt(R.emSchaetzung),
+          },
+        ];
 
     const massiveUnterdeckung = p.buRente < R.netto * 0.5;
 
     const resultSmartHints = [];
-    if (p.kv === "gkv" && p.beruf !== "selbst" && R.kgBasis > 0) {
+    if (p.kv === "gkv" && isAngLike && R.kgBasis > 0) {
       resultSmartHints.push({
         key: "kgSozial",
         text: "Vom Krankengeld behält die Kasse direkt Sozialbeiträge ein — dein ausgezahltes Krankengeld liegt deshalb unter den 70 % vom Brutto.",
       });
     }
-    if (p.brutto < 2500) {
+    if (p.beruf === "azubi" && p.szenario !== "unfall") {
+      resultSmartHints.push({
+        key: "azubiWarte",
+        text: "Hinweis: Die fünfjährige Wartezeit für die EM-Rente ist während der Ausbildung in der Regel noch nicht erfüllt — im Modell daher 0 € EM (Ausnahme: Unfall-Szenario).",
+      });
+    }
+    if (R.isStudentModus && R.luecke > 0) {
+      resultSmartHints.push({
+        key: "studModell",
+        text: `Vergleich: Ziel-Netto minus orientierender Grundsicherung (ca. ${fmt(R.grundsicherungOrientierung)} netto) — stark vereinfacht, kein individueller SGB-II-Check.`,
+      });
+    }
+    if (p.beruf === "beamter" && p.beamterWiderruf && p.szenario !== "unfall") {
+      resultSmartHints.push({
+        key: "beamterWiderruf",
+        text: "Bei Beamten auf Widerruf bzw. in der Probezeit entfällt das Ruhegeld bei Dienstunfähigkeit in der Regel — hier mit 0 € angenommen (Ausnahme z. B. Dienstunfall im gewählten Szenario).",
+      });
+    }
+    if (!R.isStudentModus && p.brutto < 2500) {
       resultSmartHints.push({
         key: "grusi",
         text: "Bei niedrigem Krankengeld kann es zur Verrechnung mit Grundsicherung kommen — ein persönlicher Check lohnt sich.",
       });
     }
-    if (p.ktgTag === 0 && p.kv === "gkv") {
+    if (!R.isStudentModus && p.ktgTag === 0 && p.kv === "gkv") {
       resultSmartHints.push({
         key: "ktgMin",
         text: "Du stützt dich nur auf das gesetzliche Krankengeld — ein zusätzliches Krankentagegeld schließt oft die größte Lücke in den ersten Monaten.",
@@ -600,7 +859,13 @@ export default function BUKTGRechner() {
               {R.luecke > 0 ? fmt(R.luecke) : "Gedeckt"}
             </div>
             <div style={{ ...T.resultUnit, marginBottom: "14px" }}>
-              {R.luecke > 0 ? "mögliche monatliche Lücke" : "Ihr Einkommen ist weitgehend abgesichert"}
+              {R.isStudentModus
+                ? R.luecke > 0
+                  ? "Lücke zwischen Ziel-Netto und orientierendem Regelbedarf (Grundsicherung)"
+                  : "Ziel erreicht oder unter dem angenommenen Regelbedarf"
+                : R.luecke > 0
+                  ? "mögliche monatliche Lücke"
+                  : "Ihr Einkommen ist weitgehend abgesichert"}
             </div>
             {R.luecke > 0 ? (
               <div style={{ ...T.statusWarn, margin: "0 auto", width: "fit-content" }}>Absicherungslücke erkannt</div>
@@ -641,12 +906,15 @@ export default function BUKTGRechner() {
 
           {/* Horizontal Swiper (snap) */}
           <div style={T.section}>
-            <div style={{ ...T.sectionLbl, paddingLeft: 0 }}>So entwickelt sich Ihr Einkommen</div>
+            <div style={{ ...T.sectionLbl, paddingLeft: 0 }}>
+              {R.isStudentModus ? "Modell ohne laufendes Arbeitseinkommen" : "So entwickelt sich Ihr Einkommen"}
+            </div>
             <div className="buktg-swiper" role="region" aria-label="Phasen Einkommen">
               {phasen.map((ph, i) => {
                 const diff = R.netto - ph.monatl;
                 const barW = phaseBarsReady ? Math.min(100, ph.pct) : 0;
                 const barCol = phaseBarColor(ph.pct);
+                const showEmZeroWarn = i === 3 && (R.emSchaetzung === 0 || R.isStudentModus);
                 return (
                   <div key={i} className="buktg-swiper-card">
                     <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
@@ -669,6 +937,15 @@ export default function BUKTGRechner() {
                         }}
                       />
                     </div>
+                    {showEmZeroWarn && (
+                      <div className="buktg-em-zero-warn" role="alert">
+                        {p.beruf === "azubi" && p.szenario !== "unfall"
+                          ? "Wartezeit von 5 Jahren noch nicht erfüllt. EM-Rente in diesem Schritt 0 € — Ausnahme: Unfall-Szenario."
+                          : R.isStudentModus
+                            ? "Keine gesetzliche EM aus Erwerbstätigkeit modelliert — private Vorsorge (z. B. BU) prüfen."
+                            : "Achtung: EM-Rente in diesem Schritt 0 € — hohes Absicherungsrisiko bis zur gesetzlichen Rente."}
+                      </div>
+                    )}
                     {diff > 0 && (
                       <div
                         style={{
@@ -754,14 +1031,23 @@ export default function BUKTGRechner() {
                   lineHeight: 1.5,
                 }}
               >
-                Geschätzte BU-Wahrscheinlichkeit in diesem Szenario:{" "}
-                <span style={{ color: C }}>{R.sz.buWahrsch} %</span>
+                {p.beruf === "beamter" ? (
+                  <>
+                    Geschätzte Wahrscheinlichkeit einer Dienstunfähigkeit in diesem Szenario:{" "}
+                    <span style={{ color: C }}>{R.sz.buWahrsch} %</span>
+                  </>
+                ) : (
+                  <>
+                    Geschätzte BU-Wahrscheinlichkeit in diesem Szenario:{" "}
+                    <span style={{ color: C }}>{R.sz.buWahrsch} %</span>
+                  </>
+                )}
               </div>
               {R.empfKTG > 0 && (
                 <div style={{ paddingTop: "12px", borderTop: "1px solid rgba(17,24,39,0.06)" }}>
                   <div style={{ fontSize: "14px", fontWeight: "700", color: "#111827" }}>Krankentagegeld prüfen</div>
                   <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px", lineHeight: 1.5 }}>
-                    {p.kv === "gkv" && p.beruf !== "selbst"
+                    {p.kv === "gkv" && p.beruf === "angestellt"
                       ? "Schließt die Lücke nach Krankengeld-Ende"
                       : "Existenzielle Absicherung — ab Tag 1 der Krankheit"}
                   </div>
@@ -775,8 +1061,12 @@ export default function BUKTGRechner() {
               )}
               {R.empfBU > 0 && (
                 <div style={{ paddingTop: R.empfKTG > 0 ? "14px" : "12px", borderTop: "1px solid rgba(17,24,39,0.06)" }}>
-                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#111827" }}>BU-Rente anpassen</div>
-                  <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>Dauerhafter Einkommensschutz</div>
+                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#111827" }}>
+                    {p.beruf === "beamter" ? "Dienstunfähigkeits-Absicherung anpassen" : "BU-Rente anpassen"}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px" }}>
+                    {p.beruf === "beamter" ? "Ergänzung zum Ruhegehalt bei Dienstunfähigkeit" : "Dauerhafter Einkommensschutz"}
+                  </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: "10px" }}>
                     <span style={{ fontSize: "12px", color: "#9CA3AF" }}>kalkulierter Richtwert</span>
                     <span style={{ fontSize: "17px", fontWeight: "800", color: C }}>{fmt(R.empfBU)}/Mon.</span>
@@ -793,13 +1083,43 @@ export default function BUKTGRechner() {
 
           {R.luecke > 0 && (
             <div style={T.section}>
-              <div style={T.sectionLbl}>Langfristige Lücke</div>
-              <div style={T.warnCard}>
-                <div style={T.warnCardTitle}>Dauerhaft unter Netto</div>
-                <div style={{ fontSize: "28px", fontWeight: "800", color: "#C0392B", letterSpacing: "-1px", marginBottom: "6px" }}>{fmt(R.luecke)}</div>
-                <div style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "8px" }}>pro Monat</div>
-                <div style={T.warnCardText}>
-                  BU-Rente und EM-Rente zusammen ({fmt(R.p4.monatl)}) decken Ihr Netto ({fmt(R.netto)}) nicht vollständig ab.
+              <div style={T.sectionLbl}>Gesamtschaden im Szenario</div>
+              <div
+                style={{
+                  borderRadius: "16px",
+                  background: "#F9FAFB",
+                  border: "1px solid rgba(17,24,39,0.08)",
+                  padding: "18px 20px",
+                }}
+              >
+                <div style={{ fontSize: "14px", fontWeight: "600", color: "#374151", lineHeight: 1.55 }}>
+                  Gesamtschaden im Szenario {R.sz.label}:{" "}
+                  <span style={{ color: "#C0392B", fontWeight: "800" }}>{fmt(R.gesamtschadenSzenario)}</span>
+                </div>
+                <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "8px", lineHeight: 1.5 }}>
+                  Monatliche Lücke ({fmt(R.luecke)}) × Ø-Dauer {R.sz.dauer} Monate · vereinfachte Hochrechnung
+                </div>
+              </div>
+            </div>
+          )}
+
+          {R.verlorenesLebensEinkommen > 0 && (p.beruf === "student" || p.beruf === "azubi") && (
+            <div style={T.section}>
+              <div style={T.sectionLbl}>Lebenszeitperspektive</div>
+              <div
+                style={{
+                  borderRadius: "16px",
+                  background: "#18181B",
+                  border: "2px solid #FACC15",
+                  padding: "18px 20px",
+                }}
+              >
+                <div style={{ fontSize: "15px", fontWeight: "800", color: "#FACC15", lineHeight: 1.45 }}>
+                  Dein verlorenes Lebens-Einkommen:{" "}
+                  <span style={{ color: "#FFF" }}>{fmt(R.verlorenesLebensEinkommen)}</span>
+                </div>
+                <div style={{ fontSize: "12px", color: "#A1A1AA", marginTop: "10px", lineHeight: 1.55 }}>
+                  Orientierung: {fmt(R.luecke)} / Monat × 12 × {R.jahreBis67} Jahre bis Alter 67 (aus Ihrem angegebenen Alter {p.nutzerAlter}).
                 </div>
               </div>
             </div>
@@ -815,7 +1135,7 @@ export default function BUKTGRechner() {
               </button>
               {legalOpen === "calc" && (
                 <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
-                  Vereinfachte Einordnung auf Basis Ihrer Angaben. Netto = Brutto × 0,72 (Schätzwert). GKV-Krankengeld: 70 % des relevanten Bruttos bis zur BBG Krankengeld (orientierend 4.068 €/Mon. 2026), abzüglich Sozialabzug durch die Kasse (ca. 12,2–12,5 %). PKV: KTG abzüglich monatlichem PKV-Eigenanteil ab Woche 7 (ohne Arbeitgeberzuschuss). · Grundlage §47 SGB V. EM-Rente: ca. 35 % des Nettos · Grundlage §43 SGB VI.
+                  Vereinfachte Einordnung auf Basis Ihrer Angaben. Netto = Brutto bzw. Gewinn bzw. Bezüge × 0,72 (Schätzwert). GKV-Krankengeld (Angestellte und Auszubildende): 70 % des relevanten Bruttos bis zur BBG Krankengeld (orientierend 4.068 €/Mon. 2026), abzüglich Sozialabzug durch die Kasse (ca. 12,2–12,5 %). Auszubildende: Phasen 1–2 wie Angestellte; EM-Rente im Modell 0 € außer Szenario „Unfall“ (fünfjährige Wartezeit typischerweise noch nicht erfüllt). Student/Schüler: Ziel-Netto vs. pauschaler Regelbedarf ({fmt(GRUNDSICHERUNG_NETTO_ORIENTIERUNG)} netto, orientierend); alle Phasen ohne laufendes Arbeitseinkommen; „verlorenes Lebens-Einkommen“ = Monatslücke × 12 × Jahre bis Alter 67. Beamte: Krankheits-Phase mit durchgehenden Bezügen modelliert; Ruhegehalt bei Dienstunfähigkeit pauschal 35 % des Nettos, außer Widerruf/Probe ohne Dienstunfall-Szenario (0 €). Ab ~18 Monaten (nicht Beamte): nur noch privates KTG. PKV: KTG abzüglich monatlichem PKV-Eigenanteil ab Woche 7 (ohne Arbeitgeberzuschuss). · Grundlage §47 SGB V. EM-Rente sonst szenariobasiert (Psyche 0 €, Herz 34 % Netto, sonst 17 % Netto) · vereinfacht, §43 SGB VI.
                   <span style={{ color: "#b8884a" }}> Keine Rechtsberatung.</span>
                 </div>
               )}
@@ -855,14 +1175,41 @@ export default function BUKTGRechner() {
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {[
                 { v: "angestellt", l: "Angestellt",    d: "Lohnfortzahlung + Krankengeld (GKV)",  emoji: "💼" },
-                { v: "selbst",     l: "Selbstständig", d: "Kein gesetzliches Sicherheitsnetz",    emoji: "🧑‍💻" },
-                { v: "beamter",    l: "Beamter",       d: "Beihilfe + besondere Absicherungstarife", emoji: "🏛️" },
+                { v: "azubi",      l: "Auszubildende/r", d: "Wie Angestellte: Lohnfortzahlung & Krankengeld — EM oft wegen Wartezeit 0 € (außer Unfall)", emoji: "🛠️" },
+                { v: "student",    l: "Student/in · Schüler/in", d: "Ziel-Netto vs. Grundsicherung — kein laufendes Arbeitseinkommen im Krankheitsmodell", emoji: "🎓" },
+                { v: "selbst",     l: "Selbstständig", d: "Keine Lohnfortzahlung — im Krankheitsfall fehlen Arbeitgeber-Leistungen der ersten Wochen komplett", emoji: "🧑‍💻" },
+                { v: "beamter",    l: "Beamter",       d: "Bezüge im öffentlichen Dienst — Fortzahlung durch den Dienstherrn statt privater Lohnfortzahlung", emoji: "🏛️" },
               ].map(({ v, l, d, emoji }) => (
                 <SelectionCard key={v} value={v} label={l} description={d}
                   icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
                   selected={p.beruf === v} accent={C} onClick={() => set("beruf", v)} />
               ))}
             </div>
+            {p.beruf === "beamter" && (
+              <div style={{ marginTop: "16px" }}>
+                <div style={{ ...T.fldLbl, marginBottom: "8px" }}>Ihr Beamtenverhältnis</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <SelectionCard
+                    value="leben"
+                    label="Lebenslaufbeamter / unbefristet"
+                    description="Ruhegehalt bei Dienstunfähigkeit wird im Modell mit 35 % der Bezüge (Netto) geschätzt."
+                    icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>⚖️</span>}
+                    selected={!p.beamterWiderruf}
+                    accent={C}
+                    onClick={() => set("beamterWiderruf", false)}
+                  />
+                  <SelectionCard
+                    value="widerruf"
+                    label="Auf Widerruf / Probezeit"
+                    description="Ruhegehalt bei DU oft ausgeschlossen — Modell setzt 0 €, außer Szenario „Unfall“ (Dienstunfall)."
+                    icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>📋</span>}
+                    selected={p.beamterWiderruf}
+                    accent={C}
+                    onClick={() => set("beamterWiderruf", true)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <div style={{ height: "120px" }} />
           <Footer onNext={nextScr} nextLabel="Weiter →" T={T} />
@@ -874,12 +1221,28 @@ export default function BUKTGRechner() {
           <div style={T.hero}>
             <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
             <div style={T.h1}>Wie sind Sie krankenversichert?</div>
-            <div style={T.body}>Das entscheidet, ob und wie viel Krankengeld Sie erhalten.</div>
+            <div style={T.body}>
+              {p.beruf === "selbst"
+                ? "Ohne Arbeitgeber gibt es keine Lohnfortzahlung — hier geht es um GKV/PKV und späteres Krankengeld bzw. KTG."
+                : p.beruf === "beamter"
+                  ? "Beim Dienstherrn gelten andere Regeln als in der GKV — Krankengeldphase und Bezüge sind vereinfacht modelliert."
+                  : p.beruf === "azubi"
+                    ? "Als Auszubildende/r gelten bei Lohnfortzahlung und Krankengeld weitgehend die gleichen Grundregeln wie bei Angestellten."
+                    : "Das entscheidet, ob und wie viel Krankengeld Sie erhalten."}
+            </div>
           </div>
           <div style={T.section}>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {[
-                { v: "gkv", l: "Gesetzlich (GKV)", d: `Krankengeld: ca. 70 % des relevanten Bruttos (BBG KG orientierend ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon.)`, emoji: "🏥" },
+                {
+                  v: "gkv",
+                  l: "Gesetzlich (GKV)",
+                  d:
+                    p.beruf === "beamter"
+                      ? `Orientierung: BBG KG ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon. — Ihre Bezüge laufen im Rechner gesondert`
+                      : `Krankengeld: ca. 70 % des relevanten Bruttos (BBG KG orientierend ${KG_BBG_MONATLICH.toLocaleString("de-DE")} €/Mon.)`,
+                  emoji: "🏥",
+                },
                 { v: "pkv", l: "Privat (PKV)",     d: "Kein gesetzliches Krankengeld — nur privates KTG sichert ab", emoji: "🔒" },
               ].map(({ v, l, d, emoji }) => (
                 <SelectionCard key={v} value={v} label={l} description={d}
@@ -903,7 +1266,11 @@ export default function BUKTGRechner() {
           <div style={T.hero}>
             <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
             <div style={T.h1}>Wie hoch ist Ihr monatlicher PKV-Beitrag?</div>
-            <div style={T.body}>Eigenanteil ohne Arbeitgeberzuschuss — ab Woche 7 der Krankheit fließt er voll aus Ihrem Tagegeld.</div>
+            <div style={T.body}>
+              {p.beruf === "beamter"
+                ? "Eigenanteil ohne Zuschuss des Dienstherren — ab Woche 7 der Krankheit voll aus Ihrem Tagegeld."
+                : "Eigenanteil ohne Arbeitgeberzuschuss — ab Woche 7 der Krankheit fließt er voll aus Ihrem Tagegeld."}
+            </div>
           </div>
           <div style={T.section}>
             <SliderCard
@@ -919,7 +1286,9 @@ export default function BUKTGRechner() {
               hint="Inkl. ggf. Pflege- und Krankenversicherungsanteil, die Sie selbst zahlen"
             />
             <SmartHintCard>
-              Achtung: Der Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch den laufenden KV-Beitrag decken.
+              {p.beruf === "beamter"
+                ? "Achtung: Der Zuschuss des Dienstherren zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch den laufenden KV-Beitrag decken."
+                : "Achtung: Der Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch den laufenden KV-Beitrag decken."}
             </SmartHintCard>
           </div>
           <div style={{ height: "120px" }} />
@@ -927,24 +1296,114 @@ export default function BUKTGRechner() {
         </>
       )}
 
-      {sid === "brutto" && (
+      {sid === "brutto" && p.beruf === "student" && (
         <>
           <div style={T.hero}>
             <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
-            <div style={T.h1}>Was verdienen Sie aktuell brutto pro Monat?</div>
-            <div style={T.body}>Daraus berechnen wir Ihr Netto und die möglichen Leistungen.</div>
+            <div style={T.h1}>Welches Nettoeinkommen streben Sie später an?</div>
+            <div style={T.body}>
+              Wir vergleichen Ihr Ziel-Netto mit einem pauschalen Regelbedarf (orientierend Grundsicherung). Es gibt im Modell kein laufendes Arbeitseinkommen aus Ausbildung oder Nebenjob.
+            </div>
           </div>
           <div style={T.section}>
-            <SliderCard label="Monatliches Bruttogehalt" value={p.brutto} min={1500} max={12000} step={100} unit="€"
-              display={`ca. ${fmt(R.netto)} netto`} accent={C} onChange={(v) => set("brutto", v)} />
-            {p.brutto > 5800 && (
+            <SliderCard
+              label="Ziel-Netto (monatlich)"
+              value={p.zielNetto}
+              min={800}
+              max={6000}
+              step={50}
+              unit="€"
+              display={`Orientierende Lücke zur Grundsicherung (${fmt(GRUNDSICHERUNG_NETTO_ORIENTIERUNG)}): ${fmt(Math.max(0, p.zielNetto - GRUNDSICHERUNG_NETTO_ORIENTIERUNG))}`}
+              accent={C}
+              onChange={(v) => set("zielNetto", v)}
+              hint="z. B. Einstiegsgehalt nach dem Studium"
+            />
+            <SliderCard
+              label="Ihr Alter"
+              value={p.nutzerAlter}
+              min={16}
+              max={35}
+              step={1}
+              unit="J."
+              display={`Noch ${Math.max(0, 67 - p.nutzerAlter)} Jahre bis Alter 67 (für Lebens-Einkommens-Hochrechnung)`}
+              accent={C}
+              onChange={(v) => set("nutzerAlter", v)}
+            />
+            <SmartHintCard>
+              Grundsicherung im Modell pauschal {fmt(GRUNDSICHERUNG_NETTO_ORIENTIERUNG)} € netto — tatsächliche Leistungen (SGB II) sind individuell und können abweichen.
+            </SmartHintCard>
+          </div>
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+        </>
+      )}
+
+      {sid === "brutto" && p.beruf !== "student" && (
+        <>
+          <div style={T.hero}>
+            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.h1}>
+              {p.beruf === "selbst"
+                ? "Wie hoch ist Ihr durchschnittlicher Gewinn pro Monat?"
+                : p.beruf === "beamter"
+                  ? "Wie hoch sind Ihre monatlichen Bezüge?"
+                  : p.beruf === "azubi"
+                    ? "Wie hoch ist Ihre monatliche Brutto-Ausbildungsvergütung?"
+                    : "Was verdienen Sie aktuell brutto pro Monat?"}
+            </div>
+            <div style={T.body}>
+              {p.beruf === "selbst"
+                ? "Wir nutzen Ihren Gewinn wie ein Bruttogehalt zur Schätzung von Netto und Leistungen (vereinfacht)."
+                : p.beruf === "beamter"
+                  ? "Wir schätzen Ihr Netto aus den Bezügen (vereinfacht, wie bei Brutto × 0,72)."
+                  : p.beruf === "azubi"
+                    ? "Wie bei Angestellten schätzen wir Ihr Netto aus dem Brutto (× 0,72)."
+                    : "Daraus berechnen wir Ihr Netto und die möglichen Leistungen."}
+            </div>
+          </div>
+          <div style={T.section}>
+            <SliderCard
+              label={
+                p.beruf === "selbst"
+                  ? "Monatlicher Gewinn (vor Steuern)"
+                  : p.beruf === "beamter"
+                    ? "Monatliche Bezüge (vor Steuern)"
+                    : p.beruf === "azubi"
+                      ? "Brutto-Ausbildungsvergütung (Monat)"
+                      : "Monatliches Bruttogehalt"
+              }
+              value={p.brutto}
+              min={p.beruf === "azubi" ? 500 : 1500}
+              max={12000}
+              step={p.beruf === "azubi" ? 50 : 100}
+              unit="€"
+              display={`ca. ${fmt(R.netto)} netto`}
+              accent={C}
+              onChange={(v) => set("brutto", v)}
+            />
+            {p.beruf === "azubi" && (
+              <SliderCard
+                label="Ihr Alter"
+                value={p.nutzerAlter}
+                min={16}
+                max={28}
+                step={1}
+                unit="J."
+                display={`Noch ${Math.max(0, 67 - p.nutzerAlter)} Jahre bis Alter 67`}
+                accent={C}
+                onChange={(v) => set("nutzerAlter", v)}
+                hint="Für die Hochrechnung „verlorenes Lebens-Einkommen“"
+              />
+            )}
+            {p.brutto > 5800 && (p.beruf === "angestellt" || p.beruf === "azubi") && (
               <SmartHintCard>
-                Ihr Einkommen liegt über der typischen Kappungsgrenze der Krankenkasse beim Krankengeld. Die Lücke im Krankheitsfall kann deshalb überproportional hoch ausfallen.
+                Ihr Einkommen liegt über der BBG der Krankenkasse beim Krankengeld. Die Lücke im Krankheitsfall kann deshalb überproportional hoch ausfallen.
               </SmartHintCard>
             )}
             {p.brutto < 2500 && (
               <SmartHintCard>
-                Unterhalb von 2.500 € Brutto droht bei längerer Krankheit die Verrechnung mit Grundsicherung — das sollte im Gespräch geprüft werden.
+                Unterhalb von 2.500 €{" "}
+                {p.beruf === "selbst" ? "Gewinn" : p.beruf === "beamter" ? "Bezüge" : p.beruf === "azubi" ? "Brutto-Ausbildungsvergütung" : "Brutto"} droht bei längerer Krankheit die Verrechnung mit Grundsicherung — das sollte im Gespräch geprüft werden.
               </SmartHintCard>
             )}
           </div>
@@ -963,21 +1422,38 @@ export default function BUKTGRechner() {
           <div style={T.section}>
             {p.beruf === "selbst" && (
               <SmartHintCard>
-                Als Selbstständiger haben Sie ab Tag 1 der Arbeitsunfähigkeit kein Lohnfortzahlungsrecht. Hast du eine Absicherung ab dem 15. oder 43. Tag?
+                Anders als Angestellte haben Sie keinen Anspruch auf Lohnfortzahlung durch einen Arbeitgeber — in den ersten Wochen einer Krankheit fehlt dieser Betrag vollständig, sofern Sie nicht privat vorsorgen. Prüfen Sie eine Absicherung ab dem 15. oder 43. Tag.
               </SmartHintCard>
             )}
             {p.kv === "pkv" && (
               <SmartHintCard>
-                Achtung: Dein Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen. Dein Tagegeld muss auch deinen KV-Beitrag decken!
+                {p.beruf === "beamter"
+                  ? "Achtung: Der Zuschuss des Dienstherren zur PKV entfällt nach 6 Wochen. Dein Tagegeld muss auch deinen KV-Beitrag decken!"
+                  : "Achtung: Dein Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen. Dein Tagegeld muss auch deinen KV-Beitrag decken!"}
               </SmartHintCard>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <SliderCard label="Krankentagegeld (KTG)" value={p.ktgTag} min={0} max={150} step={5} unit="€/Tag"
                 display={p.ktgTag > 0 ? `= ${fmt(p.ktgTag * 30)}/Monat` : "Kein KTG vorhanden"}
                 accent={C} onChange={(v) => set("ktgTag", v)} hint="0 wenn kein Vertrag vorhanden" />
-              <SliderCard label="BU-Rente" value={p.buRente} min={0} max={4000} step={100} unit="€/Mon"
-                display={p.buRente === 0 ? "Keine BU-Versicherung" : ""}
-                accent={C} onChange={(v) => set("buRente", v)} hint="0 wenn keine BU vorhanden" />
+              <SliderCard
+                label={p.beruf === "beamter" ? "Dienstunfähigkeits-Absicherung" : "BU-Rente"}
+                value={p.buRente}
+                min={0}
+                max={4000}
+                step={100}
+                unit="€/Mon"
+                display={
+                  p.buRente === 0
+                    ? p.beruf === "beamter"
+                      ? "Keine zusätzliche Absicherung"
+                      : "Keine BU-Versicherung"
+                    : ""
+                }
+                accent={C}
+                onChange={(v) => set("buRente", v)}
+                hint={p.beruf === "beamter" ? "0 wenn keine DU-Absicherung vorhanden" : "0 wenn keine BU vorhanden"}
+              />
             </div>
             {p.ktgTag === 0 && p.kv === "gkv" && (
               <div style={{ marginTop: "12px" }}>
