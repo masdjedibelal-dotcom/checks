@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { KATALOG, type Template } from "@/lib/katalog";
-import { CHECK_FLOW_META, CheckFlowPhoneMock } from "./check-flow-checks";
+import { CHECK_FLOW_META, CheckFlowPhoneMock, HeroResultMockup } from "./check-flow-checks";
+import { VertriebCardVisual } from "./VertriebCardVisuals";
 import DemoModal from "@/components/ui/DemoModal";
 import KonfiguratorOverlay, {
   type KonfiguratorForm,
@@ -41,55 +42,27 @@ const FAQ_ITEMS = [
   },
 ];
 
-const BENEFITS = [
-  { title: "Einmal kaufen", desc: "Keine laufenden Kosten. Kein Abo. Sie kaufen einmal und nutzen den Check dauerhaft." },
-  { title: "Sofort einsetzbar", desc: "Kein Setup notwendig. Per iFrame auf jeder Website in Minuten live." },
-  { title: "Leads direkt bei Ihnen", desc: "Keine Plattform dazwischen. Anfragen kommen direkt in Ihr Postfach." },
-  { title: "Mobile-first", desc: "Optimiert für Smartphone. Weil Ihre Kunden dort sind." },
-  { title: "Schnell angepasst", desc: "Farbe, Name und Kontaktdaten ändern — fertig. Ihr Branding, Ihre Microsite." },
-  { title: "Besserer Einstieg", desc: "Gespräche starten nicht bei null — Ihre Kunden kommen mit konkretem Kontext." },
-];
-
-const USE_CASES = [
-  {
-    title: "Auf Ihrer Website eingebunden",
-    sub: "Direkt als Teil Ihrer Seite — ohne Weiterleitung, ohne fremdes Branding.",
-  },
-  {
-    title: "Im Gespräch per QR-Code",
-    sub: "Zeigen Sie dem Kunden den Check direkt auf dem Tisch — schneller Einstieg, klarer Rahmen.",
-  },
-  {
-    title: "Als Zielseite für Kampagnen",
-    sub: "Für Anzeigen oder Newsletter — jeder Check ist eine eigenständige Landingpage.",
-  },
-  {
-    title: "Für Neukunden und Bestand",
-    sub: "Erstgespräch oder Jahresgespräch — je nach Check und Anlass.",
-  },
-];
+const WHY_FLOWLEADS_POINTS = [
+  "Einmal kaufen, dauerhaft nutzen",
+  "Sofort einsetzbar ohne Setup",
+  "Leads direkt bei Ihnen",
+  "Optimiert für Smartphone",
+  "In Minuten angepasst",
+  "Klarer Einstieg für jedes Gespräch",
+] as const;
 
 const VERTRIEB_BLOCKS = [
   {
-    nr: "01",
-    titel: "Neue Kunden online gewinnen",
-    text: "Kunden starten eigenständig eine Microsite und erkennen ihren Bedarf. Sie erhalten eine qualifizierte Anfrage statt eines unvorbereiteten Erstgesprächs.",
-    checks: ["Einkommens-Check", "Vorsorge-Check", "GKV vs. PKV"],
-    accent: "#1D4ED8",
+    titel: "Neue Kontakte generieren",
+    text: "Ihre Microsite wird über Website, Social Media oder QR-Code geteilt und bringt Nutzer dazu, aktiv auf Sie zuzukommen.",
   },
   {
-    nr: "02",
-    titel: "Bestandskunden gezielt ansprechen",
-    text: "Veränderungen im Leben Ihrer Kunden führen automatisch zu neuen Beratungsanlässen — ohne dass Sie aktiv nachfassen müssen.",
-    checks: ["Lebenssituations-Check", "Versicherungs-Check"],
-    accent: "#6D28D9",
+    titel: "Bestandskunden aktivieren",
+    text: "Veränderungen im Leben Ihrer Kunden werden zum Anlass, sich wieder bei Ihnen zu melden.",
   },
   {
-    nr: "03",
-    titel: "Gespräche effizient zum Abschluss führen",
-    text: "Kunden kommen mit einer konkreten Situation und einer ersten Einschätzung. Sie steigen direkt in die Lösung ein — ohne lange Einleitung.",
-    checks: ["Risikoleben-Check", "Pflege-Check", "Immobilien-Check"],
-    accent: "#C2410C",
+    titel: "Gespräche vorbereiten",
+    text: "Ihre Kunden beschäftigen sich vorab mit ihrer Situation und kommen mit einem konkreten Anliegen.",
   },
 ];
 
@@ -100,13 +73,163 @@ function LandingModalsPortal({ children }: { children: ReactNode }) {
   return createPortal(children, document.body);
 }
 
+const PROBLEM_POINTS = [
+  {
+    title: "Kein Einstieg beim Kunden",
+    text: "Die meisten Kunden beschäftigen sich nicht aktiv mit ihrer Absicherung. Ohne konkreten Anlass entsteht kein Gespräch.",
+  },
+  {
+    title: "Kein klarer Bedarf",
+    text: "Selbst wenn Interesse da ist bleibt es unspezifisch. Der Kunde weiß nicht, was er wirklich braucht.",
+  },
+  {
+    title: "Kein Impuls zur Anfrage",
+    text: "Ohne konkrete Situation fehlt der Auslöser. Das Gespräch kommt oft gar nicht zustande.",
+  },
+] as const;
+
+const HOW_TIMELINE_STEPS = [
+  {
+    num: "01",
+    title: "Kunde startet",
+    desc: "Über Website, QR-Code oder Link. Ohne Login, ohne Hürde.",
+  },
+  {
+    num: "02",
+    title: "Microsite führt durch die Situation",
+    desc: "Der Kunde versteht, was für ihn relevant ist. Ohne Fachbegriffe.",
+  },
+  {
+    num: "03",
+    title: "Anfrage bei Ihnen",
+    desc: "Sie erhalten Kontaktdaten und Ausgangssituation — nicht nur eine Anfrage, sondern Kontext.",
+  },
+] as const;
+
+function HowAnfragenTimelineSection() {
+  const tlRef = useRef<HTMLDivElement>(null);
+  const [lineVisible, setLineVisible] = useState(false);
+
+  useEffect(() => {
+    const el = tlRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e?.isIntersecting) setLineVisible(true);
+      },
+      { threshold: 0.18, rootMargin: "0px 0px -12% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <section id="how" className="how-section">
+      <div className="how-tl-header fade-up">
+        <p className="how-tl-eyebrow">Ablauf</p>
+        <h2 className="how-h2">So entstehen Anfragen</h2>
+      </div>
+
+      <div
+        ref={tlRef}
+        className={`how-timeline${lineVisible ? " how-timeline--visible" : ""}`}
+      >
+        <div className="how-timeline-spine" aria-hidden>
+          <div className="how-timeline-spine-track" />
+          <div className="how-timeline-spine-fill" />
+        </div>
+
+        <div className="how-timeline-steps">
+          {HOW_TIMELINE_STEPS.map((step, i) => (
+            <div
+              key={step.num}
+              className="how-tl-step"
+              style={{
+                transitionDelay: lineVisible ? `${0.14 + i * 0.13}s` : "0s",
+              }}
+            >
+              <div className="how-tl-num-wrap">
+                <span className="how-tl-num">{step.num}</span>
+              </div>
+              <div className="how-tl-line-gap" aria-hidden />
+              <h3 className="how-tl-title">{step.title}</h3>
+              <p className="how-tl-desc">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProblemSection() {
+  return (
+    <section className="problem-section">
+      <div className="problem-inner">
+        <p className="problem-eyebrow fade-up" style={{ transitionDelay: "0.04s" }}>
+          Das Problem
+        </p>
+        <h2 className="problem-headline fade-up" style={{ transitionDelay: "0.08s" }}>
+          Zu wenig Anfragen
+        </h2>
+        <p className="problem-sub fade-up" style={{ transitionDelay: "0.12s" }}>
+          Ihr Vertrieb beginnt oft zu spät. Der Kunde meldet sich nicht aktiv.
+        </p>
+
+        <ul className="problem-list" role="list">
+          {PROBLEM_POINTS.map((item, i) => (
+            <li
+              key={item.title}
+              className="problem-point fade-up"
+              style={{ transitionDelay: `${0.18 + i * 0.09}s` }}
+            >
+              <div className="problem-point-title">{item.title}</div>
+              <p className="problem-point-text">{item.text}</p>
+            </li>
+          ))}
+        </ul>
+
+        <div className="problem-bridge fade-up" style={{ transitionDelay: "0.48s" }}>
+          <p className="problem-bridge-lead">FlowLeads erzeugt diesen Anlass</p>
+          <p className="problem-bridge-text">
+            Ihre Kunden erkennen ihren Bedarf selbst und melden sich mit einer konkreten Situation bei Ihnen.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function LandingHome() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [demoT, setDemoT] = useState<Template | null>(null);
   const [buyT, setBuyT] = useState<Template | null>(null);
-  const [vertriebHover, setVertriebHover] = useState<number | null>(null);
+  const [ctaFinalReveal, setCtaFinalReveal] = useState(false);
+  const ctaFinalRef = useRef<HTMLElement | null>(null);
   const demoTRef = useRef<Template | null>(null);
   demoTRef.current = demoT;
+
+  // ── CTA final: bewusstes „Ankommen“ mit kurzer Verzögerung ───────────────
+  useEffect(() => {
+    const el = ctaFinalRef.current;
+    if (!el) return;
+    let delayTimer: ReturnType<typeof setTimeout> | undefined;
+    const observer = new IntersectionObserver(
+      ([e]) => {
+        if (!e?.isIntersecting) return;
+        observer.disconnect();
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const ms = reduceMotion ? 0 : 200;
+        delayTimer = setTimeout(() => setCtaFinalReveal(true), ms);
+      },
+      { threshold: 0.28, rootMargin: "0px 0px -8% 0px" }
+    );
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      if (delayTimer) clearTimeout(delayTimer);
+    };
+  }, []);
 
   // ── Scroll-triggered fade-up ──────────────────────────────────────────────
   useEffect(() => {
@@ -183,142 +306,69 @@ export default function LandingHome() {
         </div>
         <div className="nav-links">
           <a href="#how">Wie es funktioniert</a>
-          <a href="#tools">Checks</a>
+          <a href="#tools">Microsites</a>
           <a href="#faq">FAQ</a>
         </div>
         <div className="nav-right">
-          <a href="#tools" className="btn-cta">Demo starten</a>
+          <a href="#tools" className="btn-cta">Microsites ansehen</a>
         </div>
       </nav>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="hero-section">
         <div className="hero">
-          {/* Text */}
-          <div className="hero-text">
-            <div className="hero-badge au d1">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <polyline points="20 6 9 17 4 12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Für Versicherungsmakler &amp; -vermittler
-            </div>
 
-            <h1 className="au d2">
-              Mehr Anfragen mit fertigen Microsites
+          {/* Left: Text */}
+          <div className="hero-text">
+            <h1 className="au d1">
+              Mehr Leads durch<br />Microsites
             </h1>
 
-            <p className="hero-sub au d3">
-              Für konkrete Beratungssituationen im Versicherungsvertrieb.
-              Einfach einbinden und flexibel einsetzen.
+            <p className="hero-sub au d2">
+              Fertige Microsites mit integrierten Rechnern.
+              Einmal kaufen und direkt einsetzen.
+              Auf Ihrer Website, über Social Media oder per QR-Code.
+              Entwickelt für die Versicherungsberatung und optimiert auf Leadgenerierung.
             </p>
 
-            <p className="hero-meta au d3">Für Neukunden und Bestand</p>
-
-            <div className="hero-btns au d4">
-              <a href="#tools" className="btn-primary-lg">
-                Demo starten
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                  <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+            <div className="hero-btns au d3">
+              <a href="#tools" className="btn-hero-cta">
+                Microsites ansehen
               </a>
             </div>
+          </div>
 
-            <p className="hero-micro au d4">Keine Anmeldung · sofort testen</p>
-
-            <div className="hero-proof au d4">
-              {["Einmalig kaufen", "In 5 Minuten eingebunden", "Leads direkt per E-Mail"].map((t) => (
-                <div key={t} className="hero-proof-item">
-                  <div className="hero-proof-dot" />
-                  {t}
-                </div>
-              ))}
+          {/* Right: Premium Result Mockup */}
+          <div className="hero-visual au d4">
+            <div className="hero-float-wrap">
+              <HeroResultMockup />
             </div>
           </div>
 
-          {/* Floating Phone Mocks */}
-          <div className="hero-visual au d3">
-            <div className="hero-mock-primary">
-              <CheckFlowPhoneMock slug="einkommens-check" />
-            </div>
-            <div className="hero-mock-secondary">
-              <CheckFlowPhoneMock slug="vorsorge-check" />
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* ── STORY ─────────────────────────────────────────────────────────── */}
-      <section className="story-section">
-        <div className="story-inner fade-up">
-          <div className="s-label">Das Problem</div>
-          <h2 className="story-h2">Der Einstieg passiert heute zu spät</h2>
-          <p className="story-big">
-            Die eigentliche Situation Ihrer Kunden wird oft erst im Gespräch klar.
-            Bis dahin bleibt vieles allgemein — und Sie beginnen immer wieder bei null.
-          </p>
-          <p className="story-small">
-            Ob Erstgespräch oder Bestand:<br />
-            Ohne strukturierten Einstieg fehlt oft der konkrete Anlass.
-          </p>
-          <div className="story-highlight">
-            <p className="story-highlight-main">
-              FlowLeads verlagert diesen Einstieg nach vorne.
-            </p>
-            <p className="story-highlight-sub">
-              Ihre Kunden gehen ihre Situation selbst durch und kommen mit einer klareren Ausgangssituation auf Sie zu.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* ── PROBLEM ───────────────────────────────────────────────────────── */}
+      <ProblemSection />
 
-      {/* ── HOW IT WORKS ──────────────────────────────────────────────────── */}
-      <section id="how" className="how-section">
-        <div className="how-header fade-up">
-          <div className="s-label">So funktioniert es</div>
-          <h2 className="how-h2">Drei Schritte zum qualifizierten Lead</h2>
-        </div>
-        <div className="how-steps">
-          {[
-            {
-              num: "01",
-              title: "Kunde startet",
-              desc: "Über Website, QR-Code oder Link. Ohne Login, ohne Hürde.",
-            },
-            {
-              num: "02",
-              title: "Microsite führt durch die Situation",
-              desc: "Der Kunde versteht, was für ihn relevant ist. Ohne Fachbegriffe.",
-            },
-            {
-              num: "03",
-              title: "Anfrage bei Ihnen",
-              desc: "Sie erhalten Kontaktdaten und Ausgangssituation — nicht nur eine Anfrage, sondern Kontext.",
-            },
-          ].map((step, i) => (
-            <div
-              key={step.num}
-              className="how-step fade-up"
-              style={{ transitionDelay: `${i * 0.08}s` }}
-            >
-              <div className="how-step-ghost">{step.num}</div>
-              <div className="how-step-num">{step.num}</div>
-              <div className="how-step-title">{step.title}</div>
-              <div className="how-step-desc">{step.desc}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ── SO ENTSTEHEN ANFRAGEN (Timeline) ──────────────────────────────── */}
+      <HowAnfragenTimelineSection />
 
       {/* ── CHECKS ────────────────────────────────────────────────────────── */}
       <section id="tools" className="checks-section">
         <div className="inner">
-          <div className="s-label fade-up">8 fertige Microsites</div>
+          <div className="s-label fade-up">Acht Microsites</div>
           <h2 className="checks-section-headline fade-up d1">
-            Microsites für Ihre wichtigsten<br />Beratungssituationen
+            Microsites die<br />Anfragen erzeugen
           </h2>
-          <p className="checks-section-tagline fade-up d2">
-            Jede Microsite bildet einen konkreten Anlass im Vertrieb ab.
-          </p>
+          <div className="checks-section-taglines fade-up d2">
+            <p className="checks-section-tagline">
+              Jede Microsite bringt Nutzer dazu, sich aktiv mit ihrer Situation zu beschäftigen und den nächsten Schritt zu gehen.
+            </p>
+            <p className="checks-section-tagline">
+              Einmal einsetzen und kontinuierlich neue Kontaktpunkte schaffen.
+            </p>
+          </div>
           <div className="ck-cards">
             {CHECK_FLOW_META.map((c, i) => {
               const tmpl = KATALOG.find((t) => t.slug === c.slug);
@@ -335,17 +385,8 @@ export default function LandingHome() {
                     <div>
                       <div className={`ck-card-cat ${c.catClass}`}>{c.cat}</div>
                       <div className="ck-card-name">{c.name}</div>
-                      <p style={{ fontSize: "13px", color: "#4B5563", lineHeight: 1.6, marginBottom: "12px" }}>
-                        {c.erlebnis}
-                      </p>
-                      <div style={{ borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: "12px" }}>
-                        <span style={{ fontSize: "10px", fontWeight: "700", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.5px", display: "block", marginBottom: "4px" }}>
-                          Ihr Vorteil im Vertrieb
-                        </span>
-                        <p style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", lineHeight: 1.5, margin: 0 }}>
-                          {c.benefit}
-                        </p>
-                      </div>
+                      <p className="ck-card-hook">{c.hook}</p>
+                      <p className="ck-card-erlebnis">{c.erlebnis}</p>
                     </div>
                     <div className="ck-card-foot">
                       <div className="ck-card-price">
@@ -378,83 +419,29 @@ export default function LandingHome() {
         </div>
       </section>
 
-      {/* ── VERTRIEB-EINSATZ ──────────────────────────────────────────────── */}
-      <section style={{ padding: "96px 24px", background: "#fff" }}>
-        <div style={{ maxWidth: "960px", margin: "0 auto" }}>
-
-          {/* Header */}
-          <div className="fade-up" style={{ marginBottom: "56px" }}>
-            <div className="s-label">Einsatz im Vertrieb</div>
-            <h2 style={{ fontSize: "clamp(22px, 4vw, 32px)", fontWeight: "700", color: "#111", letterSpacing: "-0.5px", lineHeight: 1.2, marginTop: "8px", marginBottom: "12px" }}>
-              So setzen Sie Microsites<br />in Ihrem Vertrieb ein
-            </h2>
-            <p style={{ fontSize: "15px", color: "#6B7280", lineHeight: 1.65, maxWidth: "520px" }}>
-              Jede Microsite ist auf eine konkrete Beratungssituation ausgelegt — vom ersten Kontakt bis zum Abschluss.
+      {/* ── EINSATZ IM VERTRIEB (Eyecatcher) ────────────────────────────── */}
+      <section className="vertrieb-ec">
+        <div className="vertrieb-ec-inner">
+          <div className="vertrieb-ec-head fade-up">
+            <p className="vertrieb-ec-eyebrow">Einsatz im Vertrieb</p>
+            <h2 className="vertrieb-ec-h2">So nutzen Sie Microsites im Alltag</h2>
+            <p className="vertrieb-ec-sub">
+              Einmal erstellt und flexibel einsetzbar — genau dort, wo Ihre Kunden sind.
             </p>
           </div>
 
-          {/* 3 Cards */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div className="vertrieb-ec-grid">
             {VERTRIEB_BLOCKS.map((block, i) => {
-              const hov = vertriebHover === i;
+              const variant = i === 0 ? "dark" : i === 1 ? "mist" : "soft";
               return (
                 <div
-                  key={block.nr}
-                  className="fade-up"
+                  key={block.titel}
+                  className={`vertrieb-ec-card vertrieb-ec-card--${variant} fade-up`}
                   style={{ transitionDelay: `${i * 0.09}s` }}
-                  onMouseEnter={() => setVertriebHover(i)}
-                  onMouseLeave={() => setVertriebHover(null)}
                 >
-                  <div
-                    style={{
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "14px",
-                      padding: "28px 32px",
-                      background: "#fff",
-                      display: "grid",
-                      gridTemplateColumns: "1fr auto",
-                      gap: "24px",
-                      alignItems: "start",
-                      cursor: "default",
-                      transition: "box-shadow 0.22s ease, transform 0.22s ease",
-                      boxShadow: hov ? "0 8px 32px rgba(0,0,0,0.08)" : "0 1px 4px rgba(0,0,0,0.04)",
-                      transform: hov ? "translateY(-2px)" : "translateY(0)",
-                    }}
-                  >
-                    {/* Left: number + content */}
-                    <div>
-                      <div style={{ fontSize: "11px", fontWeight: "700", color: block.accent, letterSpacing: "1px", textTransform: "uppercase", marginBottom: "8px" }}>
-                        {block.nr}
-                      </div>
-                      <div style={{ fontSize: "18px", fontWeight: "700", color: "#111", letterSpacing: "-0.3px", lineHeight: 1.25, marginBottom: "10px" }}>
-                        {block.titel}
-                      </div>
-                      <p style={{ fontSize: "14px", color: "#6B7280", lineHeight: 1.65, margin: 0, maxWidth: "540px" }}>
-                        {block.text}
-                      </p>
-                    </div>
-
-                    {/* Right: check list */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0, minWidth: "170px" }}>
-                      {block.checks.map((c) => (
-                        <div
-                          key={c}
-                          style={{
-                            fontSize: "12px",
-                            color: "#9CA3AF",
-                            padding: "5px 12px",
-                            border: "1px solid #F3F4F6",
-                            borderRadius: "6px",
-                            background: "#FAFAF8",
-                            whiteSpace: "nowrap",
-                            textAlign: "right",
-                          }}
-                        >
-                          {c}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <VertriebCardVisual index={i} />
+                  <h3 className="vertrieb-ec-card-title">{block.titel}</h3>
+                  <p className="vertrieb-ec-card-text">{block.text}</p>
                 </div>
               );
             })}
@@ -462,45 +449,58 @@ export default function LandingHome() {
         </div>
       </section>
 
-      {/* ── USE CASES ─────────────────────────────────────────────────────── */}
-      <section className="use-cases-section">
-        <div className="use-cases-inner">
-          <div className="use-cases-left fade-up">
-            <div className="s-label">Einsatz</div>
-            <h2 className="use-cases-h2">
-              Einsetzbar in Ihrem<br />gesamten Vertrieb
-            </h2>
-          </div>
-          <div className="use-cases-list fade-up d1">
-            {USE_CASES.map((uc) => (
-              <div key={uc.title} className="use-case-item">
-                <div className="use-case-title">{uc.title}</div>
-                <div className="use-case-sub">{uc.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── BENEFITS ──────────────────────────────────────────────────────── */}
+      {/* ── WARUM FLOWLEADS — Premium Card ──────────────────────────────── */}
       <section className="benefits-section s">
-        <div className="inner">
-          <div className="s-label fade-up">Warum FlowLeads</div>
-          <h2 className="benefits-h2 fade-up d1">
-            Warum FlowLeads<br />funktioniert
-          </h2>
-          <div className="benefits-grid">
-            {BENEFITS.map((b, i) => (
-              <div
-                key={b.title}
-                className="benefit-card fade-up"
-                style={{ transitionDelay: `${(i % 3) * 0.07}s` }}
-              >
-                <div className="benefit-num">{String(i + 1).padStart(2, "0")}</div>
-                <div className="benefit-title">{b.title}</div>
-                <div className="benefit-desc">{b.desc}</div>
-              </div>
-            ))}
+        <div className="benefits-premium-shell">
+          <div className="benefits-premium-card fade-up">
+            <svg className="benefits-premium-grad-defs" aria-hidden focusable="false">
+              <defs>
+                <linearGradient id="fl-premium-check-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ddd6fe" />
+                  <stop offset="50%" stopColor="#a7f3d0" />
+                  <stop offset="100%" stopColor="#99f6e4" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <p className="benefits-premium-eyebrow">Warum FlowLeads</p>
+            <h2 className="benefits-premium-h2">Mehr Anfragen ohne Setup</h2>
+            <div className="benefits-premium-sub">
+              <p>
+                Alles, was Sie brauchen, um Microsites einzusetzen und Anfragen zu generieren.
+              </p>
+              <p>Ohne Tools, ohne laufende Kosten, ohne Aufwand.</p>
+            </div>
+
+            <h3 className="benefits-premium-list-head">So funktioniert es für Sie</h3>
+            <ul className="benefits-premium-list" role="list">
+              {WHY_FLOWLEADS_POINTS.map((line) => (
+                <li key={line} className="benefits-premium-row">
+                  <span className="benefits-premium-row-text">{line}</span>
+                  <span className="benefits-premium-check" aria-hidden>
+                    <svg
+                      className="benefits-premium-check-svg"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3.5 8.2L6.8 11.5L12.5 4.5"
+                        stroke="url(#fl-premium-check-stroke)"
+                        strokeWidth="1.15"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="benefits-premium-divider" aria-hidden />
+            <p className="benefits-premium-bottom">
+              Einmal integriert — kontinuierlich neue Anfragen
+            </p>
           </div>
         </div>
       </section>
@@ -543,62 +543,73 @@ export default function LandingHome() {
       </section>
 
       {/* ── CTA FINAL ─────────────────────────────────────────────────────── */}
-      <section className="cta-final">
+      <section
+        ref={ctaFinalRef}
+        className={`cta-final${ctaFinalReveal ? " cta-final--reveal" : ""}`}
+        aria-labelledby="cta-final-heading"
+      >
         <div className="cta-final-inner">
-          <div className="cta-final-eyebrow">Los geht&apos;s</div>
-          <h2 className="cta-final-h2">
-            Starten Sie mit Ihrer<br />ersten Microsite
+          <h2 id="cta-final-heading" className="cta-final-h2">
+            Starten Sie mit Ihrer ersten Microsite
           </h2>
           <p className="cta-final-sub">
             Wählen Sie den passenden Check und setzen Sie ihn direkt ein.
           </p>
-          <div className="cta-final-btns">
-            <a href="#tools" className="btn-primary-lg">
+          <div className="cta-final-btn-wrap">
+            <a href="#tools" className="btn-cta-final">
               Demo starten
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                <path
+                  d="M3.5 8h9M9 3.5l4.5 4.5L9 12.5"
+                  stroke="currentColor"
+                  strokeWidth="1.35"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </a>
           </div>
-          <div className="cta-final-proof">
-            {["Einmalig kaufen · kein Abo", "Direkt per iFrame einbinden", "Leads direkt in Ihr Postfach"].map((t) => (
-              <div key={t} className="cta-proof-item">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                  <path d="M2 7l3.5 3.5L12 3" stroke="#b8884a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          <ul className="cta-final-trust" role="list">
+            {[
+              "Einmalig kaufen · kein Abo",
+              "Direkt per iFrame einbinden",
+              "Leads direkt in Ihr Postfach",
+            ].map((t) => (
+              <li key={t} className="cta-final-trust-item">
+                <svg className="cta-final-trust-check" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path
+                    d="M3.5 8.2L6.8 11.5L12.5 4.5"
+                    stroke="currentColor"
+                    strokeWidth="1.15"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
                 </svg>
                 {t}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 
-      {/* ── FOOTER ────────────────────────────────────────────────────────── */}
-      <footer>
-        <div className="footer-brand">
-          <div className="footer-logo">
-            <div className="logo-mark" style={{ width: 22, height: 22, borderRadius: 6, background: "#1F2937", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
-                <rect x=".5" y=".5" width="3.5" height="3.5" rx=".6" fill="white"/>
-                <rect x="6" y=".5" width="3.5" height="3.5" rx=".6" fill="white" opacity=".5"/>
-                <rect x=".5" y="6" width="3.5" height="3.5" rx=".6" fill="white" opacity=".5"/>
-                <rect x="6" y="6" width="3.5" height="3.5" rx=".6" fill="white"/>
-              </svg>
-            </div>
-            FlowLeads
-          </div>
-          <div className="footer-tagline">Digitale Erstberatung für Versicherungsmakler.</div>
+      {/* ── FOOTER — minimalistisch, nur Orientierung ───────────────────── */}
+      <footer className="footer-slim">
+        <div className="footer-slim-inner">
+          <p className="footer-slim-brand">
+            <span className="footer-slim-name">FlowLeads</span>
+            <span className="footer-slim-sep" aria-hidden>
+              ·
+            </span>
+            <span className="footer-slim-tag">Digitale Erstberatung für Versicherungsmakler.</span>
+          </p>
+          <nav className="footer-slim-nav" aria-label="Rechtliches">
+            <Link href="/impressum">Impressum</Link>
+            <Link href="/datenschutz">Datenschutz</Link>
+            <Link href="/agb">AGB</Link>
+          </nav>
+          <p className="footer-slim-copy">© 2026 FlowLeads</p>
         </div>
-        <div className="footer-links">
-          <Link href="/">Startseite</Link>
-          <a href="#tools">Checks</a>
-          <a href="#how">Wie es funktioniert</a>
-          <a href="#faq">FAQ</a>
-          <Link href="/impressum">Impressum</Link>
-          <Link href="/datenschutz">Datenschutz</Link>
-          <Link href="/agb">AGB</Link>
-        </div>
-        <span className="footer-copy">© 2026 FlowLeads</span>
       </footer>
 
       <LandingModalsPortal>
