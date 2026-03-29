@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { checkStandardT } from "@/lib/checkStandardT";
 import type { CheckT } from "@/lib/checkStandardT";
 
@@ -13,9 +13,20 @@ interface Props {
   children: ReactNode;
   /** Styles aus checkStandardT(C) — sonst Fallback */
   t?: CheckT;
+  /** Optional: rechtlicher oder fachlicher Zusatztext, immer sichtbar unter dem Aufklapp-Bereich */
+  footer?: ReactNode;
 }
 
-export function CheckBerechnungshinweis({ children, t }: Props) {
+const calcHintFooter: CSSProperties = {
+  padding: "12px 18px 14px",
+  fontSize: "11px",
+  color: "#868686",
+  lineHeight: 1.6,
+  borderTop: "1px solid #EAE5DC",
+  background: "#F7F6F3",
+};
+
+export function CheckBerechnungshinweis({ children, t, footer }: Props) {
   const H = t ?? FALLBACK;
   const [open, setOpen] = useState(false);
   return (
@@ -64,6 +75,7 @@ export function CheckBerechnungshinweis({ children, t }: Props) {
         </svg>
       </button>
       {open && <div style={H.calcHintBody}>{children}</div>}
+      {footer != null ? <div style={calcHintFooter}>{footer}</div> : null}
     </div>
   );
 }

@@ -5,7 +5,8 @@ import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import ResultPage from "@/components/checks/gkvpkv/ResultPage";
-(() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#ffffff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}.gkvpkv-smart-block{animation:fadeIn 0.42s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#f0f0f0;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}@media (max-width:540px){.gkvpkv-stack-sm{grid-template-columns:1fr !important;}}`;document.head.appendChild(s);})();
+import { CheckLoader } from "@/components/checks/CheckLoader";
+(() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#ffffff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}.gkvpkv-smart-block{animation:fadeIn 0.42s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#f0f0f0;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}@media (max-width:540px){.gkvpkv-stack-sm{grid-template-columns:1fr !important;}}.gkvpkv-acc-item{border-radius:12px;background:#F9FAFB;border:1px solid rgba(17,24,39,0.06);margin-bottom:8px;overflow:hidden;}.gkvpkv-acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-align:left;font-size:13px;font-weight:600;color:#1F2937;background:transparent;cursor:pointer;border:none;font-family:inherit;}.gkvpkv-acc-panel{padding:0 16px 14px;font-size:12px;color:#6B7280;line-height:1.65;border-top:1px solid rgba(17,24,39,0.06);}`;document.head.appendChild(s);})();
 // JAEG 2026: 77.400 € / Jahr = 6.450 € / Monat
 const JAEG_MONAT = 6450;
 const BBG_KV    = 5812.5;
@@ -93,7 +94,23 @@ infoGridBody:{fontSize:"13px",color:"#666",lineHeight:1.65},
 infoGridShell:{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"14px",padding:"16px 16px 17px",background:"#fff",boxShadow:"0 1px 6px rgba(17,24,39,0.04)"},
 infoGridIconWrap:{width:"42px",height:"42px",borderRadius:"11px",background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",color:"#888",flexShrink:0},
 };}
-const KV_WIZARD_STEPS = 5;
+/** Intro + Beruf + Einkommen + Alter + System-Story + Familie + Bridge (Fortschrittsanzeige) */
+const KV_FLOW_STEPS = 8;
+
+const STORY_H1_KV = { fontSize: "52px", fontWeight: "800", letterSpacing: "-1.5px", lineHeight: 1.12, color: "#111", margin: "0 0 22px" };
+const STORY_BODY_KV = { fontSize: "16px", color: "#4B5563", lineHeight: 1.65, margin: 0, maxWidth: "42ch", marginLeft: "auto", marginRight: "auto" };
+
+function StoryHeroKV({ emoji, title, text }) {
+  return (
+    <div style={{ textAlign: "center", padding: "36px 24px 20px", maxWidth: "600px", margin: "0 auto" }}>
+      <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
+        {emoji}
+      </div>
+      <h1 style={STORY_H1_KV}>{title}</h1>
+      {text ? <p style={STORY_BODY_KV}>{text}</p> : null}
+    </div>
+  );
+}
 function KvNavigatorHeader({ T, maklerFirma }) {
   return (
     <div style={T.header}>
@@ -137,6 +154,7 @@ export default function GKVPKVRechner(){
 
   const [scr, setScr] = useState(1);
   const [famSubStep, setFamSubStep] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const goTo = (ph) => {
     setAk((k) => k + 1);
@@ -144,30 +162,10 @@ export default function GKVPKVRechner(){
     if (ph === 1) {
       setScr(1);
       setFamSubStep(0);
+      setLoading(false);
       setP((x) => ({ ...x, kinderImHaushalt: null }));
     }
   };
-
-  const nextScr = () => {
-    if (scr < 3) setScr((s) => s + 1);
-    else if (scr === 3) {
-      setFamSubStep(0);
-      setScr(4);
-    }
-  };
-
-  const backScr = () => {
-    if (scr === 4 && famSubStep > 0) {
-      setFamSubStep((s) => s - 1);
-      return;
-    }
-    if (scr > 1) setScr((s) => s - 1);
-  };
-
-  const wizardProgPct = useMemo(() => {
-    if (scr < 4) return scr * 20;
-    return Math.min(100, 80 + famSubStep * 8);
-  }, [scr, famSubStep]);
 
   const famCase = useMemo(() => {
     const jaegOkAngestellt = p.beruf === "angestellt" && p.brutto >= JAEG_MONAT;
@@ -185,15 +183,41 @@ export default function GKVPKVRechner(){
     p.haushaltMehrverdiener === "partner" ||
     p.haushaltMehrverdiener === "gleich";
 
-  const finishFamilyWizard = () => {
-    goTo(2);
+  const goToBridge = () => setScr(7);
+
+  const nextScr = () => {
+    if (scr < 4) setScr((s) => s + 1);
+    else if (scr === 4) setScr(5);
+    else if (scr === 5) {
+      setFamSubStep(0);
+      setScr(6);
+    }
   };
 
-  useCheckScrollToTop([phase, ak, danke, scr]);
+  const backScr = () => {
+    if (scr === 7) {
+      setScr(6);
+      return;
+    }
+    if (scr === 6 && famSubStep > 0) {
+      setFamSubStep((s) => s - 1);
+      return;
+    }
+    if (scr > 1) setScr((s) => s - 1);
+  };
+
+  const wizardProgPct = useMemo(() => {
+    if (scr <= 5) return (scr / 8) * 100;
+    if (scr === 6) return (5 / 8 + ((famSubStep + 1) / 3) * (2 / 8)) * 100;
+    if (scr === 7) return 100;
+    return 0;
+  }, [scr, famSubStep]);
+
+  useCheckScrollToTop([phase, ak, danke, scr, famSubStep, loading]);
 
   const R = berechne(p);
 
-  /** Screen 2/5: Einkommen — Texte abhängig von Beruf (Screen 1); JAEG-Box nur Angestellte */
+  /** Screen 3: Einkommen — Texte abhängig von Beruf; JAEG-Box nur Angestellte */
   const einkommenSchritt = useMemo(() => {
     switch (p.beruf) {
       case "selbst":
@@ -226,7 +250,7 @@ export default function GKVPKVRechner(){
       <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
       <div style={T.dankePadding} className="fade-in">
         <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-        <div style={T.dankeTitle}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
+        <div style={T.dankeTitle}>{fd.name?`Vielen Dank, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
         <div style={T.dankeBody}>Wir prüfen Ihre Angaben und melden uns innerhalb von 24 Stunden mit den nächsten Schritten.</div>
         <div style={T.dankeCard}>
           <div style={T.dankeCardHead}>
@@ -239,10 +263,20 @@ export default function GKVPKVRechner(){
             <a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a>
           </div>
         </div>
-        <button type="button" onClick={()=>{setDanke(false);setPhase(1);setScr(1);setFamSubStep(0);setP((x)=>({...x,kinderImHaushalt:null}));}} style={T.dankeLinkBtn}>Neue Berechnung starten</button>
+        <button type="button" onClick={()=>{setDanke(false);goTo(1);}} style={T.dankeLinkBtn}>Neue Berechnung starten</button>
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <div style={{ ...T.page, "--accent": C }} key={ak}>
+        <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
+        <div style={T.prog}><div style={T.progFil(100)} /></div>
+        <CheckLoader type="gkvpkv" onComplete={() => { setLoading(false); goTo(2); }} />
+      </div>
+    );
+  }
 
   // ── Phase 3: Kontakt ─────────────────────────────────────────────────────
   if(phase===3){
@@ -340,22 +374,35 @@ export default function GKVPKVRechner(){
     );
   }
 
-  // ── Phase 1: Wizard (Screens 1–4, Familie mit Smart-Substeps) ────────────
+  // ── Phase 1: Wizard (Intro, Daten 2–4, System-Story, Familie, Bridge) ────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
       <div style={T.prog}><div style={T.progFil(wizardProgPct)} /></div>
 
-      {/* Screen 1: Beschäftigung — Einstiegs-Hero */}
-      {scr === 1 && <>
-        <div style={T.hero}>
-          <div style={T.eyebrow}>KV-Navigator · Schritt 1 von {KV_WIZARD_STEPS}</div>
-          <div style={{ ...T.h1, fontSize: "26px", maxWidth: "18ch" }}>Ihr Wegweiser im Krankenversicherungs-System</div>
-          <div style={{ ...T.body, marginTop: "18px", maxWidth: "38ch" }}>
-            GKV oder PKV? Finden Sie in 2 Minuten heraus, welches System wirklich zu Ihrer Lebensplanung passt.
+      {/* Slide 1: Intro */}
+      {scr === 1 && (
+        <>
+          <StoryHeroKV
+            emoji="🩺"
+            title="Gesundheit nach Maß."
+            text="GKV oder PKV? Finden Sie in 2 Minuten heraus, welches System wirklich zu Ihrer Lebensplanung, Ihrem Status und Ihrem Budget passt."
+          />
+          <div style={{ height: "120px" }} />
+          <div style={T.footer}>
+            <button type="button" style={T.btnPrim(false)} onClick={nextScr}>
+              Analyse starten
+            </button>
           </div>
-          <div style={T.heroStepTitle}>Wie sind Sie aktuell beschäftigt?</div>
-          <div style={T.heroStepHint}>Davon hängt ab, ob Sie als Arbeitnehmer überhaupt in die PKV wechseln können.</div>
+        </>
+      )}
+
+      {/* Screen 2: Beschäftigung */}
+      {scr === 2 && <>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>KV-Navigator · Schritt 2 von {KV_FLOW_STEPS}</div>
+          <div style={T.h1}>Wie sind Sie aktuell beschäftigt?</div>
+          <div style={T.body}>Davon hängt ab, ob Sie als Arbeitnehmer in die PKV wechseln dürfen.</div>
         </div>
         <div style={T.section}>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -372,14 +419,15 @@ export default function GKVPKVRechner(){
         </div>
         <div style={{ height: "120px" }} />
         <div style={T.footer}>
-          <button style={T.btnPrim(false)} onClick={nextScr}>Weiter →</button>
+          <button type="button" style={T.btnPrim(false)} onClick={nextScr}>Weiter →</button>
+          <button type="button" style={T.btnSec} onClick={backScr}>Zurück</button>
         </div>
       </>}
 
-      {/* Screen 2: Einkommen — Wording & JAEG-Box abhängig von Beruf (Screen 1) */}
-      {scr === 2 && <>
+      {/* Screen 3: Einkommen */}
+      {scr === 3 && <>
         <div style={T.hero}>
-          <div style={T.eyebrow}>KV-Navigator · Schritt 2 von {KV_WIZARD_STEPS}</div>
+          <div style={T.eyebrow}>KV-Navigator · Schritt 3 von {KV_FLOW_STEPS}</div>
           <div style={T.h1}>{einkommenSchritt.h1}</div>
           <div style={T.body}>{einkommenSchritt.body}</div>
         </div>
@@ -423,10 +471,30 @@ export default function GKVPKVRechner(){
         </div>
       </>}
 
-      {/* Screen 3: Alter — PKV-Beiträge & Altersrückstellungen; Hinweis ab > 50 */}
-      {scr === 3 && <>
+      {/* Slide 2: System-Hebel (direkt nach Einkommen & Beruf) */}
+      {scr === 4 && (
+        <>
+          <StoryHeroKV
+            emoji="⚖️"
+            title="Leistung vs. Beitrag."
+            text="In der GKV steigen die Beiträge mit dem Einkommen, in der PKV bestimmen Sie die Leistung selbst. Wir finden jetzt Ihren persönlichen 'Sweet-Spot' zwischen Kosten und Qualität."
+          />
+          <div style={{ height: "120px" }} />
+          <div style={T.footer}>
+            <button type="button" style={T.btnPrim(false)} onClick={nextScr}>
+              Weiter zum Status-Check
+            </button>
+            <button type="button" style={T.btnSec} onClick={backScr}>
+              Zurück
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Screen 5: Alter */}
+      {scr === 5 && <>
         <div style={T.hero}>
-          <div style={T.eyebrow}>KV-Navigator · Schritt 3 von {KV_WIZARD_STEPS}</div>
+          <div style={T.eyebrow}>KV-Navigator · Schritt 5 von {KV_FLOW_STEPS}</div>
           <div style={T.h1}>Wie alt sind Sie?</div>
           <div style={T.body}>
             Ihr Eintrittsalter bestimmt maßgeblich Ihre PKV-Beiträge und den Aufbau Ihrer Altersrückstellungen.
@@ -459,8 +527,8 @@ export default function GKVPKVRechner(){
         </div>
       </>}
 
-      {/* Screen 4: Familie — Smart-Steps (Single direkt zum Ergebnis; Partner → KV; Kinder → Experten-Weiche) */}
-      {scr === 4 && (() => {
+      {/* Screen 6: Familie — Smart-Steps */}
+      {scr === 6 && (() => {
         const kinderZahlOk =
           p.familiensituation !== "partner_kinder" ||
           p.kinderImHaushalt === 1 ||
@@ -483,22 +551,22 @@ export default function GKVPKVRechner(){
 
         const onFamPrimary = () => {
           if (famSubStep === 0) {
-            if (p.familiensituation === "single") finishFamilyWizard();
+            if (p.familiensituation === "single") goToBridge();
             else setFamSubStep(1);
             return;
           }
           if (famSubStep === 1) {
             if (p.familiensituation === "partner_kinder") setFamSubStep(2);
-            else finishFamilyWizard();
+            else goToBridge();
             return;
           }
-          finishFamilyWizard();
+          goToBridge();
         };
 
         return (
           <>
             <div style={T.hero}>
-              <div style={T.eyebrow}>KV-Navigator · Schritt 4 von {KV_WIZARD_STEPS}</div>
+              <div style={T.eyebrow}>KV-Navigator · Schritt 6 von {KV_FLOW_STEPS}</div>
               {famSubStep === 0 && (
                 <>
                   <div style={T.h1}>Ihre Familiensituation</div>
@@ -704,6 +772,61 @@ export default function GKVPKVRechner(){
           </>
         );
       })()}
+
+      {/* Slide 3: Bridge vor Ergebnis / Loader */}
+      {scr === 7 && (
+        <>
+          <div style={{ textAlign: "center", padding: "36px 24px 12px", maxWidth: "560px", margin: "0 auto" }}>
+            <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
+              🔍
+            </div>
+            <h1 style={STORY_H1_KV}>System-Analyse abgeschlossen.</h1>
+            <ul
+              style={{
+                listStyle: "none",
+                padding: 0,
+                margin: "28px 0 0",
+                textAlign: "left",
+                maxWidth: "42ch",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              {[
+                "Abgleich Ihres Profils mit den aktuellen Systemgrenzen (JAEG).",
+                "Gegenüberstellung von Leistungen und Beitragsstabilität.",
+                "Strategische Tendenz für Ihre Krankenversicherung.",
+              ].map((line) => (
+                <li
+                  key={line}
+                  style={{
+                    ...STORY_BODY_KV,
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "flex-start",
+                    marginBottom: "14px",
+                    maxWidth: "none",
+                  }}
+                >
+                  <span style={{ flexShrink: 0 }} aria-hidden>
+                    ✅
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div style={{ height: "120px" }} />
+          <div style={T.footer}>
+            <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
+              Ergebnis jetzt anzeigen
+            </button>
+            <button type="button" style={T.btnSec} onClick={backScr}>
+              Zurück
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

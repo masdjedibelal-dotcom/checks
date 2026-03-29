@@ -6,6 +6,7 @@ import { SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
+import { CheckLoader } from "@/components/checks/CheckLoader";
 
 (() => {
   const s = document.createElement("style");
@@ -29,6 +30,22 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
 const alpha = (hex,a) => { const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; };
 const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n>=10000 ? Math.round(n/1000)+".000 €" : fmt(n);
+/** Intro + 4 Datenschritte + Immobilien-Story + Bridge */
+const RL_WIZARD_STEPS = 7;
+const STORY_H1_RL = { fontSize: "52px", fontWeight: "800", letterSpacing: "-1.5px", lineHeight: 1.12, color: "#111", margin: "0 0 22px" };
+const STORY_BODY_RL = { fontSize: "16px", color: "#4B5563", lineHeight: 1.65, margin: 0, maxWidth: "42ch", marginLeft: "auto", marginRight: "auto" };
+
+function StoryHeroRL({ emoji, title, text }) {
+  return (
+    <div style={{ textAlign: "center", padding: "36px 24px 20px", maxWidth: "600px", margin: "0 auto" }}>
+      <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
+        {emoji}
+      </div>
+      <h1 style={STORY_H1_RL}>{title}</h1>
+      {text ? <p style={STORY_BODY_RL}>{text}</p> : null}
+    </div>
+  );
+}
 const WARN_RL = "#c0392b";
 const BAR_LEBENSHALTUNG = "#7c3aed";
 const BAR_KREDIT = "#2563eb";
@@ -60,6 +77,7 @@ export default function RisikolebenRechner() {
   const C = MAKLER.primaryColor;
   const isDemo = isCheckDemoMode();
   const [phase, setPhase] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [animKey, setAnimKey] = useState(0);
   const [p, setP] = useState({ monatsBedarf: 2500, laufzeit: 20, partnerEinkommen: 1200, witwenRente: 700, sonstiges: 0, kredite: 0, vorhanden: 0 });
   const [hatKredit, setHatKredit] = useState(null);
@@ -73,18 +91,22 @@ export default function RisikolebenRechner() {
       setScr(1);
       setHatKredit(null);
       setKontaktConsent(false);
+      setLoading(false);
     }
   };
   const nextScr = () => {
-    if (scr === 4 && hatKredit == null) return;
-    if (scr < 4) setScr(s => s + 1);
-    else goTo(2);
+    if (scr === 5 && hatKredit == null) return;
+    if (scr < 5) setScr((s) => s + 1);
+    else if (scr === 5) setScr(6);
+    else if (scr === 6) setScr(7);
   };
-  const backScr = () => { if (scr > 1) { setScr(s => s - 1); } };
-  useCheckScrollToTop([phase, animKey, scr]);
+  const backScr = () => {
+    if (scr > 1) setScr((s) => s - 1);
+  };
+  useCheckScrollToTop([phase, animKey, scr, loading]);
   const set     = (k, v) => setP(x => ({ ...x, [k]: v }));
   const R       = berechne(p);
-  const progPct = phase === 1 ? scr * 22 : { 2: 88, 3: 100, 4: 100 }[phase] || 0;
+  const progPct = phase === 1 ? (scr / RL_WIZARD_STEPS) * 100 : { 2: 100, 3: 100, 4: 100 }[phase] || 0;
 
   const cardLift = {
     background:"#fff",
@@ -174,160 +196,334 @@ export default function RisikolebenRechner() {
     </div>
   );
 
-  // ── Phase 1: Eingabe (4 Screens, kein Intro) ─────────────────────────────
-  if (phase === 1) {
+  if (loading) {
     return (
-      <Shell
-        eyebrow={`Risikoleben-Check · ${scr} / 4`}
-        title={
-          scr === 1 ? "Wie viel braucht Ihre Familie monatlich?" :
-          scr === 2 ? "Wie lange soll Ihre Familie abgesichert sein?" :
-          scr === 3 ? "Welche Einnahmen bestehen bereits?" :
-          "Kredite und bestehende Absicherung"
-        }
-        lead={
-          scr === 1 ? "Miete/Kredit, Lebenshaltung, Kinder — alles zusammen." :
-          scr === 2 ? "Z. B. bis die Kinder selbstständig sind oder bis zur Rente." :
-          scr === 3 ? "Alle Felder sind optional — 0 wenn nicht vorhanden." :
-          "Zuerst: Gibt es Darlehen? Nur dann geben Sie die Restschuld an."
-        }
-        footer={
+      <div style={T.root}>
+        <div style={T.header}><div style={T.logoWrap}><div style={T.logoBox}><BuktgLogoMark /></div><span style={T.logoTxt}>{MAKLER.firma}</span></div><span style={T.badge}>Risikoleben</span></div>
+        <div style={T.progBar}><div style={T.progFill} /></div>
+        <CheckLoader type="risikoleben" onComplete={() => { setLoading(false); goTo(2); }} />
+      </div>
+    );
+  }
+
+  // ── Phase 1: Story + Eingabe (7 Schritte) + Bridge ───────────────────────
+  if (phase === 1) {
+    const dataTitle =
+      scr === 2 ? "Wie viel braucht Ihre Familie monatlich?" :
+      scr === 3 ? "Wie lange soll Ihre Familie abgesichert sein?" :
+      scr === 4 ? "Welche Einnahmen bestehen bereits?" :
+      scr === 5 ? "Kredite und bestehende Absicherung" : "";
+    const dataLead =
+      scr === 2 ? "Miete/Kredit, Lebenshaltung, Kinder — alles zusammen." :
+      scr === 3 ? "Z. B. bis die Kinder selbstständig sind oder bis zur Rente." :
+      scr === 4 ? "Alle Felder sind optional — 0, wenn nicht vorhanden." :
+      scr === 5 ? "Zuerst: Bitte geben Sie an, ob Darlehen bestehen. Die Restschuld tragen Sie nur ein, wenn Sie „Ja“ wählen." : "";
+
+    const wizFooter = (() => {
+      if (scr === 1) {
+        return (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <button style={T.btnMain(scr === 4 && hatKredit == null)} disabled={scr === 4 && hatKredit == null} onClick={nextScr}>{scr < 4 ? "Weiter →" : "Ergebnis anzeigen →"}</button>
-            {scr > 1 && <button style={T.btnBack} onClick={backScr}>Zurück</button>}
+            <button type="button" style={T.btnMain(false)} onClick={nextScr}>
+              Analyse starten
+            </button>
           </div>
-        }
-      >
-        <div style={{ padding: "0 16px 8px" }}>
-
-          {scr === 1 && (
-            <>
-              <SliderCard
-                label="Monatlicher Bedarf der Familie"
-                value={p.monatsBedarf}
-                min={500}
-                max={8000}
-                step={100}
-                unit="€/Mon."
-                display={`${p.monatsBedarf.toLocaleString("de-DE")} €/Monat`}
-                accent={C}
-                onChange={(v) => set("monatsBedarf", v)}
-              />
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}>
-                {[
-                  { icon: "🏠", label: "Miete / Kredit", desc: "Warmmiete oder Kreditrate inkl. Nebenkosten" },
-                  { icon: "🛒", label: "Lebenshaltung", desc: "Lebensmittel, Mobilität, Freizeit, Versicherungen" },
-                  { icon: "👶", label: "Kinder", desc: "Betreuung, Schule, Sport, Kleidung" },
-                ].map(({ icon, label, desc }) => (
-                  <div key={label} style={{ display: "flex", gap: "10px", alignItems: "flex-start", padding: "10px 12px", background: "#FAFAF8", borderRadius: "10px", border: "1px solid rgba(17,24,39,0.05)" }}>
-                    <span style={{ fontSize: "18px", flexShrink: 0 }}>{icon}</span>
-                    <div>
-                      <div style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937" }}>{label}</div>
-                      <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px" }}>{desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {scr === 2 && (
-            <>
-              <SliderCard
-                label="Absicherungszeitraum"
-                value={p.laufzeit}
-                min={5}
-                max={30}
-                step={1}
-                unit="Jahre"
-                display={`${p.laufzeit} Jahre`}
-                accent={C}
-                onChange={(v) => set("laufzeit", v)}
-              />
-              <div style={{ marginTop: "12px", padding: "12px 14px", background: "#F0F9FF", borderRadius: "10px", border: "1px solid #BAE6FD", fontSize: "12px", color: "#0369A1", lineHeight: 1.55 }}>
-                Empfehlung: Absicherung bis das jüngste Kind selbstständig ist oder bis zur Rente — mindestens 15–20 Jahre.
-              </div>
-            </>
-          )}
-
-          {scr === 3 && (
-            <>
-              <SliderCard
-                label="Partnereinkommen (monatlich netto)"
-                value={p.partnerEinkommen}
-                min={0}
-                max={6000}
-                step={100}
-                unit="€/Mon."
-                display={p.partnerEinkommen === 0 ? "Kein Einkommen" : undefined}
-                hint="Nettoeinkommen nach Steuern und Abgaben"
-                accent={C}
-                onChange={(v) => set("partnerEinkommen", v)}
-              />
-              <SliderCard
-                label="Witwen-/Waisenrente (gesetzlich, ca.)"
-                value={p.witwenRente}
-                min={0}
-                max={2000}
-                step={50}
-                unit="€/Mon."
-                display={p.witwenRente === 0 ? "Nicht vorhanden / unbekannt" : undefined}
-                hint="Ca. 55 % der gesetzlichen Rentenanwartschaft — 0 wenn unbekannt"
-                accent={C}
-                onChange={(v) => set("witwenRente", v)}
-              />
-              <SliderCard
-                label="Sonstige Einnahmen (monatlich)"
-                value={p.sonstiges}
-                min={0}
-                max={2000}
-                step={50}
-                unit="€/Mon."
-                display={p.sonstiges === 0 ? "Keine weiteren Einnahmen" : undefined}
-                hint="Mieteinnahmen, Kapitalerträge etc."
-                accent={C}
-                onChange={(v) => set("sonstiges", v)}
-              />
-            </>
-          )}
-
-          {scr === 4 && (
-            <>
-              <div style={{ fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "10px" }}>Haben Sie laufende Kredite oder Immobilien-Darlehen?</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: hatKredit === true ? "8px" : "12px" }}>
-                <button type="button" style={T.optBtn(hatKredit === true)} onClick={() => { setHatKredit(true); }}>Ja</button>
-                <button type="button" style={T.optBtn(hatKredit === false)} onClick={() => { setHatKredit(false); set("kredite", 0); }}>Nein</button>
-              </div>
-              {hatKredit === true && (
-                <SliderCard
-                  label="Restschuld (gesamt)"
-                  value={p.kredite}
-                  min={0}
-                  max={800000}
-                  step={5000}
-                  unit="€"
-                  display={p.kredite === 0 ? "0 €" : `${Math.round(p.kredite).toLocaleString("de-DE")} €`}
-                  accent={C}
-                  onChange={(v) => set("kredite", v)}
-                />
-              )}
-              <SliderCard
-                label="Bestehende Risikolebensversicherung"
-                value={p.vorhanden}
-                min={0}
-                max={1000000}
-                step={10000}
-                unit="€"
-                display={p.vorhanden === 0 ? "Nicht vorhanden" : `${Math.round(p.vorhanden).toLocaleString("de-DE")} €`}
-                hint="Versicherungssumme bestehender Policen — 0 wenn keine vorhanden"
-                accent={C}
-                onChange={(v) => set("vorhanden", v)}
-              />
-            </>
-          )}
-
+        );
+      }
+      if (scr >= 2 && scr <= 5) {
+        const kreditBlock = scr === 5 && hatKredit == null;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <button type="button" style={T.btnMain(kreditBlock)} disabled={kreditBlock} onClick={nextScr}>
+              Weiter →
+            </button>
+            <button type="button" style={T.btnBack} onClick={backScr}>
+              Zurück
+            </button>
+          </div>
+        );
+      }
+      if (scr === 6) {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <button type="button" style={T.btnMain(false)} onClick={nextScr}>
+              Weiter zum Budget
+            </button>
+            <button type="button" style={T.btnBack} onClick={backScr}>
+              Zurück
+            </button>
+          </div>
+        );
+      }
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <button type="button" style={T.btnMain(false)} onClick={() => setLoading(true)}>
+            Ergebnis jetzt anzeigen
+          </button>
+          <button type="button" style={T.btnBack} onClick={backScr}>
+            Zurück
+          </button>
         </div>
-      </Shell>
+      );
+    })();
+
+    return (
+      <div style={T.root}>
+        <div style={T.header}>
+          <div style={T.logoWrap}>
+            <div style={T.logoBox}>
+              <BuktgLogoMark />
+            </div>
+            <span style={T.logoTxt}>{MAKLER.firma}</span>
+          </div>
+          <span style={T.badge}>Risikoleben</span>
+        </div>
+        <div style={T.progBar}>
+          <div style={T.progFill} />
+        </div>
+        <div key={animKey} className="fade-in" style={T.body}>
+          {scr === 1 && (
+            <StoryHeroRL
+              emoji="❤️"
+              title="Verantwortung, die bleibt."
+              text="Sichern Sie das Wichtigste ab: Die Zukunft Ihrer Liebsten und den Erhalt Ihres gemeinsamen Zuhauses. In 2 Minuten berechnen wir Ihren optimalen Schutz."
+            />
+          )}
+
+          {scr >= 2 && scr <= 5 && (
+            <div style={T.hero}>
+              <div style={T.eyebrow}>
+                Risikoleben-Check · Schritt {scr} von {RL_WIZARD_STEPS}
+              </div>
+              <h1 style={T.h1}>{dataTitle}</h1>
+              <p style={T.lead}>{dataLead}</p>
+            </div>
+          )}
+
+          {scr === 6 && (
+            <StoryHeroRL
+              emoji="🏠"
+              title="Sorgenfrei wohnen bleiben."
+              text="Eine Restschuldversicherung ist oft unflexibel. Wir prüfen jetzt, wie Sie Ihre Finanzierung effizient absichern, damit Ihr Zuhause im Ernstfall schuldenfrei bleibt."
+            />
+          )}
+
+          {scr === 7 && (
+            <div style={{ textAlign: "center", padding: "36px 24px 12px", maxWidth: "560px", margin: "0 auto" }}>
+              <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
+                🤝
+              </div>
+              <h1 style={STORY_H1_RL}>Ein Versprechen für die Zukunft.</h1>
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: "28px 0 0",
+                  textAlign: "left",
+                  maxWidth: "42ch",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              >
+                {[
+                  "Ermittlung der optimalen Absicherungssumme.",
+                  "Abdeckung laufender Fixkosten & Kredite.",
+                  "Strategie für konstanten oder fallenden Schutz.",
+                ].map((line) => (
+                  <li
+                    key={line}
+                    style={{
+                      ...STORY_BODY_RL,
+                      display: "flex",
+                      gap: "10px",
+                      alignItems: "flex-start",
+                      marginBottom: "14px",
+                      maxWidth: "none",
+                    }}
+                  >
+                    <span style={{ flexShrink: 0 }} aria-hidden>
+                      ✅
+                    </span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {(scr >= 2 && scr <= 5) && (
+            <div style={{ padding: "0 16px 8px" }}>
+              {scr === 2 && (
+                <>
+                  <SliderCard
+                    label="Monatlicher Bedarf der Familie"
+                    value={p.monatsBedarf}
+                    min={500}
+                    max={8000}
+                    step={100}
+                    unit="€/Mon."
+                    display={`${p.monatsBedarf.toLocaleString("de-DE")} €/Monat`}
+                    accent={C}
+                    onChange={(v) => set("monatsBedarf", v)}
+                  />
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}>
+                    {[
+                      { icon: "🏠", label: "Miete / Kredit", desc: "Warmmiete oder Kreditrate inkl. Nebenkosten" },
+                      { icon: "🛒", label: "Lebenshaltung", desc: "Lebensmittel, Mobilität, Freizeit, Versicherungen" },
+                      { icon: "👶", label: "Kinder", desc: "Betreuung, Schule, Sport, Kleidung" },
+                    ].map(({ icon, label, desc }) => (
+                      <div
+                        key={label}
+                        style={{
+                          display: "flex",
+                          gap: "10px",
+                          alignItems: "flex-start",
+                          padding: "10px 12px",
+                          background: "#FAFAF8",
+                          borderRadius: "10px",
+                          border: "1px solid rgba(17,24,39,0.05)",
+                        }}
+                      >
+                        <span style={{ fontSize: "18px", flexShrink: 0 }}>{icon}</span>
+                        <div>
+                          <div style={{ fontSize: "12px", fontWeight: "600", color: "#1F2937" }}>{label}</div>
+                          <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px" }}>{desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {scr === 3 && (
+                <>
+                  <SliderCard
+                    label="Absicherungszeitraum"
+                    value={p.laufzeit}
+                    min={5}
+                    max={30}
+                    step={1}
+                    unit="Jahre"
+                    display={`${p.laufzeit} Jahre`}
+                    accent={C}
+                    onChange={(v) => set("laufzeit", v)}
+                  />
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      padding: "12px 14px",
+                      background: "#F0F9FF",
+                      borderRadius: "10px",
+                      border: "1px solid #BAE6FD",
+                      fontSize: "12px",
+                      color: "#0369A1",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Empfehlung: Absicherung bis das jüngste Kind selbstständig ist oder bis zur Rente — mindestens 15–20 Jahre.
+                  </div>
+                </>
+              )}
+
+              {scr === 4 && (
+                <>
+                  <SliderCard
+                    label="Partnereinkommen (monatlich netto)"
+                    value={p.partnerEinkommen}
+                    min={0}
+                    max={6000}
+                    step={100}
+                    unit="€/Mon."
+                    display={p.partnerEinkommen === 0 ? "Kein Einkommen" : undefined}
+                    hint="Nettoeinkommen nach Steuern und Abgaben"
+                    accent={C}
+                    onChange={(v) => set("partnerEinkommen", v)}
+                  />
+                  <SliderCard
+                    label="Witwen-/Waisenrente (gesetzlich, ca.)"
+                    value={p.witwenRente}
+                    min={0}
+                    max={2000}
+                    step={50}
+                    unit="€/Mon."
+                    display={p.witwenRente === 0 ? "Nicht vorhanden / unbekannt" : undefined}
+                    hint="Ca. 55 % der gesetzlichen Rentenanwartschaft — 0, wenn unbekannt"
+                    accent={C}
+                    onChange={(v) => set("witwenRente", v)}
+                  />
+                  <SliderCard
+                    label="Sonstige Einnahmen (monatlich)"
+                    value={p.sonstiges}
+                    min={0}
+                    max={2000}
+                    step={50}
+                    unit="€/Mon."
+                    display={p.sonstiges === 0 ? "Keine weiteren Einnahmen" : undefined}
+                    hint="Mieteinnahmen, Kapitalerträge etc."
+                    accent={C}
+                    onChange={(v) => set("sonstiges", v)}
+                  />
+                </>
+              )}
+
+              {scr === 5 && (
+                <>
+                  <div style={{ fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "10px" }}>
+                    Haben Sie laufende Kredite oder Immobilien-Darlehen?
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "8px",
+                      marginBottom: hatKredit === true ? "8px" : "12px",
+                    }}
+                  >
+                    <button type="button" style={T.optBtn(hatKredit === true)} onClick={() => setHatKredit(true)}>
+                      Ja
+                    </button>
+                    <button
+                      type="button"
+                      style={T.optBtn(hatKredit === false)}
+                      onClick={() => {
+                        setHatKredit(false);
+                        set("kredite", 0);
+                      }}
+                    >
+                      Nein
+                    </button>
+                  </div>
+                  {hatKredit === true && (
+                    <SliderCard
+                      label="Restschuld (gesamt)"
+                      value={p.kredite}
+                      min={0}
+                      max={800000}
+                      step={5000}
+                      unit="€"
+                      display={p.kredite === 0 ? "0 €" : `${Math.round(p.kredite).toLocaleString("de-DE")} €`}
+                      accent={C}
+                      onChange={(v) => set("kredite", v)}
+                    />
+                  )}
+                  <SliderCard
+                    label="Bestehende Risikolebensversicherung"
+                    value={p.vorhanden}
+                    min={0}
+                    max={1000000}
+                    step={10000}
+                    unit="€"
+                    display={p.vorhanden === 0 ? "Nicht vorhanden" : `${Math.round(p.vorhanden).toLocaleString("de-DE")} €`}
+                    hint="Versicherungssumme bestehender Policen — 0, wenn keine vorhanden"
+                    accent={C}
+                    onChange={(v) => set("vorhanden", v)}
+                  />
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <div style={T.footer}>{wizFooter}</div>
+      </div>
     );
   }
 
@@ -364,7 +560,7 @@ export default function RisikolebenRechner() {
 
         {/* ── Hero (Summe zentriert, ohne Status-Pills) ───────────────────── */}
         <div style={{ ...T.resultHero, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={T.resultEyebrow}>Absicherung Ihrer Familie</div>
+          <div style={T.resultEyebrow}>Lebensstandard · Eigenheim</div>
           <div style={{ ...T.resultNumber(!gedeckt), textAlign: "center", width: "100%" }}>
             {gedeckt ? "Gedeckt" : fmtK(netto)}
           </div>
@@ -679,7 +875,7 @@ export default function RisikolebenRechner() {
                   goTo(4);
                 }}
               >
-                {valid ? "Familie absichern →" : "Bitte alle Angaben machen"}
+                {valid ? "Familie absichern →" : "Bitte füllen Sie alle Pflichtfelder aus"}
               </button>
               <button style={T.btnBack} onClick={() => goTo(2)}>Zurück</button>
             </>

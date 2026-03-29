@@ -6,6 +6,7 @@ import { SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
+import { CheckLoader } from "@/components/checks/CheckLoader";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
 const WARN="#c0392b";
@@ -181,6 +182,7 @@ export default function ImmobilienCheck(){
   const[detailsOpen,setDetailsOpen]=useState(false);
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[kontaktConsent,setKontaktConsent]=useState(false);
+  const[loading,setLoading]=useState(false);
   // Phase 1 State
   const[,setSituation]=useState(""); // mieter | eigentuemer | kaufplan
   const[modul,setModul]=useState("");         // mk | anschluss | wg
@@ -189,20 +191,22 @@ export default function ImmobilienCheck(){
   const[anschluss,setAnschluss]=useState({restschuld:220000,altZins:1.2,neuZins:3.8,tilgung:2,laufzeit:10});
   const[wg,setWg]=useState({flaeche:140,baujahr:1985,bauart:"massiv",versSum:320000,elementar:false,photovoltaik:false});
   const setM=(s,k,v)=>{if(s==="mk")setMk(x=>({...x,[k]:v}));else if(s==="anschluss")setAnschluss(x=>({...x,[k]:v}));else setWg(x=>({...x,[k]:v}));};
-  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);setScr2(1);};
+  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);setScr2(1);if(ph===1)setLoading(false);};
   const SCR2_TOTAL={mk:4,anschluss:3,wg:3};
   const scr2Total=SCR2_TOTAL[modul]||3;
-  const nextScr2=()=>{if(scr2<scr2Total){setAk(k=>k+1);setScr2(s=>s+1);}else goTo(3);};
+  const nextScr2=()=>{if(scr2<scr2Total){setAk(k=>k+1);setScr2(s=>s+1);}else setLoading(true);};
   const backScr2=()=>{if(scr2>1){setAk(k=>k+1);setScr2(s=>s-1);}else goTo(1);};
   // Fortschritt über alle Phasen: Phase 1 = 1 Screen, Phase 2 = n Screens, Phase 3 = 1
   const totalSteps=1+scr2Total+1;
   const curStep=phase===1?1:phase===2?1+scr2:1+scr2Total+1;
-  useCheckScrollToTop([phase, ak, danke, scr2]);
+  useCheckScrollToTop([phase, ak, danke, scr2, loading]);
 
   const Header=()=>(<><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Immobilien-Check</span></div><div style={T.prog}><div style={T.progFil(Math.round(curStep/totalSteps*100))}/></div></>);
 
   // Danke
-  if(danke)return(<div style={{...T.page,"--accent":C}}><Header/><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);setPhase(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
+  if(danke)return(<div style={{...T.page,"--accent":C}}><Header/><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
+
+  if(loading)return(<div style={{...T.page,"--accent":C}} key={ak}><Header/><CheckLoader type="immobilie" onComplete={()=>{setLoading(false);goTo(3);}}/></div>);
 
   // ── Phase 4: Kontakt ─────────────────────────────────────────────────────
   if(phase===4){

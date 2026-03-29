@@ -6,6 +6,7 @@ import { SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
+import { CheckLoader } from "@/components/checks/CheckLoader";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
 const EREIGNISSE=[
   {id:"nachwuchs",l:"Nachwuchs",display:"🍼 Nachwuchs ist unterwegs oder da"},
@@ -209,7 +210,7 @@ export default function JahresCheck(){
   const C=MAKLER.primaryColor;
   const T=useMemo(()=>makeJahresCheckT(C),[C]);
   const isDemo = isCheckDemoMode();
-  const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);
+  const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[loading,setLoading]=useState(false);
   const[prods,setProds]=useState([]);const[events,setEvents]=useState([]);
   const[kontaktConsent,setKontaktConsent]=useState(false);
   const[fd,setFd]=useState({name:"",email:"",tel:""});
@@ -219,9 +220,9 @@ export default function JahresCheck(){
   const[selProdukte,setSelProdukte]=useState([]);
   const toggleSimpleEv=(catId)=>{const cat=SIMPLE_EVENTS_DEF.find(c=>c.id===catId);if(!cat)return;setSelEvKats(p=>{const next=p.includes(catId)?p.filter(x=>x!==catId):[...p,catId];setEvents(SIMPLE_EVENTS_DEF.filter(c=>next.includes(c.id)).flatMap(c=>c.evIds));return next;});};
   const toggleProdukt=(prodId)=>{const prod=PRODUKT_ITEMS.find(p=>p.id===prodId);if(!prod)return;setSelProdukte(p=>{const next=p.includes(prodId)?p.filter(x=>x!==prodId):[...p,prodId];setProds(PRODUKT_ITEMS.filter(p=>next.includes(p.id)).flatMap(p=>p.matrixNames));return next;});};
-  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);};
+  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);if(ph===1){setLoading(false);setScr(1);}};
   const E=buildEmpfehlungen(events,prods,kontext);
-  useCheckScrollToTop([phase, ak, danke, scr]);
+  useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
   if(danke)return(
     <div style={{...T.page,"--accent":C}}><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
@@ -230,8 +231,16 @@ export default function JahresCheck(){
       <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
       <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
       <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div>
-      <button onClick={()=>setDanke(false)} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neuen Check starten</button>
+      <button onClick={()=>{setDanke(false);goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neuen Check starten</button>
     </div></div>
+  );
+
+  if(loading)return(
+    <div style={{...T.page,"--accent":C}} key={ak}>
+      <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
+      <div style={T.prog}><div style={T.progFil(100)}/></div>
+      <CheckLoader type="jahrescheck" onComplete={()=>{setLoading(false);goTo(3);}}/>
+    </div>
   );
 
   // Phase 4: Kontakt
@@ -438,7 +447,7 @@ export default function JahresCheck(){
 
 
   // ── Phase 1: Eingabe (2 Screens, kein Intro) ──────────────────────────────
-  const nextScr = () => { if (scr < 2) { setScr(s => s + 1); } else { goTo(3); } };
+  const nextScr = () => { if (scr < 2) { setScr(s => s + 1); } else { setLoading(true); } };
   const backScr = () => { if (scr > 1) { setScr(s => s - 1); } };
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
+import { CheckLoader } from "@/components/checks/CheckLoader";
 
 // ─── GLOBAL SETUP ────────────────────────────────────────────────────────────
 (() => {
@@ -399,6 +400,21 @@ function SmartHintCard({ children, icon = "💡", compact = false }) {
   );
 }
 
+const STORY_H1 = { fontSize: "52px", fontWeight: "800", letterSpacing: "-1.5px", lineHeight: 1.12, color: "#111", margin: "0 0 22px" };
+const STORY_BODY = { fontSize: "16px", color: "#4B5563", lineHeight: 1.65, margin: 0, maxWidth: "42ch", marginLeft: "auto", marginRight: "auto" };
+
+function StoryHeroBUKTG({ emoji, title, text }) {
+  return (
+    <div style={{ textAlign: "center", padding: "36px 24px 20px", maxWidth: "600px", margin: "0 auto" }}>
+      <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
+        {emoji}
+      </div>
+      <h1 style={STORY_H1}>{title}</h1>
+      {text ? <p style={STORY_BODY}>{text}</p> : null}
+    </div>
+  );
+}
+
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 function makeBUKTGT(C) {
   return {
@@ -570,7 +586,7 @@ function DankeScreen({ name, onBack, makler, C }) {
         </svg>
       </div>
       <div style={{ fontSize: "20px", fontWeight: "700", color: "#111", letterSpacing: "-0.4px", marginBottom: "8px" }}>
-        {name ? `Danke, ${name.split(" ")[0]}.` : "Anfrage gesendet."}
+        {name ? `Vielen Dank, ${name.split(" ")[0]}.` : "Ihre Anfrage wurde gesendet."}
       </div>
       <div style={{ fontSize: "14px", color: "#666", lineHeight: 1.65, marginBottom: "32px" }}>
         Wir schauen uns Ihr Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.
@@ -617,7 +633,8 @@ export default function BUKTGRechner() {
   });
 
   const set = (k, v) => setP((x) => ({ ...x, [k]: v }));
-  const [scr, setScr] = useState(1);
+  const [wizStep, setWizStep] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   const STEP_IDS = useMemo(() => {
     if (p.beruf === "student") {
@@ -630,44 +647,54 @@ export default function BUKTGRechner() {
     return ids;
   }, [p.kv, p.beruf]);
 
+  /** Intro → Beruf → Staats-Story → restliche Daten → Bridge → Loader */
+  const wizardFlow = useMemo(() => {
+    const ids = STEP_IDS;
+    const flow = [{ kind: "intro" }];
+    if (ids.length === 0) {
+      flow.push({ kind: "bridge" });
+      return flow;
+    }
+    flow.push({ kind: "data", sid: ids[0] });
+    flow.push({ kind: "storyStaat" });
+    for (let i = 1; i < ids.length; i++) {
+      flow.push({ kind: "data", sid: ids[i] });
+    }
+    flow.push({ kind: "bridge" });
+    return flow;
+  }, [STEP_IDS]);
+
+  const totalWizSteps = wizardFlow.length;
+
   useEffect(() => {
     if (p.beruf === "azubi" && p.kv === "pkv") {
       setP((x) => ({ ...x, kv: "gkv" }));
     }
-  }, [p.beruf]);
-
-  const stepCount = STEP_IDS.length;
-  const sid = STEP_IDS[scr - 1] ?? "beruf";
-
-  const prevKvRef = useRef(p.kv);
-  useEffect(() => {
-    setScr((s) => Math.min(s, stepCount));
-  }, [stepCount]);
+  }, [p.beruf, p.kv]);
 
   useEffect(() => {
-    const prev = prevKvRef.current;
-    if (prev === "pkv" && p.kv === "gkv") {
-      /* Nur zurückspringen, wenn der PKV-Zusatzschritt schon „durchlaufen“ war — sonst bleibt man z. B. auf Schritt 2 (KV) */
-      setScr((s) => (s > 3 ? Math.max(1, s - 1) : s));
-    } else if (prev === "gkv" && p.kv === "pkv") {
-      setScr((s) => (s >= 3 ? s + 1 : s));
-    }
-    prevKvRef.current = p.kv;
-  }, [p.kv]);
+    setWizStep((w) => Math.min(w, totalWizSteps));
+  }, [totalWizSteps]);
 
-  useCheckScrollToTop([scr, phase, ak, danke]);
+  useCheckScrollToTop([wizStep, phase, ak, danke, loading]);
 
-  const nextScr = () => {
-    if (scr < stepCount) setScr((s) => s + 1);
-    else goTo(2);
+  const nextWiz = () => {
+    if (wizStep < totalWizSteps) setWizStep((w) => w + 1);
   };
-  const backScr = () => {
-    if (scr > 1) setScr((s) => s - 1);
+  const backWiz = () => {
+    if (wizStep > 1) setWizStep((w) => w - 1);
   };
   const goTo = (ph) => {
     setAk((k) => k + 1);
     setPhase(ph);
+    if (ph === 1) {
+      setWizStep(1);
+      setLoading(false);
+    }
   };
+
+  const curFlow = wizardFlow[wizStep - 1];
+  const sid = curFlow?.kind === "data" ? curFlow.sid : null;
 
   const R = berechne({
     ...p,
@@ -691,9 +718,18 @@ export default function BUKTGRechner() {
   if (danke) return (
     <div style={{ ...T.page, "--accent": C }}>
       <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} T={T} />
-      <DankeScreen name={name} onBack={() => { setDanke(false); setPhase(1); }} makler={MAKLER} C={C} />
+      <DankeScreen name={name} onBack={() => { setDanke(false); goTo(1); }} makler={MAKLER} C={C} />
     </div>
   );
+
+  if (loading) {
+    return (
+      <div style={{ ...T.page, "--accent": C }} key={ak}>
+        <Header phase={totalWizSteps} total={totalWizSteps} makler={MAKLER} T={T} />
+        <CheckLoader type="bu" onComplete={() => { setLoading(false); goTo(2); }} />
+      </div>
+    );
+  }
 
   // ── Kontakt (nach Ergebnis) ─────────────────────────────────────────────────
   if (phase === 3) return (
@@ -1070,15 +1106,79 @@ export default function BUKTGRechner() {
     );
   }
 
-  // ── Phase 1: dynamischer Flow (PKV-Zusatzscreen) ───────────────────────────
+  // ── Phase 1: Story + dynamischer Flow + Bridge ─────────────────────────────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={scr} total={stepCount} makler={MAKLER} T={T} />
+      <Header phase={wizStep} total={totalWizSteps} makler={MAKLER} T={T} />
+
+      {curFlow?.kind === "intro" && (
+        <>
+          <StoryHeroBUKTG
+            emoji="🛠️"
+            title="Ihr wertvollstes Gut: Ihre Arbeitskraft."
+            text="Ohne Einkommen steht alles still. In 2 Minuten berechnen wir, wie lange Sie im Krankheitsfall Ihren Standard halten können und wo echte Lücken klaffen."
+          />
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextWiz} nextLabel="Analyse starten" T={T} />
+        </>
+      )}
+
+      {curFlow?.kind === "storyStaat" && (
+        <>
+          <StoryHeroBUKTG
+            emoji="📉"
+            title="Der Staat zahlt nur das Minimum."
+            text="Wussten Sie, dass die volle Erwerbsminderungsrente im Schnitt weniger als 900 € beträgt? Wir prüfen jetzt, ob das für Ihre Fixkosten und Ihren Lebensstil reicht."
+          />
+          <div style={{ height: "120px" }} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter zur Kalkulation" T={T} />
+        </>
+      )}
+
+      {curFlow?.kind === "bridge" && (
+        <>
+          <StoryHeroBUKTG emoji="🚀" title="Einkommen garantiert." text={null} />
+          <div style={{ padding: "16px 24px 8px", maxWidth: "440px", margin: "0 auto" }}>
+            {[
+              "Ermittlung Ihrer monatlichen Lücke bei Berufsunfähigkeit.",
+              "Berechnung des notwendigen Krankentagegeldes (KTG).",
+              "Strategie zur Sicherung Ihres Netto-Einkommens.",
+            ].map((line) => (
+              <div
+                key={line}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "14px",
+                  fontSize: "15px",
+                  color: "#374151",
+                  lineHeight: 1.55,
+                  marginBottom: "16px",
+                }}
+              >
+                <span style={{ fontSize: "18px", lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
+                  ✅
+                </span>
+                <span>{line}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ height: "100px" }} />
+          <div style={T.footer}>
+            <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
+              Ergebnis jetzt anzeigen
+            </button>
+            <button type="button" style={T.btnSec} onClick={backWiz}>
+              Zurück
+            </button>
+          </div>
+        </>
+      )}
 
       {sid === "beruf" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Wie sind Sie aktuell beschäftigt?</div>
             <div style={T.body}>Davon hängt ab, welche gesetzlichen Leistungen greifen.</div>
           </div>
@@ -1123,14 +1223,14 @@ export default function BUKTGRechner() {
             )}
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} nextLabel="Weiter →" T={T} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
         </>
       )}
 
       {sid === "kv" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Wie sind Sie krankenversichert?</div>
             <div style={T.body}>
               {p.beruf === "selbst"
@@ -1175,14 +1275,14 @@ export default function BUKTGRechner() {
             </div>
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
         </>
       )}
 
       {sid === "selbstGkvKg" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Haben Sie in Ihrem GKV-Tarif Anspruch auf Krankengeld gewählt?</div>
             <div style={T.body}>
               Ohne diese Option gibt es im Krankheitsfall in der Regel kein gesetzliches Krankengeld — nur privates KTG zählt.
@@ -1193,7 +1293,7 @@ export default function BUKTGRechner() {
               <SelectionCard
                 value="ja"
                 label="Ja"
-                description="Ich habe Krankengeld in der GKV mitgewählt (z. B. nach §44 SGB V) — Bemessung im Modell bis zur BBG."
+                description="Sie haben Krankengeld in der GKV mitgewählt (z. B. nach §44 SGB V) — Bemessung im Modell bis zur BBG."
                 icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>✓</span>}
                 selected={p.gkvKrankengeldJa}
                 accent={C}
@@ -1211,14 +1311,14 @@ export default function BUKTGRechner() {
             </div>
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
         </>
       )}
 
       {sid === "pkvBeitrag" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>
               {p.beruf === "angestellt"
                 ? "Wie hoch ist Ihr privater Krankenversicherungs-Beitrag (Gesamtbetrag)?"
@@ -1262,14 +1362,14 @@ export default function BUKTGRechner() {
             )}
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
         </>
       )}
 
       {sid === "brutto" && p.beruf === "student" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Welches Netto-Einkommen streben Sie nach dem Studium an?</div>
             <div style={T.body}>
               Fokus: keine gesetzliche EMR aus Erwerbstätigkeit im Modell — private Vorsorge (z. B. BU) schließt die Lücke.
@@ -1290,14 +1390,14 @@ export default function BUKTGRechner() {
             />
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
         </>
       )}
 
       {sid === "brutto" && p.beruf !== "student" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>
               {p.beruf === "selbst"
                 ? "Wie hoch ist Ihr monatlicher Gewinn (vor Steuern)?"
@@ -1350,14 +1450,14 @@ export default function BUKTGRechner() {
             )}
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
         </>
       )}
 
       {sid === "ktgBu" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
             <div style={T.body}>Beide Felder sind optional — geben Sie 0 ein, wenn kein Vertrag vorhanden ist.</div>
           </div>
@@ -1406,14 +1506,14 @@ export default function BUKTGRechner() {
             )}
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} onBack={backScr} nextLabel="Weiter →" T={T} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
         </>
       )}
 
       {sid === "szenario" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
+            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Welches Szenario beschäftigt Sie am meisten?</div>
           </div>
           <div style={T.section}>
@@ -1432,7 +1532,7 @@ export default function BUKTGRechner() {
             </div>
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} onBack={backScr} nextLabel="Meine Lücke berechnen" T={T} />
+          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
         </>
       )}
     </div>
