@@ -28,6 +28,8 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 
 const S1 = "#0369a1", S2 = "#7c3aed", S3 = "#059669", WARN = "#c0392b";
+/** Hellrot: Rest der Zielrente bis 100 % = Lücke */
+const GAP_BAR = "#FEE2E2";
 
 function berechne({ alter, rentenAlter, netto, zielProzent, gesRente, bav, privat, inflation }) {
   const jahreBis  = Math.max(1, rentenAlter - alter);
@@ -49,15 +51,48 @@ function berechne({ alter, rentenAlter, netto, zielProzent, gesRente, bav, priva
     { label: "Private Vorsorge",      sub: "Schicht 3 · privat", farbe: S3, betrag: privat,   anteil: zielHeute > 0 ? Math.min(100, Math.round((privat / zielHeute) * 100)) : 0 },
   ];
 
-  return { jahreBis, renteDauer, zielHeute, vorhanden, luecke, lueckeAdjusted, deckung, schichten, gesRenteEff };
+  /** Horizontale Balken-Segmente: S1–S3 als Anteil der Zielrente, Rest bis 100 % = Lücke (#FEE2E2) */
+  let p1 = 0;
+  let p2 = 0;
+  let p3 = 0;
+  let pGap = 0;
+  if (zielHeute > 0) {
+    p1 = (gesRenteEff / zielHeute) * 100;
+    p2 = (bav / zielHeute) * 100;
+    p3 = (privat / zielHeute) * 100;
+    const sum = p1 + p2 + p3;
+    if (sum > 100) {
+      const k = 100 / sum;
+      p1 *= k;
+      p2 *= k;
+      p3 *= k;
+      pGap = 0;
+    } else {
+      pGap = 100 - sum;
+    }
+  }
+
+  return {
+    jahreBis,
+    renteDauer,
+    zielHeute,
+    vorhanden,
+    luecke,
+    lueckeAdjusted,
+    deckung,
+    schichten,
+    gesRenteEff,
+    barStack: { p1, p2, p3, pGap },
+  };
 }
 
 function makeRentenT(C) {
   return {
-  page:    { minHeight: "100vh", background: "#fff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  page:    { minHeight: "100vh", background: "#ffffff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif" },
   header:  { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   logo:    { display: "flex", alignItems: "center", gap: "10px" },
   logoMk:  { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
+  logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111", letterSpacing: "-0.1px" },
   badge:   { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
   prog:    { height: "2px", background: "#f0f0f0" },
   progFil: (w) => ({ height: "100%", width: `${w}%`, background: C, transition: "width 0.4s ease" }),
@@ -82,7 +117,8 @@ function makeRentenT(C) {
   infoBox: { padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 },
   inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
   resultHero: { padding: "52px 24px 40px", textAlign: "center", background: "#fff" },
-  resultEyebrow: { fontSize: "12px", fontWeight: "500", color: "#9CA3AF", letterSpacing: "0.2px", marginBottom: "14px" },
+  resultEyebrow: { fontSize: "12px", fontWeight: "500", color: "#9CA3AF", letterSpacing: "0.2px", marginBottom: "10px" },
+  resultHeadline: { fontSize: "20px", fontWeight: "700", color: "#111827", letterSpacing: "-0.35px", lineHeight: 1.25, marginBottom: "14px", textAlign: "center" },
   resultNumber: (warn) => ({ fontSize: "52px", fontWeight: "800", color: warn ? WARN : C, letterSpacing: "-2.5px", lineHeight: 1, marginBottom: "8px" }),
   resultUnit: { fontSize: "14px", color: "#9CA3AF", marginBottom: "18px" },
   resultSub: { fontSize: "13px", color: "#9CA3AF", lineHeight: 1.55, marginTop: "12px" },
@@ -92,8 +128,19 @@ function makeRentenT(C) {
   cardContext: { background: "#FAFAF8", border: "1px solid rgba(17,24,39,0.05)", borderRadius: "16px", padding: "18px 20px" },
   warnCard: { background: "#FFF6F5", border: "1px solid #F2D4D0", borderLeft: "3px solid #C0392B", borderRadius: "14px", padding: "18px 20px" },
   sectionLbl: { fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" },
-  progBarTrack: { height: "10px", background: "#F3F4F6", borderRadius: "999px", overflow: "hidden", display: "flex" },
-  progBarFill: (pct, color) => ({ height: "100%", width: `${pct}%`, background: color, borderRadius: "999px", transition: "width 0.7s cubic-bezier(0.34,1.56,0.64,1)", minWidth: pct > 0 ? "3px" : "0" }),
+  stackedBarOuter: { width: "100%", maxWidth: "100%", height: "16px", borderRadius: "10px", overflow: "hidden", display: "flex", background: "#F3F4F6", boxShadow: "inset 0 1px 2px rgba(0,0,0,0.04)" },
+  stackedBarSeg: (pct, color) => ({
+    height: "100%",
+    width: `${pct}%`,
+    flexShrink: 0,
+    background: color,
+    minWidth: pct > 0.5 ? "2px" : 0,
+    transition: "width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
+  }),
+  compareGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "12px" },
+  compareCard: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "16px", padding: "16px 18px", background: "#fff", boxShadow: "0 4px 16px rgba(17,24,39,0.06)", minWidth: 0 },
+  compareCardTitle: { fontSize: "14px", fontWeight: "700", color: "#1F2937", marginBottom: "10px", letterSpacing: "-0.2px" },
+  compareBullet: { fontSize: "12px", color: "#4B5563", lineHeight: 1.5, marginBottom: "6px", paddingLeft: "14px", position: "relative" },
 };
 }
 
@@ -105,7 +152,7 @@ function Header({ phase, total, badge, makler, T }) {
   return (
     <>
       <div style={T.header}>
-        <div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{ fontSize:"13px",fontWeight:"600",color:"#111",letterSpacing:"-0.1px" }}>{makler.firma}</span></div>
+        <div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={T.logoTxt}>{makler.firma}</span></div>
         <span style={T.badge}>{badge}</span>
       </div>
       <div style={T.prog}><div style={T.progFil((phase/total)*100)}/></div>
@@ -129,10 +176,10 @@ function DankeScreen({ name, onBack, makler, C }) {
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
       </div>
       <div style={{ fontSize:"20px",fontWeight:"700",color:"#111",letterSpacing:"-0.4px",marginBottom:"8px" }}>{name?`Danke, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
-      <div style={{ fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px" }}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
+      <div style={{ fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px" }}>Wir prüfen Ihr Ergebnis und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
       <div style={{ border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left" }}>
         <div style={{ padding:"14px 16px",borderBottom:"1px solid #f0f0f0" }}>
-          <div style={{ fontSize:"11px",color:"#999",fontWeight:"600",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px" }}>Dein Berater</div>
+          <div style={{ fontSize:"11px",color:"#999",fontWeight:"600",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px" }}>Ihr Ansprechpartner</div>
           <div style={{ fontSize:"14px",fontWeight:"600",color:"#111" }}>{makler.name}</div>
           <div style={{ fontSize:"12px",color:"#888",marginTop:"1px" }}>{makler.firma}</div>
         </div>
@@ -262,151 +309,161 @@ export default function RentenRechner() {
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={2} total={TOTAL} badge="Vorsorge-Check" makler={MAKLER} T={T} />
 
-        {/* ── Hero ──────────────────────────────────────────────────────────── */}
-        <div style={T.resultHero}>
-          <div style={T.resultEyebrow}>Ihre Vorsorgesituation</div>
-          <div style={T.resultNumber(R.lueckeAdjusted > 0)}>
-            {R.lueckeAdjusted > 0 ? fmt(R.lueckeAdjusted) : "Gedeckt"}
-          </div>
-          <div style={T.resultUnit}>
-            {R.lueckeAdjusted > 0 ? "monatliche Lücke" : "Ihre Vorsorge ist weitgehend gedeckt"}
-          </div>
-          {R.lueckeAdjusted > 0
-            ? <div style={T.statusWarn}>Versorgungslücke erkannt</div>
-            : <div style={T.statusOk}>Gut versorgt</div>
-          }
-          <div style={T.resultSub}>
-            {R.deckung}% gedeckt · {R.jahreBis} Jahre Ansparzeit · ca. {R.renteDauer} Jahre Rentenphase
-            {!p.inflation && R.lueckeAdjusted > 0 && " · ohne Inflation gerechnet"}
+        {/* ── Hero: Headline, Lücke, Badge, Subline (zentriert) ─────────────── */}
+        <div style={{ ...T.resultHero, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ width: "100%", maxWidth: "420px", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ ...T.resultEyebrow, width: "100%", textAlign: "center" }}>Ihre Vorsorgesituation</div>
+            <div style={{ ...T.resultHeadline, width: "100%" }}>
+              {R.lueckeAdjusted > 0 ? "Monatliche Rentenlücke" : "Ihre Vorsorge wirkt rund"}
+            </div>
+            <div style={{ ...T.resultNumber(R.lueckeAdjusted > 0), width: "100%", textAlign: "center" }}>
+              {R.lueckeAdjusted > 0 ? fmt(R.lueckeAdjusted) : "Gedeckt"}
+            </div>
+            <div style={{ ...T.resultUnit, width: "100%", textAlign: "center" }}>
+              {R.lueckeAdjusted > 0 ? "monatliche Lücke" : "Ihr Ziel ist mit den Angaben weitgehend erreichbar"}
+            </div>
+            <div style={{ width: "100%", display: "flex", justifyContent: "center", marginBottom: "4px" }}>
+              {R.lueckeAdjusted > 0
+                ? <div style={T.statusWarn}>Versorgungslücke erkannt</div>
+                : <div style={T.statusOk}>Gut versorgt</div>
+              }
+            </div>
+            <div style={{ ...T.resultSub, width: "100%", textAlign: "center" }}>
+              {R.deckung}% gedeckt · {R.jahreBis} Jahre Ansparzeit · ca. {R.renteDauer} Jahre Rentenphase
+              {!p.inflation && R.lueckeAdjusted > 0 && " · ohne Inflation gerechnet"}
+            </div>
           </div>
         </div>
 
-        {/* ── Schichtenmodell Visual ────────────────────────────────────────── */}
+        {/* ── Gestapelter Progress-Balken (S1·S2·S3 + Rest = Lücke #FEE2E2) ─ */}
         <div style={T.section}>
-          <div style={T.sectionLbl}>Ihre Vorsorge-Schichten</div>
+          <div style={T.sectionLbl}>Zielrente im Überblick</div>
           <div style={T.cardPrimary}>
-            <div style={{ padding: "20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
-                <span style={{ fontSize: "13px", color: "#6B7280" }}>Zielrente</span>
-                <span style={{ fontSize: "15px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.3px" }}>{fmt(R.zielHeute)}/Mon.</span>
+            <div style={{ padding: "18px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "14px", gap: "12px" }}>
+                <span style={{ fontSize: "13px", color: "#6B7280" }}>100 % = Ihre Zielrente</span>
+                <span style={{ fontSize: "15px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.3px", flexShrink: 0 }}>{fmt(R.zielHeute)}/Mon.</span>
               </div>
-              <div style={T.progBarTrack}>
-                {R.schichten.map((s, i) => <div key={i} style={T.progBarFill(s.anteil, s.farbe)} />)}
-                {R.lueckeAdjusted > 0 && <div style={{ flex: 1, background: "#FEE2E2", minWidth: "3px", borderRadius: "999px" }} />}
+              <div style={T.stackedBarOuter} aria-hidden>
+                {R.barStack.p1 > 0 && <div style={T.stackedBarSeg(R.barStack.p1, S1)} />}
+                {R.barStack.p2 > 0 && <div style={T.stackedBarSeg(R.barStack.p2, S2)} />}
+                {R.barStack.p3 > 0 && <div style={T.stackedBarSeg(R.barStack.p3, S3)} />}
+                {R.barStack.pGap > 0 && <div style={T.stackedBarSeg(R.barStack.pGap, GAP_BAR)} />}
               </div>
-              <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                {[
-                  ...R.schichten,
-                  ...(R.lueckeAdjusted > 0 ? [{ label: "Lücke", sub: "Nicht gedeckt", farbe: WARN, betrag: R.lueckeAdjusted, anteil: 100 - R.deckung }] : []),
-                ].map((s, i, arr) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "8px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: s.farbe, flexShrink: 0 }} />
-                      <div>
-                        <div style={{ fontSize: "13px", fontWeight: "500", color: "#1F2937" }}>{s.label}</div>
-                        <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{s.sub}</div>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: "14px", fontWeight: "600", color: s.farbe, letterSpacing: "-0.2px" }}>{fmt(s.betrag)}/Mon.</div>
-                      <div style={{ fontSize: "11px", color: "#9CA3AF" }}>{s.anteil}%</div>
-                    </div>
+              <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: "11px", color: "#6B7280" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "2px", background: S1, flexShrink: 0 }} />Gesetzliche Rente</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "2px", background: S2, flexShrink: 0 }} />bAV / Riester</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "2px", background: S3, flexShrink: 0 }} />Privat</span>
+                {R.barStack.pGap > 0 && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}><span style={{ width: "8px", height: "8px", borderRadius: "2px", background: GAP_BAR, border: "1px solid #FECACA", flexShrink: 0 }} />Lücke (Rest bis 100 %)</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Kapitalwert: Mann 20J / Frau 24J (Formel aus Spezifikation) ──── */}
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Gesamtkapitalbedarf (Orientierung)</div>
+          <div style={{ fontSize: "12px", color: "#9CA3AF", lineHeight: 1.5, marginBottom: "12px" }}>
+            Grobe Näherung ohne Abzinsung auf Basis der angezeigten Monatslücke: × 12 Monate × statistische Rentenphase (20 bzw. 24 Jahre).
+          </div>
+          <div style={T.compareGrid}>
+            <div style={{ ...T.compareCard, borderTop: `3px solid ${S1}` }}>
+              <div style={{ fontSize: "11px", fontWeight: "600", color: "#9CA3AF", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: "6px" }}>Mann (20 J)</div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#1F2937", letterSpacing: "-0.5px", marginBottom: "6px" }}>
+                {fmt(R.lueckeAdjusted * 12 * 20)}
+              </div>
+            </div>
+            <div style={{ ...T.compareCard, borderTop: `3px solid ${S2}` }}>
+              <div style={{ fontSize: "11px", fontWeight: "600", color: "#9CA3AF", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: "6px" }}>Frau (24 J)</div>
+              <div style={{ fontSize: "22px", fontWeight: "800", color: "#1F2937", letterSpacing: "-0.5px", marginBottom: "6px" }}>
+                {fmt(R.lueckeAdjusted * 12 * 24)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Lösungs-Vergleich: ETF vs. Rentenversicherung ─────────────────── */}
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Lösungs-Vergleich</div>
+          <div style={T.compareGrid}>
+            {[
+              {
+                title: "ETF / Kapitalanlage",
+                accent: S1,
+                badge: "Flexibilität",
+                bullets: [
+                  "Ihr Kapital bleibt in der Regel flexibel anlegbar, umschichtbar und teilweise jederzeit verfügbar.",
+                  "Vermögen ist oft vererbbar — Sie behalten die Kontrolle über den Nachlass.",
+                  "Keine lebenslange Zahlungsgarantie: Bei langem Leben kann das Kapital nicht ausreichen.",
+                ],
+              },
+              {
+                title: "Rentenversicherung",
+                accent: S3,
+                badge: "Lebenslange Garantie",
+                bullets: [
+                  "Viele Tarife bieten eine vertraglich fixierte, lebenslange Rente — unabhängig davon, wie alt Sie werden.",
+                  "Hohe Planungssicherheit für Ihre Fixkosten im Alter.",
+                  "Geringere Flexibilität während der Ansparphase; typisch weniger Restkapital für Erben.",
+                ],
+              },
+            ].map(({ title, accent, badge, bullets }) => (
+              <div key={title} style={{ ...T.compareCard, borderTop: `3px solid ${accent}` }}>
+                <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "4px" }}>
+                  <div style={T.compareCardTitle}>{title}</div>
+                  <span style={{ fontSize: "10px", fontWeight: "700", color: accent, background: `${accent}18`, padding: "3px 9px", borderRadius: "999px" }}>{badge}</span>
+                </div>
+                {bullets.slice(0, 3).map((line, j) => (
+                  <div key={j} style={T.compareBullet}>
+                    <span style={{ position: "absolute", left: 0, top: "0.5em", width: "5px", height: "5px", borderRadius: "50%", background: accent, opacity: 0.85 }} aria-hidden />
+                    {line}
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Section 1: So lässt sich Ihre Situation einordnen ─────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>So lässt sich Ihre Situation einordnen</div>
-          <div style={T.cardContext}>
-            {[
-              { icon: "🏛️", title: "Gesetzliche Rente deckt einen Teil", text: `Die gesetzliche Rente liefert eine Basis (ca. ${fmt(R.gesRenteEff)}/Mon.), ersetzt aber typischerweise nur 40–50 % des letzten Nettos — der Rest ist Ihre Lücke.` },
-              { icon: "⏳", title: "Weitere Vorsorge ist notwendig", text: "Gesetzliche Rente allein reicht für die meisten Menschen nicht, um den gewohnten Lebensstandard zu halten — der Unterschied muss privat oder betrieblich gefüllt werden." },
-              { icon: "📈", title: "Die Lücke entsteht langfristig", text: `Sie haben noch ${R.jahreBis} Jahre bis zur Rente. Jedes Jahr früher bedeutet weniger monatlicher Aufwand — Warten wird teurer.` },
-            ].map(({ icon, title, text }, i, arr) => (
-              <div key={i} style={{ display: "flex", gap: "12px", alignItems: "flex-start", paddingBottom: i < arr.length - 1 ? "14px" : "0", marginBottom: i < arr.length - 1 ? "14px" : "0", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.06)" : "none" }}>
-                <span style={{ fontSize: "18px", flexShrink: 0 }}>{icon}</span>
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", marginBottom: "3px" }}>{title}</div>
-                  <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.6 }}>{text}</div>
-                </div>
-              </div>
             ))}
           </div>
         </div>
 
-        {/* ── Section 2: Was das konkret bedeutet ──────────────────────────── */}
+        {/* ── Zeitfaktor: Preis des Wartens ─────────────────────────────────── */}
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Zeitfaktor</div>
+          <div style={T.warnCard}>
+            <div style={{ fontSize: "13px", fontWeight: "700", color: "#C0392B", marginBottom: "8px" }}>Der Preis des Wartens</div>
+            <div style={{ fontSize: "13px", color: "#7B2A2A", lineHeight: 1.65, marginBottom: "12px" }}>
+              Je länger Sie mit dem Aufbau zusätzlicher Vorsorge warten, desto höher wird die nötige Sparrate — der Zinseszinseffekt wirkt am stärksten, wenn Sie früh einsteigen.
+            </div>
+            <div style={{ ...T.compareGrid, gap: "8px" }}>
+              <div style={{ padding: "10px 12px", background: "#F0FDF4", borderRadius: "10px", textAlign: "center", border: "1px solid #BBF7D0" }}>
+                <div style={{ fontSize: "12px", fontWeight: "600", color: "#059669" }}>Heute starten</div>
+                <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "3px", lineHeight: 1.4 }}>Niedrigere Monatsrate<br />Maximaler Zinseszins</div>
+              </div>
+              <div style={{ padding: "10px 12px", background: "#FFF6F5", borderRadius: "10px", textAlign: "center", border: "1px solid #F2D4D0" }}>
+                <div style={{ fontSize: "12px", fontWeight: "600", color: "#C0392B" }}>5 Jahre warten</div>
+                <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "3px", lineHeight: 1.4 }}>Deutlich höhere Rate<br />Weniger verbleibende Laufzeit</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Was das konkret bedeutet (Lücke) ─────────────────────────────── */}
         <div style={T.section}>
           <div style={T.sectionLbl}>Was das konkret bedeutet</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {R.lueckeAdjusted > 0 && (
-              <div style={T.warnCard}>
-                <div style={{ fontSize: "13px", fontWeight: "700", color: "#C0392B", marginBottom: "6px" }}>Lebensstandard sinkt ohne Vorsorge</div>
-                <div style={{ fontSize: "13px", color: "#7B2A2A", lineHeight: 1.65 }}>
-                  Ohne zusätzliche Vorsorge fehlen Ihnen im Rentenalter monatlich ca. <strong style={{ color: "#C0392B" }}>{fmt(R.lueckeAdjusted)}</strong>. Das entspricht einem Einkommensverlust von ca. {100 - R.deckung} % gegenüber heute.
-                </div>
-              </div>
-            )}
-            <div style={T.cardContext}>
-              <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", marginBottom: "6px" }}>Späterer Einstieg = höhere Belastung</div>
-              <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.65, marginBottom: "10px" }}>
-                Wer mit der privaten Vorsorge wartet, muss später deutlich mehr aufwenden. Der Zinseszinseffekt wirkt bei frühem Start am stärksten.
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                <div style={{ padding: "10px 12px", background: "#F0FDF4", borderRadius: "10px", textAlign: "center" }}>
-                  <div style={{ fontSize: "12px", fontWeight: "600", color: "#059669" }}>Heute starten</div>
-                  <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "3px", lineHeight: 1.4 }}>Niedrige Monatsrate<br />Maximaler Zinseszins</div>
-                </div>
-                <div style={{ padding: "10px 12px", background: "#FFF6F5", borderRadius: "10px", textAlign: "center" }}>
-                  <div style={{ fontSize: "12px", fontWeight: "600", color: "#C0392B" }}>5 Jahre warten</div>
-                  <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "3px", lineHeight: 1.4 }}>Deutlich höhere Rate<br />Weniger Laufzeit</div>
-                </div>
+          {R.lueckeAdjusted > 0 ? (
+            <div style={T.warnCard}>
+              <div style={{ fontSize: "13px", fontWeight: "700", color: "#C0392B", marginBottom: "6px" }}>Lebensstandard ohne Nachbesserung</div>
+              <div style={{ fontSize: "13px", color: "#7B2A2A", lineHeight: 1.65 }}>
+                Ohne zusätzliche Vorsorge fehlen Ihnen im Rentenalter monatlich rund <strong style={{ color: "#C0392B" }}>{fmt(R.lueckeAdjusted)}</strong> zum gewählten Ziel — das entspricht grob einem Deckungsgrad von {R.deckung} % Ihres angestrebten Ruhestandsnettos.
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* ── Section 3: Einmalbetrag vs. lebenslange Rente ────────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Einmalbetrag vs. lebenslange Rente</div>
-          <div style={T.cardPrimary}>
-            {[
-              {
-                label: "Kapitalanlage",
-                icon: "💰",
-                pros: ["Flexibel verfügbar und vererbbar", "Potenziell höhere Rendite"],
-                cons: ["Kapital kann aufgebraucht werden", "Kein Schutz gegen langes Leben"],
-              },
-              {
-                label: "Rentenversicherung",
-                icon: "🔄",
-                pros: ["Zahlt lebenslang — egal wie alt", "Planungssicherheit im Alter"],
-                cons: ["Weniger flexibel", "Kein Kapital für Erben"],
-                highlight: true,
-              },
-            ].map(({ label, icon, pros, cons, highlight }, i, arr) => (
-              <div key={i} style={{ padding: "16px 20px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none", borderLeft: highlight ? `3px solid ${S3}` : "3px solid transparent" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
-                  <span style={{ fontSize: "18px" }}>{icon}</span>
-                  <div style={{ fontSize: "14px", fontWeight: "600", color: "#1F2937" }}>{label}</div>
-                  {highlight && <span style={{ fontSize: "10px", fontWeight: "700", color: S3, background: `${S3}15`, padding: "2px 8px", borderRadius: "999px" }}>Lebenslanger Schutz</span>}
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-                  <div style={{ padding: "8px 10px", background: "#F0FDF4", borderRadius: "8px" }}>
-                    <div style={{ fontSize: "11px", fontWeight: "700", color: "#059669", marginBottom: "4px" }}>Vorteile</div>
-                    {pros.map((pr, j) => <div key={j} style={{ fontSize: "11px", color: "#4B5563", lineHeight: 1.4, marginBottom: "2px" }}>+ {pr}</div>)}
-                  </div>
-                  <div style={{ padding: "8px 10px", background: "#FFF6F5", borderRadius: "8px" }}>
-                    <div style={{ fontSize: "11px", fontWeight: "700", color: "#C0392B", marginBottom: "4px" }}>Bedenken</div>
-                    {cons.map((cn, j) => <div key={j} style={{ fontSize: "11px", color: "#4B5563", lineHeight: 1.4, marginBottom: "2px" }}>— {cn}</div>)}
-                  </div>
-                </div>
+          ) : (
+            <div style={T.cardContext}>
+              <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.65 }}>
+                Mit Ihren Angaben ist die Zielrente voraussichtlich erreichbar. Trotzdem lohnt sich ein Abgleich mit Rentenbescheid und Verträgen — insbesondere bei Lebens- oder Berufsänderungen.
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* ── Section 4: Das kann sinnvoll sein ────────────────────────────── */}
@@ -514,10 +571,10 @@ export default function RentenRechner() {
         <div style={T.section}>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {[
-              { v: 60, l: "60 % meines Einkommens", d: `= ca. ${fmt(p.netto * 0.6)}/Monat · Basisversorgung` },
-              { v: 70, l: "70 % meines Einkommens", d: `= ca. ${fmt(p.netto * 0.7)}/Monat · Typisches Ziel ★`, star: true },
-              { v: 80, l: "80 % meines Einkommens", d: `= ca. ${fmt(p.netto * 0.8)}/Monat · Guter Lebensstandard` },
-              { v: 90, l: "90 % meines Einkommens", d: `= ca. ${fmt(p.netto * 0.9)}/Monat · Voller Lebensstandard` },
+              { v: 60, l: "60 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.6)}/Monat · Basisversorgung` },
+              { v: 70, l: "70 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.7)}/Monat · Typisches Ziel ★`, star: true },
+              { v: 80, l: "80 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.8)}/Monat · Guter Lebensstandard` },
+              { v: 90, l: "90 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.9)}/Monat · Voller Lebensstandard` },
             ].map(({ v, l, d }) => (
               <SelectionCard key={v} value={String(v)} label={l} description={d}
                 selected={p.zielProzent === v} accent={C} onClick={() => set("zielProzent", v)} />
@@ -572,7 +629,7 @@ export default function RentenRechner() {
           </div>
         </div>
         <div style={{ height: "120px" }} />
-        <Footer onNext={nextScr} onBack={backScr} label="Mein Ergebnis anzeigen" T={T} />
+        <Footer onNext={nextScr} onBack={backScr} label="Ihr Ergebnis anzeigen" T={T} />
       </>}
     </div>
   );

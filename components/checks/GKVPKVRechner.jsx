@@ -5,7 +5,7 @@ import { useCheckConfig } from "@/lib/useCheckConfig";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import ResultPage from "@/components/checks/gkvpkv/ResultPage";
-(() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fafafa;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}.gkvpkv-smart-block{animation:fadeIn 0.42s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e2e8f0;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
+(() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#ffffff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}.gkvpkv-smart-block{animation:fadeIn 0.42s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#f0f0f0;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}@media (max-width:540px){.gkvpkv-stack-sm{grid-template-columns:1fr !important;}}`;document.head.appendChild(s);})();
 // JAEG 2026: 77.400 € / Jahr = 6.450 € / Monat
 const JAEG_MONAT = 6450;
 const BBG_KV    = 5812.5;
@@ -45,64 +45,69 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV }) {
   return { unterGrenze, hatKinder, hatPartner, partnerInGKV,
            gkvANAnteil, agAnteil, empfehlung, headline, subline, alter, brutto };
 }
-function makeGKVPKVT(C){return{page:{minHeight:"100vh",background:"#fafafa",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.92)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderBottom:"1px solid #f1f5f9",padding:"0 28px",height:"56px",display:"flex",alignItems:"center",justifyContent:"space-between"},brandMark:{fontSize:"15px",fontWeight:"700",letterSpacing:"-0.03em",color:"#0f172a"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"10px",fontWeight:"600",color:"#94a3b8",letterSpacing:"0.08em",textTransform:"uppercase"},prog:{height:"2px",background:"#f1f5f9"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"44px 28px 32px"},eyebrow:{fontSize:"10px",fontWeight:"600",color:"#94a3b8",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"14px"},h1:{fontSize:"24px",fontWeight:"700",color:"#0f172a",lineHeight:1.22,letterSpacing:"-0.55px"},body:{fontSize:"15px",color:"#64748b",lineHeight:1.65,marginTop:"12px"},section:{padding:"0 28px",marginBottom:"32px"},divider:{height:"1px",background:"#f1f5f9",margin:"0 28px 28px"},card:{border:"1px solid #eef2f6",borderRadius:"12px",overflow:"hidden",background:"#fff"},row:{padding:"14px 16px",borderBottom:"1px solid #f1f5f9"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#475569",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#94a3b8",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.96)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",borderTop:"1px solid #f1f5f9",padding:"16px 28px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"14px 20px",background:d?"#e2e8f0":C,color:d?"#94a3b8":"#fff",borderRadius:"10px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#94a3b8",fontSize:"13px",marginTop:"8px",cursor:"pointer"},infoBox:{padding:"14px 16px",background:"#f8fafc",borderRadius:"10px",fontSize:"13px",color:"#64748b",lineHeight:1.6},inputEl:{width:"100%",padding:"12px 14px",border:"1px solid #e2e8f0",borderRadius:"8px",fontSize:"14px",color:"#0f172a",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"10px 14px",borderRadius:"8px",border:`1px solid ${a?(c||C):"#e2e8f0"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#334155",transition:"all 0.15s",cursor:"pointer"}),
-resultHero:{padding:"48px 28px 36px",textAlign:"center",background:"transparent"},
-resultEyebrow:{fontSize:"10px",fontWeight:"600",color:"#94a3b8",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:"12px"},
+function makeGKVPKVT(C){return{page:{minHeight:"100vh",background:"#ffffff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},brandMark:{fontSize:"15px",fontWeight:"700",letterSpacing:"-0.03em",color:"#111"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},logoTxt:{fontSize:"13px",fontWeight:"600",color:"#111",letterSpacing:"-0.1px"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",background:"#fff"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?(c||C):"#e8e8e8"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"}),
+resultHero:{padding:"52px 24px 40px",textAlign:"center",background:"#ffffff"},
+resultEyebrow:{fontSize:"12px",fontWeight:"500",color:"#9CA3AF",letterSpacing:"0.2px",marginBottom:"14px"},
 resultNumber:(C2)=>({fontSize:"52px",fontWeight:"800",color:C2,letterSpacing:"-2.5px",lineHeight:1,marginBottom:"8px"}),
-resultUnit:{fontSize:"14px",color:"#94a3b8",marginBottom:"18px"},
-resultH1:{fontSize:"24px",fontWeight:"800",letterSpacing:"-0.55px",lineHeight:1.2,color:"#0f172a"},
-resultBody:{fontSize:"15px",color:"#64748b",lineHeight:1.65},
-tableIntro:{fontSize:"13px",color:"#64748b",lineHeight:1.55},
-pillAgency:{display:"inline-flex",alignItems:"center",padding:"6px 14px",borderRadius:"999px",fontSize:"11px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",color:"#64748b",background:"#f1f5f9",border:"1px solid #e2e8f0"},
-matrixMuted:{fontSize:"12px",fontWeight:"600",color:"#94a3b8",marginBottom:"8px"},
-matrixCellText:{fontSize:"12px",color:"#64748b",lineHeight:1.45},
-heroStepTitle:{marginTop:"36px",fontSize:"17px",fontWeight:"600",color:"#0f172a",letterSpacing:"-0.02em",lineHeight:1.3},
-heroStepHint:{marginTop:"8px",fontSize:"14px",color:"#94a3b8",lineHeight:1.6,maxWidth:"36ch"},
-dankePadding:{padding:"48px 28px",textAlign:"center"},
-dankeTitle:{fontSize:"22px",fontWeight:"700",color:"#0f172a",marginBottom:"10px"},
-dankeBody:{fontSize:"15px",color:"#64748b",lineHeight:1.65,marginBottom:"28px"},
-dankeCard:{border:"1px solid #e2e8f0",borderRadius:"12px",overflow:"hidden",textAlign:"left",background:"#fff"},
-dankeCardHead:{padding:"14px 16px",borderBottom:"1px solid #f1f5f9"},
-dankeEyebrow:{fontSize:"11px",color:"#94a3b8",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"4px"},
-dankeName:{fontSize:"14px",fontWeight:"600",color:"#0f172a"},
-dankeFirma:{fontSize:"12px",color:"#94a3b8",marginTop:"1px"},
+resultUnit:{fontSize:"14px",color:"#9CA3AF",marginBottom:"18px"},
+resultH1:{fontSize:"24px",fontWeight:"800",letterSpacing:"-0.55px",lineHeight:1.2,color:"#111"},
+resultBody:{fontSize:"15px",color:"#666",lineHeight:1.65},
+tableIntro:{fontSize:"13px",color:"#666",lineHeight:1.55},
+matrixMuted:{fontSize:"12px",fontWeight:"600",color:"#888",marginBottom:"8px"},
+matrixCellText:{fontSize:"12px",color:"#666",lineHeight:1.45},
+heroStepTitle:{marginTop:"36px",fontSize:"17px",fontWeight:"600",color:"#111",letterSpacing:"-0.02em",lineHeight:1.3},
+heroStepHint:{marginTop:"8px",fontSize:"14px",color:"#888",lineHeight:1.6,maxWidth:"36ch"},
+dankePadding:{padding:"48px 24px",textAlign:"center"},
+dankeTitle:{fontSize:"22px",fontWeight:"700",color:"#111",marginBottom:"10px"},
+dankeBody:{fontSize:"15px",color:"#666",lineHeight:1.65,marginBottom:"28px"},
+dankeCard:{border:"1px solid #e8e8e8",borderRadius:"12px",overflow:"hidden",textAlign:"left",background:"#fff"},
+dankeCardHead:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},
+dankeEyebrow:{fontSize:"11px",color:"#888",fontWeight:"600",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"4px"},
+dankeName:{fontSize:"14px",fontWeight:"600",color:"#111"},
+dankeFirma:{fontSize:"12px",color:"#888",marginTop:"1px"},
 dankeContacts:{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"},
-dankeLinkBtn:{marginTop:"20px",fontSize:"13px",color:"#94a3b8",cursor:"pointer",background:"none",border:"none",fontFamily:"inherit"},
-kontaktSummary:{border:"1px solid #e2e8f0",borderRadius:"12px",padding:"12px 14px",background:"#fff",marginBottom:"16px"},
-kontaktSummarySub:{fontSize:"12px",color:"#94a3b8"},
-demoNotice:{fontSize:"13px",color:"#94a3b8",textAlign:"center",marginBottom:"14px",lineHeight:1.5},
-insightText:{fontSize:"13px",lineHeight:1.65,color:"#334155",fontWeight:500},
-infoHintBox:{marginTop:"12px",padding:"12px 14px",borderRadius:"10px",background:"#f8fafc",border:"1px solid #e2e8f0"},
-infoHintText:{fontSize:"12px",lineHeight:1.6,color:"#64748b",fontWeight:500},
+dankeLinkBtn:{marginTop:"20px",fontSize:"13px",color:"#888",cursor:"pointer",background:"none",border:"none",fontFamily:"inherit"},
+kontaktSummary:{border:"1px solid #e8e8e8",borderRadius:"12px",padding:"12px 14px",background:"#fff",marginBottom:"16px"},
+kontaktSummarySub:{fontSize:"12px",color:"#888"},
+demoNotice:{fontSize:"13px",color:"#888",textAlign:"center",marginBottom:"14px",lineHeight:1.5},
+insightText:{fontSize:"13px",lineHeight:1.65,color:"#444",fontWeight:500},
+infoHintBox:{marginTop:"12px",padding:"12px 14px",borderRadius:"10px",background:"#f9f9f9",border:"1px solid #e8e8e8"},
+infoHintText:{fontSize:"12px",lineHeight:1.6,color:"#666",fontWeight:500},
 smartPillRow:{display:"inline-flex",alignItems:"flex-start",gap:"10px",padding:"14px 16px",borderRadius:"14px",maxWidth:"100%"},
-smartPillText:{fontSize:"13px",lineHeight:1.65,color:"#334155",fontWeight:500},
+smartPillText:{fontSize:"13px",lineHeight:1.65,color:"#444",fontWeight:500},
 statusOk:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#15803D"},
 statusInfo:(C2)=>({display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:`${C2}0d`,border:`1px solid ${C2}33`,borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:C2}),
 statusWarn:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#FFF6F5",border:"1px solid #F2D4D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#C0392B"},
-resultSub:{fontSize:"13px",color:"#94a3b8",lineHeight:1.55,marginTop:"12px"},
+resultSub:{fontSize:"13px",color:"#9CA3AF",lineHeight:1.55,marginTop:"12px"},
 warnCard:{background:"#FFF6F5",border:"1px solid #F2D4D0",borderLeft:"3px solid #C0392B",borderRadius:"14px",padding:"18px 20px"},
 warnCardTitle:{fontSize:"13px",fontWeight:"700",color:"#C0392B",marginBottom:"6px"},
 warnCardText:{fontSize:"13px",color:"#7B2A2A",lineHeight:1.65},
-warnCardNote:{fontSize:"12px",color:"#94a3b8",marginTop:"10px"},
-cardPrimary:{border:"1px solid #e2e8f0",borderRadius:"16px",overflow:"hidden",background:"#FFFFFF",boxShadow:"0 4px 20px rgba(15,23,42,0.06)"},
-cardContext:{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:"14px",padding:"18px 20px"},
-sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#64748b",marginBottom:"12px"},
-compareMuted:{fontSize:"12px",color:"#64748b",lineHeight:1.55},
-infoGridFocus:{fontSize:"10px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",color:"#94a3b8",marginBottom:"6px",lineHeight:1.35},
-infoGridTitle:{fontSize:"15px",fontWeight:"700",color:"#0f172a",marginBottom:"8px",lineHeight:1.3},
-infoGridBody:{fontSize:"13px",color:"#64748b",lineHeight:1.65},
-fahrplanIntro:{fontSize:"14px",color:"#64748b",maxWidth:"34ch",margin:"0 auto",lineHeight:1.6},
-fahrplanStepTitle:{fontSize:"14px",fontWeight:"700",color:"#0f172a",marginBottom:"5px",lineHeight:1.3},
-fahrplanStepText:{fontSize:"13px",color:"#64748b",lineHeight:1.6},
-fahrplanCard:{display:"flex",gap:"14px",alignItems:"flex-start",padding:"14px 16px",borderRadius:"14px",border:"1px solid #e2e8f0",background:"#fff"},
-infoGridShell:{border:"1px solid #e2e8f0",borderRadius:"14px",padding:"16px 16px 17px",background:"#fff",boxShadow:"0 1px 6px rgba(15,23,42,0.04)"},
-infoGridIconWrap:{width:"42px",height:"42px",borderRadius:"11px",background:"#f1f5f9",display:"flex",alignItems:"center",justifyContent:"center",color:"#64748b",flexShrink:0},
+warnCardNote:{fontSize:"12px",color:"#888",marginTop:"10px"},
+cardPrimary:{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"20px",overflow:"hidden",background:"#FFFFFF",boxShadow:"0 6px 24px rgba(17,24,39,0.08)"},
+cardContext:{background:"#FAFAF8",border:"1px solid rgba(17,24,39,0.05)",borderRadius:"16px",padding:"18px 20px"},
+sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"},
+compareMuted:{fontSize:"12px",color:"#666",lineHeight:1.55},
+infoGridFocus:{fontSize:"10px",fontWeight:"600",letterSpacing:"0.06em",textTransform:"uppercase",color:"#888",marginBottom:"6px",lineHeight:1.35},
+infoGridTitle:{fontSize:"15px",fontWeight:"700",color:"#111",marginBottom:"8px",lineHeight:1.3},
+infoGridBody:{fontSize:"13px",color:"#666",lineHeight:1.65},
+infoGridShell:{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"14px",padding:"16px 16px 17px",background:"#fff",boxShadow:"0 1px 6px rgba(17,24,39,0.04)"},
+infoGridIconWrap:{width:"42px",height:"42px",borderRadius:"11px",background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",color:"#888",flexShrink:0},
 };}
 const KV_WIZARD_STEPS = 5;
-function KvNavigatorHeader({ T }) {
+function KvNavigatorHeader({ T, maklerFirma }) {
   return (
     <div style={T.header}>
-      <span style={T.brandMark}>KV-Navigator</span>
+      <div style={T.logo}>
+        <div style={T.logoMk}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+            <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
+            <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6" />
+            <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6" />
+            <rect x="8" y="8" width="5" height="5" rx="1" fill="white" />
+          </svg>
+        </div>
+        <span style={T.logoTxt}>{maklerFirma}</span>
+      </div>
       <span style={T.badge}>Krankenversicherung</span>
     </div>
   );
@@ -218,7 +223,7 @@ export default function GKVPKVRechner(){
   // Danke
   if(danke)return(
     <div style={{...T.page,"--accent":C}}>
-      <KvNavigatorHeader T={T} />
+      <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
       <div style={T.dankePadding} className="fade-in">
         <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
         <div style={T.dankeTitle}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
@@ -244,7 +249,7 @@ export default function GKVPKVRechner(){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
     return(
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-        <KvNavigatorHeader T={T} />
+        <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
         <div style={T.prog}><div style={T.progFil(100)}/></div>
         <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir Sie erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div></div>
         <div style={T.section}>
@@ -338,22 +343,8 @@ export default function GKVPKVRechner(){
   // ── Phase 1: Wizard (Screens 1–4, Familie mit Smart-Substeps) ────────────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <KvNavigatorHeader T={T} />
+      <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
       <div style={T.prog}><div style={T.progFil(wizardProgPct)} /></div>
-      {scr === 4 && (
-        <div
-          style={{
-            padding: "10px 28px 0",
-            fontSize: "11px",
-            fontWeight: 500,
-            color: "#94a3b8",
-            textAlign: "center",
-            letterSpacing: "0.04em",
-          }}
-        >
-          Analyse von: {MAKLER.firma}
-        </div>
-      )}
 
       {/* Screen 1: Beschäftigung — Einstiegs-Hero */}
       {scr === 1 && <>

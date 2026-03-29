@@ -1,6 +1,6 @@
 /**
  * GKV/PKV-Ergebnis — Clean Layout wie Einkommensrechner (BUKTG): Hero, Duell-Karten (GKV/PKV),
- * InfoGrid, Faktoren, Fahrplan, Footer. Fünf Ergebnis-Pfade über `resultPath`. Sie-Form.
+ * InfoGrid, Faktoren, Footer. Fünf Ergebnis-Pfade über `resultPath`. Sie-Form.
  */
 
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
@@ -403,7 +403,7 @@ function cardBorderStyle(border) {
         boxShadow: "0 4px 16px rgba(192, 57, 43, 0.06)",
       };
     default:
-      return { border: "1px solid #e2e8f0", boxShadow: "none" };
+      return { border: "1px solid rgba(17,24,39,0.08)", boxShadow: "none" };
   }
 }
 
@@ -422,7 +422,7 @@ function badgeStyle(tone) {
   if (tone === "caution") {
     return { background: "#FFF6F5", color: "#9A3412", border: "1px solid #F2D4D0" };
   }
-  return { background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0" };
+  return { background: "#f0f0f0", color: "#666", border: "1px solid #e8e8e8" };
 }
 
 function CompareCard({ label, tagline, color, bg, bullets, border, badge, bulletAccent, T }) {
@@ -435,9 +435,10 @@ function CompareCard({ label, tagline, color, bg, bullets, border, badge, bullet
     <div
       style={{
         position: "relative",
+        minWidth: 0,
         ...b,
         borderRadius: "18px",
-        padding: "18px 16px 16px",
+        padding: "18px 14px 16px",
         background: border === "muted" ? "#f8fafc" : bg,
         transition: "border-color 0.2s ease, box-shadow 0.2s ease",
       }}
@@ -464,81 +465,13 @@ function CompareCard({ label, tagline, color, bg, bullets, border, badge, bullet
         </div>
       ) : null}
       <div style={{ fontSize: "15px", fontWeight: "800", color, marginBottom: "2px", paddingRight: badge ? "78px" : 0 }}>{label}</div>
-      <div style={{ fontSize: "11px", fontWeight: "600", color: "#94a3b8", marginBottom: "12px", paddingRight: badge ? "78px" : 0 }}>{tagline}</div>
+      <div style={{ fontSize: "11px", fontWeight: "600", color: "#888", marginBottom: "12px", paddingRight: badge ? "78px" : 0 }}>{tagline}</div>
       {bullets.map((row, i) => (
         <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: i < bullets.length - 1 ? "8px" : 0 }}>
           <BulletLead kind={row.kind === "ok" ? "ok" : "dot"} accent={bulletAccent} />
-          <span style={T.compareMuted}>{row.text}</span>
+          <span style={{ ...T.compareMuted, overflowWrap: "break-word", wordBreak: "break-word" }}>{row.text}</span>
         </div>
       ))}
-    </div>
-  );
-}
-
-function FahrplanSection({ T, onCta }) {
-  const steps = [
-    {
-      title: "Kennenlernen",
-      text: "In einem ersten Gespräch klären wir Ihre Ziele, Rahmenbedingungen und offenen Fragen — unverbindlich und für Sie verständlich.",
-    },
-    {
-      title: "Marktvergleich",
-      text: "Wir ordnen GKV- und PKV-Optionen für Sie ein und erläutern Unterschiede bei Beiträgen, Leistungen und langfristiger Entwicklung.",
-    },
-    {
-      title: "Einrichtung",
-      text: "Nach Ihrer Entscheidung unterstützen wir die Umsetzung beim passenden Anbieter — damit Sie strukturiert und ohne Überraschungen starten können.",
-    },
-  ];
-
-  return (
-    <div style={T.section}>
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <div style={{ ...T.sectionLbl, textAlign: "center", marginBottom: "8px" }}>Ihr Weg zum perfekten System</div>
-        <p style={T.fahrplanIntro}>Drei einfache Schritte bis zur für Sie passenden Absicherung.</p>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "11px", marginBottom: "22px" }}>
-        {steps.map((s, i) => (
-          <div key={s.title} style={T.fahrplanCard}>
-            <div
-              style={{
-                width: "30px",
-                height: "30px",
-                borderRadius: "50%",
-                background: "var(--primary)",
-                color: "#fff",
-                fontSize: "13px",
-                fontWeight: "800",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-              aria-hidden
-            >
-              {i + 1}
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={T.fahrplanStepTitle}>{s.title}</div>
-              <div style={T.fahrplanStepText}>{s.text}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <button
-        type="button"
-        onClick={onCta}
-        style={{
-          ...T.btnPrim(false),
-          width: "100%",
-          padding: "16px 22px",
-          fontSize: "15px",
-          fontWeight: "600",
-          borderRadius: "10px",
-        }}
-      >
-        Strategie-Check anfordern
-      </button>
     </div>
   );
 }
@@ -570,7 +503,17 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
   return (
     <div style={{ ...T.page, "--accent": C, "--primary": C }} className="fade-in">
       <div style={T.header}>
-        <span style={T.brandMark}>KV-Navigator</span>
+        <div style={T.logo}>
+          <div style={T.logoMk}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+              <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
+              <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6" />
+              <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6" />
+              <rect x="8" y="8" width="5" height="5" rx="1" fill="white" />
+            </svg>
+          </div>
+          <span style={T.logoTxt}>{maklerFirma}</span>
+        </div>
         <span style={T.badge}>Krankenversicherung</span>
       </div>
       <div style={T.prog}>
@@ -587,7 +530,6 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
             textAlign: "center",
           }}
         >
-          <div style={{ ...T.pillAgency, margin: "0 auto 18px" }}>Analyse von: {maklerFirma}</div>
           <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>
             Einordnung · {PATH_LABEL_SIE[resultPath]}
           </div>
@@ -643,7 +585,14 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
         <div style={T.section}>
           <div style={T.sectionLbl}>Systemvergleich</div>
           <div style={{ ...T.tableIntro, marginBottom: "14px" }}>{copy.tableIntro}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div
+            className="gkvpkv-stack-sm"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
+              gap: "12px",
+            }}
+          >
             <CompareCard
               label="GKV"
               tagline={copy.gkv.tagline}
@@ -688,58 +637,65 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 key={label}
                 style={{
                   padding: "14px 20px",
-                  borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none",
+                  borderBottom: i < arr.length - 1 ? "1px solid #f0f0f0" : "none",
                 }}
               >
                 <div style={T.matrixMuted}>{label}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                <div
+                  className="gkvpkv-stack-sm"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 148px), 1fr))",
+                    gap: "8px",
+                  }}
+                >
                   <div
                     style={{
+                      minWidth: 0,
                       padding: "10px",
                       background: fav === "gkv" ? "#F0FDF4" : "#f8fafc",
                       borderRadius: "10px",
-                      border: fav === "gkv" ? "1px solid #BBF7D0" : "1px solid #e2e8f0",
+                      border: fav === "gkv" ? "1px solid #BBF7D0" : "1px solid #e8e8e8",
                     }}
                   >
                     <div
                       style={{
                         fontSize: "11px",
                         fontWeight: "700",
-                        color: fav === "gkv" ? GKV_COLOR : "#94a3b8",
+                        color: fav === "gkv" ? GKV_COLOR : "#888",
                         marginBottom: "4px",
                       }}
                     >
                       GKV
                     </div>
-                    <div style={T.matrixCellText}>{gkv}</div>
+                    <div style={{ ...T.matrixCellText, overflowWrap: "break-word", wordBreak: "break-word" }}>{gkv}</div>
                   </div>
                   <div
                     style={{
+                      minWidth: 0,
                       padding: "10px",
                       background: fav === "pkv" ? "#EFF6FF" : "#f8fafc",
                       borderRadius: "10px",
-                      border: fav === "pkv" ? "1px solid #BFDBFE" : "1px solid #e2e8f0",
+                      border: fav === "pkv" ? "1px solid #BFDBFE" : "1px solid #e8e8e8",
                     }}
                   >
                     <div
                       style={{
                         fontSize: "11px",
                         fontWeight: "700",
-                        color: fav === "pkv" ? PKV_COLOR : "#94a3b8",
+                        color: fav === "pkv" ? PKV_COLOR : "#888",
                         marginBottom: "4px",
                       }}
                     >
                       PKV
                     </div>
-                    <div style={T.matrixCellText}>{pkv}</div>
+                    <div style={{ ...T.matrixCellText, overflowWrap: "break-word", wordBreak: "break-word" }}>{pkv}</div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-
-        <FahrplanSection T={T} onCta={() => goTo(3)} />
 
         <div style={{ ...T.section, marginBottom: "24px" }}>
           <CheckBerechnungshinweis>
