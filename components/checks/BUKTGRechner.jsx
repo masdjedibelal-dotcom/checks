@@ -1047,7 +1047,7 @@ export default function BUKTGRechner() {
               {legalOpen === "calc" && (
                 <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
                   Vereinfachte Einordnung auf Basis Ihrer Angaben — Angestellte/Beamte/Auszubildende: (1) Lohnfortzahlung bzw. 100 % Netto in den ersten Wochen, (2) Krankengeldphase ab Woche 7 (GKV: 70 % des relevanten Bruttos bis BBG Krankengeld, orientierend 4.068 €/Mon. 2026, abzüglich Sozialabzug durch die Kasse ca. 12,2–12,5 %; zzgl. privates KTG falls angegeben), (3) langfristig staatliche EMR (bzw. Ruhegehalt bei Beamten) plus private BU/DU. Selbstständige GKV: im Chart ohne Phase 1 — Start mit Krankengeldphase (Tag 43 bzw. Tarif); Krankengeld nur bei gewähltem Anspruch, Bemessung bis BBG; sonst Phase 2 = 0 €. Netto = Brutto bzw. Gewinn bzw. Bezüge × 0,72 (Schätzwert). Auszubildende: nur GKV im Modell; Phasen 1–2 wie Angestellte; EMR in Phase 3 im Modell 0 € außer Szenario „Unfall“. Student/Schüler: Ziel-Netto; keine Lohnfortzahlung/KG/EMR aus Erwerbstätigkeit, Phase 3 = private BU (0 € staatlich). Beamte: Bezüge in Phase 1–2; Phase 3 Ruhegehalt pauschal 35 % Netto, außer Widerruf/Probe ohne Dienstunfall (0 €). PKV Angestellte: Gesamtbeitrag inkl. AG-Zuschuss; nach 6 Wochen entfällt der Zuschuss — im Szenario mit angenommen. PKV sonst: KTG abzüglich PKV-Eigenanteil ab Woche 7. · Grundlage §47 SGB V. EMR szenariobasiert (Psyche 0 €, Herz 34 % Netto, sonst 17 % Netto) · vereinfacht, §43 SGB VI.
-                  <span style={{ color: "#b8884a" }}> Keine Rechtsberatung.</span>
+                  <span style={{ color: "#666" }}> Keine Rechtsberatung.</span>
                 </div>
               )}
             </div>
@@ -1271,15 +1271,7 @@ export default function BUKTGRechner() {
           <div style={T.hero}>
             <div style={T.label}>Einkommens-Check · {scr} / {stepCount}</div>
             <div style={T.h1}>Welches Netto-Einkommen streben Sie nach dem Studium an?</div>
-            <div
-              style={{
-                fontSize: "14px",
-                lineHeight: 1.6,
-                color: "#b8884a",
-                fontWeight: 500,
-                marginTop: "10px",
-              }}
-            >
+            <div style={T.body}>
               Fokus: keine gesetzliche EMR aus Erwerbstätigkeit im Modell — private Vorsorge (z. B. BU) schließt die Lücke.
             </div>
           </div>
@@ -1315,15 +1307,7 @@ export default function BUKTGRechner() {
                     ? "Wie hoch ist Ihre monatliche Ausbildungsvergütung (Brutto)?"
                     : "Wie hoch ist Ihr monatliches Brutto-Einkommen?"}
             </div>
-            <div
-              style={{
-                fontSize: "14px",
-                lineHeight: 1.6,
-                color: "#b8884a",
-                fontWeight: 500,
-                marginTop: "10px",
-              }}
-            >
+            <div style={T.body}>
               {p.beruf === "selbst"
                 ? "Grundlage für Krankengeld (GKV, falls gewählt) bis BBG und für Ihre Netto-Schätzung (× 0,72)."
                 : p.beruf === "beamter"
