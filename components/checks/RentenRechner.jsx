@@ -186,6 +186,38 @@ function StoryHeroBlockRenten({ emoji, title, text }) {
   );
 }
 
+/** Nur Alter, Netto, Wunsch-Rentenalter — keine Berufs-/Familiendaten */
+function rentenStoryZeitEinkommenCopy(alter, nettoEinkommen, wunschRentenalter) {
+  const nettoStr = `${Math.round(Number(nettoEinkommen)).toLocaleString("de-DE")} €`;
+  const ra = Math.round(Number(wunschRentenalter));
+  if (alter < 40) {
+    return {
+      title: "Der Faktor Zeit.",
+      text: `Mit ${alter} Jahren haben Sie den größten Hebel: Den Zinseszins. Wir berechnen jetzt, wie viel von Ihrem heutigen Netto (${nettoStr}) im Jahr ${ra} als Kaufkraft übrig bleiben muss.`,
+    };
+  }
+  return {
+    title: "Präzision im Endspurt.",
+    text: `Bis zu Ihrem Wunsch-Rentenalter (${ra}) sind es noch wichtige Jahre. Wir kalkulieren jetzt, wie wir Ihr heutiges Netto von ${nettoStr} inflationsgeschützt in die Rente übertragen.`,
+  };
+}
+
+/** Monatliche gesetzliche Rente laut Eingabe (`p.gesRente`); 0 = nicht ausgefüllt */
+function rentenBridgeAnspruchCopy(rentenanspruchMonat) {
+  const r = Number(rentenanspruchMonat);
+  if (r > 0) {
+    const s = `${Math.round(r).toLocaleString("de-DE")} €`;
+    return {
+      title: "Basis-Check abgeschlossen.",
+      text: `Ihre bereits erworbenen Ansprüche von ${s} sind das Fundament. Wir ziehen jetzt die Inflation und Steuern ab, um die reale Lücke zu schließen.`,
+    };
+  }
+  return {
+    title: "Vorsorge-Check bereit.",
+    text: "Wir berechnen jetzt Ihren kompletten Bedarf von Null auf, damit Sie im Alter keine Kompromisse bei Ihrem Lebensstandard machen müssen.",
+  };
+}
+
 function LogoSVG() {
   return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;
 }
@@ -202,7 +234,7 @@ function Header({ phase, total, badge, makler, T }) {
   );
 }
 
-function Footer({ onNext, onBack, label="Weiter →", disabled=false, T }) {
+function Footer({ onNext, onBack, label="Weiter", disabled=false, T }) {
   return (
     <div style={T.footer}>
       <button style={T.btnPrim(disabled)} onClick={onNext} disabled={disabled}>{label}</button>
@@ -262,7 +294,7 @@ export default function RentenRechner() {
   const [scr, setScr] = useState(1);
   const [loading, setLoading] = useState(false);
   const [rentenArchiv, setRentenArchiv] = useState(null);
-  /** Intro, Alter, Zeit-Story, Rentenalter, Netto, Ziel, Vorsorge, Inflation, Bridge → Loader → Ergebnis */
+  /** Intro, Alter, Rentenalter, Netto, Zeit-&-Einkommens-Story, Ziel, Vorsorge, Inflation, Bridge → Loader → Ergebnis */
   const TOTAL_SCR = 9;
   const goTo   = (ph) => {
     setAk(k => k + 1);
@@ -508,7 +540,7 @@ export default function RentenRechner() {
     );
   }
 
-  // Phase 1: Story + 6 Datenschritte + Bridge (9 Screens), danach Loader → Phase 2
+  // Phase 1: Intro + Daten + Story (Alter/Netto/Rentenalter) + … + Bridge → Loader → Phase 2
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={scr} total={TOTAL_SCR} badge="Vorsorge-Check" makler={MAKLER} T={T} />
@@ -516,12 +548,12 @@ export default function RentenRechner() {
       {scr === 1 && (
         <>
           <StoryHeroBlockRenten
-            emoji="📈"
-            title="Ihre Kaufkraft im Jahr 2050."
-            text="Erfahren Sie in 2 Minuten, was von Ihrer Rente nach Inflation und Steuern wirklich übrig bleibt. Wir berechnen Ihre reale Vorsorgesituation."
+            emoji="⏳"
+            title="Ihre Freiheit im Alter."
+            text="Wie viel ist Ihr Geld in 20 oder 30 Jahren noch wert? Wir berechnen in 2 Minuten Ihre reale Kaufkraft und zeigen Ihnen, wie Sie Ihren Lebensstandard sicher halten."
           />
           <div style={{ height: "100px" }} />
-          <Footer onNext={nextScr} label="Jetzt Analyse starten" T={T} />
+          <Footer onNext={nextScr} label="Analyse starten" T={T} />
         </>
       )}
 
@@ -552,20 +584,8 @@ export default function RentenRechner() {
 
       {scr === 3 && (
         <>
-          <StoryHeroBlockRenten
-            emoji="⏳"
-            title="Zeit ist Ihr wertvollstes Kapital."
-            text="Wussten Sie, dass 5 Jahre früher starten Ihre notwendige Sparrate oft halbiert? Der Zinseszins arbeitet für Sie – oder gegen Sie. Wir kalkulieren diesen Effekt jetzt ein."
-          />
-          <div style={{ height: "100px" }} />
-          <Footer onNext={nextScr} onBack={backScr} label="Weiter zur Berechnung" T={T} />
-        </>
-      )}
-
-      {scr === 4 && (
-        <>
           <div style={{ ...T.hero, textAlign: "center" }}>
-            <div style={T.eyebrow}>Vorsorge-Check · 4 / {TOTAL_SCR}</div>
+            <div style={T.eyebrow}>Vorsorge-Check · 3 / {TOTAL_SCR}</div>
             <div style={T.h1}>Wann möchten Sie in Rente gehen?</div>
             <div style={T.body}>Das gesetzliche Rentenalter ist 67 — bei früherem Rentenbeginn sind Abschläge möglich.</div>
           </div>
@@ -593,10 +613,10 @@ export default function RentenRechner() {
         </>
       )}
 
-      {scr === 5 && (
+      {scr === 4 && (
         <>
           <div style={{ ...T.hero, textAlign: "center" }}>
-            <div style={T.eyebrow}>Vorsorge-Check · 5 / {TOTAL_SCR}</div>
+            <div style={T.eyebrow}>Vorsorge-Check · 4 / {TOTAL_SCR}</div>
             <div style={T.h1}>Wie viel verdienen Sie aktuell netto im Monat?</div>
           </div>
           <div style={T.section}>
@@ -606,6 +626,17 @@ export default function RentenRechner() {
           <Footer onNext={nextScr} onBack={backScr} label="Weiter" T={T} />
         </>
       )}
+
+      {scr === 5 && (() => {
+        const s2 = rentenStoryZeitEinkommenCopy(p.alter, p.netto, p.rentenAlter);
+        return (
+        <>
+          <StoryHeroBlockRenten emoji="📈" title={s2.title} text={s2.text} />
+          <div style={{ height: "100px" }} />
+          <Footer onNext={nextScr} onBack={backScr} label="Weiter" T={T} />
+        </>
+        );
+      })()}
 
       {scr === 6 && (
         <>
@@ -714,14 +745,16 @@ export default function RentenRechner() {
         </>
       )}
 
-      {scr === 9 && (
+      {scr === 9 && (() => {
+        const b3 = rentenBridgeAnspruchCopy(p.gesRente);
+        return (
         <>
-          <StoryHeroBlockRenten emoji="🎯" title="Analyse bereit." text={null} />
+          <StoryHeroBlockRenten emoji="🎯" title={b3.title} text={b3.text} />
           <div style={{ padding: "8px 24px 0", maxWidth: "420px", margin: "0 auto" }}>
             {[
-              "Berechnung Ihrer monatlichen Rentenlücke (Netto).",
-              "Berücksichtigung der individuellen Inflationsrate.",
-              "Ermittlung des notwendigen Kapitals für Ihren Ruhestand.",
+              "Hochrechnung der Kaufkraft (Inflations-Check).",
+              "Abgleich der Ansprüche mit dem Wunsch-Szenario.",
+              "Ermittlung des monatlichen Sparpotenzials.",
             ].map((line) => (
               <div
                 key={line}
@@ -752,7 +785,8 @@ export default function RentenRechner() {
             </button>
           </div>
         </>
-      )}
+        );
+      })()}
     </div>
   );
 }

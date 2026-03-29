@@ -16,10 +16,7 @@ import { CheckLoader } from "@/components/checks/CheckLoader";
 const WARN = "#c0392b";
 const OK = "#059669";
 const BAR_VORSORGE = "#0891b2";
-const BAR_EINK = "#7c3aed";
 const BAR_LUECKE = "#FEE2E2";
-/** BUKTG-Violett: Akzente, Primär-CTAs, Checks in diesem Flow */
-const PFLEGE_ACCENT = "#7c3aed";
 const AMBER_STAT = "#D97706";
 
 /** Orientierungswerte gesetzliche Pflegekasse (Monatsäquivalent, vereinfacht) */
@@ -27,6 +24,25 @@ const KASSE_STATIONAER = 1775;
 const KASSE_AMBULANT = 1100;
 
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
+
+const BUNDESLAENDER = [
+  "Baden-Württemberg",
+  "Bayern",
+  "Berlin",
+  "Brandenburg",
+  "Bremen",
+  "Hamburg",
+  "Hessen",
+  "Mecklenburg-Vorpommern",
+  "Niedersachsen",
+  "Nordrhein-Westfalen",
+  "Rheinland-Pfalz",
+  "Saarland",
+  "Sachsen",
+  "Sachsen-Anhalt",
+  "Schleswig-Holstein",
+  "Thüringen",
+];
 
 function LogoSVG() {
   return (
@@ -40,36 +56,27 @@ function LogoSVG() {
 }
 
 /**
- * Szenario → Ø Monatskosten, Kassenabzug (stationär / Mix / ambulant).
+ * Pflegeort → Ø Monatskosten, Kassenabzug (stationär vs. ambulant).
  * Netto-Lücke = Kosten − Kasse − Einkünfte − bestehende Vorsorge.
  */
-const SZENARIEN = {
-  intensiv: {
-    id: "intensiv",
-    heroName: "Akut",
-    kurzLabel: "Akut",
+const PFLEGE_ORT_MODELL = {
+  stationär: {
+    id: "stationär",
+    heroName: "Heim",
+    kurzLabel: "Stationär",
     basisKosten: 3800,
     basisKasse: KASSE_STATIONAER,
-    scenarioRisiko: "Kurzfristig hohe Belastung — oft mit relevantem Eigenanteil in der vollstationären Versorgung.",
-    scenarioDauer: "Typischerweise intensiver Beginn; Dauer und Verlauf sind individuell sehr unterschiedlich.",
+    scenarioRisiko: "Vollstationäre Versorgung — mit relevanten Eigenanteilen nach SGB XI.",
+    scenarioDauer: "Dauer und Höhe hängen von Bundesland, Einrichtung und individuellem Budget ab.",
   },
-  lang: {
-    id: "lang",
-    heroName: "Begleitung",
-    kurzLabel: "Begleitung",
-    basisKosten: 3200,
-    basisKasse: Math.round((KASSE_STATIONAER + KASSE_AMBULANT) / 2),
-    scenarioRisiko: "Längerfristiger Pflegebedarf — Wechsel zwischen ambulant und (teil-)stationär möglich.",
-    scenarioDauer: "Häufig über mehrere Jahre; die Kostenentwicklung hängt vom Pflegegrad und der Setting-Wahl ab.",
-  },
-  zuhause: {
-    id: "zuhause",
-    heroName: "Zuhause",
-    kurzLabel: "Zuhause",
+  ambulant: {
+    id: "ambulant",
+    heroName: "Ambulant",
+    kurzLabel: "Ambulant",
     basisKosten: 2200,
     basisKasse: KASSE_AMBULANT,
-    scenarioRisiko: "Schwerpunkt ambulant — dennoch können Umbau, Entlastung und Sachleistungen zusätzlich anfallen.",
-    scenarioDauer: "Oft längere Phase in gewohnter Umgebung; später kann ein Wechsel der Setting-Art nötig werden.",
+    scenarioRisiko: "Schwerpunkt ambulant — Zuzahlungen für Sachleistungen und Eigenanteile können anfallen.",
+    scenarioDauer: "Oft längere Phase zu Hause; später kann ein Wechsel der Versorgungsform nötig werden.",
   },
 };
 
@@ -124,7 +131,8 @@ function makePflegeT(C) {
   };
 }
 
-function SmartHintCardPflege({ children, icon = "💡" }) {
+function SmartHintCardPflege({ children, icon = "💡", accent }) {
+  const a = accent || "#2563eb";
   return (
     <div
       style={{
@@ -133,12 +141,12 @@ function SmartHintCardPflege({ children, icon = "💡" }) {
         alignItems: "flex-start",
         padding: "16px 18px",
         borderRadius: "16px",
-        background: "linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)",
-        border: "1px solid rgba(124, 58, 237, 0.22)",
-        boxShadow: "0 4px 14px rgba(124, 58, 237, 0.08)",
+        background: `linear-gradient(135deg, ${a}0a 0%, ${a}14 100%)`,
+        border: `1px solid ${a}33`,
+        boxShadow: `0 4px 14px ${a}14`,
         minWidth: 0,
         fontSize: "13px",
-        color: "#5B21B6",
+        color: "#374151",
         lineHeight: 1.55,
       }}
     >
@@ -163,6 +171,29 @@ function StoryHeroBlock({ emoji, title, text }) {
       {text ? <p style={STORY_BODY}>{text}</p> : null}
     </div>
   );
+}
+
+/** Nur pflegeOrt + region — keine weiteren Annahmen */
+function pflegeStoryKostenFokusCopy(pflegeOrt, region) {
+  const reg = region && String(region).trim() ? String(region).trim() : "Ihrer Region";
+  if (pflegeOrt === "stationär") {
+    return {
+      title: "Schutz für Ihr Lebenswerk.",
+      text: `Ein Heimplatz in ${reg} kostet oft deutlich über 2.500 € Eigenanteil pro Monat. Wir prüfen jetzt, wie viel von Ihrer Rente nach Abzug dieser Kosten für Sie übrig bleibt.`,
+    };
+  }
+  return {
+    title: "Unabhängigkeit zu Hause.",
+    text: `Professionelle Hilfe in den eigenen vier Wänden ist kostspielig. Wir kalkulieren jetzt, wie hoch die Zuzahlung in ${reg} ausfällt, damit Sie so lange wie möglich zu Hause bleiben können.`,
+  };
+}
+
+function pflegeBridgeSicherheitCopy(pflegegrad, nettoEinkommen) {
+  const nettoStr = `${Math.round(Number(nettoEinkommen)).toLocaleString("de-DE")} €`;
+  return {
+    title: "Ihre Sicherheits-Analyse.",
+    text: `Basierend auf Pflegegrad ${pflegegrad} und Ihrem verfügbaren Einkommen von ${nettoStr} haben wir Ihre monatliche Belastung ermittelt.`,
+  };
 }
 
 function Danke({ name, onBack, makler, C }) {
@@ -243,8 +274,8 @@ function KontaktForm({ fd, setFd, onSubmit, onBack, isDemo, makler, T }) {
   );
 }
 
-function berechne({ szenario, einkommenMonat, vorsorgeMonat }) {
-  const meta = SZENARIEN[szenario] || SZENARIEN.lang;
+function berechne({ pflegeOrt, einkommenMonat, vorsorgeMonat }) {
+  const meta = PFLEGE_ORT_MODELL[pflegeOrt] || PFLEGE_ORT_MODELL.ambulant;
   const kosten = meta.basisKosten;
   const kasse = meta.basisKasse;
   const nachKasse = Math.max(0, kosten - kasse);
@@ -275,14 +306,17 @@ const WIZARD_STEPS = 6;
 
 export default function PflegekostenplanungRechner() {
   const MAKLER = useCheckConfig();
-  const T = useMemo(() => makePflegeT(PFLEGE_ACCENT), []);
+  const C = MAKLER.primaryColor;
+  const T = useMemo(() => makePflegeT(C), [C]);
   const isDemo = isCheckDemoMode();
   const [phase, setPhase] = useState(1);
   const [ak, setAk] = useState(0);
   const [danke, setDanke] = useState(false);
   const [fd, setFd] = useState({ name: "", email: "", tel: "" });
   const [p, setP] = useState({
-    szenario: "",
+    pflegeOrt: "",
+    region: "",
+    pflegegrad: 3,
     alter: 50,
     einkommenMonat: 1500,
     vorsorgeMonat: 0,
@@ -303,7 +337,7 @@ export default function PflegekostenplanungRechner() {
     if (scr > 1) setScr((s) => s - 1);
   };
   const R = berechne(p);
-  const meta = SZENARIEN[p.szenario] || null;
+  const meta = PFLEGE_ORT_MODELL[p.pflegeOrt] || PFLEGE_ORT_MODELL.ambulant;
 
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
@@ -328,18 +362,18 @@ export default function PflegekostenplanungRechner() {
 
   if (danke) {
     return (
-      <div style={{ ...T.page, "--accent": PFLEGE_ACCENT }}>
+      <div style={{ ...T.page, "--accent": C }}>
         <Header />
-        <Danke name={fd.name} onBack={() => { setDanke(false); goTo(1); }} makler={MAKLER} C={PFLEGE_ACCENT} />
+        <Danke name={fd.name} onBack={() => { setDanke(false); goTo(1); }} makler={MAKLER} C={C} />
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div style={{ ...T.page, "--accent": PFLEGE_ACCENT }}>
+      <div style={{ ...T.page, "--accent": C }}>
         <Header />
-        <CheckLoader type="pflege" checkmarkColor={PFLEGE_ACCENT} onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="pflege" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
       </div>
     );
   }
@@ -361,7 +395,7 @@ export default function PflegekostenplanungRechner() {
     const monPro10k = mtlLuecke > 0 ? Math.max(1, Math.floor(10000 / mtlLuecke)) : null;
 
     return (
-      <div style={{ ...T.page, "--accent": PFLEGE_ACCENT }} key={ak} className="fade-in">
+      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header />
 
         <div style={{ paddingBottom: "120px" }}>
@@ -386,7 +420,7 @@ export default function PflegekostenplanungRechner() {
                 <div style={T.stackedBarOuter} aria-hidden>
                   {pctKasse > 0 && <div style={T.stackedBarSeg(pctKasse, OK)} />}
                   {pctVorsorge > 0 && <div style={T.stackedBarSeg(pctVorsorge, BAR_VORSORGE)} />}
-                  {pctEink > 0 && <div style={T.stackedBarSeg(pctEink, BAR_EINK)} />}
+                  {pctEink > 0 && <div style={T.stackedBarSeg(pctEink, C)} />}
                   {pctLuecke > 0 && <div style={T.stackedBarSeg(pctLuecke, BAR_LUECKE, "#FECACA")} />}
                 </div>
                 <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: "11px", color: "#6B7280" }}>
@@ -399,7 +433,7 @@ export default function PflegekostenplanungRechner() {
                     Vorsorge
                   </span>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: BAR_EINK, flexShrink: 0 }} />
+                    <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: C, flexShrink: 0 }} />
                     Einkünfte
                   </span>
                   {pctLuecke > 0 && (
@@ -419,12 +453,12 @@ export default function PflegekostenplanungRechner() {
           <div style={T.section}>
             <div style={T.sectionLbl}>Einordnung</div>
             <div style={T.compareGrid}>
-              <SmartHintCardPflege icon="🎯">
+              <SmartHintCardPflege icon="🎯" accent={C}>
                 <strong style={{ fontWeight: "700" }}>Szenario: {meta ? meta.heroName : "—"}</strong>
                 <span style={{ display: "block", marginTop: "8px" }}>{meta ? meta.scenarioRisiko : ""}</span>
                 <span style={{ display: "block", marginTop: "8px", opacity: 0.92 }}>{meta ? meta.scenarioDauer : ""}</span>
               </SmartHintCardPflege>
-              <SmartHintCardPflege icon="🏦">
+              <SmartHintCardPflege icon="🏦" accent={C}>
                 <strong style={{ fontWeight: "700" }}>Vermögensschutz</strong>
                 <span style={{ display: "block", marginTop: "8px" }}>
                   {mtlLuecke <= 0
@@ -451,7 +485,7 @@ export default function PflegekostenplanungRechner() {
                     Diese Berechnung stützt sich auf durchschnittliche Eigenanteile (EEE) und Verpflegungskosten nach SGB XI (Stand 2025/26). Tatsächliche Kosten variieren je nach Einrichtung, Bundesland und individuellem Vertrag.
                   </p>
                   <p style={{ marginBottom: "10px" }}>
-                    <strong>Modell:</strong> Akut 3.800 €/Mon., Begleitung 3.200 € (Mix stationär/ambulant), Zuhause 2.200 €. Kassenabzug orientierend ca. 1.775 € (stationär), 1.100 € (ambulant), Begleitung als Mittelwert.
+                    <strong>Modell:</strong> Stationär 3.800 €/Mon., Ambulant 2.200 €. Kassenabzug orientierend ca. 1.775 € (stationär), 1.100 € (ambulant).
                   </p>
                   <p style={{ marginBottom: "10px" }}>
                     <strong>Formel:</strong> Monatliche Netto-Lücke = Gesamtkosten − Leistung der Pflegekasse − Ihre bestehende Pflege-Vorsorge (bis zur Restlücke) − von Ihnen angenommene monatliche Netto-Einkünfte (bis zur Restlücke).
@@ -481,7 +515,7 @@ export default function PflegekostenplanungRechner() {
 
   if (phase === 3) {
     return (
-      <div style={{ ...T.page, "--accent": PFLEGE_ACCENT }} key={ak} className="fade-in">
+      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
@@ -528,20 +562,20 @@ export default function PflegekostenplanungRechner() {
   }
 
   return (
-    <div style={{ ...T.page, "--accent": PFLEGE_ACCENT }} key={ak} className="fade-in">
+    <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header />
 
       {scr === 1 && (
         <>
           <StoryHeroBlock
             emoji="🛡️"
-            title="Ihre Pflegevorsorge im Blick."
-            text="Pflege ist keine Frage des Alters, sondern der Würde. Wir berechnen in 2 Minuten Ihren Eigenanteil und wie Sie Ihre Familie entlasten."
+            title="Würde und Vermögen schützen."
+            text="Pflege ist keine Frage des Alters, sondern der Selbstbestimmung. Wir berechnen in 2 Minuten, wie hoch Ihr Eigenanteil wirklich ist und wie Sie Ihr Erspartes absichern."
           />
           <div style={{ height: "100px" }} />
           <div style={T.footer}>
             <button type="button" style={T.btnPrim(false)} onClick={() => setScr(2)}>
-              Jetzt Analyse starten
+              Analyse starten
             </button>
           </div>
         </>
@@ -551,40 +585,32 @@ export default function PflegekostenplanungRechner() {
         <>
           <div style={{ ...T.hero, textAlign: "center" }}>
             <div style={T.eyebrow}>Schritt 2 von {WIZARD_STEPS}</div>
-            <div style={T.h1}>Welches Pflegeszenario bereitet Ihnen am meisten Sorge?</div>
-            <div style={T.body}>Wählen Sie die Biografie, die Ihrer Sorge am nächsten kommt — wir setzen dafür typische Monatskosten und Kassenanteile an.</div>
+            <div style={T.h1}>Wo sehen Sie den Schwerpunkt?</div>
+            <div style={T.body}>Stationäre Pflege oder ambulante Versorgung — wir passen die Kostenschätzung daran an.</div>
           </div>
           <div style={T.section}>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <SelectionCard
-                value="intensiv"
-                label="Akut"
-                description="Kurzfristig hoher Pflegebedarf — z. B. nach Unfall, Schlaganfall oder schwerer Erkrankung; oft stationär mit hohem Eigenanteil (EEE)."
-                selected={p.szenario === "intensiv"}
-                accent={PFLEGE_ACCENT}
-                onClick={() => set("szenario", "intensiv")}
+                value="stationär"
+                label="Stationär"
+                description="Pflegeheim oder vollstationäre Einrichtung — typisch höhere Eigenanteile."
+                selected={p.pflegeOrt === "stationär"}
+                accent={C}
+                onClick={() => set("pflegeOrt", "stationär")}
               />
               <SelectionCard
-                value="lang"
-                label="Begleitung"
-                description="Längere Pflege über Jahre — Demenz, zunehmender Hilfebedarf oder dauerhafter Pflegefall; Mix aus ambulant und später stationär."
-                selected={p.szenario === "lang"}
-                accent={PFLEGE_ACCENT}
-                onClick={() => set("szenario", "lang")}
-              />
-              <SelectionCard
-                value="zuhause"
-                label="Zuhause"
-                description="Weitgehend zu Hause — Pflegesachleistungen, Umbau, Assistenz; auch wenn Sie noch arbeiten oder die Versorgung im eigenen Umfeld planen."
-                selected={p.szenario === "zuhause"}
-                accent={PFLEGE_ACCENT}
-                onClick={() => set("szenario", "zuhause")}
+                value="ambulant"
+                label="Ambulant"
+                description="Hilfen und Sachleistungen zu Hause — weiterhin mit Zuzahlungen und Eigenanteilen."
+                selected={p.pflegeOrt === "ambulant"}
+                accent={C}
+                onClick={() => set("pflegeOrt", "ambulant")}
               />
             </div>
           </div>
           <div style={{ height: "120px" }} />
           <div style={T.footer}>
-            <button type="button" style={T.btnPrim(!p.szenario)} disabled={!p.szenario} onClick={() => setScr(3)}>
+            <button type="button" style={T.btnPrim(!p.pflegeOrt)} disabled={!p.pflegeOrt} onClick={() => setScr(3)}>
               Weiter
             </button>
             <button type="button" style={T.btnSec} onClick={backScr}>
@@ -596,15 +622,33 @@ export default function PflegekostenplanungRechner() {
 
       {scr === 3 && (
         <>
-          <StoryHeroBlock
-            emoji="❤️"
-            title="Das Wichtigste zuerst: Ihre Sicherheit."
-            text="Ein Pflegefall verändert alles – emotional und organisatorisch. Die finanzielle Seite ist nur ein Teil, aber sie entscheidet über die Qualität der Versorgung."
-          />
-          <div style={{ height: "100px" }} />
+          <div style={{ ...T.hero, textAlign: "center" }}>
+            <div style={T.eyebrow}>Schritt 3 von {WIZARD_STEPS}</div>
+            <div style={T.h1}>In welcher Region leben Sie?</div>
+            <div style={T.body}>Eigenanteile und Heimkosten unterscheiden sich je nach Bundesland — wählen Sie Ihr Bundesland.</div>
+          </div>
+          <div style={T.section}>
+            <label style={T.fldLbl} htmlFor="pflege-region">
+              Bundesland
+            </label>
+            <select
+              id="pflege-region"
+              value={p.region}
+              onChange={(e) => set("region", e.target.value)}
+              style={{ ...T.inputEl, width: "100%", cursor: "pointer" }}
+            >
+              <option value="">Bitte wählen</option>
+              {BUNDESLAENDER.map((bl) => (
+                <option key={bl} value={bl}>
+                  {bl}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div style={{ height: "120px" }} />
           <div style={T.footer}>
-            <button type="button" style={T.btnPrim(false)} onClick={() => setScr(4)}>
-              Weiter zur Kalkulation
+            <button type="button" style={T.btnPrim(!p.region)} disabled={!p.region} onClick={() => setScr(4)}>
+              Weiter
             </button>
             <button type="button" style={T.btnSec} onClick={backScr}>
               Zurück
@@ -613,19 +657,49 @@ export default function PflegekostenplanungRechner() {
         </>
       )}
 
-      {scr === 4 && (
+      {scr === 4 && (() => {
+        const s2 = pflegeStoryKostenFokusCopy(p.pflegeOrt, p.region);
+        return (
+          <>
+            <StoryHeroBlock emoji="🏥" title={s2.title} text={s2.text} />
+            <div style={{ height: "100px" }} />
+            <div style={T.footer}>
+              <button type="button" style={T.btnPrim(false)} onClick={() => setScr(5)}>
+                Weiter
+              </button>
+              <button type="button" style={T.btnSec} onClick={backScr}>
+                Zurück
+              </button>
+            </div>
+          </>
+        );
+      })()}
+
+      {scr === 5 && (
         <>
           <div style={{ ...T.hero, textAlign: "center" }}>
-            <div style={T.eyebrow}>Schritt 4 von {WIZARD_STEPS}</div>
+            <div style={T.eyebrow}>Schritt 5 von {WIZARD_STEPS}</div>
             <div style={T.h1}>Ihre finanzielle Ausgangslage</div>
             <div style={T.body}>
-              Geben Sie Alter, monatliche Einkünfte im Pflegefall und bestehende Pflege-Vorsorge an. So ermitteln wir Ihre Netto-Lücke nach Kasse, Vorsorge und Einkünften.
+              Alter, Pflegegrad, verfügbares Nettoeinkommen im Pflegefall und bestehende Vorsorge — damit ermitteln wir Ihre Netto-Lücke nach Kasse, Vorsorge und Einkünften.
             </div>
           </div>
           <div style={T.section}>
-            <SliderCard label="Ihr aktuelles Alter" value={p.alter} min={25} max={75} step={1} unit="Jahre" display={`${p.alter} Jahre`} accent={PFLEGE_ACCENT} onChange={(v) => set("alter", v)} />
+            <SliderCard label="Ihr aktuelles Alter" value={p.alter} min={25} max={75} step={1} unit="Jahre" display={`${p.alter} Jahre`} accent={C} onChange={(v) => set("alter", v)} />
             <SliderCard
-              label="Monatliche Einkünfte im Pflegefall (netto)"
+              label="Pflegegrad (Annahme für die Einordnung)"
+              value={p.pflegegrad}
+              min={1}
+              max={5}
+              step={1}
+              unit="Stufe"
+              display={`Pflegegrad ${p.pflegegrad}`}
+              hint="Orientierung nach dem bekannten Stufensystem — die Berechnung der Lücke nutzt Ihre gewählte Versorgungsform (stationär/ambulant)."
+              accent={C}
+              onChange={(v) => set("pflegegrad", v)}
+            />
+            <SliderCard
+              label="Monatliches Nettoeinkommen im Pflegefall"
               value={p.einkommenMonat}
               min={0}
               max={5000}
@@ -633,7 +707,7 @@ export default function PflegekostenplanungRechner() {
               unit="€/Mon."
               display={p.einkommenMonat === 0 ? "0 € — keine angenommen" : `${fmt(p.einkommenMonat)} pro Monat`}
               hint="Z. B. Rente, Erwerbsminderungsrente, private BU oder andere Netto-Einkünfte, die Sie einsetzen könnten."
-              accent={PFLEGE_ACCENT}
+              accent={C}
               onChange={(v) => set("einkommenMonat", v)}
             />
             <SliderCard
@@ -645,7 +719,7 @@ export default function PflegekostenplanungRechner() {
               unit="€/Mon."
               display={p.vorsorgeMonat === 0 ? "Keine bestehende Vorsorge angenommen" : `${fmt(p.vorsorgeMonat)} pro Monat aus Vorsorge`}
               hint="Was Sie bereits aus Pflegetagegeld, Pflege-Bahr o. Ä. erhalten würden (vereinfacht als monatlicher Betrag)."
-              accent={PFLEGE_ACCENT}
+              accent={C}
               onChange={(v) => set("vorsorgeMonat", v)}
             />
             {p.alter < 50 && (
@@ -661,7 +735,7 @@ export default function PflegekostenplanungRechner() {
           </div>
           <div style={{ height: "120px" }} />
           <div style={T.footer}>
-            <button type="button" style={T.btnPrim(false)} onClick={() => setScr(5)}>
+            <button type="button" style={T.btnPrim(false)} onClick={() => setScr(6)}>
               Weiter
             </button>
             <button type="button" style={T.btnSec} onClick={backScr}>
@@ -671,93 +745,48 @@ export default function PflegekostenplanungRechner() {
         </>
       )}
 
-      {scr === 5 && (
-        <>
-          <StoryHeroBlock emoji="🏥" title="Gut zu wissen…" text={null} />
-          <div style={{ ...T.section, marginTop: "8px" }}>
-            <div className="pflege-problem-grid">
+      {scr === 6 && (() => {
+        const b3 = pflegeBridgeSicherheitCopy(p.pflegegrad, p.einkommenMonat);
+        return (
+          <>
+            <StoryHeroBlock emoji="💸" title={b3.title} text={b3.text} />
+            <div style={{ padding: "8px 24px 0", maxWidth: "400px", margin: "0 auto" }}>
               {[
-                {
-                  stat: "50 %",
-                  desc: "So viel der Kosten trägt die Kasse im Schnitt nicht.",
-                },
-                {
-                  stat: "2.600 €",
-                  desc: "Der Ø-Eigenanteil im ersten Jahr (Vollstationär).",
-                },
-                {
-                  stat: "Jeder 5.",
-                  desc: "Pflegefall ist statistisch jünger als 65 Jahre.",
-                },
-              ].map(({ stat, desc }) => (
+                "Abgleich der gesetzlichen Leistungen (Pflegekasse).",
+                "Ermittlung Ihres realen monatlichen Eigenanteils.",
+                "Strategie zum Schutz Ihres Privatvermögens (und Erbes).",
+              ].map((line) => (
                 <div
-                  key={stat}
+                  key={line}
                   style={{
-                    textAlign: "center",
-                    padding: "20px 14px",
-                    borderRadius: "16px",
-                    border: "1px solid rgba(17,24,39,0.08)",
-                    background: "#fff",
-                    boxShadow: "0 4px 16px rgba(17,24,39,0.06)",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "12px",
+                    fontSize: "15px",
+                    color: "#374151",
+                    lineHeight: 1.55,
+                    marginBottom: "14px",
                   }}
                 >
-                  <div style={{ fontSize: "36px", fontWeight: "800", color: "#111", letterSpacing: "-0.5px", lineHeight: 1.1, marginBottom: "10px" }}>{stat}</div>
-                  <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.55 }}>{desc}</div>
+                  <span style={{ fontSize: "18px", lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
+                    ✅
+                  </span>
+                  <span>{line}</span>
                 </div>
               ))}
             </div>
-          </div>
-          <div style={{ height: "100px" }} />
-          <div style={T.footer}>
-            <button type="button" style={T.btnPrim(false)} onClick={() => setScr(6)}>
-              Auswertung erstellen
-            </button>
-            <button type="button" style={T.btnSec} onClick={backScr}>
-              Zurück
-            </button>
-          </div>
-        </>
-      )}
-
-      {scr === 6 && (
-        <>
-          <StoryHeroBlock emoji="✨" title="Fast geschafft! Ihre Analyse ist bereit." text={null} />
-          <div style={{ padding: "8px 24px 0", maxWidth: "400px", margin: "0 auto" }}>
-            {[
-              "Exakte Berechnung Ihrer monatlichen Lücke.",
-              "Vergleich der Strategien (Tagegeld vs. Bahr).",
-              "Ihr persönlicher Plan zum Vermögensschutz.",
-            ].map((line) => (
-              <div
-                key={line}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "12px",
-                  fontSize: "15px",
-                  color: "#374151",
-                  lineHeight: 1.55,
-                  marginBottom: "14px",
-                }}
-              >
-                <span style={{ fontSize: "18px", lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
-                  ✅
-                </span>
-                <span>{line}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ height: "100px" }} />
-          <div style={T.footer}>
-            <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
-              Ergebnis jetzt anzeigen
-            </button>
-            <button type="button" style={T.btnSec} onClick={backScr}>
-              Zurück
-            </button>
-          </div>
-        </>
-      )}
+            <div style={{ height: "100px" }} />
+            <div style={T.footer}>
+              <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
+                Ergebnis jetzt anzeigen
+              </button>
+              <button type="button" style={T.btnSec} onClick={backScr}>
+                Zurück
+              </button>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

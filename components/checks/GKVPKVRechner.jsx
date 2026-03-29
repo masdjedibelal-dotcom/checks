@@ -111,6 +111,46 @@ function StoryHeroKV({ emoji, title, text }) {
     </div>
   );
 }
+
+function fmtKvGehaltEUR(n) {
+  return `${Math.round(Number(n)).toLocaleString("de-DE")} €`;
+}
+
+/** Slide 2: nur `beruf` (Status) & `brutto` (Gehalt) — p.beruf = angestellt | selbst | beamter */
+function kvStoryStatusGehaltCopy(beruf, brutto) {
+  const g = fmtKvGehaltEUR(brutto);
+  switch (beruf) {
+    case "selbst":
+      return {
+        title: "Beitragshoheit gewinnen.",
+        text: `Mit einem Einkommen von ${g} zahlen Sie in der GKV oft den Höchstsatz. Wir prüfen jetzt, wie Sie in der PKV Ihre Kosten optimieren und gleichzeitig die Leistung massiv steigern können.`,
+      };
+    case "angestellt":
+      return {
+        title: "Wahlfreiheit prüfen.",
+        text: `Bei ${g} Brutto gleichen wir Ihren Verdienst mit der Versicherungspflichtgrenze ab. Wir zeigen Ihnen, ob ein Wechsel in die PKV rechtlich möglich und für Sie sinnvoll ist.`,
+      };
+    case "beamter":
+      return {
+        title: "Beihilfe-Ergänzung.",
+        text: `Dank Ihres Dienstherrn und einem Einkommen von ${g} haben Sie Anspruch auf Beihilfe. Wir finden den Restkosten-Tarif, der diese staatliche Leistung perfekt vervollständigt.`,
+      };
+    default:
+      return {
+        title: "Ihre Einordnung.",
+        text: "Wir führen die Auswertung anhand Ihrer Angaben fort.",
+      };
+  }
+}
+
+/** Slide 3 Bridge: Familien-Baustein — Kinder nur bei partner_kinder */
+function kvBridgeFamilieBaustein(familiensituation) {
+  if (familiensituation === "partner_kinder") {
+    return "Dabei berücksichtigen wir die kostenfreie Familienversicherung der GKV vs. die individuellen Tarife der PKV für Ihre Kinder.";
+  }
+  return "Wir optimieren die Kalkulation auf Ihre persönliche Flexibilität und langfristige Planbarkeit.";
+}
+
 function KvNavigatorHeader({ T, maklerFirma }) {
   return (
     <div style={T.header}>
@@ -385,8 +425,8 @@ export default function GKVPKVRechner(){
         <>
           <StoryHeroKV
             emoji="🩺"
-            title="Gesundheit nach Maß."
-            text="GKV oder PKV? Finden Sie in 2 Minuten heraus, welches System wirklich zu Ihrer Lebensplanung, Ihrem Status und Ihrem Budget passt."
+            title="Das passende Gesundheitssystem."
+            text="GKV oder PKV? Wir analysieren in 2 Minuten, welches System zu Ihrem Leben passt und wo Sie die beste medizinische Versorgung für Ihr Budget erhalten."
           />
           <div style={{ height: "120px" }} />
           <div style={T.footer}>
@@ -471,25 +511,24 @@ export default function GKVPKVRechner(){
         </div>
       </>}
 
-      {/* Slide 2: System-Hebel (direkt nach Einkommen & Beruf) */}
-      {scr === 4 && (
+      {/* Slide 2: Status- & Gehalts-Story (nach Beruf + Einkommen) */}
+      {scr === 4 && (() => {
+        const s2 = kvStoryStatusGehaltCopy(p.beruf, p.brutto);
+        return (
         <>
-          <StoryHeroKV
-            emoji="⚖️"
-            title="Leistung vs. Beitrag."
-            text="In der GKV steigen die Beiträge mit dem Einkommen, in der PKV bestimmen Sie die Leistung selbst. Wir finden jetzt Ihren persönlichen 'Sweet-Spot' zwischen Kosten und Qualität."
-          />
+          <StoryHeroKV emoji="⚖️" title={s2.title} text={s2.text} />
           <div style={{ height: "120px" }} />
           <div style={T.footer}>
             <button type="button" style={T.btnPrim(false)} onClick={nextScr}>
-              Weiter zum Status-Check
+              Weiter →
             </button>
             <button type="button" style={T.btnSec} onClick={backScr}>
               Zurück
             </button>
           </div>
         </>
-      )}
+        );
+      })()}
 
       {/* Screen 5: Alter */}
       {scr === 5 && <>
@@ -773,19 +812,25 @@ export default function GKVPKVRechner(){
         );
       })()}
 
-      {/* Slide 3: Bridge vor Ergebnis / Loader */}
+      {/* Slide 3: Bridge (Alter & Familiensituation im Text) */}
       {scr === 7 && (
         <>
           <div style={{ textAlign: "center", padding: "36px 24px 12px", maxWidth: "560px", margin: "0 auto" }}>
             <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
               🔍
             </div>
-            <h1 style={STORY_H1_KV}>System-Analyse abgeschlossen.</h1>
+            <p style={{ ...STORY_BODY_KV, marginBottom: "16px" }}>
+              Ihr Alter von {p.alter} Jahren ist ein entscheidender Faktor für die langfristige Beitragsstabilität.
+            </p>
+            <p style={{ ...STORY_BODY_KV, marginBottom: "24px" }}>
+              {kvBridgeFamilieBaustein(p.familiensituation)}
+            </p>
+            <h1 style={{ ...STORY_H1_KV, marginBottom: "18px" }}>System-Analyse bereit.</h1>
             <ul
               style={{
                 listStyle: "none",
                 padding: 0,
-                margin: "28px 0 0",
+                margin: "12px 0 0",
                 textAlign: "left",
                 maxWidth: "42ch",
                 marginLeft: "auto",
@@ -793,9 +838,9 @@ export default function GKVPKVRechner(){
               }}
             >
               {[
-                "Abgleich Ihres Profils mit den aktuellen Systemgrenzen (JAEG).",
-                "Gegenüberstellung von Leistungen und Beitragsstabilität.",
-                "Strategische Tendenz für Ihre Krankenversicherung.",
+                "Prüfung der Versicherungspflicht (JAEG).",
+                "Gegenüberstellung von GKV-Beitrag vs. PKV-Leistung.",
+                "Auswertung der langfristigen Kostenentwicklung.",
               ].map((line) => (
                 <li
                   key={line}

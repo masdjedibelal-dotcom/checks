@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
-import { SliderCard } from "@/components/ui/CheckComponents";
+import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -30,7 +30,7 @@ import { CheckLoader } from "@/components/checks/CheckLoader";
 const alpha = (hex,a) => { const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; };
 const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n>=10000 ? Math.round(n/1000)+".000 €" : fmt(n);
-/** Intro + 4 Datenschritte + Immobilien-Story + Bridge */
+/** Intro + Familie + Kredit + Bedarfs-Story + 2 Datenschritte + Bridge */
 const RL_WIZARD_STEPS = 7;
 const STORY_H1_RL = { fontSize: "52px", fontWeight: "800", letterSpacing: "-1.5px", lineHeight: 1.12, color: "#111", margin: "0 0 22px" };
 const STORY_BODY_RL = { fontSize: "16px", color: "#4B5563", lineHeight: 1.65, margin: 0, maxWidth: "42ch", marginLeft: "auto", marginRight: "auto" };
@@ -45,6 +45,47 @@ function StoryHeroRL({ emoji, title, text }) {
       {text ? <p style={STORY_BODY_RL}>{text}</p> : null}
     </div>
   );
+}
+
+/** Priorität: Restschuld → Kinder → Paar (ohne Kinder) — keine Bestattung/ErbSt */
+function risikoStoryBedarfCopy(restschuld, familienModus) {
+  const rs = Number(restschuld) || 0;
+  const kinder =
+    familienModus === "paar_mit_kinder" ||
+    familienModus === "alleinerziehend" ||
+    familienModus === "single_mit_kinder";
+  const familiePaar = familienModus === "paar_ohne_kinder" || familienModus === "paar_mit_kinder";
+  if (rs > 0) {
+    const rsStr = `${Math.round(rs).toLocaleString("de-DE")} €`;
+    return {
+      title: "Das Heim absichern.",
+      text: `Mit einer Restschuld von ${rsStr} ist die Tilgung das wichtigste Ziel. Wir sorgen dafür, dass Ihre Familie im Ernstfall schuldenfrei im gemeinsamen Zuhause wohnen bleiben kann.`,
+    };
+  }
+  if (kinder) {
+    return {
+      title: "Zukunft der Kinder sichern.",
+      text: "Von der Ausbildung bis zum Studium – wir kalkulieren das notwendige Kapital, damit Ihre Kinder trotz des Wegfalls Ihres Einkommens alle Chancen im Leben behalten.",
+    };
+  }
+  if (familiePaar) {
+    return {
+      title: "Gemeinsamer Lebensstandard.",
+      text: "Miete und Fixkosten laufen weiter. Wir berechnen jetzt, wie viel Kapital Ihr Partner benötigt, um den gewohnten Lebensstil ohne finanzielle Sorgen fortzuführen.",
+    };
+  }
+  return {
+    title: "Absicherung für Ihre Hinterbliebenen.",
+    text: "Laufende Kosten gehen weiter. Wir berechnen jetzt, wie viel Kapital im Ernstfall vorgehalten werden sollte, damit Ihre Liebsten finanziell abgesichert sind.",
+  };
+}
+
+function risikoBridgeSicherheitCopy(nettoEinkommen, laufzeitJahre) {
+  const nettoStr = `${Math.round(Number(nettoEinkommen)).toLocaleString("de-DE")} €`;
+  return {
+    title: "Ihre Sicherheits-Zahl steht.",
+    text: `Um Ihr monatliches Netto von ${nettoStr} über die nächsten ${laufzeitJahre} Jahre abzusichern, haben wir die optimale Versicherungssumme ermittelt.`,
+  };
 }
 const WARN_RL = "#c0392b";
 const BAR_LEBENSHALTUNG = "#7c3aed";
@@ -79,7 +120,16 @@ export default function RisikolebenRechner() {
   const [phase, setPhase] = useState(1);
   const [loading, setLoading] = useState(false);
   const [animKey, setAnimKey] = useState(0);
-  const [p, setP] = useState({ monatsBedarf: 2500, laufzeit: 20, partnerEinkommen: 1200, witwenRente: 700, sonstiges: 0, kredite: 0, vorhanden: 0 });
+  const [p, setP] = useState({
+    familienModus: "",
+    monatsBedarf: 2500,
+    laufzeit: 20,
+    partnerEinkommen: 1200,
+    witwenRente: 700,
+    sonstiges: 0,
+    kredite: 0,
+    vorhanden: 0,
+  });
   const [hatKredit, setHatKredit] = useState(null);
   const [formData, setFormData] = useState({ name: "", email: "", telefon: "" });
   const [kontaktConsent, setKontaktConsent] = useState(false);
@@ -92,13 +142,13 @@ export default function RisikolebenRechner() {
       setHatKredit(null);
       setKontaktConsent(false);
       setLoading(false);
+      setP((x) => ({ ...x, familienModus: "" }));
     }
   };
   const nextScr = () => {
-    if (scr === 5 && hatKredit == null) return;
-    if (scr < 5) setScr((s) => s + 1);
-    else if (scr === 5) setScr(6);
-    else if (scr === 6) setScr(7);
+    if (scr === 2 && !p.familienModus) return;
+    if (scr === 3 && hatKredit == null) return;
+    if (scr < 7) setScr((s) => s + 1);
   };
   const backScr = () => {
     if (scr > 1) setScr((s) => s - 1);
@@ -135,8 +185,6 @@ export default function RisikolebenRechner() {
     fldVal:  { fontSize:"21px", fontWeight:"700", color:C, letterSpacing:"-0.4px", marginBottom:"6px" },
     fldHint: { fontSize:"11px", color:"#aaa", marginTop:"4px" },
     fldWrap: { marginBottom:"20px" },
-    opt3:    { display:"grid", gridTemplateColumns:"1fr 1fr 1fr 1fr", gap:"6px", marginTop:"8px" },
-    optBtn:  (a) => ({ padding:"9px 8px", borderRadius:"6px", border:`1px solid ${a?C:"#e8e8e8"}`, background:a?C:"#fff", fontSize:"13px", fontWeight:a?"600":"400", color:a?"#fff":"#444", transition:"all 0.15s", textAlign:"center", cursor:"pointer" }),
     footer:  { position:"sticky", bottom:0, background:"rgba(255,255,255,0.97)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", borderTop:"1px solid #e8e8e8", padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
     btnMain: (d) => ({ width:"100%", padding:"13px 20px", background:d?"#e8e8e8":C, color:d?"#aaa":"#fff", borderRadius:"8px", fontSize:"14px", fontWeight:"600", cursor:d?"default":"pointer" }),
     btnBack: { width:"100%", padding:"10px", color:"#aaa", fontSize:"13px", marginTop:"6px", cursor:"pointer" },
@@ -155,16 +203,7 @@ export default function RisikolebenRechner() {
     warnCard: { background:"#FFF6F5", border:"1px solid #F2D4D0", borderLeft:"3px solid #C0392B", borderRadius:"14px", padding:"18px 20px" },
     warnCardTitle: { fontSize:"13px", fontWeight:"700", color:"#C0392B", marginBottom:"6px" },
     warnCardText: { fontSize:"13px", color:"#7B2A2A", lineHeight:1.65 },
-    sectionLbl: { fontSize:"13px", fontWeight:"600", color:"#6B7280", marginBottom:"12px", padding:"0 16px" },
-    recCard: { margin:"0 16px 16px", border:"1px solid rgba(17,24,39,0.08)", borderRadius:"18px", overflow:"hidden", background:"#fff", boxShadow:"0 4px 16px rgba(17,24,39,0.06)" },
-    recRow: { padding:"18px 20px", display:"flex", justifyContent:"space-between", alignItems:"flex-start", borderBottom:"1px solid rgba(17,24,39,0.04)" },
-    recRowLast: { padding:"18px 20px", display:"flex", justifyContent:"space-between", alignItems:"flex-start" },
-    recLabel: { fontSize:"14px", fontWeight:"600", color:"#1F2937" },
-    recSub: { fontSize:"12px", color:"#9CA3AF", marginTop:"3px", lineHeight:1.4 },
-    recValue: { fontSize:"18px", fontWeight:"700", color:C, letterSpacing:"-0.5px", textAlign:"right", flexShrink:0, marginLeft:"12px" },
-    recValueSub: { fontSize:"11px", color:"#9CA3AF", textAlign:"right", marginTop:"2px" },
-    progBarTrack: { height:"10px", background:"#F3F4F6", borderRadius:"999px", overflow:"hidden", marginTop:"10px" },
-    progBarFill: (pct, color) => ({ height:"100%", width:`${pct}%`, background:color, borderRadius:"999px", transition:"width 0.7s cubic-bezier(0.34,1.56,0.64,1)" }),
+    sectionLbl: { fontSize:"13px", fontWeight:"600", color:"#6B7280", marginBottom:"12px", padding:0 },
     dataCard: { margin:"0 16px 10px", background:"#FAFAF8", border:"1px solid rgba(17,24,39,0.05)", borderRadius:"16px" },
     dataRow: { padding:"12px 18px", borderBottom:"1px solid rgba(17,24,39,0.04)", display:"flex", justifyContent:"space-between", alignItems:"center" },
     dataRowLast: { padding:"12px 18px", display:"flex", justifyContent:"space-between", alignItems:"center" },
@@ -201,7 +240,7 @@ export default function RisikolebenRechner() {
       <div style={T.root}>
         <div style={T.header}><div style={T.logoWrap}><div style={T.logoBox}><BuktgLogoMark /></div><span style={T.logoTxt}>{MAKLER.firma}</span></div><span style={T.badge}>Risikoleben</span></div>
         <div style={T.progBar}><div style={T.progFill} /></div>
-        <CheckLoader type="risikoleben" onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="risikoleben" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
       </div>
     );
   }
@@ -209,15 +248,15 @@ export default function RisikolebenRechner() {
   // ── Phase 1: Story + Eingabe (7 Schritte) + Bridge ───────────────────────
   if (phase === 1) {
     const dataTitle =
-      scr === 2 ? "Wie viel braucht Ihre Familie monatlich?" :
-      scr === 3 ? "Wie lange soll Ihre Familie abgesichert sein?" :
-      scr === 4 ? "Welche Einnahmen bestehen bereits?" :
-      scr === 5 ? "Kredite und bestehende Absicherung" : "";
+      scr === 2 ? "Wie ist Ihre familiäre Situation?" :
+      scr === 3 ? "Kredite und Restschuld" :
+      scr === 5 ? "Bedarf und Absicherungsdauer" :
+      scr === 6 ? "Welche Einnahmen bestehen bereits?" : "";
     const dataLead =
-      scr === 2 ? "Miete/Kredit, Lebenshaltung, Kinder — alles zusammen." :
-      scr === 3 ? "Z. B. bis die Kinder selbstständig sind oder bis zur Rente." :
-      scr === 4 ? "Alle Felder sind optional — 0, wenn nicht vorhanden." :
-      scr === 5 ? "Zuerst: Bitte geben Sie an, ob Darlehen bestehen. Die Restschuld tragen Sie nur ein, wenn Sie „Ja“ wählen." : "";
+      scr === 2 ? "Darauf stützen wir den nächsten Schritt — Ihre Absicherung soll zur Lebensrealität passen." :
+      scr === 3 ? "Bitte geben Sie an, ob Darlehen bestehen. Die Restschuld tragen Sie nur ein, wenn Sie „Ja“ wählen." :
+      scr === 5 ? "Monatlicher Bedarf der Familie und Zeitraum der Absicherung." :
+      scr === 6 ? "Alle Felder sind optional — 0, wenn nicht vorhanden." : "";
 
     const wizFooter = (() => {
       if (scr === 1) {
@@ -229,8 +268,21 @@ export default function RisikolebenRechner() {
           </div>
         );
       }
-      if (scr >= 2 && scr <= 5) {
-        const kreditBlock = scr === 5 && hatKredit == null;
+      if (scr === 2) {
+        const block = !p.familienModus;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <button type="button" style={T.btnMain(block)} disabled={block} onClick={nextScr}>
+              Weiter →
+            </button>
+            <button type="button" style={T.btnBack} onClick={backScr}>
+              Zurück
+            </button>
+          </div>
+        );
+      }
+      if (scr === 3) {
+        const kreditBlock = hatKredit == null;
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <button type="button" style={T.btnMain(kreditBlock)} disabled={kreditBlock} onClick={nextScr}>
@@ -242,11 +294,11 @@ export default function RisikolebenRechner() {
           </div>
         );
       }
-      if (scr === 6) {
+      if (scr >= 4 && scr <= 6) {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <button type="button" style={T.btnMain(false)} onClick={nextScr}>
-              Weiter zum Budget
+              Weiter →
             </button>
             <button type="button" style={T.btnBack} onClick={backScr}>
               Zurück
@@ -285,11 +337,11 @@ export default function RisikolebenRechner() {
             <StoryHeroRL
               emoji="❤️"
               title="Verantwortung, die bleibt."
-              text="Sichern Sie das Wichtigste ab: Die Zukunft Ihrer Liebsten und den Erhalt Ihres gemeinsamen Zuhauses. In 2 Minuten berechnen wir Ihren optimalen Schutz."
+              text="Niemand spricht gerne darüber, aber jeder möchte seine Liebsten in Sicherheit wissen. Wir berechnen in 2 Minuten, wie viel Kapital Ihre Familie wirklich braucht, um finanziell unabhängig zu bleiben."
             />
           )}
 
-          {scr >= 2 && scr <= 5 && (
+          {((scr >= 2 && scr <= 3) || (scr >= 5 && scr <= 6)) && (
             <div style={T.hero}>
               <div style={T.eyebrow}>
                 Risikoleben-Check · Schritt {scr} von {RL_WIZARD_STEPS}
@@ -299,60 +351,115 @@ export default function RisikolebenRechner() {
             </div>
           )}
 
-          {scr === 6 && (
-            <StoryHeroRL
-              emoji="🏠"
-              title="Sorgenfrei wohnen bleiben."
-              text="Eine Restschuldversicherung ist oft unflexibel. Wir prüfen jetzt, wie Sie Ihre Finanzierung effizient absichern, damit Ihr Zuhause im Ernstfall schuldenfrei bleibt."
-            />
-          )}
+          {scr === 4 && (() => {
+            const s2 = risikoStoryBedarfCopy(p.kredite, p.familienModus);
+            return <StoryHeroRL emoji="🏠" title={s2.title} text={s2.text} />;
+          })()}
 
-          {scr === 7 && (
-            <div style={{ textAlign: "center", padding: "36px 24px 12px", maxWidth: "560px", margin: "0 auto" }}>
-              <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
-                🤝
-              </div>
-              <h1 style={STORY_H1_RL}>Ein Versprechen für die Zukunft.</h1>
-              <ul
-                style={{
-                  listStyle: "none",
-                  padding: 0,
-                  margin: "28px 0 0",
-                  textAlign: "left",
-                  maxWidth: "42ch",
-                  marginLeft: "auto",
-                  marginRight: "auto",
-                }}
-              >
-                {[
-                  "Ermittlung der optimalen Absicherungssumme.",
-                  "Abdeckung laufender Fixkosten & Kredite.",
-                  "Strategie für konstanten oder fallenden Schutz.",
-                ].map((line) => (
-                  <li
-                    key={line}
-                    style={{
-                      ...STORY_BODY_RL,
-                      display: "flex",
-                      gap: "10px",
-                      alignItems: "flex-start",
-                      marginBottom: "14px",
-                      maxWidth: "none",
-                    }}
-                  >
-                    <span style={{ flexShrink: 0 }} aria-hidden>
-                      ✅
-                    </span>
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {scr === 7 && (() => {
+            const b3 = risikoBridgeSicherheitCopy(p.monatsBedarf, p.laufzeit);
+            return (
+              <>
+                <StoryHeroRL emoji="🎯" title={b3.title} text={b3.text} />
+                <div style={{ padding: "8px 24px 0", maxWidth: "420px", margin: "0 auto" }}>
+                  {[
+                    "Berechnung des Kapitalbedarfs für Hinterbliebene.",
+                    "Berücksichtigung laufender Kreditverbindlichkeiten.",
+                    "Ermittlung der günstigsten Absicherungsstrategie.",
+                  ].map((line) => (
+                    <div
+                      key={line}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "10px",
+                        fontSize: "15px",
+                        color: "#374151",
+                        lineHeight: 1.55,
+                        marginBottom: "14px",
+                        textAlign: "left",
+                      }}
+                    >
+                      <span style={{ flexShrink: 0 }} aria-hidden>
+                        ✅
+                      </span>
+                      <span>{line}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
 
-          {(scr >= 2 && scr <= 5) && (
-            <div style={{ padding: "0 16px 8px" }}>
+          {((scr >= 2 && scr <= 3) || scr === 5 || scr === 6) && (
+            <div style={{ padding: "0 24px 8px" }}>
               {scr === 2 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {[
+                    { id: "paar_ohne_kinder", label: "Paar ohne Kinder", desc: "Partnerschaft, keine minderjährigen Kinder im Haushalt." },
+                    { id: "paar_mit_kinder", label: "Paar mit Kindern", desc: "Partnerschaft mit Kindern — Bildung und Versorgung im Fokus." },
+                    { id: "alleinerziehend", label: "Alleinerziehend", desc: "Sie tragen die Hauptverantwortung für die Kinder." },
+                    { id: "single_ohne_kinder", label: "Single ohne Kinder", desc: "Alleinlebend ohne Kinder." },
+                    { id: "single_mit_kinder", label: "Single mit Kindern", desc: "Allein mit Kindern im Haushalt." },
+                  ].map(({ id, label, desc }) => (
+                    <SelectionCard
+                      key={id}
+                      value={id}
+                      label={label}
+                      description={desc}
+                      selected={p.familienModus === id}
+                      accent={C}
+                      onClick={() => set("familienModus", id)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {scr === 3 && (
+                <>
+                  <div style={{ fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "10px" }}>
+                    Haben Sie laufende Kredite oder Immobilien-Darlehen?
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: hatKredit === true ? "8px" : "12px" }}>
+                    <SelectionCard
+                      value="ja"
+                      label="Ja"
+                      description="Ich habe laufende Kredite oder ein Immobilien-Darlehen."
+                      icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>🏦</span>}
+                      selected={hatKredit === true}
+                      accent={C}
+                      onClick={() => setHatKredit(true)}
+                    />
+                    <SelectionCard
+                      value="nein"
+                      label="Nein"
+                      description="Derzeit keine Darlehen — die Berechnung setzt die Restschuld auf 0 €."
+                      icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>—</span>}
+                      selected={hatKredit === false}
+                      accent={C}
+                      onClick={() => {
+                        setHatKredit(false);
+                        set("kredite", 0);
+                      }}
+                    />
+                  </div>
+                  {hatKredit === true && (
+                    <SliderCard
+                      label="Restschuld (gesamt)"
+                      value={p.kredite}
+                      min={0}
+                      max={800000}
+                      step={5000}
+                      unit="€"
+                      display={p.kredite === 0 ? "0 €" : `${Math.round(p.kredite).toLocaleString("de-DE")} €`}
+                      accent={C}
+                      onChange={(v) => set("kredite", v)}
+                    />
+                  )}
+                </>
+              )}
+
+              {scr === 5 && (
                 <>
                   <SliderCard
                     label="Monatlicher Bedarf der Familie"
@@ -365,7 +472,7 @@ export default function RisikolebenRechner() {
                     accent={C}
                     onChange={(v) => set("monatsBedarf", v)}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px", marginBottom: "8px" }}>
                     {[
                       { icon: "🏠", label: "Miete / Kredit", desc: "Warmmiete oder Kreditrate inkl. Nebenkosten" },
                       { icon: "🛒", label: "Lebenshaltung", desc: "Lebensmittel, Mobilität, Freizeit, Versicherungen" },
@@ -391,11 +498,6 @@ export default function RisikolebenRechner() {
                       </div>
                     ))}
                   </div>
-                </>
-              )}
-
-              {scr === 3 && (
-                <>
                   <SliderCard
                     label="Absicherungszeitraum"
                     value={p.laufzeit}
@@ -424,7 +526,7 @@ export default function RisikolebenRechner() {
                 </>
               )}
 
-              {scr === 4 && (
+              {scr === 6 && (
                 <>
                   <SliderCard
                     label="Partnereinkommen (monatlich netto)"
@@ -462,49 +564,6 @@ export default function RisikolebenRechner() {
                     accent={C}
                     onChange={(v) => set("sonstiges", v)}
                   />
-                </>
-              )}
-
-              {scr === 5 && (
-                <>
-                  <div style={{ fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "10px" }}>
-                    Haben Sie laufende Kredite oder Immobilien-Darlehen?
-                  </div>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "8px",
-                      marginBottom: hatKredit === true ? "8px" : "12px",
-                    }}
-                  >
-                    <button type="button" style={T.optBtn(hatKredit === true)} onClick={() => setHatKredit(true)}>
-                      Ja
-                    </button>
-                    <button
-                      type="button"
-                      style={T.optBtn(hatKredit === false)}
-                      onClick={() => {
-                        setHatKredit(false);
-                        set("kredite", 0);
-                      }}
-                    >
-                      Nein
-                    </button>
-                  </div>
-                  {hatKredit === true && (
-                    <SliderCard
-                      label="Restschuld (gesamt)"
-                      value={p.kredite}
-                      min={0}
-                      max={800000}
-                      step={5000}
-                      unit="€"
-                      display={p.kredite === 0 ? "0 €" : `${Math.round(p.kredite).toLocaleString("de-DE")} €`}
-                      accent={C}
-                      onChange={(v) => set("kredite", v)}
-                    />
-                  )}
                   <SliderCard
                     label="Bestehende Risikolebensversicherung"
                     value={p.vorhanden}
@@ -552,7 +611,7 @@ export default function RisikolebenRechner() {
       <Shell eyebrow={undefined} title={undefined} lead={undefined}
         footer={
           <>
-            <button style={T.btnMain(false)} onClick={() => goTo(3)}>Familie gemeinsam absichern →</button>
+            <button type="button" style={T.btnMain(false)} onClick={() => goTo(3)}>Weiter →</button>
             <button style={T.btnBack} onClick={() => goTo(1)}>Neue Berechnung starten</button>
           </>
         }
@@ -568,68 +627,77 @@ export default function RisikolebenRechner() {
             {gedeckt ? "kein wesentlicher Absicherungsbedarf" : "empfohlene Versicherungssumme (netto)"}
           </div>
 
-          {/* Bedarfs-Balken: Violett = Lebenshaltung (durch Einnahmen), Hellrot = Lücke, Blau = Kredit */}
-          <div style={{ width: "100%", maxWidth: "340px", marginTop: "20px", marginBottom: "4px" }}>
-            <div style={{ display: "flex", height: "12px", borderRadius: "999px", overflow: "hidden", background: "#F3F4F6" }}>
-              {barSum > 0 ? (
-                <>
-                  <div
-                    title="Lebenshaltung (durch laufende Einnahmen abgedeckt, kapitalisiert)"
-                    style={{
-                      width: `${pctLh}%`,
-                      minWidth: pctLh > 0 ? "3px" : 0,
-                      background: BAR_LEBENSHALTUNG,
-                      transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                    }}
-                  />
-                  <div
-                    title="Versorgungslücke (kapitalisiert)"
-                    style={{
-                      width: `${pctLue}%`,
-                      minWidth: pctLue > 0 ? "3px" : 0,
-                      background: BAR_LUECKE,
-                      transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                    }}
-                  />
-                  {p.kredite > 0 && (
-                    <div
-                      title="Kredit / Restschuld"
-                      style={{
-                        width: `${pctKr}%`,
-                        minWidth: pctKr > 0 ? "3px" : 0,
-                        background: BAR_KREDIT,
-                        transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                      }}
-                    />
+          <div style={{ ...T.resultSub, textAlign: "center", marginTop: "8px" }}>vereinfachte Berechnung · {p.laufzeit} Jahre · auf Basis Ihrer Angaben</div>
+        </div>
+
+        {/* Bedarfs-Balken in Standard-cardPrimary (Violett / Hellrot / Blau) */}
+        <div style={T.section}>
+          <div style={T.cardPrimary}>
+            <div style={{ padding: "18px 20px" }}>
+              <div style={{ fontSize: "12px", fontWeight: "600", color: "#6B7280", marginBottom: "12px", textAlign: "center" }}>
+                Aufschlüsselung des Kapitalbedarfs
+              </div>
+              <div style={{ width: "100%", maxWidth: "340px", margin: "0 auto 4px" }}>
+                <div style={{ display: "flex", height: "12px", borderRadius: "999px", overflow: "hidden", background: "#F3F4F6" }}>
+                  {barSum > 0 ? (
+                    <>
+                      <div
+                        title="Lebenshaltung (durch laufende Einnahmen abgedeckt, kapitalisiert)"
+                        style={{
+                          width: `${pctLh}%`,
+                          minWidth: pctLh > 0 ? "3px" : 0,
+                          background: BAR_LEBENSHALTUNG,
+                          transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                        }}
+                      />
+                      <div
+                        title="Versorgungslücke (kapitalisiert)"
+                        style={{
+                          width: `${pctLue}%`,
+                          minWidth: pctLue > 0 ? "3px" : 0,
+                          background: BAR_LUECKE,
+                          transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                        }}
+                      />
+                      {p.kredite > 0 && (
+                        <div
+                          title="Kredit / Restschuld"
+                          style={{
+                            width: `${pctKr}%`,
+                            minWidth: pctKr > 0 ? "3px" : 0,
+                            background: BAR_KREDIT,
+                            transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                          }}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <div style={{ flex: 1, background: "#E5E7EB" }} />
                   )}
-                </>
-              ) : (
-                <div style={{ flex: 1, background: "#E5E7EB" }} />
-              )}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 16px", marginTop: "12px", fontSize: "11px", color: "#6B7280" }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_LEBENSHALTUNG, flexShrink: 0 }} />
-                Lebenshaltung
-              </span>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_LUECKE, flexShrink: 0 }} />
-                Lücke
-              </span>
-              {p.kredite > 0 && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_KREDIT, flexShrink: 0 }} />
-                  Kredit
-                </span>
-              )}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 16px", marginTop: "12px", fontSize: "11px", color: "#6B7280" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_LEBENSHALTUNG, flexShrink: 0 }} />
+                    Lebenshaltung
+                  </span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_LUECKE, flexShrink: 0 }} />
+                    Lücke
+                  </span>
+                  {p.kredite > 0 && (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_KREDIT, flexShrink: 0 }} />
+                      Kredit
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-
-          <div style={{ ...T.resultSub, textAlign: "center" }}>vereinfachte Berechnung · {p.laufzeit} Jahre · auf Basis Ihrer Angaben</div>
         </div>
 
         <div style={T.section}>
-          <div style={{ ...T.sectionLbl, padding: 0 }}>Ihre Fokus-Themen</div>
+          <div style={T.sectionLbl}>Ihre Fokus-Themen</div>
           <div style={T.compareGrid}>
             <div
               style={{
@@ -675,7 +743,7 @@ export default function RisikolebenRechner() {
         </div>
 
         <div style={T.section}>
-          <div style={{ ...T.sectionLbl, padding: 0 }}>Strategie im Vergleich</div>
+          <div style={T.sectionLbl}>Strategie im Vergleich</div>
           <div style={T.compareGrid}>
             <div style={{ ...T.compareCard, borderTop: `3px solid ${C}` }}>
               <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
@@ -721,8 +789,8 @@ export default function RisikolebenRechner() {
         </div>
 
         {/* ── Breakdown Visual ──────────────────────────────────────────────── */}
-        <div style={T.sectionLbl}>Wie sich der Bedarf zusammensetzt</div>
-        <div style={{ margin: "0 16px 16px" }}>
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Wie sich der Bedarf zusammensetzt</div>
           <div style={T.cardPrimary}>
             {[
               { l: "Monatsbedarf Familie",    v: fmt(p.monatsBedarf) + "/Mon.", c: "#1F2937", bold: false },
@@ -742,8 +810,8 @@ export default function RisikolebenRechner() {
         </div>
 
         {/* ── Section 1: Was das bedeutet ───────────────────────────────────── */}
-        <div style={T.sectionLbl}>Was das bedeutet</div>
-        <div style={{ margin: "0 16px 16px" }}>
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Was das bedeutet</div>
           <div style={T.cardContext}>
             {[
               { icon: "💶", title: "Laufende Kosten bleiben bestehen", text: "Miete, Kredite und Lebenshaltungskosten fallen unverändert an — unabhängig davon, ob ein Einkommen wegfällt." },
@@ -762,8 +830,8 @@ export default function RisikolebenRechner() {
         </div>
 
         {/* ── Section 3: Was bereits abgedeckt ist ──────────────────────────── */}
-        <div style={T.sectionLbl}>Was bereits abgedeckt ist</div>
-        <div style={{ margin: "0 16px 16px" }}>
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Was bereits abgedeckt ist</div>
           <div style={T.cardContext}>
             <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", marginBottom: "10px" }}>Gesetzliche Absicherung</div>
             <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.7, marginBottom: "12px" }}>
@@ -783,8 +851,8 @@ export default function RisikolebenRechner() {
         </div>
 
         {/* ── Section 4: Das kann sinnvoll sein ────────────────────────────── */}
-        <div style={T.sectionLbl}>Das kann sinnvoll sein</div>
-        <div style={{ margin: "0 16px 16px" }}>
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Das kann sinnvoll sein</div>
           <div style={T.cardPrimary}>
             {[
               { label: "Absicherungshöhe prüfen", desc: `Ein Richtwert ist ${fmtK(netto > 0 ? netto : gesamt)} Versicherungssumme — individuell kann der Bedarf jedoch abweichen. Ein Gespräch schafft Klarheit.`, icon: "🔍" },
@@ -803,7 +871,7 @@ export default function RisikolebenRechner() {
         </div>
 
         {/* ── Warn-Kachel (unten) ─────────────────────────────────────────── */}
-        <div style={{ margin: "0 16px 20px" }}>
+        <div style={T.section}>
           <div style={T.warnCard}>
             <div style={T.warnCardTitle}>Was oft unterschätzt wird</div>
             <div style={{ fontSize: "13px", color: "#7B2A2A", lineHeight: 1.65, marginTop: "8px" }}>
@@ -813,7 +881,7 @@ export default function RisikolebenRechner() {
         </div>
 
         {/* ── Legal ─────────────────────────────────────────────────────────── */}
-        <div style={{ padding: "0 16px 120px" }}>
+        <div style={{ ...T.section, paddingBottom: "120px" }}>
           <CheckBerechnungshinweis>
             <>
               Vereinfachte Berechnung. Gesamtbedarf = monatliche Lücke × 12 × Laufzeit + Kredite − bestehende Absicherung. Lücke = Familienbedarf − Einnahmen (Partner + Witwen-/Waisenrente + Sonstiges).{" "}
@@ -833,7 +901,7 @@ export default function RisikolebenRechner() {
       <Shell
         eyebrow="Fast geschafft"
         title="Wo können wir Sie erreichen?"
-        lead="Wir kontaktieren Sie innerhalb von 24 Stunden und besprechen mit Ihnen die nächsten Schritte."
+        lead="Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis und den nächsten Schritten."
         footer={
           isDemo ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -875,14 +943,14 @@ export default function RisikolebenRechner() {
                   goTo(4);
                 }}
               >
-                {valid ? "Familie absichern →" : "Bitte füllen Sie alle Pflichtfelder aus"}
+                {valid ? "Weiter →" : "Bitte füllen Sie alle Pflichtfelder aus"}
               </button>
               <button style={T.btnBack} onClick={() => goTo(2)}>Zurück</button>
             </>
           )
         }
       >
-        <div style={{ ...T.section, paddingBottom: "120px" }}>
+        <div style={{ ...T.section, paddingBottom: "8px" }}>
           {!isDemo && (
             <div style={{ ...T.infoBox, marginBottom: "16px" }}>
               <div style={{ fontSize: "12px", fontWeight: "700", color: C, marginBottom: "8px" }}>Ihre Berechnung</div>
@@ -929,7 +997,7 @@ export default function RisikolebenRechner() {
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: "14px" }}>
+              <div style={{ marginTop: "14px", marginBottom: "100px" }}>
                 <CheckKontaktBeforeSubmitBlock
                   maklerName={MAKLER.name}
                   consent={kontaktConsent}
@@ -958,13 +1026,13 @@ export default function RisikolebenRechner() {
             margin: "0 auto 20px",
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden>
             <path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <div style={{ fontSize: "20px", fontWeight: "700", color: "#111", letterSpacing: "-0.4px", marginBottom: "8px" }}>
+        <h1 style={{ fontSize: "20px", fontWeight: "700", color: "#111", letterSpacing: "-0.4px", margin: "0 0 8px", lineHeight: 1.25 }}>
           {formData.name ? `Vielen Dank, ${formData.name.split(" ")[0]}.` : "Vielen Dank für Ihre Anfrage."}
-        </div>
+        </h1>
         <div style={{ fontSize: "14px", color: "#666", lineHeight: 1.65, marginBottom: "32px" }}>
           Wir kontaktieren Sie innerhalb von 24 Stunden mit konkreten nächsten Schritten.
         </div>

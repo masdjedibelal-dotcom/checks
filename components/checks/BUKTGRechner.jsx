@@ -415,6 +415,39 @@ function StoryHeroBUKTG({ emoji, title, text }) {
   );
 }
 
+/**
+ * Slide 2 „Status-Check“ — Logik nur für angestellt | beamter | selbst (Selbstständige).
+ * `p.beruf` entspricht formData.status im Wizard; azubi/student: neutrales Fallback ohne Zusatzannahmen.
+ */
+function storyStaatCopyForStatus(beruf) {
+  switch (beruf) {
+    case "selbst":
+      return {
+        emoji: "⚖️",
+        title: "Volle Eigenverantwortung.",
+        text: "Als Selbstständiger entfällt das staatliche Netz fast komplett. Wir kalkulieren jetzt, wie viel privates Tagegeld Sie benötigen, um Ihre laufenden Kosten ohne Umsatz weiterzuzahlen.",
+      };
+    case "angestellt":
+      return {
+        emoji: "⚖️",
+        title: "Die 6-Wochen-Grenze.",
+        text: "Nach 42 Tagen endet die Lohnfortzahlung durch Ihren Arbeitgeber. Wir berechnen jetzt die Differenz zwischen Ihrem Krankengeld und Ihrem gewohnten Netto.",
+      };
+    case "beamter":
+      return {
+        emoji: "⚖️",
+        title: "Dienstfähigkeit sichern.",
+        text: "Ihr Status bietet Schutz, aber bei Dienstunfähigkeit drohen dennoch finanzielle Einbußen. Wir prüfen jetzt Ihren individuellen Ergänzungsbedarf zur Beihilfe.",
+      };
+    default:
+      return {
+        emoji: "⚖️",
+        title: "Im nächsten Schritt",
+        text: "Wir führen die Kalkulation anhand Ihrer Angaben fort.",
+      };
+  }
+}
+
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 function makeBUKTGT(C) {
   return {
@@ -647,7 +680,7 @@ export default function BUKTGRechner() {
     return ids;
   }, [p.kv, p.beruf]);
 
-  /** Intro → Beruf → Staats-Story → restliche Daten → Bridge → Loader */
+  /** Intro → Beruf → [Staats-Story nur wenn kein Azubi/Student] → restliche Daten → Bridge → Loader */
   const wizardFlow = useMemo(() => {
     const ids = STEP_IDS;
     const flow = [{ kind: "intro" }];
@@ -656,13 +689,16 @@ export default function BUKTGRechner() {
       return flow;
     }
     flow.push({ kind: "data", sid: ids[0] });
-    flow.push({ kind: "storyStaat" });
+    const showStatusStory = p.beruf !== "azubi" && p.beruf !== "student";
+    if (showStatusStory) {
+      flow.push({ kind: "storyStaat" });
+    }
     for (let i = 1; i < ids.length; i++) {
       flow.push({ kind: "data", sid: ids[i] });
     }
     flow.push({ kind: "bridge" });
     return flow;
-  }, [STEP_IDS]);
+  }, [STEP_IDS, p.beruf]);
 
   const totalWizSteps = wizardFlow.length;
 
@@ -1114,35 +1150,38 @@ export default function BUKTGRechner() {
       {curFlow?.kind === "intro" && (
         <>
           <StoryHeroBUKTG
-            emoji="🛠️"
-            title="Ihr wertvollstes Gut: Ihre Arbeitskraft."
-            text="Ohne Einkommen steht alles still. In 2 Minuten berechnen wir, wie lange Sie im Krankheitsfall Ihren Standard halten können und wo echte Lücken klaffen."
+            emoji="🛡️"
+            title="Ihr Einkommen im Fokus."
+            text="Ihre Arbeitskraft ist Ihr wertvollstes Gut. Wir berechnen in 2 Minuten, wie viel Geld Ihnen bei langer Krankheit oder Berufsunfähigkeit wirklich zum Leben bleibt."
           />
           <div style={{ height: "120px" }} />
           <Footer onNext={nextWiz} nextLabel="Analyse starten" T={T} />
         </>
       )}
 
-      {curFlow?.kind === "storyStaat" && (
+      {curFlow?.kind === "storyStaat" && (() => {
+        const st = storyStaatCopyForStatus(p.beruf);
+        return (
         <>
-          <StoryHeroBUKTG
-            emoji="📉"
-            title="Der Staat zahlt nur das Minimum."
-            text="Wussten Sie, dass die volle Erwerbsminderungsrente im Schnitt weniger als 900 € beträgt? Wir prüfen jetzt, ob das für Ihre Fixkosten und Ihren Lebensstil reicht."
-          />
+          <StoryHeroBUKTG emoji={st.emoji} title={st.title} text={st.text} />
           <div style={{ height: "120px" }} />
           <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter zur Kalkulation" T={T} />
         </>
-      )}
+        );
+      })()}
 
       {curFlow?.kind === "bridge" && (
         <>
-          <StoryHeroBUKTG emoji="🚀" title="Einkommen garantiert." text={null} />
+          <StoryHeroBUKTG
+            emoji="🚀"
+            title="Ihre Analyse ist bereit."
+            text={`Basierend auf Ihren Angaben von ${fmt(R.netto)} Netto haben wir Ihre Versorgungslücke präzise ermittelt.`}
+          />
           <div style={{ padding: "16px 24px 8px", maxWidth: "440px", margin: "0 auto" }}>
             {[
-              "Ermittlung Ihrer monatlichen Lücke bei Berufsunfähigkeit.",
-              "Berechnung des notwendigen Krankentagegeldes (KTG).",
-              "Strategie zur Sicherung Ihres Netto-Einkommens.",
+              "Berechnung der monatlichen Netto-Lücke.",
+              "Ermittlung des notwendigen Krankentagegeldes.",
+              "Strategie zur dauerhaften Einkommenssicherung.",
             ].map((line) => (
               <div
                 key={line}
