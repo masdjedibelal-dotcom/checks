@@ -423,7 +423,7 @@ html {
   .flow-leads-landing .hero-btns { justify-content: center; }
 }
 
-/* Hero Visual: Single floating phone */
+/* Hero Visual: Smartphone-Mockup (beschnitten wie früheres kompaktes Mock) */
 .flow-leads-landing .hero-visual {
   position: relative;
   display: flex;
@@ -434,7 +434,19 @@ html {
   animation: float 7s ease-in-out infinite;
   filter: drop-shadow(0 32px 64px rgba(29,79,145,0.16));
   width: 100%;
-  max-width: 360px;
+  max-width: min(380px, 90vw);
+}
+.flow-leads-landing .hero-phones-clip {
+  position: relative;
+  width: 100%;
+  /* Schmaler sichtbarer Ausschnitt = Rand-Weißfläche im PNG wird weggeschnitten */
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.flow-leads-landing .hero-phones-img {
+  object-fit: cover;
+  object-position: 50% 44%;
 }
 
 /* ─── FACTS — Kennzahlen, kompakte Cards ─────────────────────────────────── */
@@ -805,6 +817,22 @@ html {
   padding: 24px 20px;
   background: #ffffff;
   border-bottom: 1px solid var(--border);
+}
+.flow-leads-landing .ck-card-preview--raster {
+  padding: 18px 16px;
+}
+.flow-leads-landing .ck-card-raster-clip {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+}
+.flow-leads-landing .ck-card-raster-img {
+  object-fit: cover;
+  object-position: 50% 44%;
 }
 .flow-leads-landing .ck-card-right {
   flex: 1;

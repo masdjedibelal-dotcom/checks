@@ -5,7 +5,7 @@ import type { ComponentType } from "react";
 import type { DemoSlug } from "@/lib/demoCheckMap";
 
 /**
- * gkv-pkv → GKVPKVRechner.jsx
+ * gkv-pkv (KV-Navigator) → GKVPKVRechner.jsx
  * risikoleben → Risikoleben_Rechner.jsx
  * (einheitliches Layout: DM Sans / Helvetica-Stack, Header 52px, sticky Footer, SliderCard aus CheckComponents)
  */

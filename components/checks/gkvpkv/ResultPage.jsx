@@ -655,7 +655,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
           </div>
           <span style={T.logoTxt}>{maklerFirma}</span>
         </div>
-        <span style={T.badge}>Krankenversicherung</span>
+        <span style={T.badge}>KV-Navigator</span>
       </div>
       <div style={T.prog}>
         <div style={T.progFil(100)} />

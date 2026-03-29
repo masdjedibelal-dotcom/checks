@@ -8,8 +8,8 @@ export const runtime = "nodejs";
 const SLUG_NAMES: Record<string, string> = {
   bedarfscheck: "Versicherungs-Check",
   "lebenssituations-check": "Lebenssituations-Check",
-  "einkommens-check": "Einkommens-Check",
-  "gkv-pkv": "GKV vs. PKV",
+  "einkommens-check": "Zielgruppenpakete",
+  "gkv-pkv": "KV-Navigator",
   "vorsorge-check": "Vorsorge-Check",
   risikoleben: "Risikoleben-Check",
   "pflege-check": "Pflege-Check",

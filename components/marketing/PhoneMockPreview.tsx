@@ -110,7 +110,7 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
         </>
       );
 
-    /* ── 3. Einkommens-Check ──────────────────────────────────── */
+    /* ── 3. Zielgruppenpakete (einkommens-check) ──────────────── */
     case "einkommens-check":
       return (
         <>
@@ -144,7 +144,7 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
         </>
       );
 
-    /* ── 4. GKV vs. PKV ───────────────────────────────────────── */
+    /* ── 4. KV-Navigator (gkv-pkv) ─────────────────────────────── */
     case "gkv-pkv":
       return (
         <>

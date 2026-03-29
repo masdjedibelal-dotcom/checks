@@ -35,7 +35,7 @@ export const KATALOG: Template[] = [
   {
     slug: "einkommens-check",
     icon: "💼",
-    name: "Einkommensabsicherung",
+    name: "Zielgruppenpakete",
     desc: "BU + KTG Zeitstrahl, Lückenberechnung, Empfehlung und EU als Alternative.",
     tags: ["Einkommensschutz", "BU & Krankentagegeld"],
     kategorie: "luecken",
@@ -45,7 +45,7 @@ export const KATALOG: Template[] = [
   {
     slug: "gkv-pkv",
     icon: "🏥",
-    name: "PKV-Entscheidung",
+    name: "KV-Navigator",
     desc: "JAEG-Prüfung, Beitragsvergleich, Familienlogik, konkrete Einordnung.",
     tags: ["Gehaltssprung", "PKV-Wechsel"],
     kategorie: "luecken",

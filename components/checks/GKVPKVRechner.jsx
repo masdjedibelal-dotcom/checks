@@ -225,7 +225,7 @@ function KvNavigatorHeader({ T, maklerFirma }) {
         </div>
         <span style={T.logoTxt}>{maklerFirma}</span>
       </div>
-      <span style={T.badge}>Krankenversicherung</span>
+      <span style={T.badge}>KV-Navigator</span>
     </div>
   );
 }

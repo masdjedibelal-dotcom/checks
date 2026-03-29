@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   useEffect,
@@ -12,7 +13,25 @@ import {
 import { createPortal } from "react-dom";
 import { scrollCheckDocumentToTop } from "@/lib/checkScrollToTop";
 import { KATALOG, type Template } from "@/lib/katalog";
-import { CHECK_FLOW_META, CheckFlowPhoneMock, HeroResultMockup } from "./check-flow-checks";
+import {
+  CHECK_FLOW_META,
+  CheckFlowPhoneMock,
+  type CheckFlowSlug,
+} from "./check-flow-checks";
+
+/** Landing-Karten mit Raster-Mockup statt CSS-Phone */
+const CK_CARD_RASTER: Partial<
+  Record<CheckFlowSlug, { src: string; alt: string }>
+> = {
+  "immobilien-check": {
+    src: "/images/ck-card-immobilien-check.png",
+    alt: "Immobilien-Check: Vorschau auf dem Smartphone",
+  },
+  "lebenssituations-check": {
+    src: "/images/ck-card-jahresgespraech.png",
+    alt: "Jahresgespräch: Vorschau mit Lebensereignis und Status",
+  },
+};
 import { VertriebCardVisual } from "./VertriebCardVisuals";
 import DemoModal from "@/components/ui/DemoModal";
 import KonfiguratorOverlay, {
@@ -422,10 +441,19 @@ export default function LandingHome() {
             </div>
           </div>
 
-          {/* Right: Premium Result Mockup */}
+          {/* Right: Hero-Grafik (Smartphone-Mockup) */}
           <div className="hero-visual au d4">
             <div className="hero-float-wrap">
-              <HeroResultMockup />
+              <div className="hero-phones-clip">
+                <Image
+                  src="/images/landing-hero-phones.png"
+                  alt="Microsite auf dem Smartphone: Einkommens-Check mit Einkommenslücke und Phasen"
+                  fill
+                  priority
+                  sizes="(max-width: 960px) min(90vw, 380px), min(calc(50vw - 84px), 380px)"
+                  className="hero-phones-img"
+                />
+              </div>
             </div>
           </div>
 
@@ -456,14 +484,33 @@ export default function LandingHome() {
           <div className="ck-cards">
             {CHECK_FLOW_META.map((c, i) => {
               const tmpl = KATALOG.find((t) => t.slug === c.slug);
+              const raster = CK_CARD_RASTER[c.slug];
               return (
                 <div
                   key={c.slug}
                   className="ck-card fade-up"
                   style={{ transitionDelay: `${(i % 2) * 0.05}s` }}
                 >
-                  <div className="ck-card-preview">
-                    <CheckFlowPhoneMock slug={c.slug} />
+                  <div
+                    className={
+                      raster
+                        ? "ck-card-preview ck-card-preview--raster"
+                        : "ck-card-preview"
+                    }
+                  >
+                    {raster ? (
+                      <div className="ck-card-raster-clip">
+                        <Image
+                          src={raster.src}
+                          alt={raster.alt}
+                          fill
+                          sizes="(max-width: 680px) min(92vw, 300px), min(42vw, 300px)"
+                          className="ck-card-raster-img"
+                        />
+                      </div>
+                    ) : (
+                      <CheckFlowPhoneMock slug={c.slug} />
+                    )}
                   </div>
                   <div className="ck-card-right">
                     <div>

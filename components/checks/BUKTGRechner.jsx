@@ -568,7 +568,7 @@ function Header({ phase, total, makler, T, progStyle, progFillStyle }) {
           </div>
           <span style={T.logoTxt}>{makler.firma}</span>
         </div>
-        <span style={T.badge}>BU + KTG</span>
+        <span style={T.badge}>Zielgruppenpakete</span>
       </div>
       <div style={{ ...T.prog, ...progStyle }}>
         <div style={{ ...T.progFil(w), ...progFillStyle }} />
@@ -1274,7 +1274,7 @@ export default function BUKTGRechner() {
       {sid === "beruf" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Wie sind Sie aktuell beschäftigt?</div>
             <div style={T.body}>Davon hängt ab, welche gesetzlichen Leistungen greifen.</div>
           </div>
@@ -1326,7 +1326,7 @@ export default function BUKTGRechner() {
       {sid === "kv" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Wie sind Sie krankenversichert?</div>
             <div style={T.body}>
               {p.beruf === "selbst"
@@ -1378,7 +1378,7 @@ export default function BUKTGRechner() {
       {sid === "selbstGkvKg" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Haben Sie in Ihrem GKV-Tarif Anspruch auf Krankengeld gewählt?</div>
             <div style={T.body}>
               Ohne diese Option gibt es im Krankheitsfall in der Regel kein gesetzliches Krankengeld — nur privates KTG zählt.
@@ -1414,7 +1414,7 @@ export default function BUKTGRechner() {
       {sid === "pkvBeitrag" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>
               {p.beruf === "angestellt"
                 ? "Wie hoch ist Ihr privater Krankenversicherungs-Beitrag (Gesamtbetrag)?"
@@ -1465,7 +1465,7 @@ export default function BUKTGRechner() {
       {sid === "brutto" && p.beruf === "student" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Welches Netto-Einkommen streben Sie nach dem Studium an?</div>
             <div style={T.body}>
               Fokus: keine gesetzliche EMR aus Erwerbstätigkeit im Modell — private Vorsorge (z. B. BU) schließt die Lücke.
@@ -1493,7 +1493,7 @@ export default function BUKTGRechner() {
       {sid === "brutto" && p.beruf !== "student" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>
               {p.beruf === "selbst"
                 ? "Wie hoch ist Ihr monatlicher Gewinn (vor Steuern)?"
@@ -1553,7 +1553,7 @@ export default function BUKTGRechner() {
       {sid === "ktgBu" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
             <div style={T.body}>Beide Felder sind optional — geben Sie 0 ein, wenn kein Vertrag vorhanden ist.</div>
           </div>
@@ -1609,7 +1609,7 @@ export default function BUKTGRechner() {
       {sid === "szenario" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Einkommens-Check · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Welches Szenario beschäftigt Sie am meisten?</div>
           </div>
           <div style={T.section}>
