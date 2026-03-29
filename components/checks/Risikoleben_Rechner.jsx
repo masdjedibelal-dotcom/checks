@@ -7,6 +7,8 @@ import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCop
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import { CheckLoader } from "@/components/checks/CheckLoader";
+import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
+import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 
 (() => {
   const s = document.createElement("style");
@@ -23,6 +25,9 @@ import { CheckLoader } from "@/components/checks/CheckLoader";
     input[type=range] { -webkit-appearance:none; appearance:none; width:100%; height:2px; border-radius:1px; background:#e5e5e5; cursor:pointer; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent, #1a3a5c); border:2px solid #fff; box-shadow:0 0 0 1px var(--accent, #1a3a5c); }
     a { text-decoration:none; }
+    .rl-acc-item{border-radius:12px;background:#F9FAFB;border:1px solid rgba(17,24,39,0.06);margin-bottom:8px;overflow:hidden;}
+    .rl-acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-align:left;font-size:13px;font-weight:600;color:#1F2937;background:transparent;cursor:pointer;border:none;font-family:inherit;}
+    .rl-acc-panel{padding:0 16px 14px;font-size:12px;color:#6B7280;line-height:1.65;border-top:1px solid rgba(17,24,39,0.06);}
   `;
   document.head.appendChild(s);
 })();
@@ -32,21 +37,6 @@ const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n>=10000 ? Math.round(n/1000)+".000 €" : fmt(n);
 /** Intro + Familie + Kredit + Bedarfs-Story + 2 Datenschritte + Bridge */
 const RL_WIZARD_STEPS = 7;
-const STORY_H1_RL = { fontSize: "52px", fontWeight: "800", letterSpacing: "-1.5px", lineHeight: 1.12, color: "#111", margin: "0 0 22px" };
-const STORY_BODY_RL = { fontSize: "16px", color: "#4B5563", lineHeight: 1.65, margin: 0, maxWidth: "42ch", marginLeft: "auto", marginRight: "auto" };
-
-function StoryHeroRL({ emoji, title, text }) {
-  return (
-    <div style={{ textAlign: "center", padding: "36px 24px 20px", maxWidth: "600px", margin: "0 auto" }}>
-      <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
-        {emoji}
-      </div>
-      <h1 style={STORY_H1_RL}>{title}</h1>
-      {text ? <p style={STORY_BODY_RL}>{text}</p> : null}
-    </div>
-  );
-}
-
 /** Priorität: Restschuld → Kinder → Paar (ohne Kinder) — keine Bestattung/ErbSt */
 function risikoStoryBedarfCopy(restschuld, familienModus) {
   const rs = Number(restschuld) || 0;
@@ -88,9 +78,36 @@ function risikoBridgeSicherheitCopy(nettoEinkommen, laufzeitJahre) {
   };
 }
 const WARN_RL = "#c0392b";
-const BAR_LEBENSHALTUNG = "#7c3aed";
 const BAR_KREDIT = "#2563eb";
-const BAR_LUECKE = "#fca5a5";
+
+function RisikoHintCard({ children, icon = "💡", accent = "#2563eb" }) {
+  const a = accent;
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: "12px",
+        alignItems: "flex-start",
+        padding: "16px 18px",
+        borderRadius: "16px",
+        background: `linear-gradient(135deg, ${a}0a 0%, ${a}14 100%)`,
+        border: `1px solid ${a}33`,
+        boxShadow: `0 4px 14px ${a}14`,
+        minWidth: 0,
+        fontSize: "13px",
+        color: "#374151",
+        lineHeight: 1.55,
+        height: "100%",
+        boxSizing: "border-box",
+      }}
+    >
+      <span style={{ fontSize: "22px", lineHeight: 1, flexShrink: 0 }} aria-hidden>
+        {icon}
+      </span>
+      <div style={{ minWidth: 0 }}>{children}</div>
+    </div>
+  );
+}
 
 function BuktgLogoMark() {
   return (
@@ -105,12 +122,28 @@ function BuktgLogoMark() {
 
 // ─── BERECHNUNG (vereinfacht) ─────────────────────────────────────────────────
 function berechne({ monatsBedarf, laufzeit, partnerEinkommen, witwenRente, sonstiges, kredite, vorhanden }) {
-  const einnahmen     = partnerEinkommen + witwenRente + sonstiges;
-  const luecke        = Math.max(0, monatsBedarf - einnahmen);
+  const einnahmen = partnerEinkommen + witwenRente + sonstiges;
+  const luecke = Math.max(0, monatsBedarf - einnahmen);
   const bedarfKapital = luecke * 12 * laufzeit;
-  const gesamt        = bedarfKapital + kredite;
-  const netto         = Math.max(0, gesamt - vorhanden);
-  return { einnahmen, luecke, bedarfKapital, gesamt, netto };
+  const gesamt = bedarfKapital + kredite;
+  const netto = Math.max(0, gesamt - vorhanden);
+  const gesamtBedarf = gesamt;
+  const kapBedarf = bedarfKapital;
+  const deckung = gesamt > 0 ? Math.min(100, Math.round((vorhanden / gesamt) * 100)) : 100;
+  /** Faustformel Ø ~2‰ VS/Jahr, vereinfacht gesamtBedarf×0,002/12, auf 5 € gerundet */
+  const empfPraemie =
+    luecke > 0 ? Math.max(10, Math.round((gesamtBedarf * 0.002 / 12) / 5) * 5) : 0;
+  return {
+    einnahmen,
+    luecke,
+    bedarfKapital,
+    gesamt,
+    netto,
+    gesamtBedarf,
+    kapBedarf,
+    deckung,
+    empfPraemie,
+  };
 }
 
 export default function RisikolebenRechner() {
@@ -134,6 +167,7 @@ export default function RisikolebenRechner() {
   const [formData, setFormData] = useState({ name: "", email: "", telefon: "" });
   const [kontaktConsent, setKontaktConsent] = useState(false);
   const [scr, setScr] = useState(1);
+  const [rlErgebnisAcc, setRlErgebnisAcc] = useState(null);
   const goTo = (ph) => {
     setAnimKey((k) => k + 1);
     setPhase(ph);
@@ -142,6 +176,7 @@ export default function RisikolebenRechner() {
       setHatKredit(null);
       setKontaktConsent(false);
       setLoading(false);
+      setRlErgebnisAcc(null);
       setP((x) => ({ ...x, familienModus: "" }));
     }
   };
@@ -153,41 +188,52 @@ export default function RisikolebenRechner() {
   const backScr = () => {
     if (scr > 1) setScr((s) => s - 1);
   };
-  useCheckScrollToTop([phase, animKey, scr, loading]);
+  useCheckScrollToTop([phase, animKey, scr, loading, rlErgebnisAcc]);
   const set     = (k, v) => setP(x => ({ ...x, [k]: v }));
   const R       = berechne(p);
   const progPct = phase === 1 ? (scr / RL_WIZARD_STEPS) * 100 : { 2: 100, 3: 100, 4: 100 }[phase] || 0;
 
   const cardLift = {
-    background:"#fff",
-    borderRadius:"10px",
-    border:"1px solid #e8e8e8",
-    boxShadow:"0 1px 2px rgba(0,0,0,0.04)",
+    background: "#fff",
+    borderRadius: "18px",
+    border: "1px solid #e8e8e8",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
   };
 
   const T = {
-    root:    { minHeight:"100vh", background:"#fff", fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
-    header:  { position:"sticky", top:0, zIndex:100, background:"rgba(255,255,255,0.95)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", borderBottom:"1px solid #e8e8e8", padding:"0 24px", height:"52px", display:"flex", alignItems:"center", justifyContent:"space-between" },
-    logoWrap:{ display:"flex", alignItems:"center", gap:"10px" },
-    logoBox: { width:"28px", height:"28px", borderRadius:"6px", background:C, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"14px", fontWeight:"700" },
-    logoTxt: { fontSize:"13px", fontWeight:"600", color:"#111" },
-    badge:   { fontSize:"11px", fontWeight:"500", color:"#888", letterSpacing:"0.3px", textTransform:"uppercase" },
-    progBar: { height:"2px", background:"#f0f0f0" },
-    progFill:{ height:"100%", width:`${progPct}%`, background:C, transition:"width 0.4s ease" },
-    hero:    { padding:"32px 24px 16px" },
-    eyebrow: { fontSize:"11px", fontWeight:"600", letterSpacing:"1px", textTransform:"uppercase", color:"#999", marginBottom:"6px" },
-    h1:      { fontSize:"22px", fontWeight:"700", color:"#111", lineHeight:1.25, letterSpacing:"-0.5px" },
-    lead:    { fontSize:"14px", color:"#666", lineHeight:1.65, marginTop:"6px" },
-    body:    { paddingBottom:"120px" },
-    card:    { margin:"0 16px 10px", ...cardLift, overflow:"hidden" },
-    secLbl:  { fontSize:"11px", fontWeight:"600", letterSpacing:"0.5px", textTransform:"uppercase", color:"#999", padding:"16px 24px 8px" },
-    fldLbl:  { display:"block", fontSize:"12px", fontWeight:"600", color:"#444", marginBottom:"8px" },
-    fldVal:  { fontSize:"21px", fontWeight:"700", color:C, letterSpacing:"-0.4px", marginBottom:"6px" },
-    fldHint: { fontSize:"11px", color:"#aaa", marginTop:"4px" },
-    fldWrap: { marginBottom:"20px" },
-    footer:  { position:"sticky", bottom:0, background:"rgba(255,255,255,0.97)", backdropFilter:"blur(12px)", WebkitBackdropFilter:"blur(12px)", borderTop:"1px solid #e8e8e8", padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
-    btnMain: (d) => ({ width:"100%", padding:"13px 20px", background:d?"#e8e8e8":C, color:d?"#aaa":"#fff", borderRadius:"8px", fontSize:"14px", fontWeight:"600", cursor:d?"default":"pointer" }),
-    btnBack: { width:"100%", padding:"10px", color:"#aaa", fontSize:"13px", marginTop:"6px", cursor:"pointer" },
+    root: { minHeight: "100vh", background: "#fff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
+    header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(31,41,55,0.06)", padding: "0 24px", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+    logoWrap: { display: "flex", alignItems: "center", gap: "10px" },
+    logoBox: { width: "28px", height: "28px", borderRadius: "6px", background: C, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "700" },
+    logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111" },
+    badge: { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
+    progBar: { height: "2px", background: "rgba(31,41,55,0.08)" },
+    progFill: { height: "100%", width: `${progPct}%`, background: C, transition: "width 0.4s ease" },
+    hero: { padding: "32px 24px 16px" },
+    eyebrow: { fontSize: "11px", fontWeight: "600", letterSpacing: "1px", textTransform: "uppercase", color: "#999", marginBottom: "6px" },
+    h1: { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
+    lead: { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
+    body: { paddingBottom: "120px" },
+    card: { margin: "0 16px 10px", ...cardLift, overflow: "hidden" },
+    secLbl: { fontSize: "11px", fontWeight: "600", letterSpacing: "0.5px", textTransform: "uppercase", color: "#999", padding: "16px 24px 8px" },
+    fldLbl: { display: "block", fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "8px" },
+    fldVal: { fontSize: "21px", fontWeight: "700", color: C, letterSpacing: "-0.4px", marginBottom: "6px" },
+    fldHint: { fontSize: "11px", color: "#aaa", marginTop: "4px" },
+    fldWrap: { marginBottom: "20px" },
+    footer: { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(31,41,55,0.06)", boxShadow: "0 -6px 20px rgba(17,24,39,0.05)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
+    btnMain: (d) => ({
+      width: "100%",
+      padding: "13px 20px",
+      background: d ? "#e8e8e8" : C,
+      color: d ? "#aaa" : "#fff",
+      borderRadius: "999px",
+      fontSize: "14px",
+      fontWeight: "600",
+      cursor: d ? "default" : "pointer",
+      letterSpacing: "-0.1px",
+      boxShadow: d ? "none" : "0 8px 20px rgba(26,58,92,0.18)",
+    }),
+    btnBack: { width: "100%", padding: "10px", color: "#aaa", fontSize: "13px", marginTop: "6px", cursor: "pointer" },
     iLabel:  { display:"block", fontSize:"12px", fontWeight:"600", color:"#444", marginBottom:"6px" },
     input:   { width:"100%", padding:"10px 12px", border:"1px solid #e8e8e8", borderRadius:"6px", fontSize:"14px", color:"#111", background:"#fff", outline:"none" },
     iWrap:   { marginBottom:"14px" },
@@ -197,6 +243,7 @@ export default function RisikolebenRechner() {
     resultUnit: { fontSize:"14px", color:"#9CA3AF", marginBottom:"18px" },
     resultSub: { fontSize:"13px", color:"#9CA3AF", lineHeight:1.55, marginTop:"12px" },
     statusOk: { display:"inline-flex", alignItems:"center", gap:"5px", padding:"5px 13px", background:"#F0FDF4", border:"1px solid #BBF7D0", borderRadius:"999px", fontSize:"12px", fontWeight:"600", color:"#15803D" },
+    statusMitte: { display:"inline-flex", alignItems:"center", gap:"5px", padding:"5px 13px", background:"#FFFBEB", border:"1px solid #FCD34D", borderRadius:"999px", fontSize:"12px", fontWeight:"600", color:"#B45309" },
     statusWarn: { display:"inline-flex", alignItems:"center", gap:"5px", padding:"5px 13px", background:"#FFF6F5", border:"1px solid #F2D4D0", borderRadius:"999px", fontSize:"12px", fontWeight:"600", color:"#C0392B" },
     cardPrimary: { border:"1px solid rgba(17,24,39,0.08)", borderRadius:"20px", overflow:"hidden", background:"#FFFFFF", boxShadow:"0 6px 24px rgba(17,24,39,0.08)" },
     cardContext: { background:"#FAFAF8", border:"1px solid rgba(17,24,39,0.05)", borderRadius:"16px", padding:"18px 20px" },
@@ -210,17 +257,42 @@ export default function RisikolebenRechner() {
     dataLabel: { fontSize:"13px", color:"#6B7280" },
     dataValue: { fontSize:"14px", fontWeight:"600", color:"#1F2937", letterSpacing:"-0.2px" },
     section: { padding: "0 24px", marginBottom: "20px" },
+    kpiKontaktLuecke: {
+      borderRadius: "16px",
+      background: "#FFF7F7",
+      border: "1px solid #F2CFCF",
+      padding: "12px 14px",
+      minWidth: 0,
+      flex: "1 1 140px",
+    },
+    kpiKontaktEu: {
+      borderRadius: "14px",
+      background: "rgba(255,255,255,0.96)",
+      border: "1px solid rgba(17,24,39,0.06)",
+      padding: "12px 14px",
+      minWidth: 0,
+      flex: "1 1 140px",
+    },
+    divider: { height: "1px", background: "#f0f0f0", margin: "0 24px 20px" },
     compareGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "12px" },
     compareCard: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "16px", padding: "16px 18px", background: "#fff", boxShadow: "0 4px 16px rgba(17,24,39,0.06)", minWidth: 0 },
     compareCardTitle: { fontSize: "14px", fontWeight: "700", color: "#1F2937", marginBottom: "10px", letterSpacing: "-0.2px" },
     compareBullet: { fontSize: "12px", color: "#4B5563", lineHeight: 1.5, marginBottom: "6px", paddingLeft: "14px", position: "relative" },
-    formCard: { border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden" },
+    formCard: { border: "1px solid #e8e8e8", borderRadius: "18px", overflow: "hidden" },
     row: { padding: "14px 16px", borderBottom: "1px solid #f0f0f0" },
     rowLast: { padding: "14px 16px" },
     inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
     fldLblForm: { fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "0", display: "block" },
     fldHintForm: { fontSize: "11px", color: "#aaa", marginTop: "6px" },
-    infoBox: { padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 },
+    infoBox: {
+      padding: "12px 14px",
+      background: "#F6F8FE",
+      border: "1px solid #DCE6FF",
+      borderRadius: "14px",
+      fontSize: "12px",
+      color: "#315AA8",
+      lineHeight: 1.6,
+    },
   };
 
   const Shell = ({ eyebrow, title, lead, children, footer }) => (
@@ -334,7 +406,7 @@ export default function RisikolebenRechner() {
         </div>
         <div key={animKey} className="fade-in" style={T.body}>
           {scr === 1 && (
-            <StoryHeroRL
+            <CheckKitStoryHero
               emoji="❤️"
               title="Verantwortung, die bleibt."
               text="Niemand spricht gerne darüber, aber jeder möchte seine Liebsten in Sicherheit wissen. Wir berechnen in 2 Minuten, wie viel Kapital Ihre Familie wirklich braucht, um finanziell unabhängig zu bleiben."
@@ -353,15 +425,15 @@ export default function RisikolebenRechner() {
 
           {scr === 4 && (() => {
             const s2 = risikoStoryBedarfCopy(p.kredite, p.familienModus);
-            return <StoryHeroRL emoji="🏠" title={s2.title} text={s2.text} />;
+            return <CheckKitStoryHero emoji="🏠" title={s2.title} text={s2.text} />;
           })()}
 
           {scr === 7 && (() => {
             const b3 = risikoBridgeSicherheitCopy(p.monatsBedarf, p.laufzeit);
             return (
               <>
-                <StoryHeroRL emoji="🎯" title={b3.title} text={b3.text} />
-                <div style={{ padding: "8px 24px 0", maxWidth: "420px", margin: "0 auto" }}>
+                <CheckKitStoryHero hideFooterSpacer emoji="🎯" title={b3.title} text={b3.text} />
+                <div style={{ padding: "0 24px 8px", ...CHECKKIT2026.storyContentWrap }}>
                   {[
                     "Berechnung des Kapitalbedarfs für Hinterbliebene.",
                     "Berücksichtigung laufender Kreditverbindlichkeiten.",
@@ -370,23 +442,22 @@ export default function RisikolebenRechner() {
                     <div
                       key={line}
                       style={{
+                        ...CHECKKIT2026.storyBody,
                         display: "flex",
                         alignItems: "flex-start",
-                        gap: "10px",
-                        fontSize: "15px",
-                        color: "#374151",
-                        lineHeight: 1.55,
-                        marginBottom: "14px",
+                        gap: "14px",
+                        marginBottom: 16,
                         textAlign: "left",
                       }}
                     >
-                      <span style={{ flexShrink: 0 }} aria-hidden>
+                      <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
                         ✅
                       </span>
                       <span>{line}</span>
                     </div>
                   ))}
                 </div>
+                <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
               </>
             );
           })()}
@@ -586,26 +657,49 @@ export default function RisikolebenRechner() {
     );
   }
 
-  // ── Phase 2: Ergebnis ────────────────────────────────────────────────────
+  // ── Phase 2: Ergebnis (kompakt wie Renten/Pflege: Hero + Balken + Einordnung + Accordion) ──
   if (phase === 2) {
-    const { einnahmen, luecke, bedarfKapital, gesamt, netto } = R;
+    const { einnahmen, luecke, bedarfKapital, gesamt, netto, gesamtBedarf, kapBedarf, empfPraemie } = R;
     const gedeckt = netto <= 0;
-    const lebenshaltungKapital = Math.min(einnahmen, p.monatsBedarf) * 12 * p.laufzeit;
-    const barSum = lebenshaltungKapital + bedarfKapital + p.kredite;
-    const pctLh = barSum > 0 ? (lebenshaltungKapital / barSum) * 100 : 0;
-    const pctLue = barSum > 0 ? (bedarfKapital / barSum) * 100 : 0;
-    const pctKr = barSum > 0 ? (p.kredite / barSum) * 100 : 0;
+    const hatLuecke = netto > 0 || luecke > 0;
 
-    const bulletDot = (color) => ({
-      position: "absolute",
-      left: 0,
-      top: "0.5em",
-      width: "5px",
-      height: "5px",
-      borderRadius: "50%",
-      background: color,
-      opacity: 0.85,
-    });
+    let segKap = 0;
+    let segKr = 0;
+    let segFe = 0;
+    if (gesamtBedarf > 0) {
+      if (p.vorhanden > 0 && netto > 0) {
+        const den = kapBedarf + p.kredite + netto;
+        if (den > 0) {
+          segKap = Math.round((kapBedarf / den) * 100);
+          segKr = Math.round((p.kredite / den) * 100);
+          segFe = Math.max(0, 100 - segKap - segKr);
+        }
+      } else {
+        segKap = Math.round((kapBedarf / gesamtBedarf) * 100);
+        segKr = Math.round((p.kredite / gesamtBedarf) * 100);
+        segFe = 0;
+      }
+    }
+
+    const pillRl = gedeckt ? (
+      <div style={T.statusOk}>Modell: keine zusätzliche Summe nötig</div>
+    ) : netto >= 350000 ? (
+      <div style={T.statusWarn}>Sehr hoher Kapitalbedarf</div>
+    ) : netto >= 120000 ? (
+      <div style={T.statusMitte}>Erheblicher Bedarf — Beratung sinnvoll</div>
+    ) : (
+      <div style={T.statusOk}>Orientierungswert auf Basis Ihrer Angaben</div>
+    );
+
+    const breakdownRows = [
+      { l: "Monatsbedarf Familie", v: fmt(p.monatsBedarf) + "/Mon.", c: "#1F2937", bold: false },
+      { l: "Vorhandene Einnahmen", v: "− " + fmt(einnahmen) + "/Mon.", c: "#059669", bold: false },
+      { l: "Monatliche Lücke", v: fmt(luecke) + "/Mon.", c: luecke > 0 ? WARN_RL : "#059669", bold: true, border: true },
+      ...(p.kredite > 0 ? [{ l: "+ Kredite / Darlehen", v: "+ " + fmtK(p.kredite), c: "#1F2937", bold: false }] : []),
+      { l: "Gesamtbedarf", v: fmtK(gesamt), c: C, bold: true, border: true },
+      ...(p.vorhanden > 0 ? [{ l: "− Bestehende Absicherung", v: "− " + fmtK(p.vorhanden), c: "#059669", bold: false }] : []),
+      ...(p.vorhanden > 0 ? [{ l: "Empfohlene Versicherungssumme", v: fmtK(netto), c: gedeckt ? "#059669" : WARN_RL, bold: true }] : []),
+    ];
 
     return (
       <Shell eyebrow={undefined} title={undefined} lead={undefined}
@@ -617,278 +711,246 @@ export default function RisikolebenRechner() {
         }
       >
 
-        {/* ── Hero (Summe zentriert, ohne Status-Pills) ───────────────────── */}
-        <div style={{ ...T.resultHero, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={T.resultEyebrow}>Lebensstandard · Eigenheim</div>
+        <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "24px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={T.resultEyebrow}>Ihre Risikoleben-Analyse</div>
           <div style={{ ...T.resultNumber(!gedeckt), textAlign: "center", width: "100%" }}>
             {gedeckt ? "Gedeckt" : fmtK(netto)}
           </div>
           <div style={{ ...T.resultUnit, textAlign: "center" }}>
-            {gedeckt ? "kein wesentlicher Absicherungsbedarf" : "empfohlene Versicherungssumme (netto)"}
+            {gedeckt ? "kein wesentlicher Absicherungsbedarf im Modell" : "empfohlene Versicherungssumme (netto)"}
           </div>
-
-          <div style={{ ...T.resultSub, textAlign: "center", marginTop: "8px" }}>vereinfachte Berechnung · {p.laufzeit} Jahre · auf Basis Ihrer Angaben</div>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px", marginTop: "6px" }}>{pillRl}</div>
+          <div style={{ ...T.resultSub, textAlign: "center", marginTop: "4px", maxWidth: "36ch" }}>
+            {p.laufzeit} Jahre Laufzeit · vereinfachte Berechnung
+          </div>
         </div>
 
-        {/* Bedarfs-Balken in Standard-cardPrimary (Violett / Hellrot / Blau) */}
         <div style={T.section}>
-          <div style={T.cardPrimary}>
-            <div style={{ padding: "18px 20px" }}>
-              <div style={{ fontSize: "12px", fontWeight: "600", color: "#6B7280", marginBottom: "12px", textAlign: "center" }}>
-                Aufschlüsselung des Kapitalbedarfs
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
+            <div style={T.kpiKontaktLuecke}>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: gedeckt ? "#059669" : WARN_RL, letterSpacing: "-0.5px" }}>
+                {gedeckt ? "—" : fmtK(netto)}
               </div>
-              <div style={{ width: "100%", maxWidth: "340px", margin: "0 auto 4px" }}>
-                <div style={{ display: "flex", height: "12px", borderRadius: "999px", overflow: "hidden", background: "#F3F4F6" }}>
-                  {barSum > 0 ? (
-                    <>
-                      <div
-                        title="Lebenshaltung (durch laufende Einnahmen abgedeckt, kapitalisiert)"
-                        style={{
-                          width: `${pctLh}%`,
-                          minWidth: pctLh > 0 ? "3px" : 0,
-                          background: BAR_LEBENSHALTUNG,
-                          transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                        }}
-                      />
-                      <div
-                        title="Versorgungslücke (kapitalisiert)"
-                        style={{
-                          width: `${pctLue}%`,
-                          minWidth: pctLue > 0 ? "3px" : 0,
-                          background: BAR_LUECKE,
-                          transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                        }}
-                      />
-                      {p.kredite > 0 && (
-                        <div
-                          title="Kredit / Restschuld"
-                          style={{
-                            width: `${pctKr}%`,
-                            minWidth: pctKr > 0 ? "3px" : 0,
-                            background: BAR_KREDIT,
-                            transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                          }}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <div style={{ flex: 1, background: "#E5E7EB" }} />
-                  )}
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 16px", marginTop: "12px", fontSize: "11px", color: "#6B7280" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_LEBENSHALTUNG, flexShrink: 0 }} />
-                    Lebenshaltung
-                  </span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_LUECKE, flexShrink: 0 }} />
-                    Lücke
-                  </span>
-                  {p.kredite > 0 && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                      <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: BAR_KREDIT, flexShrink: 0 }} />
-                      Kredit
-                    </span>
-                  )}
-                </div>
-              </div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Empfohlen (netto)</div>
+            </div>
+            <div style={T.kpiKontaktEu}>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#111", letterSpacing: "-0.5px" }}>{fmtK(p.vorhanden)}</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Vorhanden</div>
+            </div>
+            <div style={T.kpiKontaktEu}>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: luecke > 0 ? WARN_RL : "#059669", letterSpacing: "-0.5px" }}>{fmt(luecke)}</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatliche Lücke</div>
             </div>
           </div>
         </div>
 
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Ihre Fokus-Themen</div>
-          <div style={T.compareGrid}>
+        {hatLuecke ? (
+          <div style={{ ...T.section, marginTop: "-8px" }}>
             <div
               style={{
-                ...T.compareCard,
-                borderTop: `3px solid ${BAR_LEBENSHALTUNG}`,
-                ...(p.kredite === 0 ? { gridColumn: "1 / -1", maxWidth: "440px", marginLeft: "auto", marginRight: "auto", width: "100%" } : {}),
+                border: "1px solid rgba(192,57,43,0.27)",
+                borderLeft: "3px solid #c0392b",
+                borderRadius: "18px",
+                padding: "14px 16px",
+                background: "rgba(192,57,43,0.025)",
+                marginBottom: "20px",
               }}
             >
-              <div style={{ fontSize: "11px", fontWeight: "600", color: "#9CA3AF", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: "6px" }}>Monatliche Versorgung</div>
-              <div style={{ fontSize: p.kredite > 0 ? "22px" : "26px", fontWeight: "800", color: "#1F2937", letterSpacing: "-0.5px", lineHeight: 1.15, marginBottom: "14px" }}>
-                {fmt(luecke)}{" "}
-                <span style={{ fontSize: "13px", fontWeight: "600", color: "#9CA3AF" }}>/ Monat</span>
+              <div
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  color: "#c0392b",
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  marginBottom: "8px",
+                }}
+              >
+                Empfohlene Absicherung
               </div>
-              {[
-                "Lebensstandard: Sichert Miete, Einkäufe und Fixkosten für Ihre Liebsten.",
-                "Zeit für Trauer: Ermöglicht dem Partner, die Arbeitszeit bei Bedarf zu reduzieren.",
-                "Bildung: Garantiert die finanzielle Unterstützung der Kinder bis zum Berufsstart.",
-              ].map((line) => (
-                <div key={line} style={T.compareBullet}>
-                  <span style={bulletDot(BAR_LEBENSHALTUNG)} aria-hidden />
-                  {line}
-                </div>
-              ))}
-            </div>
-            {p.kredite > 0 && (
-              <div style={{ ...T.compareCard, borderTop: `3px solid ${BAR_KREDIT}` }}>
-                <div style={{ fontSize: "11px", fontWeight: "600", color: "#9CA3AF", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: "6px" }}>Sofortige Schuldentilgung</div>
-                <div style={{ fontSize: "22px", fontWeight: "800", color: "#1F2937", letterSpacing: "-0.5px", lineHeight: 1.15, marginBottom: "4px" }}>{fmt(p.kredite)}</div>
-                <div style={{ fontSize: "12px", color: "#9CA3AF", marginBottom: "12px" }}>Einmalzahlung</div>
-                {[
-                  "Haus-Garantie: Der Kredit kann im Ernstfall sofort komplett abgelöst werden.",
-                  "Mietfreies Wohnen: Sichert Ihrer Familie das Eigenheim ohne monatliche Ratenlast.",
-                  "Banken-Unabhängigkeit: Verhindert den gezwungenen Verkauf der Immobilie.",
-                ].map((line) => (
-                  <div key={line} style={T.compareBullet}>
-                    <span style={bulletDot(BAR_KREDIT)} aria-hidden />
-                    {line}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
+                <div>
+                  <div style={{ fontSize: "36px", fontWeight: "700", color: C, letterSpacing: "-0.8px", lineHeight: 1 }}>{fmtK(gesamtBedarf)}</div>
+                  <div style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "4px" }}>
+                    Versicherungssumme · {p.laufzeit} Jahre Laufzeit
                   </div>
-                ))}
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
+                    {empfPraemie > 0 ? <>ab ca. {fmt(empfPraemie)}/Mon.</> : <>Prämie n. a.</>}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px" }}>Schätzwert — abhängig von Alter &amp; Gesundheit</div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        ) : null}
 
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Strategie im Vergleich</div>
-          <div style={T.compareGrid}>
-            <div style={{ ...T.compareCard, borderTop: `3px solid ${C}` }}>
-              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
-                <div style={T.compareCardTitle}>Konstante Absicherung</div>
-                <span style={{ fontSize: "10px", fontWeight: "700", color: C, background: `${C}18`, padding: "3px 9px", borderRadius: "999px" }}>Empfehlung Familie</span>
-              </div>
-              <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.5, marginBottom: "12px" }}>
-                Die Versicherungssumme bleibt über die gesamte Laufzeit gleich hoch.
-              </div>
+        {hatLuecke ? (
+          <div style={T.section}>
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: "600",
+                color: "#9CA3AF",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+              }}
+            >
+              Zusammensetzung des Bedarfs
+            </div>
+            <div
+              style={{
+                height: "8px",
+                background: "rgba(31,41,55,0.08)",
+                borderRadius: "999px",
+                overflow: "hidden",
+                display: "flex",
+                marginBottom: "10px",
+              }}
+            >
+              {segKap > 0 && (
+                <div
+                  style={{
+                    width: `${segKap}%`,
+                    background: C,
+                    minWidth: segKap > 0 ? "2px" : 0,
+                    transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  }}
+                />
+              )}
+              {p.kredite > 0 && segKr > 0 && (
+                <div
+                  style={{
+                    width: `${segKr}%`,
+                    background: "#f59e0b",
+                    minWidth: segKr > 0 ? "2px" : 0,
+                    transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  }}
+                />
+              )}
+              {netto > 0 && segFe > 0 && (
+                <div
+                  style={{
+                    width: `${segFe}%`,
+                    background: "#c0392b",
+                    minWidth: segFe > 0 ? "2px" : 0,
+                    transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  }}
+                />
+              )}
+            </div>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
               {[
-                { ok: true, t: "Maximaler Schutz: Volle Summe verfügbar, auch am Ende der Laufzeit (z. B. für Studium)." },
-                { ok: true, t: "Planbarkeit: Fester Beitrag und feste Leistung für die gesamte Dauer." },
-                { ok: false, t: "Kosten: Höherer Beitrag als bei fallenden Varianten." },
-              ].map((row) => (
-                <div key={row.t} style={T.compareBullet}>
-                  <span style={bulletDot(row.ok ? "#059669" : "#C0392B")} aria-hidden />
-                  {row.t}
+                { farbe: C, label: "Lebenshaltung (Lücke kapitalisiert)", wert: fmtK(kapBedarf) },
+                ...(p.kredite > 0 ? [{ farbe: "#f59e0b", label: "Kredite", wert: fmtK(p.kredite) }] : []),
+                ...(netto > 0 ? [{ farbe: "#c0392b", label: "Fehlende Absicherung", wert: fmtK(netto) }] : []),
+              ].map(({ farbe, label, wert }, i) => (
+                <div key={label + i} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: farbe, flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: "11px", fontWeight: "600", color: "#1F2937" }}>{wert}</div>
+                    <div style={{ fontSize: "10px", color: "#9CA3AF" }}>{label}</div>
+                  </div>
                 </div>
               ))}
             </div>
-            <div style={{ ...T.compareCard, borderTop: `3px solid ${BAR_KREDIT}` }}>
-              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", marginBottom: "8px" }}>
-                <div style={T.compareCardTitle}>Fallende Absicherung</div>
-                <span style={{ fontSize: "10px", fontWeight: "700", color: BAR_KREDIT, background: `${BAR_KREDIT}18`, padding: "3px 9px", borderRadius: "999px" }}>Empfehlung Kredit</span>
-              </div>
-              <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.5, marginBottom: "12px" }}>
+          </div>
+        ) : null}
+
+        <div style={T.section}>
+          <div style={T.sectionLbl}>Einordnung</div>
+          <div style={{ ...T.compareGrid, alignItems: "stretch" }}>
+            <RisikoHintCard icon="📊" accent={C}>
+              <strong style={{ fontWeight: 700 }}>Monatliche Versorgungslücke</strong>
+              <span style={{ display: "block", marginTop: "8px" }}>
+                {fmt(luecke)} pro Monat — über {p.laufzeit} Jahre entspricht das rund {fmtK(bedarfKapital)} Kapitalbedarf (ohne Kredit).
+              </span>
+            </RisikoHintCard>
+            <RisikoHintCard icon={p.kredite > 0 ? "🏦" : "🛡️"} accent={p.kredite > 0 ? BAR_KREDIT : C}>
+              <strong style={{ fontWeight: 700 }}>{p.kredite > 0 ? "Restschuld & Strategie" : "Konstant vs. fallend"}</strong>
+              <span style={{ display: "block", marginTop: "8px" }}>
                 {p.kredite > 0
-                  ? "Die Summe sinkt jährlich (analog zur Restschuld Ihres Kredits)."
-                  : "Die Summe sinkt jährlich — sinnvoll vor allem in Kombination mit einer Immobilienfinanzierung."}
-              </div>
-              {[
-                { ok: true, t: "Preis-Leistung: Die günstigste Form der Absicherung, da das Risiko für den Versicherer sinkt." },
-                { ok: true, t: "Punktgenau: Deckt exakt den sinkenden Bedarf Ihrer Finanzierung ab." },
-                { ok: false, t: "Einschränkung: Am Ende der Laufzeit ist kaum noch Kapital für die Lebenshaltung übrig." },
-              ].map((row) => (
-                <div key={row.t} style={T.compareBullet}>
-                  <span style={bulletDot(row.ok ? "#059669" : "#C0392B")} aria-hidden />
-                  {row.t}
+                  ? `Einmalig ${fmtK(p.kredite)} tilgen — häufig sinnvoll: fallende Summe parallel zur Restschuld; für Lebensstandard zusätzlich konstante Absicherung prüfen.`
+                  : "Konstante Summe schützt den Lebensstandard über die Laufzeit. Fallende Summe ist günstiger, wenn der Schwerpunkt auf der Kredittilgung liegt."}
+              </span>
+            </RisikoHintCard>
+          </div>
+        </div>
+
+        <div style={{ ...T.section, marginBottom: "16px" }}>
+          <div style={T.sectionLbl}>Details zur Berechnung</div>
+          <div className="rl-acc-item">
+            <button
+              type="button"
+              className="rl-acc-btn"
+              onClick={() => setRlErgebnisAcc((x) => (x === "details" ? null : "details"))}
+              aria-expanded={rlErgebnisAcc === "details"}
+            >
+              <span>Aufschlüsselung, Hinweise &amp; Methodik</span>
+              <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rlErgebnisAcc === "details" ? "▲" : "▼"}</span>
+            </button>
+            {rlErgebnisAcc === "details" && (
+              <div className="rl-acc-panel" style={{ paddingTop: "12px" }}>
+                <div style={{ fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "10px" }}>Rechenweg</div>
+                <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(17,24,39,0.08)", marginBottom: "16px" }}>
+                  {breakdownRows.map((row, i, arr) => (
+                    <div
+                      key={i}
+                      style={{
+                        padding: row.border ? "14px 16px" : "10px 16px",
+                        borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        background: row.border ? "#FAFAF8" : "#fff",
+                      }}
+                    >
+                      <div style={{ fontSize: "12px", color: "#6B7280", fontWeight: row.bold ? "600" : "400" }}>{row.l}</div>
+                      <div style={{ fontSize: row.bold ? "15px" : "13px", fontWeight: "700", color: row.c, letterSpacing: "-0.3px", marginLeft: "12px", flexShrink: 0 }}>{row.v}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Breakdown Visual ──────────────────────────────────────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Wie sich der Bedarf zusammensetzt</div>
-          <div style={T.cardPrimary}>
-            {[
-              { l: "Monatsbedarf Familie",    v: fmt(p.monatsBedarf) + "/Mon.", c: "#1F2937", bold: false },
-              { l: "Vorhandene Einnahmen",     v: "− " + fmt(einnahmen) + "/Mon.", c: "#059669", bold: false },
-              { l: "Monatliche Lücke",         v: fmt(luecke) + "/Mon.", c: luecke > 0 ? WARN_RL : "#059669", bold: true, border: true },
-              ...(p.kredite > 0 ? [{ l: "+ Kredite / Darlehen", v: "+ " + fmtK(p.kredite), c: "#1F2937", bold: false }] : []),
-              { l: "Gesamtbedarf",             v: fmtK(gesamt), c: C, bold: true, border: true },
-              ...(p.vorhanden > 0 ? [{ l: "− Bestehende Absicherung", v: "− " + fmtK(p.vorhanden), c: "#059669", bold: false }] : []),
-              ...(p.vorhanden > 0 ? [{ l: "Empfohlene Versicherungssumme", v: fmtK(netto), c: gedeckt ? "#059669" : WARN_RL, bold: true }] : []),
-            ].map((row, i, arr) => (
-              <div key={i} style={{ padding: row.border ? "16px 20px" : "12px 20px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", background: row.border ? "#FAFAF8" : "#fff" }}>
-                <div style={{ fontSize: "13px", color: "#6B7280", fontWeight: row.bold ? "600" : "400" }}>{row.l}</div>
-                <div style={{ fontSize: row.bold ? "16px" : "14px", fontWeight: "700", color: row.c, letterSpacing: "-0.3px", marginLeft: "12px", flexShrink: 0 }}>{row.v}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Section 1: Was das bedeutet ───────────────────────────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Was das bedeutet</div>
-          <div style={T.cardContext}>
-            {[
-              { icon: "💶", title: "Laufende Kosten bleiben bestehen", text: "Miete, Kredite und Lebenshaltungskosten fallen unverändert an — unabhängig davon, ob ein Einkommen wegfällt." },
-              { icon: "📉", title: "Einkommen fällt weg", text: `Das wegfallende Einkommen hinterlässt eine monatliche Lücke von ${fmt(luecke)} — über ${p.laufzeit} Jahre summiert sich das auf ${fmtK(luecke * 12 * p.laufzeit)}.` },
-              ...(p.kredite > 0 ? [{ icon: "🏦", title: "Zusätzliche Belastung durch Kredite", text: `Bestehende Darlehen (${fmtK(p.kredite)}) müssen bedient oder abgelöst werden — das erhöht den Bedarf deutlich.` }] : []),
-            ].map(({ icon, title, text }, i, arr) => (
-              <div key={i} style={{ display: "flex", gap: "12px", alignItems: "flex-start", paddingBottom: i < arr.length - 1 ? "14px" : "0", marginBottom: i < arr.length - 1 ? "14px" : "0", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.06)" : "none" }}>
-                <span style={{ fontSize: "20px", flexShrink: 0 }}>{icon}</span>
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", marginBottom: "3px" }}>{title}</div>
-                  <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.6 }}>{text}</div>
+                <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
+                  Miete, Kredit und Lebenshaltung laufen weiter. Ohne Ihr Einkommen bleibt eine Lücke von {fmt(luecke)} monatlich — kapitalisiert über {p.laufzeit} Jahre: {fmtK(luecke * 12 * p.laufzeit)}.
+                  {p.kredite > 0 && <> Zusätzlich einmalig {fmtK(p.kredite)} für Darlehen.</>}
+                </p>
+                <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
+                  <strong style={{ color: "#374151" }}>Gesetzliche Witwen-/Waisenrente</strong> (orientierend ca. 55 % der Anwartschaft; Kinderzuschläge möglich; Anrechnung Partnereinkommen ab ca. 1.038 €/Mon.).
+                </p>
+                {p.vorhanden > 0 && (
+                  <p style={{ marginBottom: "10px", fontSize: "12px", color: "#15803D", lineHeight: 1.55 }}>
+                    Bestehende Absicherung {fmtK(p.vorhanden)} ist in der Summe berücksichtigt.
+                  </p>
+                )}
+                {einnahmen > 0 && (
+                  <p style={{ marginBottom: "10px", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.55 }}>
+                    Angenommene Einnahmen: {fmt(einnahmen)}/Mon.
+                  </p>
+                )}
+                <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
+                  <strong style={{ color: "#374151" }}>Nächste Schritte:</strong> Richtwert Versicherungssumme {fmtK(netto > 0 ? netto : gesamt)} — Laufzeit {p.laufzeit} Jahre prüfen; bestehende Policen mit der Situation abgleichen.
+                </p>
+                <div style={{ ...T.warnCard, marginBottom: "14px", padding: "14px 16px" }}>
+                  <div style={T.warnCardTitle}>Was oft unterschätzt wird</div>
+                  <div style={{ fontSize: "12px", color: "#7B2A2A", lineHeight: 1.6, marginTop: "6px" }}>
+                    Der überlebende Partner muss oft beruflich kürzertreten — die Modellrechnung geht von laufenden Familienkosten aus.
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Section 3: Was bereits abgedeckt ist ──────────────────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Was bereits abgedeckt ist</div>
-          <div style={T.cardContext}>
-            <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", marginBottom: "10px" }}>Gesetzliche Absicherung</div>
-            <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.7, marginBottom: "12px" }}>
-              Die gesetzliche <strong>Witwen-/Waisenrente</strong> beträgt ca. 55 % der Rentenanwartschaft. Pro halbwaisem Kind kommen ca. 10 % hinzu. Das eigene Einkommen des Partners wird ab ca. 1.038 €/Mon. anteilig angerechnet.
-            </div>
-            {p.vorhanden > 0 && (
-              <div style={{ padding: "10px 12px", background: "#F0FDF4", borderRadius: "10px", border: "1px solid #BBF7D0", fontSize: "12px", color: "#15803D", lineHeight: 1.5 }}>
-                ✓ Bestehende Absicherung von {fmtK(p.vorhanden)} wurde berücksichtigt.
-              </div>
-            )}
-            {einnahmen > 0 && (
-              <div style={{ marginTop: "8px", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.5 }}>
-                Vorhandene Einnahmen: {fmt(einnahmen)}/Mon. (Partnereinkommen + gesetzliche Rente + Sonstiges)
+                <CheckBerechnungshinweis>
+                  <>
+                    Gesamtbedarf = monatliche Lücke × 12 × Laufzeit + Kredite − bestehende Absicherung. Lücke = Familienbedarf − Einnahmen (Partner + Witwen-/Waisenrente + Sonstiges).{" "}
+                    <span style={{ color: "#b8884a" }}>Grundlage: §46–48 SGB VI. Keine Rechtsberatung.</span>
+                  </>
+                </CheckBerechnungshinweis>
               </div>
             )}
           </div>
         </div>
 
-        {/* ── Section 4: Das kann sinnvoll sein ────────────────────────────── */}
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Das kann sinnvoll sein</div>
-          <div style={T.cardPrimary}>
-            {[
-              { label: "Absicherungshöhe prüfen", desc: `Ein Richtwert ist ${fmtK(netto > 0 ? netto : gesamt)} Versicherungssumme — individuell kann der Bedarf jedoch abweichen. Ein Gespräch schafft Klarheit.`, icon: "🔍" },
-              { label: "Laufzeit abstimmen", desc: `${p.laufzeit} Jahre passen zu Ihrer Angabe — überprüfen Sie, ob die Laufzeit bis zur Unabhängigkeit der Kinder oder bis zur Rente ausreicht.`, icon: "📅" },
-              { label: "Bestehende Verträge einbeziehen", desc: "Überprüfen Sie, ob bestehende Policen noch zur aktuellen Lebenssituation passen — oft sind Verträge veraltet oder unterdotiert.", icon: "📋" },
-            ].map(({ label, desc, icon }, i, arr) => (
-              <div key={i} style={{ padding: "16px 20px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none", display: "flex", gap: "12px", alignItems: "flex-start" }}>
-                <span style={{ fontSize: "20px", flexShrink: 0 }}>{icon}</span>
-                <div>
-                  <div style={{ fontSize: "13px", fontWeight: "600", color: "#1F2937", marginBottom: "3px" }}>{label}</div>
-                  <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55 }}>{desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Warn-Kachel (unten) ─────────────────────────────────────────── */}
-        <div style={T.section}>
-          <div style={T.warnCard}>
-            <div style={T.warnCardTitle}>Was oft unterschätzt wird</div>
-            <div style={{ fontSize: "13px", color: "#7B2A2A", lineHeight: 1.65, marginTop: "8px" }}>
-              Ein Todesfall führt oft dazu, dass der überlebende Partner beruflich kürzertreten muss, um die Kinderbetreuung allein zu stemmen. Wir haben in Ihrer Berechnung bereits einen Puffer für die laufenden Kosten eingeplant, um diesen Druck abzufedern.
-            </div>
-          </div>
-        </div>
-
-        {/* ── Legal ─────────────────────────────────────────────────────────── */}
         <div style={{ ...T.section, paddingBottom: "120px" }}>
-          <CheckBerechnungshinweis>
-            <>
-              Vereinfachte Berechnung. Gesamtbedarf = monatliche Lücke × 12 × Laufzeit + Kredite − bestehende Absicherung. Lücke = Familienbedarf − Einnahmen (Partner + Witwen-/Waisenrente + Sonstiges).{" "}
-              <span style={{ color: "#b8884a" }}>Grundlage: §46–48 SGB VI. Keine Rechtsberatung.</span>
-            </>
-          </CheckBerechnungshinweis>
-          <div style={{ padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6, marginTop: "10px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+          <div style={{ ...T.infoBox, fontSize: "11px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
 
       </Shell>

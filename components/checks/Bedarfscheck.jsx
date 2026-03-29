@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
@@ -9,152 +9,197 @@ import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
+import { SliderCard } from "@/components/ui/CheckComponents";
+import { CheckKitResultGrid } from "@/components/checks/CheckKitResultGrid";
+import { CHECKKIT2026 } from "@/lib/checkKitStandard2026";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
-const OK="#059669";
+const formatBedarfEuro = (n) => `${Math.round(Number(n)).toLocaleString("de-DE")} €`;
 
-// ─── DATA: Produktuniversum ────────────────────────────────────────────────────
-// ─── RISK-FIRST SCORING: Basisgewichte nach Risikohierarchie ─────────────────
-const RISK_WEIGHTS={existenz:100,einkommen:80,langfristig:60,situativ:40,optimierung:20};
+// ─── SCORING_MAPPING + Paket-Engine ───────────────────────────────────────────
+const SCORING_MAPPING = {
+  PH: { base: 999, name: "Privathaftpflicht" },
+  BU: { base: 800, name: "Berufsunfähigkeit" },
+  RLV: { base: 0, name: "Risikoleben" },
+  KTG: { base: 0, name: "Krankentagegeld" },
+  AV: { base: 400, name: "Altersvorsorge" },
+  PFLEGE: { base: 250, name: "Pflegevorsorge" },
+  UNFALL: { base: 200, name: "Unfallschutz" },
+  HAUSRAT: { base: 150, name: "Hausrat" },
+  ZAHN: { base: 100, name: "Zahnzusatz" },
+  RECHT: { base: 50, name: "Rechtsschutz" },
+};
 
-const PRODUCTS=[
-  // Level 1 — EXISTENZBEDROHEND
-  {id:"privathaftpflicht",name:"Privathaftpflicht",riskLevel:"existenz",
-    visibilityRules:()=>true,
-    scoreModifiers:({age,familyStatus})=>{let s=0;if(familyStatus==="mit_kindern")s+=15;if(familyStatus==="verheiratet")s+=8;if(age<=25)s+=10;return s;},
-    shortDescription:"Schützt vor Schadensersatzforderungen Dritter — oft in Millionenhöhe.",
-    reasonBuilder:({familyStatus,age})=>{if(familyStatus==="mit_kindern")return"Kinder haften nicht für Schäden — Sie als Elternteil schon. Ohne Haftpflicht drohen existenzbedrohende Forderungen.";if(age<=25)return"Ein einziges Missgeschick kann ohne Haftpflicht Ihre gesamte finanzielle Zukunft gefährden.";return"Die wichtigste Versicherung überhaupt — schützt Ihr gesamtes Vermögen vor Schadensersatzklagen.";}},
-  {id:"berufsunfaehigkeit",name:"Berufsunfähigkeitsversicherung",riskLevel:"existenz",
-    visibilityRules:({age,employmentStatus})=>age<=60&&employmentStatus!=="sonstiges",
-    scoreModifiers:({age,jobType,netIncome,familyStatus,employmentStatus})=>{let s=0;if(jobType==="koerperlich")s+=20;if(jobType==="medizinisch_sozial")s+=10;if(age>=18&&age<=35)s+=15;else if(age<=45)s+=8;if(netIncome==="over_6000"||netIncome==="4000_6000")s+=10;if(familyStatus==="mit_kindern")s+=12;if(familyStatus==="verheiratet")s+=8;if(employmentStatus==="selbstständig")s+=15;return s;},
-    shortDescription:"Sichert Ihr Einkommen, wenn Sie Ihren Beruf nicht mehr ausüben können.",
-    reasonBuilder:({jobType,employmentStatus,age,familyStatus})=>{if(jobType==="koerperlich")return"Körperliche Berufe tragen das höchste BU-Risiko — jeder 4. Arbeitnehmer wird vor der Rente berufsunfähig.";if(employmentStatus==="selbstständig")return"Als Selbstständiger gibt es keinen gesetzlichen Schutz bei Berufsunfähigkeit — Ihr Einkommen bricht komplett weg.";if(familyStatus==="mit_kindern")return"Ihr Einkommen trägt die Familie. Fällt es dauerhaft weg, trifft das alle — jetzt absichern.";if(age<=30)return"Je früher abgesichert, desto günstiger die Prämie — und die Gesundheitsprüfung ist einfacher.";return"Psychische Erkrankungen und Rückenprobleme sind häufigste BU-Ursachen. Kein Berufsfeld ist ausgenommen.";}},
-  {id:"erwerbsunfaehigkeit",name:"Erwerbsunfähigkeitsversicherung",riskLevel:"existenz",
-    visibilityRules:({age,jobType,employmentStatus})=>age>=35&&(jobType==="koerperlich"||jobType==="sonstiges"||employmentStatus==="sonstiges"),
-    scoreModifiers:({jobType})=>jobType==="koerperlich"?15:5,
-    shortDescription:"Absicherung wenn Sie gar keiner Arbeit mehr nachgehen können — als Alternative zur BU.",
-    reasonBuilder:()=>"Wenn eine BU-Versicherung nicht mehr abschließbar ist, ist die EU-Rente oft die entscheidende Alternative — schützt vor dem vollständigen Einkommensverlust."},
+const SCORING_KEY_TO_ID = {
+  PH: "privathaftpflicht",
+  BU: "berufsunfaehigkeit",
+  RLV: "risikoleben",
+  KTG: "krankentagegeld",
+  AV: "altersvorsorge",
+  PFLEGE: "pflegezusatz",
+  UNFALL: "unfall",
+  HAUSRAT: "hausrat",
+  ZAHN: "zahnzusatz",
+  RECHT: "rechtsschutz",
+};
 
-  // Level 2 — EINKOMMEN / ABHÄNGIGKEIT
-  {id:"krankentagegeld",name:"Krankentagegeld",riskLevel:"einkommen",
-    visibilityRules:({employmentStatus})=>["angestellt","selbstständig","ausbildung_studium"].includes(employmentStatus),
-    scoreModifiers:({employmentStatus,netIncome,healthStatus})=>{let s=0;if(employmentStatus==="selbstständig")s+=40;if(healthStatus==="pkv")s+=20;if(netIncome==="over_6000"||netIncome==="4000_6000")s+=12;if(netIncome==="2500_4000")s+=6;return s;},
-    shortDescription:"Sichert Ihr Nettoeinkommen ab, wenn Sie längere Zeit krankgeschrieben sind.",
-    reasonBuilder:({employmentStatus})=>employmentStatus==="selbstständig"?"Als Selbstständiger bricht Ihr Einkommen ab Tag 1 der Krankheit weg — ohne Krankentagegeld kein Auffangnetz.":"Ab der 7. Krankheitswoche sinkt das gesetzliche Krankengeld deutlich unter Ihr bisheriges Netto."},
-  {id:"risikoleben",name:"Risikolebensversicherung",riskLevel:"einkommen",
-    visibilityRules:({familyStatus,housingStatus})=>familyStatus==="mit_kindern"||familyStatus==="verheiratet"||familyStatus==="partnerschaft"||housingStatus==="eigentuemer",
-    scoreModifiers:({familyStatus,housingStatus,netIncome})=>{let s=0;if(familyStatus==="mit_kindern")s+=40;if(familyStatus==="verheiratet")s+=25;if(familyStatus==="partnerschaft")s+=15;if(housingStatus==="eigentuemer")s+=20;if(netIncome==="over_6000"||netIncome==="4000_6000")s+=10;return s;},
-    shortDescription:"Schützt Ihre Familie finanziell, wenn Sie nicht mehr da sind.",
-    reasonBuilder:({familyStatus,housingStatus})=>familyStatus==="mit_kindern"?"Ihre Familie ist finanziell von Ihnen abhängig — ohne Sie müssten sie ihren Lebensstandard drastisch senken.":housingStatus==="eigentuemer"?"Eine laufende Immobilienfinanzierung wird nicht kleiner, wenn der Hauptverdiener stirbt.":"Auch ohne Kinder: Wer gemeinsame Verpflichtungen trägt, sollte seinen Partner absichern."},
+const ID_TO_SCORING_KEY = Object.fromEntries(
+  Object.entries(SCORING_KEY_TO_ID).map(([k, id]) => [id, k]),
+);
 
-  // Level 3 — LANGFRISTIGE RISIKEN
-  {id:"altersvorsorge",name:"Private Altersvorsorge",riskLevel:"langfristig",
-    visibilityRules:({age})=>age<=62,
-    scoreModifiers:({age,netIncome,employmentStatus})=>{let s=0;if(age>=36&&age<=50)s+=20;if(age>=51)s+=30;if(age<=25)s+=5;if(netIncome==="over_6000"||netIncome==="4000_6000")s+=12;if(employmentStatus==="selbstständig")s+=18;return s;},
-    shortDescription:"Die gesetzliche Rente reicht nicht — private Vorsorge schließt die Lücke.",
-    reasonBuilder:({age,employmentStatus})=>{if(employmentStatus==="selbstständig")return"Als Selbstständiger zahlen Sie meist keine gesetzliche Rente — private Vorsorge ist Ihre einzige Altersabsicherung.";if(age>=50)return"Je näher die Rente, desto dringender die Optimierung — jetzt zählt jeder Euro.";if(age<=30)return"Früh starten lohnt sich: Wer mit 25 beginnt, muss monatlich weit weniger einzahlen als mit 40.";return"Die Rentenlücke ist real und wächst — ohne private Vorsorge droht deutlicher Kaufkraftverlust im Alter.";}},
-  {id:"pflegezusatz",name:"Pflegezusatzversicherung",riskLevel:"langfristig",
-    visibilityRules:({age})=>age>=35,
-    scoreModifiers:({age})=>age>=50?30:age>=40?18:8,
-    shortDescription:"Gesetzliche Pflege deckt nur die Hälfte der echten Kosten — die Lücke ist riesig.",
-    reasonBuilder:({age})=>age>=50?"Pflege wird mit zunehmendem Alter das größte finanzielle Risiko — und Prämien steigen stark mit dem Alter.":age>=40?"Jetzt ist ein guter Zeitpunkt: Prämien noch günstig, Gesundheitsprüfung unkompliziert.":"Wer früh absichert, zahlt deutlich weniger — und schützt damit auch seine Familie vor Belastungen."},
+const SCORING_ICONS = {
+  PH: "🛡️",
+  BU: "💼",
+  RLV: "❤️",
+  KTG: "🏥",
+  AV: "🌱",
+  PFLEGE: "🤲",
+  UNFALL: "⚠️",
+  HAUSRAT: "🛋️",
+  ZAHN: "🦷",
+  RECHT: "⚖️",
+};
 
-  // Level 4 — SITUATIVE RISIKEN
-  {id:"wohngebaeude",name:"Wohngebäudeversicherung",riskLevel:"situativ",
-    visibilityRules:({housingStatus})=>housingStatus==="eigentuemer",
-    scoreModifiers:()=>25,
-    shortDescription:"Schützt Ihr Gebäude vor Feuer, Sturm, Leitungswasser und mehr.",
-    reasonBuilder:()=>"Das Gebäude ist meist der größte Vermögenswert — ein Brandschaden ohne Versicherung kann in Minuten alles vernichten."},
-  {id:"hausrat",name:"Hausrat",riskLevel:"situativ",
-    visibilityRules:({housingStatus})=>housingStatus!=="eltern_wg",
-    scoreModifiers:({housingStatus,netIncome})=>{let s=0;if(housingStatus==="eigentuemer")s+=15;if(housingStatus==="mieter")s+=8;if(netIncome==="over_6000"||netIncome==="4000_6000")s+=8;return s;},
-    shortDescription:"Schützt Ihr Hab und Gut bei Einbruch, Feuer und Wasserschaden.",
-    reasonBuilder:({housingStatus})=>housingStatus==="eigentuemer"?"Als Eigentümer haben Sie mehr zu schützen — Hausrat und Gebäude ergänzen sich.":"Einbruch oder Wasserschaden: Was in Jahren angeschafft wurde, ist in Sekunden weg."},
+const SCORING_SHORT = {
+  PH: "Haftpflicht",
+  BU: "BU",
+  RLV: "Risikoleben",
+  KTG: "KTG",
+  AV: "Vorsorge",
+  PFLEGE: "Pflege",
+  UNFALL: "Unfall",
+  HAUSRAT: "Hausrat",
+  ZAHN: "Zahn",
+  RECHT: "Recht",
+};
 
-  // Level 5 — OPTIMIERUNG
-  {id:"pkv",name:"Private Krankenversicherung",riskLevel:"optimierung",
-    visibilityRules:({healthStatus,employmentStatus,netIncome})=>{if(healthStatus==="pkv")return false;if(employmentStatus==="verbeamtet")return true;if(employmentStatus==="selbstständig")return true;if(netIncome==="over_6000"||netIncome==="4000_6000")return true;return false;},
-    scoreModifiers:({employmentStatus,netIncome,age})=>{let s=0;if(employmentStatus==="verbeamtet")s+=55;if(employmentStatus==="selbstständig"&&age<=40)s+=20;if(netIncome==="over_6000")s+=15;if(age>=45)s-=15;return s;},
-    shortDescription:"Bessere Leistungen, freie Arztwahl und für die richtige Zielgruppe oft günstiger.",
-    reasonBuilder:({employmentStatus})=>employmentStatus==="verbeamtet"?"Als Beamter steht Ihnen Beihilfe zu — die PKV ist für Sie fast immer die bessere und günstigere Wahl.":"Mit Ihrem Einkommen und Status kann die PKV deutlich bessere Leistungen zu ähnlichen Kosten bieten."},
-  {id:"zahnzusatz",name:"Zahnzusatzversicherung",riskLevel:"optimierung",
-    visibilityRules:({healthStatus})=>healthStatus==="gkv"||healthStatus==="unsicher",
-    scoreModifiers:({age})=>age<=30?5:age<=45?12:18,
-    shortDescription:"Die GKV übernimmt nur einen Bruchteil — guter Zahnersatz kostet schnell tausende Euro.",
-    reasonBuilder:({age})=>age>=40?"Ab 40 steigt der Bedarf für Zahnersatz deutlich — jetzt absichern ist günstiger als später zahlen.":"GKV-Leistungen bei Zahnersatz sind begrenzt — eine Zusatzversicherung schützt vor unerwarteten Kosten."},
-  {id:"krankenhauszusatz",name:"Krankenhauszusatz",riskLevel:"optimierung",
-    visibilityRules:({healthStatus})=>healthStatus==="gkv"||healthStatus==="unsicher",
-    scoreModifiers:({age,netIncome})=>{let s=0;if(age>=40)s+=10;if(netIncome==="over_6000"||netIncome==="4000_6000")s+=8;return s;},
-    shortDescription:"Chefarztbehandlung und Einzelzimmer — wenn es wirklich darauf ankommt.",
-    reasonBuilder:()=>"Im Krankenhaus entscheidet die Versicherung oft über Komfort und Qualität der Behandlung."},
-  {id:"ambulante_zusatz",name:"Ambulante Zusatzversicherung",riskLevel:"optimierung",
-    visibilityRules:({healthStatus})=>healthStatus==="gkv"||healthStatus==="unsicher",
-    scoreModifiers:({age})=>age>=35?8:3,
-    shortDescription:"Heilpraktiker, Sehhilfen, Vorsorge — was die GKV nicht zahlt.",
-    reasonBuilder:()=>"Viele Gesundheitsleistungen werden von der GKV gar nicht oder nur teilweise erstattet — die Zusatzversicherung schließt diese Lücken."},
-  {id:"unfall",name:"Unfallversicherung",riskLevel:"optimierung",
-    visibilityRules:()=>true,
-    scoreModifiers:({jobType,familyStatus,age})=>{let s=0;if(jobType==="koerperlich")s+=22;if(familyStatus==="mit_kindern")s+=15;if(age<=30)s+=8;return s;},
-    shortDescription:"Zahlt eine Kapitalleistung bei dauerhaften Unfallfolgen — auch in der Freizeit.",
-    reasonBuilder:({jobType,familyStatus})=>jobType==="koerperlich"?"In körperlichen Berufen ist das Unfallrisiko deutlich erhöht — auch außerhalb der Arbeit.":familyStatus==="mit_kindern"?"Kinder verunglücken häufiger — eine Familienpolice schützt alle auf einmal.":"Die gesetzliche UV gilt nur auf dem Arbeitsweg und am Arbeitsplatz — privat sind Sie ungeschützt."},
-  {id:"rechtsschutz",name:"Rechtsschutzversicherung",riskLevel:"optimierung",
-    visibilityRules:()=>true,
-    scoreModifiers:({employmentStatus,familyStatus,housingStatus})=>{let s=0;if(employmentStatus==="angestellt")s+=8;if(familyStatus==="mit_kindern")s+=5;if(housingStatus==="mieter"||housingStatus==="eigentuemer")s+=5;return s;},
-    shortDescription:"Deckt Anwalts- und Gerichtskosten — damit Sie Ihr Recht auch durchsetzen können.",
-    reasonBuilder:({employmentStatus})=>employmentStatus==="angestellt"?"Arbeitsrechtliche Streitigkeiten sind häufiger als gedacht — ein Anwalt kostet schnell mehrere tausend Euro.":"Ob Mietstreit oder Nachbarschaftskonflikt — ohne Rechtsschutz überlegt man zweimal, ob man sein Recht durchsetzt."},
-  {id:"sparen_investieren",name:"Sparen & Investieren",riskLevel:"optimierung",
-    visibilityRules:({age})=>age<=58,
-    scoreModifiers:({netIncome,age})=>{let s=0;if(netIncome==="over_6000")s+=25;if(netIncome==="4000_6000")s+=15;if(netIncome==="2500_4000")s+=5;if(age<=35)s+=10;return s;},
-    shortDescription:"Vermögen systematisch aufbauen — ETF-Sparplan, Fonds oder andere Anlageformen.",
-    reasonBuilder:({netIncome})=>netIncome==="over_6000"?"Mit Ihrem Einkommen haben Sie das Potenzial, neben der Absicherung echtes Vermögen aufzubauen.":"Wer monatlich einen festen Betrag anlegt, profitiert langfristig vom Zinseszinseffekt."},
-];
+const COVERED_NAME_FALLBACK = {
+  erwerbsunfaehigkeit: "Erwerbsunfähigkeit",
+  wohngebaeude: "Wohngebäude",
+  pkv: "PKV",
+  krankenhauszusatz: "Krankenhauszusatz",
+  ambulante_zusatz: "Ambulante Zusatz",
+  sparen_investieren: "Sparen & Investieren",
+};
 
-// ─── LOGIC: Risk-First Scoring + Package Builder ──────────────────────────────
-const EXISTENZ_IDS=["privathaftpflicht","berufsunfaehigkeit","erwerbsunfaehigkeit"];
-const OPTIMIERUNG_IDS=["pkv","zahnzusatz","krankenhauszusatz","ambulante_zusatz","unfall","rechtsschutz","sparen_investieren"];
-function runScoringEngine(profil,existing){
-  const existingSet=new Set(existing);
-  const alreadyCovered=PRODUCTS
-    .filter(p=>existingSet.has(p.id))
-    .map(p=>({id:p.id,name:p.name,riskLevel:p.riskLevel}));
+function applyScoringRules(profile) {
+  const out = {};
+  for (const [key, meta] of Object.entries(SCORING_MAPPING)) {
+    out[key] = { name: meta.name, base: meta.base };
+  }
 
-  let scored=PRODUCTS
-    .filter(p=>!existingSet.has(p.id))
-    .filter(p=>p.visibilityRules(profil))
-    .map(p=>{
-      const base=RISK_WEIGHTS[p.riskLevel]||20;
-      const mod=typeof p.scoreModifiers==="function"?p.scoreModifiers(profil):(p.scoreModifiers||0);
-      return{id:p.id,name:p.name,riskLevel:p.riskLevel,score:base+mod,
-        shortDescription:p.shortDescription,reason:p.reasonBuilder(profil)};
-    });
+  const emp = profile.employmentStatus;
+  const isStudent = emp === "ausbildung_studium";
 
-  const hatExistenzLuecke=scored.some(c=>EXISTENZ_IDS.includes(c.id));
-  const istErwerbstaetig=["angestellt","selbstständig","verbeamtet","ausbildung_studium"].includes(profil.employmentStatus);
+  if (isStudent) {
+    out.PH.base = profile.age > 25 ? 999 : 0;
+    out.BU.base = 900;
+    out.AV.base = 350;
+  }
 
-  scored=scored.map(c=>{
-    if(c.id==="privathaftpflicht")          return{...c,score:999};
-    if(c.id==="berufsunfaehigkeit"&&istErwerbstaetig) return{...c,score:Math.max(c.score,200)};
-    if(hatExistenzLuecke&&OPTIMIERUNG_IDS.includes(c.id)) return{...c,score:Math.min(c.score,19)};
-    return c;
-  });
-  const istEigentuemer=profil.housingStatus==="eigentuemer";
-  scored=scored.map(c=>{
-    if(istEigentuemer&&c.id==="risikoleben") return{...c,score:Math.max(c.score,180)};
-    if(istEigentuemer&&c.id==="wohngebaeude") return{...c,score:Math.max(c.score,190)};
-    return c;
-  });
-  if(hatExistenzLuecke) scored=scored.filter(c=>c.id!=="sparen_investieren");
+  if (profile.familyStatus === "mit_kindern") {
+    out.RLV.base = Math.max(out.RLV.base, 950);
+  }
+  if (profile.housingStatus === "eigentuemer") {
+    out.RLV.base = Math.max(out.RLV.base, 720);
+  }
 
-  scored.sort((a,b)=>b.score-a.score);
+  if (!["angestellt", "selbstständig", "ausbildung_studium", "verbeamtet"].includes(emp)) {
+    out.KTG.base = 0;
+  } else if (emp === "angestellt" || emp === "verbeamtet") {
+    out.KTG.base = Math.max(out.KTG.base, 380);
+  } else if (emp === "ausbildung_studium") {
+    out.KTG.base = Math.max(out.KTG.base, 260);
+  }
 
-  // Bucket by risk level (largest financial impact first)
-  const wichtig  = scored.filter(c => c.riskLevel === "existenz");
-  const relevant = scored.filter(c => c.riskLevel === "einkommen" || c.riskLevel === "langfristig");
-  const optional = scored.filter(c => c.riskLevel === "situativ"  || c.riskLevel === "optimierung");
+  if (emp === "selbstständig") {
+    out.KTG.base = 980;
+    out.PH.base = 999;
+    if (profile.jobType === "koerperlich") {
+      out.UNFALL.base = 600;
+    }
+  }
 
-  return { wichtig, relevant, optional, alreadyCovered };
+  if (!isStudent && (emp === "sonstiges" || profile.age > 60)) {
+    out.BU.base = 0;
+  }
+
+  if (profile.age > 45) {
+    out.PFLEGE.base += 300;
+    out.AV.base += 200;
+  }
+
+  if (profile.age < 35) {
+    out.PFLEGE.base = 0;
+  }
+  if (profile.age > 62) {
+    out.AV.base = 0;
+  }
+  if (profile.healthStatus === "pkv") {
+    out.ZAHN.base = 0;
+  }
+  if (profile.housingStatus === "eltern_wg") {
+    out.HAUSRAT.base = 0;
+  }
+
+  return out;
 }
 
+function idToCoveredName(id) {
+  const key = ID_TO_SCORING_KEY[id];
+  if (key && SCORING_MAPPING[key]) return SCORING_MAPPING[key].name;
+  return COVERED_NAME_FALLBACK[id] || id;
+}
+
+function buildPackageScoringResult(profil, existing) {
+  const existingSet = new Set(existing);
+  const scored = applyScoringRules(profil);
+
+  const ranked = Object.keys(SCORING_MAPPING)
+    .map((key) => ({
+      key,
+      id: SCORING_KEY_TO_ID[key],
+      name: scored[key].name,
+      shortLabel: SCORING_SHORT[key] || scored[key].name,
+      icon: SCORING_ICONS[key] || "📌",
+      score: scored[key].base,
+    }))
+    .filter((r) => r.score > 0 && !existingSet.has(r.id))
+    .sort((a, b) => b.score - a.score);
+
+  const basis = ranked.slice(0, 2);
+  const komfort = ranked.slice(0, 3);
+  const premium = ranked.slice(0, 4);
+  const schutzProzent = Math.min(
+    94,
+    Math.max(52, Math.round(40 + existing.length * 7 + premium.length * 12)),
+  );
+
+  const incomeMap = {
+    under_1500: 1200,
+    "1500_2500": 2000,
+    "2500_4000": 3200,
+    "4000_6000": 5000,
+    over_6000: 7000,
+  };
+  const nettoSchatz = incomeMap[profil.netIncome] || 2000;
+  const empfBU = Math.round((nettoSchatz * 0.7) / 50) * 50;
+  const anzahlLuecken = basis.length;
+
+  return {
+    basis,
+    komfort,
+    premium,
+    ranked,
+    schutzProzent,
+    prioritaetenImFokus: premium.length,
+    alreadyCovered: existing.map((id) => ({ id, name: idToCoveredName(id) })),
+    showKinderHint: profil.familyStatus === "mit_kindern",
+    nettoSchatz,
+    empfBU,
+    anzahlLuecken,
+  };
+}
 
 function LogoSVG({ color = "#ffffff" }) {
   return (
@@ -228,6 +273,13 @@ const INC_OPTS=[
   ["4000_6000","3.500 – 5.000 €"],
   ["over_6000","Über 5.000 €"],
 ];
+/** Entspricht jobType im Profil / Scoring-Engine: buero | koerperlich | medizinisch_sozial | sonstiges */
+const JOB_OPTS=[
+  ["buero","💼 Büro / Verwaltung","Überwiegend sitzend, wenig körperliche Belastung"],
+  ["koerperlich","🔧 Handwerk & körperlich","Körperlich fordernde Tätigkeit"],
+  ["medizinisch_sozial","🩺 Sozial / Medizin","Pflege, Medizin, Bildung, soziale Berufe"],
+  ["sonstiges","📌 Sonstiges","Andere oder gemischte Tätigkeit"],
+];
 const EX_GROUPS=[
   {label:"Sachen & Wohnen",items:[{id:"privathaftpflicht",name:"Privathaftpflicht"},{id:"hausrat",name:"Hausrat"},{id:"wohngebaeude",name:"Wohngebäude"},{id:"rechtsschutz",name:"Rechtsschutz"}]},
   {label:"Einkommen & Zukunft",items:[{id:"berufsunfaehigkeit",name:"Berufsunfähigkeit (BU)"},{id:"erwerbsunfaehigkeit",name:"Erwerbsunfähigkeit (EU)"},{id:"krankentagegeld",name:"Krankentagegeld"},{id:"altersvorsorge",name:"Private Altersvorsorge"}]},
@@ -235,17 +287,140 @@ const EX_GROUPS=[
   {label:"Familie & Vermögen",items:[{id:"unfall",name:"Unfallversicherung"},{id:"risikoleben",name:"Risikolebensversicherung"},{id:"sparen_investieren",name:"Sparen & Investieren"}]},
 ];
 
-// ─── Phase 1: 1 Frage pro Screen (6 Screens) ─────────────────────────────────
+const WIZARD_MICRO_EMP_LABEL = {
+  angestellt: "Angestellte/r",
+  selbstständig: "Selbstständige/r",
+  verbeamtet: "Beamte/r",
+  ausbildung_studium: "Studierende/r oder Auszubildende/r",
+};
+
+const WIZARD_MICRO_JOB_PHRASE = {
+  buero: "Büro & Verwaltung",
+  koerperlich: "Handwerk & körperlich fordernde Tätigkeit",
+  medizinisch_sozial: "Sozial & Medizin",
+  sonstiges: "gemischter oder anderer Tätigkeit",
+};
+
+const WIZARD_MICRO_NET_LABEL = {
+  "1500_2500": "unter 2.000 € Netto",
+  "2500_4000": "2.000 – 3.500 € Netto",
+  "4000_6000": "3.500 – 5.000 € Netto",
+  over_6000: "über 5.000 € Netto",
+};
+
+const WIZARD_MICRO_STORY_MS = 2600;
+
+function wizardMicroStoryEmployment(profil) {
+  const emp =
+    WIZARD_MICRO_EMP_LABEL[profil.employmentStatus] || "in Ihrer beruflichen Situation";
+  const job = WIZARD_MICRO_JOB_PHRASE[profil.jobType] || "Ihrer Tätigkeit";
+  return `Verstanden. Als ${emp} im Bereich „${job}“ tragen Sie ein spezifisches Haftungsrisiko. Das berücksichtigen wir.`;
+}
+
+function wizardMicroStoryAge(age) {
+  if (age <= 24) {
+    return "Perfekter Zeitpunkt. Der Faktor Zeit ist Ihr größter Verbündeter beim Vermögensaufbau.";
+  }
+  if (age >= 50) {
+    return "Fokus auf Stabilität. Wir priorisieren den Schutz Ihres bereits Erreichten.";
+  }
+  return "Guter Zeitpunkt — wir gewichten Vorsorge und Risiko passend zu Ihrer Lebensphase.";
+}
+
+function wizardMicroStoryIncome(profil) {
+  const band = WIZARD_MICRO_NET_LABEL[profil.netIncome] || "Ihrem Nettoeinkommen";
+  return `Kalkuliere … Bei ${band} monatlich ist die Absicherung Ihrer Arbeitskraft das Fundament Ihrer Freiheit.`;
+}
+
+function WizardMicroMomentBanner({ text, C }) {
+  return (
+    <div style={{ padding: "0 24px 14px" }} className="fade-in" role="status" aria-live="polite">
+      <p
+        style={{
+          fontSize: "15px",
+          fontWeight: "500",
+          color: "#374151",
+          lineHeight: 1.6,
+          textAlign: "center",
+          maxWidth: "min(400px, 100%)",
+          margin: "0 auto",
+          padding: "14px 18px",
+          background: `${C}14`,
+          border: `1px solid ${C}38`,
+          borderRadius: "14px",
+        }}
+      >
+        {text}
+      </p>
+    </div>
+  );
+}
+
+// ─── Phase 1: Wizard (7 Screens) ─────────────────────────────────────────────
+const WIZARD_TOTAL = 7;
+
 function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
   const[scr,setScr]=useState(1);
-  useCheckScrollToTop([scr]);
+  const[microTransition,setMicroTransition]=useState(null);
+  useCheckScrollToTop([scr,microTransition]);
   const mark=textOnAccent(C);
-  const canNext=scr===1||scr===6?true:scr===2?!!profil.employmentStatus:scr===3?!!profil.familyStatus:scr===4?!!profil.housingStatus:!!profil.netIncome;
-  const next=()=>scr<6?setScr(s=>s+1):onWeiter();
-  const back=()=>scr>1&&setScr(s=>s-1);
+  const canNext =
+    scr === 1 || scr === WIZARD_TOTAL
+      ? true
+      : scr === 2
+        ? !!(profil.employmentStatus && profil.jobType)
+        : scr === 3
+          ? profil.age >= 18 && profil.age <= 67
+          : scr === 4
+            ? !!profil.familyStatus
+            : scr === 5
+              ? !!profil.housingStatus
+              : !!profil.netIncome;
+
+  useEffect(() => {
+    if (!microTransition) return undefined;
+    const id = window.setTimeout(() => {
+      setScr(microTransition.toScr);
+      setMicroTransition(null);
+    }, WIZARD_MICRO_STORY_MS);
+    return () => window.clearTimeout(id);
+  }, [microTransition]);
+
+  const dimDuringMicro =
+    microTransition && microTransition.fromScr === scr
+      ? { opacity: 0.42, pointerEvents: "none", transition: "opacity 0.25s ease" }
+      : {};
+
+  const goForward = () => {
+    if (microTransition) return;
+    if (scr === 2 && canNext) {
+      setMicroTransition({ fromScr: 2, toScr: 3, text: wizardMicroStoryEmployment(profil) });
+      return;
+    }
+    if (scr === 3 && canNext) {
+      setMicroTransition({ fromScr: 3, toScr: 4, text: wizardMicroStoryAge(profil.age) });
+      return;
+    }
+    if (scr === 6 && canNext) {
+      setMicroTransition({ fromScr: 6, toScr: 7, text: wizardMicroStoryIncome(profil) });
+      return;
+    }
+    if (scr < WIZARD_TOTAL) setScr((s) => s + 1);
+    else onWeiter();
+  };
+
+  const back = () => {
+    if (microTransition) {
+      setMicroTransition(null);
+      return;
+    }
+    if (scr > 1) setScr((s) => s - 1);
+  };
+  const blockForward = microTransition !== null;
+  const sectionLbl = { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" };
   return(
-    <div style={{...T.page,...T.fadeIn,"--accent":C}} className="fade-in">
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={scr} total={6} logo={<LogoSVG color={logoIconColor}/>}/>
+    <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={scr} total={WIZARD_TOTAL} logo={<LogoSVG color={logoIconColor}/>}/>
 
       {scr===1&&<>
         <div style={T.hero}>
@@ -254,50 +429,93 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
           <div style={T.hint}>Wir schauen gemeinsam an, wo Ihr Schutz ausreicht — und wo Lücken bestehen.</div>
         </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(false)} onClick={next}>Check starten</button></div>
+        <div style={T.footer}><button style={T.btnPrim(false)} onClick={goForward}>Check starten</button></div>
       </>}
 
       {scr===2&&<>
         <div style={T.hero}>
-          <div style={T.eyebrow}>Ihre Situation</div>
-          <div style={T.h1}>Wie sieht Ihre aktuelle Situation aus?</div>
+          <div style={T.eyebrow}>Beruflicher Rahmen</div>
+          <div style={T.h1}>Wie arbeiten Sie?</div>
+          <div style={T.hint}>Wählen Sie zuerst Ihren Status, dann Ihre Tätigkeitsart — beides fließt in die Einschätzung ein.</div>
         </div>
-        <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="employmentStatus" opts={EMP_OPTS} profil={profil} set={set} C={C} T={T}/></div></div></div>
+        {microTransition?.fromScr === 2 ? <WizardMicroMomentBanner text={microTransition.text} C={C} /> : null}
+        <div style={dimDuringMicro}>
+          <div style={T.section}>
+            <div style={sectionLbl}>Rechtlicher Status</div>
+            <div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="employmentStatus" opts={EMP_OPTS} profil={profil} set={set} C={C} T={T}/></div></div>
+          </div>
+          <div style={T.section}>
+            <div style={sectionLbl}>Tätigkeitsart</div>
+            <div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="jobType" opts={JOB_OPTS} cols={2} profil={profil} set={set} C={C} T={T}/></div></div>
+          </div>
+        </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext)} disabled={!canNext} onClick={next}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
       {scr===3&&<>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Ihr Alter</div>
+          <div style={T.h1}>Wie alt sind Sie?</div>
+        </div>
+        {microTransition?.fromScr === 3 ? <WizardMicroMomentBanner text={microTransition.text} C={C} /> : null}
+        <div style={dimDuringMicro}>
+          <div style={{ textAlign: "center", padding: "8px 24px 0" }}>
+            <div style={{ fontSize: "52px", fontWeight: "800", color: C, letterSpacing: "-2.5px", lineHeight: 1, marginBottom: "6px" }}>{profil.age}</div>
+            <div style={{ fontSize: "14px", color: "#9CA3AF", marginBottom: "20px" }}>Jahre</div>
+          </div>
+          <div style={T.section}>
+            <SliderCard
+              label="Ihr Alter"
+              value={profil.age}
+              min={18}
+              max={67}
+              step={1}
+              unit="Jahre"
+              display={`${profil.age} Jahre`}
+              accent={C}
+              onChange={(v) => set("age", v)}
+            />
+          </div>
+        </div>
+        <div style={{height:"120px"}}/>
+        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+      </>}
+
+      {scr===4&&<>
         <div style={T.hero}>
           <div style={T.eyebrow}>Ihre Verantwortung</div>
           <div style={T.h1}>Für wen tragen Sie aktuell Verantwortung?</div>
         </div>
         <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="familyStatus" opts={FAM_OPTS} profil={profil} set={set} C={C} T={T}/></div></div></div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext)} disabled={!canNext} onClick={next}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
-      {scr===4&&<>
+      {scr===5&&<>
         <div style={T.hero}>
           <div style={T.eyebrow}>Ihre Wohnsituation</div>
           <div style={T.h1}>Wie wohnen Sie aktuell?</div>
         </div>
         <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="housingStatus" opts={HSG_OPTS} profil={profil} set={set} C={C} T={T}/></div></div></div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext)} disabled={!canNext} onClick={next}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
-      {scr===5&&<>
+      {scr===6&&<>
         <div style={T.hero}>
           <div style={T.eyebrow}>Ihr Einkommen</div>
           <div style={T.h1}>Wie hoch ist Ihr monatliches Nettoeinkommen?</div>
         </div>
-        <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="netIncome" opts={INC_OPTS} cols={2} profil={profil} set={set} C={C} T={T}/></div></div></div>
+        {microTransition?.fromScr === 6 ? <WizardMicroMomentBanner text={microTransition.text} C={C} /> : null}
+        <div style={{ ...T.section, ...dimDuringMicro }}>
+          <div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="netIncome" opts={INC_OPTS} cols={2} profil={profil} set={set} C={C} T={T}/></div></div>
+        </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext)} disabled={!canNext} onClick={next}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
-      {scr===6&&<>
+      {scr===7&&<>
         <div style={T.hero}>
           <div style={T.eyebrow}>Bestehende Absicherung</div>
           <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
@@ -336,93 +554,325 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
   );
 }
 
+// ── Story: Übergang vor Paketen ──────────────────────────────────────────────
+function BedarfStoryScreen({ profil, onContinue, C, T, firma, logoIconColor }) {
+  let body =
+    "Wir haben Ihre Angaben mit typischen Risiken abgeglichen. Als Nächstes zeigen wir Ihre drei Pakete — von Basis bis Premium.";
+  if (profil.employmentStatus === "ausbildung_studium") {
+    body =
+      "In Ihrer Phase zählt vor allem ein günstiger Einstieg und der Schutz Ihrer Zukunft. Wir haben die Tarife für junge Leute priorisiert.";
+  } else if (profil.familyStatus === "mit_kindern") {
+    body =
+      "Die Sicherheit Ihrer Liebsten steht an erster Stelle. Wir haben Ihren Bedarf so kalkuliert, dass Ihre Familie in jedem Szenario stabil bleibt.";
+  } else if (profil.employmentStatus === "selbstständig") {
+    body =
+      "Da Sie Ihr eigenes Netz bauen, liegt unser Fokus auf der lückenlosen Einkommenssicherung ab dem ersten Krankheitstag.";
+  }
 
-// ── Phase 3: Ergebnis — 3-Tier Priorisierung ──────────────────────────────────
-function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) {
-  const { wichtig, relevant, optional, alreadyCovered } = result;
-  const totalCount = wichtig.length + relevant.length + optional.length;
-
-  const TIERS = [
-    { label: "Wichtig",   color: "#C0392B", bg: "#FFF6F5", items: wichtig,   sectionTitle: "Das ist aktuell am wichtigsten",         hint: "Level 1 — Existenzbedrohende Risiken" },
-    { label: "Relevant",  color: "#D97706", bg: "#FFFBEB", items: relevant,  sectionTitle: "Das sollten Sie prüfen",                  hint: "Level 2 + 3 — Einkommen & Gesundheit" },
-    { label: "Optional",  color: "#6B7280", bg: "#FAFAF8", items: optional,  sectionTitle: "Das kann ergänzend sinnvoll sein",        hint: "Level 4 — Sach & Optimierung" },
-  ].filter(t => t.items.length > 0);
-
-  const ProductRow = ({ item, accentColor }) => (
-    <div style={{ padding: "16px 20px", display: "flex", gap: "14px", alignItems: "flex-start" }}>
-      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: accentColor, flexShrink: 0, marginTop: "7px" }} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: "14px", fontWeight: "600", color: "#1F2937", marginBottom: "3px" }}>{item.name}</div>
-        <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, marginBottom: "5px" }}>{item.reason}</div>
-        <div style={{ fontSize: "11px", color: "#9CA3AF", fontStyle: "italic" }}>In Ihrer Situation häufig relevant</div>
+  return (
+    <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={9} logo={<LogoSVG color={logoIconColor} />} />
+      <div style={{ ...CHECKKIT2026.storyRoot, background: "#FAFAF9" }}>
+        <div style={{ ...CHECKKIT2026.storySection, background: "transparent" }}>
+          <div style={CHECKKIT2026.storyContentWrap}>
+            <div
+              style={{
+                ...CHECKKIT2026.storyEyebrow,
+                color: C,
+                fontWeight: 700,
+                letterSpacing: "0.06em",
+                marginBottom: 14,
+              }}
+            >
+              Ihre Analyse ist bereit.
+            </div>
+            <h1 style={{ ...CHECKKIT2026.storyH1, color: "#111827" }}>Wir haben Ihren Schutzbedarf ermittelt.</h1>
+            <p style={{ ...CHECKKIT2026.storyBody, marginBottom: 28 }}>{body}</p>
+            <button type="button" style={T.btnPrim(false)} onClick={onContinue}>
+              Meine Pakete ansehen
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
+}
+
+// ── Phase 3: Ergebnis — 3 Pakete (Level-up, Anker-Reihenfolge) ────────────────
+function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) {
+  const { basis, komfort, premium, alreadyCovered, showKinderHint, schutzProzent, prioritaetenImFokus, empfBU, anzahlLuecken } = result;
+
+  const columns = [
+    {
+      key: "basis",
+      emoji: "🛡️",
+      title: "Basis",
+      count: 2,
+      tagline: "Das Existenzielle",
+      badge: null,
+      items: basis,
+      wrapStyle: {
+        ...CHECKKIT2026.resultColumnStack,
+        background: CHECKKIT2026.colExistenz,
+        minHeight: 0,
+      },
+    },
+    {
+      key: "komfort",
+      emoji: "⭐",
+      title: "Komfort",
+      count: 3,
+      tagline: "",
+      badge: "Empfehlung",
+      items: komfort,
+      wrapStyle: {
+        ...CHECKKIT2026.resultColumnStack,
+        background: CHECKKIT2026.colStandard,
+        border: "2px solid #F59E0B",
+        boxShadow: "0 8px 28px rgba(245, 158, 11, 0.12)",
+        position: "relative",
+        minHeight: 0,
+      },
+    },
+    {
+      key: "premium",
+      emoji: "👑",
+      title: "Premium",
+      count: 4,
+      tagline: "Maximaler Schutz",
+      badge: null,
+      items: premium,
+      wrapStyle: {
+        ...CHECKKIT2026.resultColumnStack,
+        background: CHECKKIT2026.colPlus,
+        border: `1px solid ${C}40`,
+        boxShadow: "0 4px 20px rgba(17,24,39,0.07)",
+        minHeight: 0,
+      },
+    },
+  ];
 
   return (
-    <div style={{ ...T.page, ...T.fadeIn, "--accent": C }} className="fade-in">
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={7} total={8} logo={<LogoSVG color={logoIconColor} />} />
+    <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={9} logo={<LogoSVG color={logoIconColor} />} />
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div style={{ padding: "52px 24px 36px", textAlign: "center", background: "#F8F6F2" }}>
-        <div style={{ fontSize: "12px", fontWeight: "500", color: "#9CA3AF", letterSpacing: "0.2px", marginBottom: "14px" }}>Ihre Absicherung im Überblick</div>
-        <div style={{ fontSize: "52px", fontWeight: "800", color: C, letterSpacing: "-2.5px", lineHeight: 1, marginBottom: "8px" }}>{totalCount}</div>
-        <div style={{ fontSize: "14px", color: "#9CA3AF", marginBottom: "18px" }}>relevante Themen</div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: `${C}14`, border: `1px solid ${C}33`, borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: C }}>Individuelle Einschätzung</div>
-        <div style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.55, marginTop: "12px" }}>auf Basis Ihrer Angaben · nach Risikostufe geordnet</div>
+      <div style={{ ...CHECKKIT2026.storySection, textAlign: "center", background: "#F8F6F2" }}>
+        <div style={{ fontSize: "12px", fontWeight: "600", color: "#6B7280", letterSpacing: "0.04em", marginBottom: "10px" }}>
+          Ihre Absicherung im Überblick
+        </div>
+        <div style={{ fontSize: "56px", fontWeight: "800", color: C, letterSpacing: "-3px", lineHeight: 1, marginBottom: "6px" }}>
+          {schutzProzent}%
+        </div>
+        <div style={{ fontSize: "14px", color: "#374151", fontWeight: "600", marginBottom: "4px" }}>geschätzt abgedeckt</div>
+        <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5 }}>
+          {prioritaetenImFokus} wichtige {prioritaetenImFokus === 1 ? "Thema" : "Themen"} im Premium-Paket · gleiche Reihenfolge in allen Spalten — nach rechts kommen weitere Themen dazu.
+        </div>
       </div>
 
-      {/* ── Visual: 3-Tier Überblick ──────────────────────────────────────── */}
-      <div style={T.section}>
-        <div style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" }}>Ihre Prioritäten im Überblick</div>
-        <div style={{ border: "1px solid rgba(17,24,39,0.08)", borderRadius: "16px", overflow: "hidden" }}>
-          {TIERS.map(({ label, color, bg, items }, i, arr) => (
-            <div key={label} style={{ padding: "12px 16px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none", background: bg, display: "flex", alignItems: "flex-start", gap: "12px" }}>
-              <div style={{ padding: "2px 10px", background: color + "18", border: `1px solid ${color}33`, borderRadius: "999px", fontSize: "11px", fontWeight: "700", color, flexShrink: 0, marginTop: "2px" }}>{label}</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-                {items.map(r => (
-                  <span key={r.id} style={{ fontSize: "12px", color: "#4B5563", background: "#fff", border: "1px solid rgba(17,24,39,0.07)", borderRadius: "20px", padding: "2px 10px" }}>{r.name}</span>
-                ))}
+      <div style={{ padding: "0 20px", marginBottom: "16px" }}>
+        <div style={{ ...T.dynamicCard, padding: "20px" }}>
+          <div
+            style={{
+              fontSize: "12px",
+              fontWeight: "500",
+              color: "#9CA3AF",
+              letterSpacing: "0.3px",
+              marginBottom: "10px",
+            }}
+          >
+            Auf Basis deiner Angaben
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div
+              style={{
+                background: "#FFF7F7",
+                border: "1px solid #F2CFCF",
+                borderRadius: "14px",
+                padding: "14px 12px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  color: "#B83232",
+                  letterSpacing: "-0.6px",
+                }}
+              >
+                {anzahlLuecken}
+              </div>
+              <div style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: "500", marginTop: "3px" }}>wichtige Lücken</div>
+            </div>
+            <div
+              style={{
+                background: "#F5F8FF",
+                border: "1px solid rgba(26,58,92,0.14)",
+                borderRadius: "14px",
+                padding: "14px 12px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "22px",
+                  fontWeight: "700",
+                  color: C,
+                  letterSpacing: "-0.5px",
+                }}
+              >
+                {formatBedarfEuro(empfBU)}
+              </div>
+              <div style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: "500", marginTop: "3px" }}>Empfohlene BU-Rente</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {alreadyCovered.length > 0 ? (
+        <div style={{ padding: "0 20px", marginBottom: "16px" }}>
+          <div
+            style={{
+              fontSize: "11px",
+              fontWeight: "700",
+              color: "#1E7A46",
+              letterSpacing: "0.5px",
+              textTransform: "uppercase",
+              marginBottom: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+              <circle cx="6" cy="6" r="5" fill="#F6FCF7" stroke="#CBE9D4" />
+              <path
+                d="M3.5 6l2 2 3-3"
+                stroke="#1E7A46"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Bereits abgesichert
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            {alreadyCovered.map((item) => (
+              <span
+                key={item.id}
+                style={{
+                  fontSize: "12px",
+                  color: "#237446",
+                  background: "#F6FCF7",
+                  border: "1px solid #CBE9D4",
+                  padding: "4px 10px",
+                  borderRadius: "999px",
+                  fontWeight: "500",
+                }}
+              >
+                {item.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <div style={{ ...T.section, paddingTop: "4px" }}>
+        <CheckKitResultGrid>
+          {columns.map((col) => (
+            <div key={col.key} style={col.wrapStyle}>
+              {col.badge ? (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-11px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "#F59E0B",
+                    color: "#fff",
+                    fontSize: "10px",
+                    fontWeight: "800",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    padding: "4px 12px",
+                    borderRadius: "999px",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 4px 12px rgba(245, 158, 11, 0.35)",
+                  }}
+                >
+                  {col.badge}
+                </div>
+              ) : null}
+              <div
+                style={{
+                  marginBottom: "12px",
+                  paddingBottom: "10px",
+                  borderBottom: "1px solid rgba(17,24,39,0.08)",
+                }}
+              >
+                <div style={{ fontSize: "18px", lineHeight: 1.2, marginBottom: "4px" }} aria-hidden>
+                  {col.emoji}
+                </div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#1F2937" }}>{col.title}</div>
+                <div style={{ fontSize: "11px", color: "#6B7280", fontWeight: "600", marginTop: "4px" }}>
+                  Top {col.count} · {col.key === "basis" ? col.tagline : col.key === "premium" ? col.tagline : "Meistgewählt"}
+                </div>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
+                {col.items.length === 0 ? (
+                  <div style={{ fontSize: "12px", color: "#9CA3AF" }}>—</div>
+                ) : (
+                  col.items.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        ...CHECKKIT2026.resultCard,
+                        padding: "12px 14px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <span style={{ fontSize: "22px", lineHeight: 1 }} aria-hidden>
+                        {item.icon}
+                      </span>
+                      <span style={{ fontSize: "13px", fontWeight: "600", color: "#374151" }}>
+                        {item.shortLabel}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           ))}
-        </div>
+        </CheckKitResultGrid>
       </div>
 
-      {/* ── Sektionen pro Tier ────────────────────────────────────────────── */}
-      {TIERS.map(({ label, color, items, sectionTitle, hint }) => (
-        <div key={label} style={T.section}>
-          <div style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "4px" }}>{sectionTitle}</div>
-          <div style={{ fontSize: "11px", color: "#9CA3AF", marginBottom: "12px" }}>{hint}</div>
-          <div style={{ border: "1px solid rgba(17,24,39,0.08)", borderRadius: "16px", overflow: "hidden", background: "#fff" }}>
-            {items.map((item, i, arr) => (
-              <div key={item.id} style={{ borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none" }}>
-                <ProductRow item={item} accentColor={color} />
-              </div>
-            ))}
+      {showKinderHint ? (
+        <div style={{ padding: "0 24px", marginBottom: "8px" }}>
+          <div
+            style={{
+              padding: "14px 16px",
+              background: "#F0F9FF",
+              border: "1px solid #BAE6FD",
+              borderRadius: "12px",
+              fontSize: "13px",
+              color: "#0369A1",
+              lineHeight: 1.5,
+            }}
+          >
+            💡 Hinweis: Prüfen Sie zusätzlich eine Invaliditätsabsicherung für Ihr Kind.
           </div>
         </div>
-      ))}
+      ) : null}
 
-      {/* ── Bereits abgesichert ───────────────────────────────────────────── */}
-      {alreadyCovered.length > 0 && (
-        <div style={T.section}>
-          <div style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" }}>Bereits abgesichert</div>
-          <div style={{ border: "1px solid rgba(17,24,39,0.06)", borderRadius: "16px", overflow: "hidden", background: "#fff" }}>
-            {alreadyCovered.map((item, i, arr) => (
-              <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 18px", borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none" }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill={OK + "18"} /><path d="M5 8l2 2L11 5.5" stroke={OK} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                <span style={{ fontSize: "13px", color: "#6B7280" }}>{item.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Legal ─────────────────────────────────────────────────────────── */}
       <div style={{ padding: "0 24px", marginBottom: "120px" }}>
         <CheckBerechnungshinweis t={T}>
-          <>Vereinfachte Einschätzung auf Basis eines <strong>Risiko-Scorings</strong>: Produkte werden nach Risikostufe eingeordnet (Existenz → Einkommen → Langfristig → Optional) und anhand Ihres Profils gewichtet. <strong>Privathaftpflicht</strong> ist stets Priorität 1. Alle Angaben: in Ihrer Situation häufig relevant — kein Ersatz für individuelle Beratung.</>
+          <>
+            Vereinfachte Priorisierung per <strong>Score-Modell</strong> (Basiswerte + Anpassung nach Alter, Beruf und
+            Familie). Bereits gewählte Produkte fließen nicht in die Pakete. <strong>Kein Ersatz</strong> für individuelle
+            Beratung.
+          </>
         </CheckBerechnungshinweis>
         <div style={T.infoGold}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
       </div>
@@ -439,12 +889,12 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) 
 }
 
 // Phase 4: Kontakt
-function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, logoIconColor }) {
+function Phase4({ onAbsenden, onZurueck, isDemo, makler, T, firma, logoIconColor }) {
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[consent,setConsent]=useState(false);
   const valid=fd.name.trim()&&fd.email.trim()&&consent;
-  return(<div style={{...T.page,...T.fadeIn,"--accent":C}} className="fade-in">
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={8} logo={<LogoSVG color={logoIconColor} />} />
+  return(<div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} logo={<LogoSVG color={logoIconColor} />} />
     <div style={T.hero}>
       <div style={T.eyebrow}>Fast geschafft</div>
       <div style={T.h1}>Wo können wir dich erreichen?</div>
@@ -491,8 +941,8 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, logoIconCo
 
 // Danke
 function DankeScreen({ name, onReset, makler, C, T, firma, logoIconColor }) {
-  return(<div style={{...T.page,...T.fadeIn,"--accent":C}} className="fade-in">
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={8} logo={<LogoSVG color={logoIconColor} />} />
+  return(<div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} logo={<LogoSVG color={logoIconColor} />} />
     <div style={T.dankeScreen}>
       <div style={T.dankeRing(C)}>
         <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -523,19 +973,36 @@ export default function Bedarfscheck(){
   const T = useMemo(() => checkStandardT(C), [C]);
   const logoIconColor = onAccent;
   const firma = makler.firma;
-  const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[loading,setLoading]=useState(false);const[kontaktName,setKontaktName]=useState("");
-  const[profil,setProfil]=useState({age:35,employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:"gkv"});
+  const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[loading,setLoading]=useState(false);const[storyScreen,setStoryScreen]=useState(false);const[kontaktName,setKontaktName]=useState("");
+  const emptyProfil = () => ({
+    age: 18,
+    employmentStatus: "",
+    jobType: "",
+    netIncome: "",
+    familyStatus: "",
+    housingStatus: "",
+    healthStatus: "gkv",
+  });
+  const[profil,setProfil]=useState(emptyProfil);
   const[existing,setExisting]=useState([]);
   const set=(k,v)=>setProfil(x=>({...x,[k]:v}));
   const toggle=(id)=>setExisting(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);};
-  useCheckScrollToTop([phase, ak, danke, loading]);
-  const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setLoading(false);setProfil({age:35,employmentStatus:"",jobType:"buero",netIncome:"",familyStatus:"",housingStatus:"",healthStatus:"gkv"});setExisting([]);setKontaktName("");};
-  const profilReady=profil.employmentStatus&&profil.netIncome&&profil.familyStatus&&profil.housingStatus;
-  const result=profilReady?runScoringEngine(profil,existing):null;
+  useCheckScrollToTop([phase, ak, danke, loading, storyScreen]);
+  const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setLoading(false);setStoryScreen(false);setProfil(emptyProfil());setExisting([]);setKontaktName("");};
+  const profilReady=
+    profil.employmentStatus &&
+    profil.jobType &&
+    profil.age >= 18 &&
+    profil.age <= 67 &&
+    profil.netIncome &&
+    profil.familyStatus &&
+    profil.housingStatus;
+  const result=profilReady?buildPackageScoringResult(profil,existing):null;
   if(danke)return <DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
-  if(loading)return <div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={6} total={6} logo={<LogoSVG color={logoIconColor}/>}/><CheckLoader type="bedarf" onComplete={()=>{setLoading(false);goTo(3);}}/></div>;
-  if(phase===4)return <Phase4 key={ak} isDemo={isDemo} selectedRec={selectedRec} onAbsenden={async (fd)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
+  if(loading)return <div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={WIZARD_TOTAL} total={WIZARD_TOTAL} logo={<LogoSVG color={logoIconColor}/>}/><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>;
+  if(storyScreen&&result)return <BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
+  if(phase===4)return <Phase4 key={ak} isDemo={isDemo} onAbsenden={async (fd)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} T={T} firma={firma} logoIconColor={logoIconColor}/>;
   if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
   return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
 }

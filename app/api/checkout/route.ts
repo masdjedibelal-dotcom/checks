@@ -3,8 +3,11 @@ import Stripe from "stripe";
 import { publicAppUrl } from "@/lib/licenseUtils";
 
 /**
- * Fallback-Price-IDs (historisch). Wenn Stripe „No such price“ meldet, passen sie nicht zu
- * STRIPE_SECRET_KEY — dann auf Netlify `STRIPE_PRICE_IDS_JSON` setzen (Slug → price_…).
+ * Fallback-Price-IDs (FlowLeads-Katalog). Bei „No such price“: STRIPE_SECRET_KEY muss zu
+ * diesem Stripe-Konto passen (oder STRIPE_PRICE_IDS_JSON mit Preisen aus deinem Konto).
+ *
+ * Slug-Mapping: bedarfscheck=Versicherungs-Check · lebenssituations-check · einkommens-check ·
+ * gkv-pkv=GKV vs. PKV · vorsorge-check · risikoleben · pflege-check · immobilien-check · immo-check (=Immobilien-Preis)
  */
 const DEFAULT_STRIPE_PRICE_IDS: Record<string, string> = {
   bedarfscheck: "price_1TDlFRCWQbLUwqOtPni0DcmM",
@@ -15,6 +18,7 @@ const DEFAULT_STRIPE_PRICE_IDS: Record<string, string> = {
   risikoleben: "price_1TDlGqCWQbLUwqOtwhkLZNc3",
   "pflege-check": "price_1TDlH4CWQbLUwqOtmW6laQsr",
   "immobilien-check": "price_1TDlHICWQbLUwqOtFct53MTA",
+  "immo-check": "price_1TDlHICWQbLUwqOtFct53MTA",
 };
 
 function parseStripePriceOverrides(): Record<string, string> {

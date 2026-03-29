@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 
 export const checkStandardT = (C: string) => {
   const cLight = `color-mix(in srgb, ${C} 8%, white)`;
@@ -80,6 +81,7 @@ export const checkStandardT = (C: string) => {
       background: "#F8F6F2",
       fontFamily: "'DM Sans', system-ui, sans-serif",
       WebkitFontSmoothing: "antialiased" as const,
+      ...( { ["--accent"]: C } as Record<string, string> ),
     },
     // ── HEADER ────────────────────────────────
     header: {
@@ -130,7 +132,7 @@ export const checkStandardT = (C: string) => {
 
     // ── HERO ──────────────────────────────────
     hero: {
-      padding: "44px 24px 28px",
+      padding: "44px 24px 32px",
       textAlign: "center" as const,
       background: "#F8F6F2",
     },
@@ -143,11 +145,10 @@ export const checkStandardT = (C: string) => {
     },
     h1: {
       fontSize: "26px",
-      fontWeight: "700" as const,
       color: "#1F2937",
       lineHeight: 1.15,
-      letterSpacing: "-0.6px",
       marginBottom: "12px",
+      ...CHECKKIT_HERO_TITLE_TYPO,
     },
     hint,
 

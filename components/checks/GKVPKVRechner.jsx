@@ -6,52 +6,110 @@ import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import ResultPage from "@/components/checks/gkvpkv/ResultPage";
 import { CheckLoader } from "@/components/checks/CheckLoader";
+import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
+import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#ffffff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}.gkvpkv-smart-block{animation:fadeIn 0.42s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#f0f0f0;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}@media (max-width:540px){.gkvpkv-stack-sm{grid-template-columns:1fr !important;}}.gkvpkv-acc-item{border-radius:12px;background:#F9FAFB;border:1px solid rgba(17,24,39,0.06);margin-bottom:8px;overflow:hidden;}.gkvpkv-acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-align:left;font-size:13px;font-weight:600;color:#1F2937;background:transparent;cursor:pointer;border:none;font-family:inherit;}.gkvpkv-acc-panel{padding:0 16px 14px;font-size:12px;color:#6B7280;line-height:1.65;border-top:1px solid rgba(17,24,39,0.06);}`;document.head.appendChild(s);})();
 // JAEG 2026: 77.400 € / Jahr = 6.450 € / Monat
 const JAEG_MONAT = 6450;
 const BBG_KV    = 5812.5;
 
-function berechne({ brutto, beruf, alter, familiensituation, partnerKV }) {
-  const unterGrenze  = beruf === "angestellt" && brutto < JAEG_MONAT;
-  const hatKinder    = familiensituation === "partner_kinder";
-  const hatPartner   = familiensituation !== "single";
+function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderImHaushalt }) {
+  const unterGrenze = beruf === "angestellt" && brutto < JAEG_MONAT;
+  const hatKinder = familiensituation === "partner_kinder";
+  const hatPartner = familiensituation !== "single";
   const partnerInGKV = hatPartner && partnerKV === "gkv";
 
   // GKV AN-Anteil (8,75 % bis BBG) — nur für Orientierung im Kontext
   const gkvANAnteil = Math.round(Math.min(brutto, BBG_KV) * 0.0875);
-  const agAnteil    = beruf === "angestellt" ? gkvANAnteil : 0;
+  const agAnteil = beruf === "angestellt" ? gkvANAnteil : 0;
 
   // Empfehlung — nur strukturell, kein Tarifvergleich
   let empfehlung, headline, subline;
   if (unterGrenze) {
     empfehlung = "gkv";
-    headline   = "Aktuell: GKV Pflicht";
-    subline    = "Einkommensgrenze 6.450 € noch nicht erreicht";
+    headline = "Aktuell: GKV Pflicht";
+    subline = "Einkommensgrenze 6.450 € noch nicht erreicht";
   } else if (beruf === "beamter") {
     empfehlung = "pkv";
-    headline   = "PKV für Sie naheliegend";
-    subline    = "Beihilfe macht PKV für Beamte typisch sinnvoll";
+    headline = "PKV für Sie naheliegend";
+    subline = "Beihilfe macht PKV für Beamte typisch sinnvoll";
   } else if (hatKinder || partnerInGKV) {
     empfehlung = "gkv";
-    headline   = "GKV aktuell sinnvoll";
-    subline    = "Familienversicherung spricht für GKV";
+    headline = "GKV aktuell sinnvoll";
+    subline = "Familienversicherung spricht für GKV";
   } else {
     empfehlung = "offen";
-    headline   = "PKV grundsätzlich möglich";
-    subline    = beruf === "selbst"
-      ? "Freie Wahl — keine Pflichtversicherung"
-      : "Einkommensgrenze überschritten";
+    headline = "PKV grundsätzlich möglich";
+    subline =
+      beruf === "selbst" ? "Freie Wahl — keine Pflichtversicherung" : "Einkommensgrenze überschritten";
   }
 
-  return { unterGrenze, hatKinder, hatPartner, partnerInGKV,
-           gkvANAnteil, agAnteil, empfehlung, headline, subline, alter, brutto };
+  /** Grobe Monatsbeiträge (Orientierung) für Ersparnis-Box */
+  const brCapped = Math.min(Number(brutto) || 0, BBG_KV);
+  let gkvSchMonat;
+  if (beruf === "beamter") {
+    gkvSchMonat = Math.round(brCapped * 0.19);
+  } else if (beruf === "angestellt") {
+    gkvSchMonat = Math.round(brCapped * 0.146);
+  } else {
+    gkvSchMonat = Math.round(Math.min(Number(brutto) || 0, BBG_KV) * 0.146);
+  }
+
+  let kinderZahl = 0;
+  if (hatKinder) {
+    const k = kinderImHaushalt;
+    kinderZahl = k === 3 ? 3 : k === 2 ? 2 : k === 1 ? 1 : 2;
+  }
+  let pkvSchMonat = 300 + Math.round(Math.max(18, Number(alter) || 0) * 8);
+  if (beruf === "beamter") pkvSchMonat = Math.round(pkvSchMonat * 0.32);
+  if (hatKinder) pkvSchMonat += kinderZahl * 155;
+  pkvSchMonat = Math.max(120, pkvSchMonat);
+
+  let diff = 0;
+  /** Für UI: bei welchem System liegt die modellierte Ersparnis */
+  let empfehlungKosten = null;
+  if (!unterGrenze) {
+    if (empfehlung === "pkv") {
+      empfehlungKosten = "PKV";
+      diff = Math.max(0, gkvSchMonat - pkvSchMonat);
+    } else if (empfehlung === "gkv") {
+      empfehlungKosten = "GKV";
+      diff = Math.max(0, pkvSchMonat - gkvSchMonat);
+    } else {
+      if (pkvSchMonat <= gkvSchMonat) {
+        empfehlungKosten = "PKV";
+        diff = Math.max(0, gkvSchMonat - pkvSchMonat);
+      } else {
+        empfehlungKosten = "GKV";
+        diff = Math.max(0, pkvSchMonat - gkvSchMonat);
+      }
+    }
+  }
+
+  return {
+    unterGrenze,
+    hatKinder,
+    hatPartner,
+    partnerInGKV,
+    gkvANAnteil,
+    agAnteil,
+    empfehlung,
+    headline,
+    subline,
+    alter,
+    brutto,
+    gkvSchMonat,
+    pkvSchMonat,
+    diff,
+    empfehlungKosten,
+  };
 }
-function makeGKVPKVT(C){return{page:{minHeight:"100vh",background:"#ffffff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},brandMark:{fontSize:"15px",fontWeight:"700",letterSpacing:"-0.03em",color:"#111"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},logoTxt:{fontSize:"13px",fontWeight:"600",color:"#111",letterSpacing:"-0.1px"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"#f0f0f0"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",background:"#fff"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?(c||C):"#e8e8e8"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"}),
+function makeGKVPKVT(C){return{page:{minHeight:"100vh",background:"#ffffff","--accent":C,fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid rgba(31,41,55,0.06)",padding:"0 24px",height:"56px",display:"flex",alignItems:"center",justifyContent:"space-between"},brandMark:{fontSize:"15px",fontWeight:"700",letterSpacing:"-0.03em",color:"#111"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},logoTxt:{fontSize:"13px",fontWeight:"600",color:"#111",letterSpacing:"-0.1px"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"rgba(31,41,55,0.08)"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",color:"#111",lineHeight:1.25,...CHECKKIT_HERO_TITLE_TYPO},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"18px",overflow:"hidden",background:"#fff"},kpiKontaktLuecke:{borderRadius:"16px",background:"#FFF7F7",border:"1px solid #F2CFCF",padding:"12px 14px",minWidth:0,flex:"1 1 140px"},kpiKontaktEu:{borderRadius:"14px",background:"rgba(255,255,255,0.96)",border:"1px solid rgba(17,24,39,0.06)",padding:"12px 14px",minWidth:0,flex:"1 1 140px"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.88)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderTop:"1px solid rgba(31,41,55,0.06)",boxShadow:"0 -6px 20px rgba(17,24,39,0.05)",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"999px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer",letterSpacing:"-0.1px",boxShadow:d?"none":"0 8px 20px rgba(26,58,92,0.18)"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#F6F8FE",border:"1px solid #DCE6FF",borderRadius:"14px",fontSize:"12px",color:"#315AA8",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},optBtn:(a,c)=>({padding:"9px 14px",borderRadius:"6px",border:`1px solid ${a?(c||C):"#e8e8e8"}`,background:a?(c||C):"#fff",fontSize:"13px",fontWeight:a?"600":"400",color:a?"#fff":"#444",transition:"all 0.15s",cursor:"pointer"}),
 resultHero:{padding:"52px 24px 40px",textAlign:"center",background:"#ffffff"},
 resultEyebrow:{fontSize:"12px",fontWeight:"500",color:"#9CA3AF",letterSpacing:"0.2px",marginBottom:"14px"},
 resultNumber:(C2)=>({fontSize:"52px",fontWeight:"800",color:C2,letterSpacing:"-2.5px",lineHeight:1,marginBottom:"8px"}),
 resultUnit:{fontSize:"14px",color:"#9CA3AF",marginBottom:"18px"},
-resultH1:{fontSize:"24px",fontWeight:"800",letterSpacing:"-0.55px",lineHeight:1.2,color:"#111"},
+resultH1:{fontSize:"28px",lineHeight:1.2,color:"#111",...CHECKKIT_HERO_TITLE_TYPO,letterSpacing:"-0.8px"},
 resultBody:{fontSize:"15px",color:"#666",lineHeight:1.65},
 tableIntro:{fontSize:"13px",color:"#666",lineHeight:1.55},
 matrixMuted:{fontSize:"12px",fontWeight:"600",color:"#888",marginBottom:"8px"},
@@ -97,21 +155,6 @@ infoGridIconWrap:{width:"42px",height:"42px",borderRadius:"11px",background:"#f0
 /** Intro + Beruf + Einkommen + Alter + System-Story + Familie + Bridge (Fortschrittsanzeige) */
 const KV_FLOW_STEPS = 8;
 
-const STORY_H1_KV = { fontSize: "52px", fontWeight: "800", letterSpacing: "-1.5px", lineHeight: 1.12, color: "#111", margin: "0 0 22px" };
-const STORY_BODY_KV = { fontSize: "16px", color: "#4B5563", lineHeight: 1.65, margin: 0, maxWidth: "42ch", marginLeft: "auto", marginRight: "auto" };
-
-function StoryHeroKV({ emoji, title, text }) {
-  return (
-    <div style={{ textAlign: "center", padding: "36px 24px 20px", maxWidth: "600px", margin: "0 auto" }}>
-      <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
-        {emoji}
-      </div>
-      <h1 style={STORY_H1_KV}>{title}</h1>
-      {text ? <p style={STORY_BODY_KV}>{text}</p> : null}
-    </div>
-  );
-}
-
 function fmtKvGehaltEUR(n) {
   return `${Math.round(Number(n)).toLocaleString("de-DE")} €`;
 }
@@ -141,6 +184,23 @@ function kvStoryStatusGehaltCopy(beruf, brutto) {
         text: "Wir führen die Auswertung anhand Ihrer Angaben fort.",
       };
   }
+}
+
+/** Drei wichtigste Faktoren je nach Kinder, Empfehlung & Schwerpunkten */
+function pickTopGkvPkvFaktoren(faktoren, R) {
+  const pref = R.empfehlung;
+  const scored = faktoren.map((f, idx) => {
+    let s = 0;
+    if (f.fav === pref) s += 3;
+    if (f.label === "Kinder" && R.hatKinder) s += 4;
+    if (f.label === "Einkommen") s += 2;
+    if (f.label === "Alter") s += 2;
+    if (f.label === "Gesundheit" && pref === "gkv") s += 2;
+    if (f.label === "Gesundheit" && pref === "pkv") s += 1;
+    return { f, s, idx };
+  });
+  scored.sort((a, b) => b.s - a.s || a.idx - b.idx);
+  return scored.slice(0, 3).map((x) => x.f);
 }
 
 /** Slide 3 Bridge: Familien-Baustein — Kinder nur bei partner_kinder */
@@ -313,7 +373,7 @@ export default function GKVPKVRechner(){
       <div style={{ ...T.page, "--accent": C }} key={ak}>
         <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
         <div style={T.prog}><div style={T.progFil(100)} /></div>
-        <CheckLoader type="gkvpkv" onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="gkvpkv" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
       </div>
     );
   }
@@ -400,6 +460,8 @@ export default function GKVPKVRechner(){
       },
     ];
 
+    const topFaktoren = pickTopGkvPkvFaktoren(FAKTOREN, R);
+
     return (
       <ResultPage
         key={ak}
@@ -409,7 +471,7 @@ export default function GKVPKVRechner(){
         accentColor={C}
         maklerFirma={MAKLER.firma}
         goTo={goTo}
-        FAKTOREN={FAKTOREN}
+        FAKTOREN={topFaktoren}
       />
     );
   }
@@ -423,12 +485,11 @@ export default function GKVPKVRechner(){
       {/* Slide 1: Intro */}
       {scr === 1 && (
         <>
-          <StoryHeroKV
+          <CheckKitStoryHero
             emoji="🩺"
             title="Das passende Gesundheitssystem."
             text="GKV oder PKV? Wir analysieren in 2 Minuten, welches System zu Ihrem Leben passt und wo Sie die beste medizinische Versorgung für Ihr Budget erhalten."
           />
-          <div style={{ height: "120px" }} />
           <div style={T.footer}>
             <button type="button" style={T.btnPrim(false)} onClick={nextScr}>
               Analyse starten
@@ -516,8 +577,7 @@ export default function GKVPKVRechner(){
         const s2 = kvStoryStatusGehaltCopy(p.beruf, p.brutto);
         return (
         <>
-          <StoryHeroKV emoji="⚖️" title={s2.title} text={s2.text} />
-          <div style={{ height: "120px" }} />
+          <CheckKitStoryHero emoji="⚖️" title={s2.title} text={s2.text} />
           <div style={T.footer}>
             <button type="button" style={T.btnPrim(false)} onClick={nextScr}>
               Weiter →
@@ -815,17 +875,11 @@ export default function GKVPKVRechner(){
       {/* Slide 3: Bridge (Alter & Familiensituation im Text) */}
       {scr === 7 && (
         <>
-          <div style={{ textAlign: "center", padding: "36px 24px 12px", maxWidth: "560px", margin: "0 auto" }}>
-            <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
-              🔍
-            </div>
-            <p style={{ ...STORY_BODY_KV, marginBottom: "16px" }}>
+          <CheckKitStoryHero hideFooterSpacer emoji="🔍" title="System-Analyse bereit.">
+            <p style={{ ...CHECKKIT2026.storyBody, marginBottom: 16 }}>
               Ihr Alter von {p.alter} Jahren ist ein entscheidender Faktor für die langfristige Beitragsstabilität.
             </p>
-            <p style={{ ...STORY_BODY_KV, marginBottom: "24px" }}>
-              {kvBridgeFamilieBaustein(p.familiensituation)}
-            </p>
-            <h1 style={{ ...STORY_H1_KV, marginBottom: "18px" }}>System-Analyse bereit.</h1>
+            <p style={{ ...CHECKKIT2026.storyBody, marginBottom: 24 }}>{kvBridgeFamilieBaustein(p.familiensituation)}</p>
             <ul
               style={{
                 listStyle: "none",
@@ -845,7 +899,7 @@ export default function GKVPKVRechner(){
                 <li
                   key={line}
                   style={{
-                    ...STORY_BODY_KV,
+                    ...CHECKKIT2026.storyBody,
                     display: "flex",
                     gap: "10px",
                     alignItems: "flex-start",
@@ -860,8 +914,8 @@ export default function GKVPKVRechner(){
                 </li>
               ))}
             </ul>
-          </div>
-          <div style={{ height: "120px" }} />
+          </CheckKitStoryHero>
+          <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
           <div style={T.footer}>
             <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
               Ergebnis jetzt anzeigen

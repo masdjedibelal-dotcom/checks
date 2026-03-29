@@ -40,6 +40,9 @@ const CHECKS: Record<DemoSlug, ComponentType> = {
     () => import("@/components/checks/ImmobilienCheck_v2"),
     { ssr: false },
   ),
+  "immo-check": dynamic(() => import("@/components/checks/ImmoCheck"), {
+    ssr: false,
+  }),
 };
 
 export default function DemoCheckClient({ slug }: { slug: DemoSlug }) {

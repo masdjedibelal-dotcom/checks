@@ -7,6 +7,7 @@ import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCop
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import { CheckLoader } from "@/components/checks/CheckLoader";
+import { CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
 const WARN="#c0392b";
@@ -80,7 +81,8 @@ function berechneWG(p){
   const unterversichert=versSum>0&&versSum<empfohleneVS*0.9;
   const deckungsluecke=Math.max(0,empfohleneVS-versSum);
   const deckung=versSum>0?Math.min(100,Math.round((versSum/empfohleneVS)*100)):0;
-  return{neuwert,empfohleneVS,unterversichert,deckungsluecke,deckung,pv_aufschlag};
+  const empfPraemieWG=Math.max(15,Math.round((empfohleneVS*0.001/12)/5)*5);
+  return{neuwert,empfohleneVS,unterversichert,deckungsluecke,deckung,pv_aufschlag,empfPraemieWG};
 }
 
 // ─── ABSICHERUNGS-CARDS je Modul ─────────────────────────────────────────────
@@ -105,27 +107,27 @@ const ABSICHERUNG={
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 function makeImmobilienT(C){return{
-  page:{minHeight:"100vh",background:"#fff",fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},
-  header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid #e8e8e8",padding:"0 24px",height:"52px",display:"flex",alignItems:"center",justifyContent:"space-between"},
+  page:{minHeight:"100vh",background:"#fff","--accent":C,fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},
+  header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid rgba(31,41,55,0.06)",padding:"0 24px",height:"56px",display:"flex",alignItems:"center",justifyContent:"space-between"},
   logo:{display:"flex",alignItems:"center",gap:"10px"},
   logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},
   badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},
-  prog:{height:"2px",background:"#f0f0f0"},
+  prog:{height:"2px",background:"rgba(31,41,55,0.08)"},
   progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),
   hero:{padding:"32px 24px 16px"},
   eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},
-  h1:{fontSize:"22px",fontWeight:"700",color:"#111",lineHeight:1.25,letterSpacing:"-0.5px"},
+  h1:{fontSize:"22px",color:"#111",lineHeight:1.25,...CHECKKIT_HERO_TITLE_TYPO},
   body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},
   section:{padding:"0 24px",marginBottom:"20px"},
-  card:{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden"},
+  card:{border:"1px solid #e8e8e8",borderRadius:"18px",overflow:"hidden"},
   row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},
   rowLast:{padding:"14px 16px"},
   fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},
   fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},
-  footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.97)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderTop:"1px solid #e8e8e8",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},
-  btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"8px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer"}),
+  footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.88)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderTop:"1px solid rgba(31,41,55,0.06)",boxShadow:"0 -6px 20px rgba(17,24,39,0.05)",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},
+  btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"999px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer",letterSpacing:"-0.1px",boxShadow:d?"none":"0 8px 20px rgba(26,58,92,0.18)"}),
   btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},
-  infoBox:{padding:"12px 14px",background:"#f9f9f9",borderRadius:"8px",fontSize:"12px",color:"#666",lineHeight:1.6},
+  infoBox:{padding:"12px 14px",background:"#F6F8FE",border:"1px solid #DCE6FF",borderRadius:"14px",fontSize:"12px",color:"#315AA8",lineHeight:1.6},
   inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},
   resultHero:{padding:"52px 24px 40px",textAlign:"center",background:"#fff"},
   resultEyebrow:{fontSize:"12px",fontWeight:"500",color:"#9CA3AF",letterSpacing:"0.2px",marginBottom:"14px"},
@@ -134,10 +136,10 @@ function makeImmobilienT(C){return{
   resultSub:{fontSize:"13px",color:"#9CA3AF",lineHeight:1.55,marginTop:"12px"},
   statusOk:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#15803D"},
   statusWarn:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#FFF6F5",border:"1px solid #F2D4D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#C0392B"},
-  statusInfo:(C2)=>({display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:`${C2}0d`,border:`1px solid ${C2}33`,borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:C2}),
+  statusInfo:(C2)=>({display:"inline-flex",alignItems:"center",gap:"5px",padding:"6px 14px",background:`${C2}14`,border:`1px solid ${C2}33`,borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:C2}),
   cardPrimary:{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"20px",overflow:"hidden",background:"#FFFFFF",boxShadow:"0 6px 24px rgba(17,24,39,0.08)"},
   cardContext:{background:"#FAFAF8",border:"1px solid rgba(17,24,39,0.05)",borderRadius:"16px",padding:"18px 20px"},
-  warnCard:{background:"#FFF6F5",border:"1px solid #F2D4D0",borderLeft:"3px solid #C0392B",borderRadius:"14px",padding:"18px 20px"},
+  warnCard:{background:"rgba(192,57,43,0.025)",border:"1px solid rgba(192,57,43,0.27)",borderLeft:"3px solid #c0392b",borderRadius:"18px",padding:"14px 16px"},
   warnCardTitle:{fontSize:"13px",fontWeight:"700",color:"#C0392B",marginBottom:"6px"},
   sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"},
 };}
@@ -145,15 +147,18 @@ function makeImmobilienT(C){return{
 function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 
 // ─── ABSICHERUNGS-BLOCK ───────────────────────────────────────────────────────
-function AbsicherungBlock({modul,T}){
-  const cards=ABSICHERUNG[modul]||[];
+function AbsicherungBlock({modul,T,RWG}){
+  const base=ABSICHERUNG[modul]||[];
+  const cards=modul==="wg"&&RWG&&base.length
+    ?base.map((c,i)=>(i===0?{...c,praemie:`ab ca. ${fmt(RWG.empfPraemieWG)}/Mon.`}:c))
+    :base;
   const prioColor={kritisch:WARN,sinnvoll:"#d97706",optional:"#888"};
   const prioBg={kritisch:"#fff5f5",sinnvoll:"#fffbf0",optional:"#f9f9f9"};
   return(
     <div style={T.section}>
       <div style={{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"}}>Absicherung rund um Ihre Immobilie</div>
       <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-        {cards.map(({t,n,p},i)=>(
+        {cards.map(({t,n,p,praemie},i)=>(
           <div key={i} style={{border:`1px solid ${prioColor[p]}33`,borderRadius:"10px",padding:"12px 14px",background:prioBg[p],display:"flex",gap:"12px",alignItems:"flex-start"}}>
             <div style={{flexShrink:0,marginTop:"2px"}}>
               <span style={{fontSize:"10px",fontWeight:"700",color:prioColor[p],background:`${prioColor[p]}15`,padding:"2px 7px",borderRadius:"20px",letterSpacing:"0.3px",textTransform:"uppercase"}}>{p}</span>
@@ -161,6 +166,11 @@ function AbsicherungBlock({modul,T}){
             <div>
               <div style={{fontSize:"13px",fontWeight:"600",color:"#111",marginBottom:"3px"}}>{t}</div>
               <div style={{fontSize:"12px",color:"#555",lineHeight:1.55}}>{n}</div>
+              {praemie&&(
+                <div style={{marginTop:"4px",fontSize:"12px",fontWeight:"600",color:"#1F2937"}}>
+                  {praemie}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -204,14 +214,14 @@ export default function ImmobilienCheck(){
   const Header=()=>(<><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Immobilien-Check</span></div><div style={T.prog}><div style={T.progFil(Math.round(curStep/totalSteps*100))}/></div></>);
 
   // Danke
-  if(danke)return(<div style={{...T.page,"--accent":C}}><Header/><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
+  if(danke)return(<div style={T.page}><Header/><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
 
-  if(loading)return(<div style={{...T.page,"--accent":C}} key={ak}><Header/><CheckLoader type="immobilie" onComplete={()=>{setLoading(false);goTo(3);}}/></div>);
+  if(loading)return(<div style={T.page} key={ak}><Header/><CheckLoader type="immobilie" checkmarkColor={C} onComplete={()=>{setLoading(false);goTo(3);}}/></div>);
 
   // ── Phase 4: Kontakt ─────────────────────────────────────────────────────
   if(phase===4){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
-    return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+    return(<div style={T.page} key={ak} className="fade-in"><Header/>
       <div style={T.hero}><div style={T.eyebrow}>Letzter Schritt</div><div style={T.h1}>Ergebnis besprechen</div><div style={T.body}>Wir gehen dein Ergebnis gemeinsam durch — konkret, ohne Druck.</div></div>
       {isDemo ? (
         <>
@@ -259,7 +269,7 @@ export default function ImmobilienCheck(){
     const RA=modul==="anschluss"?berechneAnschluss(anschluss):null;
     const RWG=modul==="wg"?berechneWG(wg):null;
 
-    return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+    return(<div style={T.page} key={ak} className="fade-in"><Header/>
 
       {/* MODUL: Mieten vs. Kaufen */}
       {modul==="mk"&&RMK&&(<>
@@ -280,10 +290,52 @@ export default function ImmobilienCheck(){
           <div style={T.resultSub}>Rate {fmt(RMK.rate)}/Mon. · Miete {fmt(mk.miete)}/Mon. · auf Basis Ihrer Angaben</div>
         </div>
         <div style={T.section}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"12px"}}>
+            <div style={{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"18px",padding:"16px 14px",background:"#fff"}}>
+              <div style={{fontSize:"12px",color:"#9CA3AF",marginBottom:"8px"}}>Monatliche Rate (Kauf)</div>
+              <div style={{fontSize:"26px",fontWeight:"800",color:C,letterSpacing:"-1px"}}>{fmt(RMK.rate)}</div>
+              <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"4px"}}>/Monat</div>
+            </div>
+            <div style={{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"18px",padding:"16px 14px",background:"#fff"}}>
+              <div style={{fontSize:"12px",color:"#9CA3AF",marginBottom:"8px"}}>Kaltmiete (Angabe)</div>
+              <div style={{fontSize:"26px",fontWeight:"800",color:"#1F2937",letterSpacing:"-1px"}}>{fmt(mk.miete)}</div>
+              <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"4px"}}>/Monat</div>
+            </div>
+          </div>
           {RMK.breakeven&&(
-            <div style={T.cardContext}>
-              <div style={{fontSize:"14px",fontWeight:"600",color:"#1F2937",marginBottom:"6px"}}>Ab Jahr {RMK.breakeven} günstiger als Mieten</div>
-              <div style={{fontSize:"13px",color:"#6B7280",lineHeight:1.65}}>Bis dahin überwiegen Nebenkosten und Zinsen. Danach profitierst du von gesunkener Restschuld und Wertsteigerung der Immobilie.</div>
+            <div style={{
+              border:"1px solid rgba(26,58,92,0.2)",
+              borderLeft:`3px solid ${C}`,
+              borderRadius:"18px",
+              padding:"14px 16px",
+              background:`color-mix(in srgb, ${C} 3%, white)`,
+              marginBottom:"16px",
+            }}>
+              <div style={{
+                fontSize:"11px",fontWeight:"700",
+                color:C,letterSpacing:"0.5px",
+                textTransform:"uppercase",marginBottom:"6px",
+              }}>
+                Breakeven-Analyse
+              </div>
+              <div style={{
+                fontSize:"22px",fontWeight:"700",
+                color:C,letterSpacing:"-0.5px",
+                marginBottom:"4px",
+              }}>
+                Ab Jahr {RMK.breakeven}
+              </div>
+              <div style={{
+                fontSize:"13px",color:"#6B7280",
+                lineHeight:1.6,
+              }}>
+                wird Kaufen günstiger als Mieten.
+                Bis dahin: ca.{" "}
+                <strong style={{color:"#c0392b"}}>
+                  {fmtK(Math.abs(RMK.diffMonatl)*12*RMK.breakeven)}
+                </strong>{" "}
+                mehr als Miete.
+              </div>
             </div>
           )}
           <button onClick={()=>setDetailsOpen(x=>!x)} style={{display:"flex",alignItems:"center",gap:"6px",fontSize:"12px",color:"#aaa",cursor:"pointer",marginBottom:"8px"}}>
@@ -316,12 +368,12 @@ export default function ImmobilienCheck(){
         </div>
         <div style={T.section}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"12px"}}>
-            <div style={{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"16px",padding:"16px 14px",background:"#fff"}}>
+            <div style={{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"18px",padding:"16px 14px",background:"#fff"}}>
               <div style={{fontSize:"12px",color:"#9CA3AF",marginBottom:"8px"}}>Aktuelle Rate</div>
               <div style={{fontSize:"26px",fontWeight:"800",color:"#1F2937",letterSpacing:"-1px"}}>{fmt(RA.altRate)}</div>
               <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"4px"}}>/Monat</div>
             </div>
-            <div style={{border:`${RA.diffMonatl>0?"1.5px":"1px"} solid ${RA.diffMonatl>0?"#F2D4D0":"rgba(17,24,39,0.08)"}`,borderRadius:"16px",padding:"16px 14px",background:RA.diffMonatl>0?"#FFF6F5":"#fff",boxShadow:RA.diffMonatl>0?"0 4px 16px rgba(192,57,43,0.08)":"none"}}>
+            <div style={{border:`${RA.diffMonatl>0?"1.5px":"1px"} solid ${RA.diffMonatl>0?"rgba(192,57,43,0.27)":"rgba(17,24,39,0.08)"}`,borderRadius:"18px",padding:"16px 14px",background:RA.diffMonatl>0?"rgba(192,57,43,0.025)":"#fff",boxShadow:RA.diffMonatl>0?"0 4px 16px rgba(192,57,43,0.08)":"none"}}>
               <div style={{fontSize:"12px",color:RA.diffMonatl>0?"#C0392B":"#9CA3AF",marginBottom:"8px"}}>Neue Rate</div>
               <div style={{fontSize:"26px",fontWeight:"800",color:RA.diffMonatl>0?WARN:"#1F2937",letterSpacing:"-1px"}}>{fmt(RA.neuRate)}</div>
               <div style={{fontSize:"12px",color:"#9CA3AF",marginTop:"4px"}}>/Monat</div>
@@ -391,7 +443,7 @@ export default function ImmobilienCheck(){
       </>)}
 
       {/* Absicherungs-Block */}
-      <AbsicherungBlock modul={modul} T={T}/>
+      <AbsicherungBlock modul={modul} T={T} RWG={RWG}/>
 
       <div style={{...T.section,marginBottom:"120px"}}>
         <div style={T.infoBox}>Orientierungs-Check — Näherungswerte. Für verbindliche Angebote empfehlen wir ein persönliches Gespräch.</div>
@@ -463,7 +515,7 @@ export default function ImmobilienCheck(){
         },
       ];
       const s=screens[scr2-1];
-      return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+      return(<div style={T.page} key={ak} className="fade-in"><Header/>
         <div style={T.hero}>
           <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -519,7 +571,7 @@ export default function ImmobilienCheck(){
         },
       ];
       const s=screens[scr2-1];
-      return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+      return(<div style={T.page} key={ak} className="fade-in"><Header/>
         <div style={T.hero}>
           <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -610,7 +662,7 @@ export default function ImmobilienCheck(){
       },
     ];
     const s=screens[scr2-1];
-    return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+    return(<div style={T.page} key={ak} className="fade-in"><Header/>
       <div style={T.hero}>
         <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
           <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -657,10 +709,10 @@ export default function ImmobilienCheck(){
     },
   ];
 
-  return(<div style={{...T.page,"--accent":C}} key={ak} className="fade-in"><Header/>
+  return(<div style={T.page} key={ak} className="fade-in"><Header/>
     <div style={{padding:"36px 24px 20px"}}>
       <div style={{fontSize:"11px",fontWeight:"700",color:"#9CA3AF",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:"8px"}}>Immobilien-Check</div>
-      <div style={{fontSize:"24px",fontWeight:"800",color:"#111",letterSpacing:"-0.8px",lineHeight:1.2,marginBottom:"6px"}}>Was möchten Sie prüfen?</div>
+      <div style={{fontSize:"24px",color:"#111",lineHeight:1.2,marginBottom:"6px",...CHECKKIT_HERO_TITLE_TYPO}}>Was möchten Sie prüfen?</div>
       <div style={{fontSize:"14px",color:"#9CA3AF",lineHeight:1.6}}>Wählen Sie ein Thema — der Check passt sich automatisch an.</div>
     </div>
 

@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
+import { fmt, fmtK } from "@/lib/utils";
 
 const JAEG_MONAT = 6450;
 /** Beitragsbemessungsgrenze KV/PV (Monat), Orientierung 2026 */
@@ -619,25 +620,9 @@ function SmartHintKv({ children, icon = "💡" }) {
   );
 }
 
-function InfoGridCard({ focus, title, body, Icon, T }) {
-  return (
-    <div style={T.infoGridShell}>
-      <div style={{ display: "flex", gap: "14px", alignItems: "flex-start" }}>
-        <div style={T.infoGridIconWrap} aria-hidden>
-          <Icon />
-        </div>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={T.infoGridFocus}>{focus}</div>
-          <div style={T.infoGridTitle}>{title}</div>
-          <div style={T.infoGridBody}>{body}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo, FAKTOREN }) {
   const [gkvArchiv, setGkvArchiv] = useState(null);
+  const [kontextOpen, setKontextOpen] = useState(false);
   const resultPath = resolveGkvPkvResultPath(p);
   const copy = resolvePathCopy(resultPath, p);
   const infoGrid = buildInfoGrid(p, R);
@@ -765,6 +750,159 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
           </div>
         </div>
 
+        {!R.unterGrenze && R.diff > 30 && R.empfehlungKosten ? (
+          <div style={T.section}>
+            <div
+              style={{
+                border: `1px solid ${
+                  R.empfehlungKosten === "PKV" ? "rgba(26,58,92,0.2)" : "rgba(5,150,105,0.2)"
+                }`,
+                borderLeft: `3px solid ${R.empfehlungKosten === "PKV" ? C : "#059669"}`,
+                borderRadius: "18px",
+                padding: "14px 16px",
+                background:
+                  R.empfehlungKosten === "PKV" ? `color-mix(in srgb, ${C} 4%, white)` : "rgba(5,150,105,0.025)",
+                marginBottom: "16px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  color: R.empfehlungKosten === "PKV" ? C : "#059669",
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  marginBottom: "8px",
+                }}
+              >
+                Ersparnis {R.empfehlungKosten === "PKV" ? "bei PKV-Wechsel" : "mit GKV"}
+              </div>
+              <div
+                className="gkvpkv-stack-sm"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gap: "8px",
+                }}
+              >
+                {[
+                  {
+                    l: "Pro Monat",
+                    v: fmt(R.diff),
+                    color: R.empfehlungKosten === "PKV" ? C : "#059669",
+                  },
+                  {
+                    l: "Pro Jahr",
+                    v: fmt(R.diff * 12),
+                    color: "#1F2937",
+                  },
+                  {
+                    l: "In 10 Jahren",
+                    v: fmtK(R.diff * 12 * 10),
+                    color: "#1F2937",
+                  },
+                ].map(({ l, v, color }) => (
+                  <div
+                    key={l}
+                    style={{
+                      textAlign: "center",
+                      padding: "10px 6px",
+                      background: "rgba(255,255,255,0.7)",
+                      borderRadius: "10px",
+                    }}
+                  >
+                    <div style={{ fontSize: "16px", fontWeight: "700", color, letterSpacing: "-0.3px" }}>{v}</div>
+                    <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "2px", fontWeight: "500" }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        <div style={T.section}>
+          <div
+            style={{
+              border: "1px solid rgba(17,24,39,0.06)",
+              borderRadius: "14px",
+              overflow: "hidden",
+              boxShadow: "0 2px 10px rgba(17,24,39,0.04)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setKontextOpen((x) => !x)}
+              style={{
+                width: "100%",
+                padding: "14px 18px",
+                background: "#faf9f6",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                fontFamily: "inherit",
+                textAlign: "left",
+              }}
+            >
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280" }}>
+                Was das für Ihre Situation bedeutet
+              </span>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                aria-hidden
+                style={{
+                  transition: "transform 0.2s",
+                  transform: kontextOpen ? "rotate(90deg)" : "none",
+                  flexShrink: 0,
+                }}
+              >
+                <path
+                  d="M4 2l4 4-4 4"
+                  stroke="#9CA3AF"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            {kontextOpen ? (
+              <div
+                style={{
+                  padding: "14px 18px",
+                  fontSize: "13px",
+                  color: "#6B7280",
+                  lineHeight: 1.7,
+                  borderTop: "1px solid #EAE5DC",
+                  background: "#fff",
+                }}
+              >
+                {infoGrid.map((c, i) => (
+                  <div
+                    key={c.key}
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      alignItems: "flex-start",
+                      marginBottom: i < infoGrid.length - 1 ? "10px" : "0",
+                    }}
+                  >
+                    <span style={{ flexShrink: 0, display: "flex", color: "#888" }} aria-hidden>
+                      <c.Icon />
+                    </span>
+                    <span style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.65 }}>
+                      <strong style={{ fontWeight: "700", color: "#374151" }}>{c.title}.</strong> {c.body}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+
         <div style={T.section}>
           <div style={T.sectionLbl}>Strategie</div>
           <SmartHintKv icon="📈">
@@ -795,12 +933,6 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 <p style={{ marginBottom: "14px", color: "#b8884a" }}>
                   Vereinfachte Einordnung auf Basis Ihrer Angaben. Keine konkreten Beiträge — diese hängen von Tarif, Kasse und individuellem Gesundheitszustand ab. Grundlage u. a. § 241 SGB V, § 257 SGB V, § 9 SGB V.
                 </p>
-                <div style={{ fontSize: "12px", fontWeight: "700", color: "#374151", marginBottom: "8px" }}>Einordnung für Sie</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
-                  {infoGrid.map((c) => (
-                    <InfoGridCard key={c.key} focus={c.focus} title={c.title} body={c.body} Icon={c.Icon} T={T} />
-                  ))}
-                </div>
                 <div style={{ fontSize: "12px", fontWeight: "700", color: "#374151", marginBottom: "8px" }}>Wichtige Faktoren in Ihrer Situation</div>
                 <div style={T.cardPrimary}>
                   {FAKTOREN.map(({ label, gkv, pkv, fav }, i, arr) => (

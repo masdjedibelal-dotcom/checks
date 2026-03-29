@@ -312,6 +312,16 @@ export const CHECK_FLOW_META = [
       "Der Nutzer bekommt Klarheit bei Kauf, Finanzierung oder Absicherung seiner Immobilie.",
     price: "59",
   },
+  {
+    slug: "immo-check" as const,
+    catClass: "ck-cat-immobilien",
+    cat: "Immobilie",
+    name: "Immo-Schutz-Dach",
+    hook: "Risiko-Scanner für Finanzierung, Bau und Bestand",
+    erlebnis:
+      "Drei Säulen: Bank & Existenz, Objektschutz, Zukunft & Recht — inkl. RLV/BU, Pflege und Eigentümer-Rechtsschutz.",
+    price: "59",
+  },
 ] as const;
 
 export type CheckFlowSlug = (typeof CHECK_FLOW_META)[number]["slug"];
@@ -520,6 +530,23 @@ export function CheckFlowPhoneMock({ slug }: { slug: CheckFlowSlug }): ReactNode
               <span style={{ fontSize: 7, fontWeight: 700, color: "#374151" }}>Kaufen</span>
               <span style={{ fontSize: 5.5, color: "#d1d5db" }}>·</span>
               <span style={{ fontSize: 7, fontWeight: 700, color: "#374151" }}>Mieten</span>
+            </div>
+          </div>
+        </ResultPhoneShell>
+      );
+    case "immo-check":
+      return (
+        <ResultPhoneShell accent="#b45309">
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 6.5, color: "#6b7280", marginBottom: 4 }}>Schutz-Dach</div>
+            <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.4px", color: "#b45309", lineHeight: 1.05 }}>
+              3 Säulen
+            </div>
+            <div style={{ fontSize: 6.5, color: "#6b7280", marginTop: 2, marginBottom: 6 }}>Bank & Existenz · Objekt · Zukunft & Recht</div>
+            <div style={{ display: "flex", gap: 3, justifyContent: "center", padding: "0 2px" }}>
+              <div style={{ flex: 1, height: 10, borderRadius: 3, background: "#FFF6F5", border: "1px solid #F2D4D0" }} />
+              <div style={{ flex: 1, height: 10, borderRadius: 3, background: "#FFFBEB", border: "1px solid #FDE68A" }} />
+              <div style={{ flex: 1, height: 10, borderRadius: 3, background: "#FAFAF8", border: "1px solid #e5e7eb" }} />
             </div>
           </div>
         </ResultPhoneShell>

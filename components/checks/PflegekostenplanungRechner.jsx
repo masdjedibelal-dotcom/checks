@@ -6,6 +6,9 @@ import { SelectionCard, SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import { CheckLoader } from "@/components/checks/CheckLoader";
+import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
+import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { fmtK } from "@/lib/utils";
 
 (() => {
   const s = document.createElement("style");
@@ -19,11 +22,51 @@ const BAR_VORSORGE = "#0891b2";
 const BAR_LUECKE = "#FEE2E2";
 const AMBER_STAT = "#D97706";
 
-/** Orientierungswerte gesetzliche Pflegekasse (Monatsäquivalent, vereinfacht) */
+/**
+ * Typischer monatlicher Eigenanteil stationäre Pflege (Orientierung, ca. Werte je Bundesland).
+ * Quelle: Nutzer-Vorgabe Checkkit 2026 — „DURCHSCHNITT (Bund)“ als Fallback.
+ */
+export const pflegeKostenMapping = {
+  "Baden-Württemberg": 2980,
+  Bayern: 2760,
+  Berlin: 2690,
+  Brandenburg: 2450,
+  Bremen: 2840,
+  Hamburg: 2720,
+  Hessen: 2750,
+  "Mecklenburg-Vorpommern": 2290,
+  Niedersachsen: 2480,
+  "Nordrhein-Westfalen": 3020,
+  "Rheinland-Pfalz": 2710,
+  Saarland: 2890,
+  Sachsen: 2180,
+  "Sachsen-Anhalt": 2140,
+  "Schleswig-Holstein": 2650,
+  Thüringen: 2110,
+};
+
+const PFLEGE_EIGENANTEIL_BUND_DURCHSCHNITT = 2610;
+
+/** Referenz-Kassenleistung (Modell) — konsistent zu basisKosten in PFLEGE_ORT_MODELL */
 const KASSE_STATIONAER = 1775;
 const KASSE_AMBULANT = 1100;
 
+/** Referenz-Netto-Eigenanteil altes Modell — nur für Ambulant-Skalierung */
+const REF_STATIONAER_NET = 3800 - KASSE_STATIONAER;
+const REF_AMBULANT_NET = 2200 - KASSE_AMBULANT;
+
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
+
+function getEigenanteilStationaerMonat(region) {
+  if (!region || region === "__bund__") return PFLEGE_EIGENANTEIL_BUND_DURCHSCHNITT;
+  return pflegeKostenMapping[region] ?? PFLEGE_EIGENANTEIL_BUND_DURCHSCHNITT;
+}
+
+function eigenanteilEffektivMonat(pflegeOrt, region) {
+  const station = getEigenanteilStationaerMonat(region);
+  if (pflegeOrt === "stationär") return station;
+  return Math.round(station * (REF_AMBULANT_NET / REF_STATIONAER_NET));
+}
 
 const BUNDESLAENDER = [
   "Baden-Württemberg",
@@ -82,28 +125,65 @@ const PFLEGE_ORT_MODELL = {
 
 function makePflegeT(C) {
   return {
-    page: { minHeight: "100vh", background: "#ffffff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif" },
-    header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+    page: { minHeight: "100vh", background: "#ffffff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
+    header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(31,41,55,0.06)", padding: "0 24px", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between" },
     logo: { display: "flex", alignItems: "center", gap: "10px" },
     logoMk: { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
     logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111", letterSpacing: "-0.1px" },
     badge: { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
-    prog: { height: "2px", background: "#f0f0f0" },
+    prog: { height: "2px", background: "rgba(31,41,55,0.08)" },
     progFil: (w) => ({ height: "100%", width: `${w}%`, background: C, transition: "width 0.4s ease" }),
     hero: { padding: "32px 24px 16px" },
     eyebrow: { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
-    h1: { fontSize: "22px", fontWeight: "700", color: "#111", lineHeight: 1.25, letterSpacing: "-0.5px" },
+    h1: { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
     body: { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
     section: { padding: "0 24px", marginBottom: "20px" },
-    card: { border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden" },
+    divider: { height: "1px", background: "#f0f0f0", margin: "0 24px 20px" },
+    card: { border: "1px solid #e8e8e8", borderRadius: "18px", overflow: "hidden" },
+    kpiKontaktLuecke: {
+      borderRadius: "16px",
+      background: "#FFF7F7",
+      border: "1px solid #F2CFCF",
+      padding: "12px 14px",
+      minWidth: 0,
+      flex: "1 1 140px",
+    },
+    kpiKontaktEu: {
+      borderRadius: "14px",
+      background: "rgba(255,255,255,0.96)",
+      border: "1px solid rgba(17,24,39,0.06)",
+      padding: "12px 14px",
+      minWidth: 0,
+      flex: "1 1 140px",
+    },
     row: { padding: "14px 16px", borderBottom: "1px solid #f0f0f0" },
     rowLast: { padding: "14px 16px" },
     fldLbl: { fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "6px", display: "block" },
     fldHint: { fontSize: "11px", color: "#aaa", marginTop: "6px" },
-    footer: { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid #e8e8e8", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
-    btnPrim: (d) => ({ width: "100%", padding: "13px 20px", background: d ? "#e8e8e8" : C, color: d ? "#aaa" : "#fff", borderRadius: "8px", fontSize: "14px", fontWeight: "600", cursor: d ? "default" : "pointer", transition: "opacity 0.15s", letterSpacing: "-0.1px" }),
+    footer: { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(31,41,55,0.06)", boxShadow: "0 -6px 20px rgba(17,24,39,0.05)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
+    btnPrim: (d) => ({
+      width: "100%",
+      padding: "13px 20px",
+      background: d ? "#e8e8e8" : C,
+      color: d ? "#aaa" : "#fff",
+      borderRadius: "999px",
+      fontSize: "14px",
+      fontWeight: "600",
+      cursor: d ? "default" : "pointer",
+      transition: "opacity 0.15s",
+      letterSpacing: "-0.1px",
+      boxShadow: d ? "none" : "0 8px 20px rgba(26,58,92,0.18)",
+    }),
     btnSec: { width: "100%", padding: "10px", color: "#aaa", fontSize: "13px", marginTop: "6px", cursor: "pointer" },
-    infoBox: { padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 },
+    infoBox: {
+      padding: "12px 14px",
+      background: "#F6F8FE",
+      border: "1px solid #DCE6FF",
+      borderRadius: "14px",
+      fontSize: "12px",
+      color: "#315AA8",
+      lineHeight: 1.6,
+    },
     inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
     resultHero: { padding: "52px 24px 40px", textAlign: "center", background: "#ffffff" },
     resultEyebrow: { fontSize: "12px", fontWeight: "500", color: "#9CA3AF", letterSpacing: "0.2px", marginBottom: "14px" },
@@ -112,12 +192,13 @@ function makePflegeT(C) {
     resultSub: { fontSize: "13px", color: "#9CA3AF", lineHeight: 1.55, marginTop: "12px" },
     cardPrimary: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "20px", overflow: "hidden", background: "#FFFFFF", boxShadow: "0 6px 24px rgba(17,24,39,0.08)" },
     cardContext: { background: "#FAFAF8", border: "1px solid rgba(17,24,39,0.05)", borderRadius: "16px", padding: "18px 20px" },
+    warnCard: { background: "#FFF6F5", border: "1px solid #F2D4D0", borderLeft: "3px solid #C0392B", borderRadius: "14px", padding: "18px 20px" },
     sectionLbl: { fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" },
     statusOk: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: "#15803D" },
     statusWarn: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: "#FFF6F5", border: "1px solid #F2D4D0", borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: "#C0392B" },
     statusMitte: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: "#FFFBEB", border: "1px solid #FCD34D", borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: "#B45309" },
     statusInfo: (C2) => ({ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", background: `${C2}14`, border: `1px solid ${C2}33`, borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: C2 }),
-    stackedBarOuter: { width: "100%", maxWidth: "100%", height: "16px", borderRadius: "10px", overflow: "hidden", display: "flex", background: "#F3F4F6", boxShadow: "inset 0 1px 2px rgba(0,0,0,0.04)" },
+    stackedBarOuter: { width: "100%", maxWidth: "100%", height: "16px", borderRadius: "999px", overflow: "hidden", display: "flex", background: "rgba(31,41,55,0.08)", boxShadow: "inset 0 1px 2px rgba(0,0,0,0.04)" },
     stackedBarSeg: (pct, color, border) => ({
       height: "100%",
       width: `${pct}%`,
@@ -131,68 +212,38 @@ function makePflegeT(C) {
   };
 }
 
-function SmartHintCardPflege({ children, icon = "💡", accent }) {
-  const a = accent || "#2563eb";
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: "12px",
-        alignItems: "flex-start",
-        padding: "16px 18px",
-        borderRadius: "16px",
-        background: `linear-gradient(135deg, ${a}0a 0%, ${a}14 100%)`,
-        border: `1px solid ${a}33`,
-        boxShadow: `0 4px 14px ${a}14`,
-        minWidth: 0,
-        fontSize: "13px",
-        color: "#374151",
-        lineHeight: 1.55,
-      }}
-    >
-      <span style={{ fontSize: "22px", lineHeight: 1, flexShrink: 0 }} aria-hidden>
-        {icon}
-      </span>
-      <div style={{ minWidth: 0 }}>{children}</div>
-    </div>
-  );
-}
-
-const STORY_H1 = { fontSize: "52px", fontWeight: "800", letterSpacing: "-1.5px", lineHeight: 1.12, color: "#111", margin: "0 0 18px" };
-const STORY_BODY = { fontSize: "16px", color: "#4B5563", lineHeight: 1.65, margin: 0, maxWidth: "42ch", marginLeft: "auto", marginRight: "auto" };
-
-function StoryHeroBlock({ emoji, title, text }) {
-  return (
-    <div style={{ textAlign: "center", padding: "28px 24px 12px", maxWidth: "580px", margin: "0 auto" }}>
-      <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "22px" }} aria-hidden>
-        {emoji}
-      </div>
-      <h1 style={STORY_H1}>{title}</h1>
-      {text ? <p style={STORY_BODY}>{text}</p> : null}
-    </div>
-  );
-}
-
-/** Nur pflegeOrt + region — keine weiteren Annahmen */
+/** Story nach Bundesland: CHECKKIT2026-Maße via CheckKitStoryHero; Text mit regionalem Betrag */
 function pflegeStoryKostenFokusCopy(pflegeOrt, region) {
-  const reg = region && String(region).trim() ? String(region).trim() : "Ihrer Region";
+  const reg =
+    region === "__bund__"
+      ? "bundesweitem Durchschnitt"
+      : region && String(region).trim()
+        ? String(region).trim()
+        : "Ihrer Region";
+  const station = getEigenanteilStationaerMonat(region);
+  const eff = eigenanteilEffektivMonat(pflegeOrt, region);
   if (pflegeOrt === "stationär") {
     return {
       title: "Schutz für Ihr Lebenswerk.",
-      text: `Ein Heimplatz in ${reg} kostet oft deutlich über 2.500 € Eigenanteil pro Monat. Wir prüfen jetzt, wie viel von Ihrer Rente nach Abzug dieser Kosten für Sie übrig bleibt.`,
+      text: `In ${reg} liegt der typische monatliche Eigenanteil im Pflegeheim bei etwa ${fmt(station)}. Wir prüfen jetzt Ihre Lücke — also was nach abzugsfähiger Rente oder gesetzlicher Basis und bestehender Vorsorge für Sie übrig bleibt.`,
     };
   }
   return {
     title: "Unabhängigkeit zu Hause.",
-    text: `Professionelle Hilfe in den eigenen vier Wänden ist kostspielig. Wir kalkulieren jetzt, wie hoch die Zuzahlung in ${reg} ausfällt, damit Sie so lange wie möglich zu Hause bleiben können.`,
+    text: `Für ambulante Versorgung rechnen wir mit einer geschätzten monatlichen Zuzahlungslast von etwa ${fmt(eff)} (aus dem Heim-Eigenanteil in ${reg}, ca. ${fmt(station)}, skaliert). So sehen Sie, wie sehr Eigenheim und Erspartes belastet werden können.`,
   };
 }
 
-function pflegeBridgeSicherheitCopy(pflegegrad, nettoEinkommen) {
-  const nettoStr = `${Math.round(Number(nettoEinkommen)).toLocaleString("de-DE")} €`;
+function pflegeBridgeSicherheitCopy(pflegegrad, region, pflegeOrt, renteOderBasisMonat) {
+  const eff = eigenanteilEffektivMonat(pflegeOrt, region);
+  const basisStr = `${Math.round(Number(renteOderBasisMonat)).toLocaleString("de-DE")} €`;
+  const regLabel =
+    !region || region === "" || region === "__bund__"
+      ? `den bundesweiten Durchschnitt (${fmt(PFLEGE_EIGENANTEIL_BUND_DURCHSCHNITT)} Heim-Eigenanteil)`
+      : region;
   return {
     title: "Ihre Sicherheits-Analyse.",
-    text: `Basierend auf Pflegegrad ${pflegegrad} und Ihrem verfügbaren Einkommen von ${nettoStr} haben wir Ihre monatliche Belastung ermittelt.`,
+    text: `Für ${regLabel} rechnen wir mit etwa ${fmt(eff)} monatlicher Eigenbelastung (${pflegeOrt === "stationär" ? "stationär" : "ambulant"}). So bestätigen wir die Relevanz Ihrer Angaben mit einem konkreten Betrag. ${Number(renteOderBasisMonat) > 0 ? `In der Auswertung ziehen wir ${basisStr} als gesetzliche Basis bzw. Rentenleistung ab.` : "Ohne diesen Abzug startet die Lücke vom vollen regionalen Eigenanteil (minus privater Pflege-Vorsorge)."} Einordnung mit Pflegegrad ${pflegegrad}.`,
   };
 }
 
@@ -274,31 +325,55 @@ function KontaktForm({ fd, setFd, onSubmit, onBack, isDemo, makler, T }) {
   );
 }
 
-function berechne({ pflegeOrt, einkommenMonat, vorsorgeMonat }) {
-  const meta = PFLEGE_ORT_MODELL[pflegeOrt] || PFLEGE_ORT_MODELL.ambulant;
-  const kosten = meta.basisKosten;
-  const kasse = meta.basisKasse;
-  const nachKasse = Math.max(0, kosten - kasse);
-  const vorsorgeEff = Math.min(Math.max(0, vorsorgeMonat), nachKasse);
-  const nachKasseVorsorge = Math.max(0, nachKasse - vorsorgeEff);
-  const einkEff = Math.min(Math.max(0, einkommenMonat), nachKasseVorsorge);
-  const luecke = Math.max(0, nachKasseVorsorge - einkEff);
-  const pctKasse = kosten > 0 ? (kasse / kosten) * 100 : 0;
-  const pctVorsorge = kosten > 0 ? (vorsorgeEff / kosten) * 100 : 0;
-  const pctEink = kosten > 0 ? (einkEff / kosten) * 100 : 0;
-  const pctLuecke = kosten > 0 ? (luecke / kosten) * 100 : 0;
+/**
+ * Monatliche Netto-Lücke: regionaler Eigenanteil minus (optional) gesetzliche Basis/Rente,
+ * danach Abzug privater Pflege-Vorsorge. 100 %-Balken = regionaler Eigenanteil (effektiv).
+ */
+function berechne({ pflegeOrt, region, renteOderBasisMonat, vorsorgeMonat }) {
+  const eigenEff = eigenanteilEffektivMonat(pflegeOrt, region);
+  const basisRaw = Math.max(0, Number(renteOderBasisMonat) || 0);
+  /** Zuerst: Differenz Eigenanteil − optionale gesetzliche Basis / Rente */
+  const basisAbgezogen = Math.min(basisRaw, eigenEff);
+  const nachBasis = Math.max(0, eigenEff - basisAbgezogen);
+  const vorsorgeEff = Math.min(Math.max(0, vorsorgeMonat), nachBasis);
+  const luecke = Math.max(0, nachBasis - vorsorgeEff);
+  const pctBasisRente = eigenEff > 0 ? (basisAbgezogen / eigenEff) * 100 : 0;
+  const pctVorsorge = eigenEff > 0 ? (vorsorgeEff / eigenEff) * 100 : 0;
+  const pctLuecke = eigenEff > 0 ? (luecke / eigenEff) * 100 : 0;
+
+  /** Monatlicher Eigenanteil (Orientierung) für Produkt-Empfehlungen — wie stationär/ambulant gewählt */
+  const eigenMonatl = eigenEff;
+  /** Pflegetagegeld: Eigenanteil / 30 Tage, auf 5 € gerundet */
+  const empfTagegeld = Math.max(10, Math.ceil(eigenMonatl / 30 / 5) * 5);
+  /** Pflegerente: Eigenanteil, auf 50 € gerundet */
+  const empfRente = Math.max(50, Math.round(eigenMonatl / 50) * 50);
+
+  /** Ø Pflegedauer (Jahre, Orientierung) für Kumulation Eigenanteil */
+  const dauer = 3;
+  const gesamtEigen = Math.round(eigenMonatl * 12 * dauer);
+
   return {
-    kosten,
-    kasse,
-    nachKasse,
+    eigenEff,
+    basisAbgezogen,
+    nachBasis,
     vorsorgeEff,
-    einkEff,
     luecke,
-    pctKasse,
+    pctBasisRente,
     pctVorsorge,
-    pctEink,
     pctLuecke,
     mtlLuecke: luecke,
+    eigenMonatl,
+    empfTagegeld,
+    empfRente,
+    dauer,
+    gesamtEigen,
+    /** Kompatibilität Ergebnis-UI */
+    kosten: eigenEff,
+    kasse: basisAbgezogen,
+    nachKasse: nachBasis,
+    einkEff: basisAbgezogen,
+    pctKasse: pctBasisRente,
+    pctEink: 0,
   };
 }
 
@@ -336,7 +411,12 @@ export default function PflegekostenplanungRechner() {
   const backScr = () => {
     if (scr > 1) setScr((s) => s - 1);
   };
-  const R = berechne(p);
+  const R = berechne({
+    pflegeOrt: p.pflegeOrt,
+    region: p.region,
+    renteOderBasisMonat: p.einkommenMonat,
+    vorsorgeMonat: p.vorsorgeMonat,
+  });
   const meta = PFLEGE_ORT_MODELL[p.pflegeOrt] || PFLEGE_ORT_MODELL.ambulant;
 
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
@@ -379,7 +459,7 @@ export default function PflegekostenplanungRechner() {
   }
 
   if (phase === 2) {
-    const { kosten, kasse, vorsorgeEff, einkEff, pctKasse, pctVorsorge, pctEink, pctLuecke, mtlLuecke } = R;
+    const { kosten, kasse, vorsorgeEff, pctKasse, pctVorsorge, pctLuecke, mtlLuecke } = R;
     const pillPflege =
       mtlLuecke <= 0 ? (
         <div style={T.statusOk}>Restkosten im Modell gedeckt</div>
@@ -392,7 +472,21 @@ export default function PflegekostenplanungRechner() {
       );
     const heroZahlFarbe =
       mtlLuecke <= 0 || mtlLuecke < 500 ? OK : mtlLuecke <= 1500 ? AMBER_STAT : WARN;
-    const monPro10k = mtlLuecke > 0 ? Math.max(1, Math.floor(10000 / mtlLuecke)) : null;
+
+    const eigen = kosten;
+    const alterHinweis =
+      p.alter < 55
+        ? "Je länger der Zeitraum bis zu möglicher Pflegebedürftigkeit, desto günstiger können Vorsorgebeiträge ausfallen — früh einsteigen schafft Spielraum."
+        : p.alter < 65
+          ? "Mit zunehmendem Alter steigt das statistische Pflegerisiko — Lücken jetzt schließen mindert spätere Vermögensbelastung."
+          : "Kurz vor oder in der Rente ist Pflege oft kurzfristiger relevant — bestehende Verträge sollten zur aktuellen Belastung geprüft werden.";
+    const einordnungBullets = [
+      eigen >= 2000
+        ? `${fmt(eigen)}/Monat entspricht in der Größenordnung einem vollen Monatsnetto — das müssen Sie aus Einkommen oder Vermögen selbst tragen.`
+        : `${fmt(eigen)}/Monat wirkt zunächst überschaubar — über Ø ${R.dauer} Jahre summiert sich das auf rund ${fmtK(R.gesamtEigen)}.`,
+      "Die gesetzliche Pflegeversicherung deckt nur einen Teil — den Rest tragen Sie oder Ihre Familie selbst.",
+      alterHinweis,
+    ];
 
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
@@ -405,36 +499,31 @@ export default function PflegekostenplanungRechner() {
             <div style={{ ...T.resultUnit, marginBottom: "14px" }}>mtl. ungedeckt</div>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>{pillPflege}</div>
             <div style={{ ...T.resultSub, marginTop: "4px", maxWidth: "38ch" }}>
-              Modell-Szenario <strong style={{ color: "#6B7280" }}>„{meta ? meta.heroName : "—"}“</strong> · Ø-Gesamtkosten {fmt(kosten)}/Mon.
+              Modell-Szenario <strong style={{ color: "#6B7280" }}>„{meta ? meta.heroName : "—"}“</strong> · regionaler Eigenanteil (Orientierung) {fmt(kosten)}/Mon.
             </div>
           </div>
 
           <div style={T.section}>
-            <div style={T.sectionLbl}>Deckung aus Kasse, Vorsorge und Einkünften</div>
+            <div style={T.sectionLbl}>Aufschlüsselung: Basis/Rente, private Vorsorge, Restlücke</div>
             <div style={T.cardPrimary}>
               <div style={{ padding: "18px 20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "14px", gap: "12px" }}>
-                  <span style={{ fontSize: "13px", color: "#6B7280" }}>100 % = modellierte Gesamtkosten</span>
+                  <span style={{ fontSize: "13px", color: "#6B7280" }}>100 % = regionaler Eigenanteil (Orientierung)</span>
                   <span style={{ fontSize: "15px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.3px", flexShrink: 0 }}>{fmt(kosten)}/Mon.</span>
                 </div>
                 <div style={T.stackedBarOuter} aria-hidden>
                   {pctKasse > 0 && <div style={T.stackedBarSeg(pctKasse, OK)} />}
                   {pctVorsorge > 0 && <div style={T.stackedBarSeg(pctVorsorge, BAR_VORSORGE)} />}
-                  {pctEink > 0 && <div style={T.stackedBarSeg(pctEink, C)} />}
                   {pctLuecke > 0 && <div style={T.stackedBarSeg(pctLuecke, BAR_LUECKE, "#FECACA")} />}
                 </div>
                 <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "10px 16px", fontSize: "11px", color: "#6B7280" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                     <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: OK, flexShrink: 0 }} />
-                    Kasse
+                    Gesetzliche Basis / Rente (angenommen)
                   </span>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                     <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: BAR_VORSORGE, flexShrink: 0 }} />
-                    Vorsorge
-                  </span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ width: "8px", height: "8px", borderRadius: "2px", background: C, flexShrink: 0 }} />
-                    Einkünfte
+                    Private Pflege-Vorsorge
                   </span>
                   {pctLuecke > 0 && (
                     <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
@@ -444,7 +533,7 @@ export default function PflegekostenplanungRechner() {
                   )}
                 </div>
                 <div style={{ marginTop: "14px", fontSize: "12px", color: "#6B7280", lineHeight: 1.55 }}>
-                  Kasse {fmt(kasse)} · Vorsorge {fmt(vorsorgeEff)} · Einkünfte {fmt(einkEff)} · ungedeckt {fmt(mtlLuecke)}
+                  Abzug Basis/Rente {fmt(kasse)} · Vorsorge {fmt(vorsorgeEff)} · ungedeckt {fmt(mtlLuecke)}
                 </div>
               </div>
             </div>
@@ -452,25 +541,147 @@ export default function PflegekostenplanungRechner() {
 
           <div style={T.section}>
             <div style={T.sectionLbl}>Einordnung</div>
-            <div style={T.compareGrid}>
-              <SmartHintCardPflege icon="🎯" accent={C}>
-                <strong style={{ fontWeight: "700" }}>Szenario: {meta ? meta.heroName : "—"}</strong>
-                <span style={{ display: "block", marginTop: "8px" }}>{meta ? meta.scenarioRisiko : ""}</span>
-                <span style={{ display: "block", marginTop: "8px", opacity: 0.92 }}>{meta ? meta.scenarioDauer : ""}</span>
-              </SmartHintCardPflege>
-              <SmartHintCardPflege icon="🏦" accent={C}>
-                <strong style={{ fontWeight: "700" }}>Vermögensschutz</strong>
-                <span style={{ display: "block", marginTop: "8px" }}>
-                  {mtlLuecke <= 0
-                    ? "In diesem Modell trifft die Summe aus Kasse, Vorsorge und Einkünfte die Restkosten — ein zusätzliches Polster wäre für die Lücke hier nicht nötig."
-                    : `Bei ${fmt(mtlLuecke)} monatlicher Lücke reicht ein Kapital von 10.000 € ohne weitere Einkünfte grob ${monPro10k} Monate — danach entsteht wieder die volle Lücke.`}
-                </span>
-                <span style={{ display: "block", marginTop: "10px", fontSize: "12px", opacity: 0.9 }}>
-                  In der Beratung vergleichen wir für Sie typischerweise Pflegetagegeld und Pflege-Bahr anhand Ihrer Zahlen.
-                </span>
-              </SmartHintCardPflege>
+            <div style={T.cardPrimary}>
+              <div style={{ padding: "18px 20px" }}>
+                {einordnungBullets.map((text, i, arr) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "10px",
+                      marginBottom: i < arr.length - 1 ? "8px" : "0",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                        borderRadius: "50%",
+                        background: "rgba(17,24,39,0.06)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        marginTop: "2px",
+                      }}
+                    >
+                      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" aria-hidden>
+                        <path d="M2 4h4M4 2v4" stroke="#9CA3AF" strokeWidth="1.4" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <span style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.6 }}>{text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+
+          <div style={T.section}>
+            <div style={T.sectionLbl}>Empfohlene Produkte</div>
+            <div style={{ ...T.cardPrimary, overflow: "hidden" }}>
+              {[
+                {
+                  n: "Pflegetagegeld",
+                  empfehlung: `${R.empfTagegeld} €/Tag empfohlen`,
+                  empfSub: `= ${fmt(R.empfTagegeld * 30)}/Mon. · deckt Ihren Eigenanteil (Orientierung)`,
+                  t: "Zahlt pro Pflegetag — unabhängig von den tatsächlichen Kosten.",
+                  highlight: true,
+                },
+                {
+                  n: "Pflegerente",
+                  empfehlung: `${fmt(R.empfRente)}/Mon. empfohlen`,
+                  empfSub: `ab Pflegegrad ${p.pflegegrad}`,
+                  t: "Monatliche Rente direkt an Sie.",
+                  highlight: false,
+                },
+                {
+                  n: "Pflegekostenversicherung",
+                  empfehlung: `${fmt(kosten)}/Mon. absichern`,
+                  empfSub: "Erstattet tatsächliche Heimkosten",
+                  t: "Besonders bei hohen stationären Kosten sinnvoll.",
+                  highlight: false,
+                },
+              ].map(({ n, empfehlung, empfSub, t, highlight }, i, arr) => (
+                <div
+                  key={n}
+                  style={{
+                    padding: "13px 16px",
+                    borderBottom: i < arr.length - 1 ? "1px solid #f5f5f5" : "none",
+                    background: highlight ? `color-mix(in srgb, ${C} 4%, white)` : "#fff",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
+                    <div style={{ fontSize: "13px", fontWeight: "700", color: "#1F2937" }}>
+                      {n}
+                      {highlight ? (
+                        <span
+                          style={{
+                            marginLeft: "8px",
+                            fontSize: "10px",
+                            fontWeight: "700",
+                            color: C,
+                            background: `${C}15`,
+                            padding: "2px 8px",
+                            borderRadius: "999px",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.3px",
+                          }}
+                        >
+                          Empfohlen
+                        </span>
+                      ) : null}
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "700",
+                          color: highlight ? C : "#1F2937",
+                          letterSpacing: "-0.3px",
+                        }}
+                      >
+                        {empfehlung}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "1px" }}>{empfSub}</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55 }}>{t}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {p.pflegeOrt === "stationär" ? (
+            <div style={T.section}>
+              <div
+                style={{
+                  padding: "15px 16px",
+                  borderRadius: "14px",
+                  background: "#FDF8F0",
+                  border: "1px solid #EDD9BB",
+                  color: "#94622D",
+                  fontSize: "13px",
+                  lineHeight: 1.7,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: "#94622D",
+                    letterSpacing: "0.5px",
+                    textTransform: "uppercase",
+                    marginBottom: "6px",
+                  }}
+                >
+                  §43c SGB XI — Leistungszuschlag
+                </div>
+                Ab dem <strong>13. Monat</strong> im Heim sinkt Ihr Eigenanteil schrittweise: Monate 13–24: −25&nbsp;% · Monate 25–36: −50&nbsp;% · ab
+                Monat 37: −75&nbsp;% des einrichtungseinheitlichen Eigenanteils (EEE).
+              </div>
+            </div>
+          ) : null}
 
           <div style={{ ...T.section, marginBottom: "16px" }}>
             <div style={T.sectionLbl}>SGB XI, Modellannahmen &amp; Rechtliches</div>
@@ -482,13 +693,10 @@ export default function PflegekostenplanungRechner() {
               {pflegeArchiv === "legal" && (
                 <div className="pflege-acc-panel" style={{ paddingTop: "12px" }}>
                   <p style={{ marginBottom: "10px" }}>
-                    Diese Berechnung stützt sich auf durchschnittliche Eigenanteile (EEE) und Verpflegungskosten nach SGB XI (Stand 2025/26). Tatsächliche Kosten variieren je nach Einrichtung, Bundesland und individuellem Vertrag.
+                    Diese Berechnung nutzt ein Bundesland-Mapping typischer monatlicher Eigenanteile (stationäre Pflege, Orientierungswerte). Ambulant wird daraus proportional geschätzt. Tatsächliche Kosten variieren je nach Einrichtung, Vertrag und individuellem Budget.
                   </p>
                   <p style={{ marginBottom: "10px" }}>
-                    <strong>Modell:</strong> Stationär 3.800 €/Mon., Ambulant 2.200 €. Kassenabzug orientierend ca. 1.775 € (stationär), 1.100 € (ambulant).
-                  </p>
-                  <p style={{ marginBottom: "10px" }}>
-                    <strong>Formel:</strong> Monatliche Netto-Lücke = Gesamtkosten − Leistung der Pflegekasse − Ihre bestehende Pflege-Vorsorge (bis zur Restlücke) − von Ihnen angenommene monatliche Netto-Einkünfte (bis zur Restlücke).
+                    <strong>Formel:</strong> Restlücke = max(0, regionaler Eigenanteil − optional angesetzte gesetzliche Basis bzw. Rentenleistung − bestehende private Pflege-Vorsorge). Ohne Angabe zur Basis/Rente entspricht die Ausgangslage dem vollen regionalen Eigenanteil (abzüglich Vorsorge).
                   </p>
                   <p style={{ margin: 0, color: "#b8884a" }}>Keine Rechtsberatung. Orientierung u. a. § 43 SGB XI.</p>
                 </div>
@@ -523,18 +731,18 @@ export default function PflegekostenplanungRechner() {
           <div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
         </div>
         <div style={{ ...T.section, marginBottom: "8px" }}>
-          <div style={{ border: "1px solid #e8e8e8", borderRadius: "10px", padding: "12px 14px", background: "#fafafa", marginBottom: "16px", display: "flex", gap: "20px", flexWrap: "wrap" }}>
-            <div>
-              <div style={{ fontSize: "16px", fontWeight: "700", color: WARN, letterSpacing: "-0.3px" }}>{fmt(R.luecke)}/Mon.</div>
-              <div style={{ fontSize: "11px", color: "#aaa", marginTop: "1px" }}>Monatliche Netto-Lücke</div>
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
+            <div style={T.kpiKontaktLuecke}>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: WARN, letterSpacing: "-0.5px" }}>{fmt(R.luecke)}/Mon.</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatliche Netto-Lücke</div>
             </div>
-            <div>
-              <div style={{ fontSize: "16px", fontWeight: "700", color: "#111", letterSpacing: "-0.3px" }}>{meta ? meta.kurzLabel : "—"}</div>
-              <div style={{ fontSize: "11px", color: "#aaa", marginTop: "1px" }}>Szenario</div>
+            <div style={T.kpiKontaktEu}>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#111", letterSpacing: "-0.5px" }}>{meta ? meta.kurzLabel : "—"}</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Szenario</div>
             </div>
-            <div>
-              <div style={{ fontSize: "16px", fontWeight: "700", color: "#111", letterSpacing: "-0.3px" }}>{p.alter} J.</div>
-              <div style={{ fontSize: "11px", color: "#aaa", marginTop: "1px" }}>Alter</div>
+            <div style={T.kpiKontaktEu}>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#111", letterSpacing: "-0.5px" }}>{p.alter} J.</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Alter</div>
             </div>
           </div>
         </div>
@@ -567,12 +775,11 @@ export default function PflegekostenplanungRechner() {
 
       {scr === 1 && (
         <>
-          <StoryHeroBlock
+          <CheckKitStoryHero
             emoji="🛡️"
             title="Würde und Vermögen schützen."
             text="Pflege ist keine Frage des Alters, sondern der Selbstbestimmung. Wir berechnen in 2 Minuten, wie hoch Ihr Eigenanteil wirklich ist und wie Sie Ihr Erspartes absichern."
           />
-          <div style={{ height: "100px" }} />
           <div style={T.footer}>
             <button type="button" style={T.btnPrim(false)} onClick={() => setScr(2)}>
               Analyse starten
@@ -643,6 +850,7 @@ export default function PflegekostenplanungRechner() {
                   {bl}
                 </option>
               ))}
+              <option value="__bund__">Durchschnitt (Bund)</option>
             </select>
           </div>
           <div style={{ height: "120px" }} />
@@ -661,8 +869,7 @@ export default function PflegekostenplanungRechner() {
         const s2 = pflegeStoryKostenFokusCopy(p.pflegeOrt, p.region);
         return (
           <>
-            <StoryHeroBlock emoji="🏥" title={s2.title} text={s2.text} />
-            <div style={{ height: "100px" }} />
+            <CheckKitStoryHero emoji="🏥" title={s2.title} text={s2.text} />
             <div style={T.footer}>
               <button type="button" style={T.btnPrim(false)} onClick={() => setScr(5)}>
                 Weiter
@@ -681,7 +888,7 @@ export default function PflegekostenplanungRechner() {
             <div style={T.eyebrow}>Schritt 5 von {WIZARD_STEPS}</div>
             <div style={T.h1}>Ihre finanzielle Ausgangslage</div>
             <div style={T.body}>
-              Alter, Pflegegrad, verfügbares Nettoeinkommen im Pflegefall und bestehende Vorsorge — damit ermitteln wir Ihre Netto-Lücke nach Kasse, Vorsorge und Einkünften.
+              Alter, Pflegegrad, optional gesetzliche Basis bzw. Rentenleistung und bestehende private Pflege-Vorsorge — damit ermitteln wir Ihre Restlücke zum regionalen Eigenanteil.
             </div>
           </div>
           <div style={T.section}>
@@ -699,14 +906,14 @@ export default function PflegekostenplanungRechner() {
               onChange={(v) => set("pflegegrad", v)}
             />
             <SliderCard
-              label="Monatliches Nettoeinkommen im Pflegefall"
+              label="Gesetzliche Basis oder Rentenleistung (optional, monatlich)"
               value={p.einkommenMonat}
               min={0}
               max={5000}
               step={50}
               unit="€/Mon."
-              display={p.einkommenMonat === 0 ? "0 € — keine angenommen" : `${fmt(p.einkommenMonat)} pro Monat`}
-              hint="Z. B. Rente, Erwerbsminderungsrente, private BU oder andere Netto-Einkünfte, die Sie einsetzen könnten."
+              display={p.einkommenMonat === 0 ? "Keine angesetzt — voller Eigenanteil als Ausgang" : `${fmt(p.einkommenMonat)} pro Monat abziehen`}
+              hint="Was Sie z. B. aus Rente, Erwerbsminderungsrente oder anderen gesetzlich einbezogenen Leistungen monatlich gegen den Eigenanteil anrechnen lassen (vereinfacht als ein Betrag)."
               accent={C}
               onChange={(v) => set("einkommenMonat", v)}
             />
@@ -746,11 +953,11 @@ export default function PflegekostenplanungRechner() {
       )}
 
       {scr === 6 && (() => {
-        const b3 = pflegeBridgeSicherheitCopy(p.pflegegrad, p.einkommenMonat);
+        const b3 = pflegeBridgeSicherheitCopy(p.pflegegrad, p.region, p.pflegeOrt, p.einkommenMonat);
         return (
           <>
-            <StoryHeroBlock emoji="💸" title={b3.title} text={b3.text} />
-            <div style={{ padding: "8px 24px 0", maxWidth: "400px", margin: "0 auto" }}>
+            <CheckKitStoryHero hideFooterSpacer emoji="💸" title={b3.title} text={b3.text} />
+            <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
               {[
                 "Abgleich der gesetzlichen Leistungen (Pflegekasse).",
                 "Ermittlung Ihres realen monatlichen Eigenanteils.",
@@ -759,23 +966,22 @@ export default function PflegekostenplanungRechner() {
                 <div
                   key={line}
                   style={{
+                    ...CHECKKIT2026.storyBody,
                     display: "flex",
                     alignItems: "flex-start",
                     gap: "12px",
-                    fontSize: "15px",
-                    color: "#374151",
-                    lineHeight: 1.55,
-                    marginBottom: "14px",
+                    marginBottom: 14,
+                    textAlign: "left",
                   }}
                 >
-                  <span style={{ fontSize: "18px", lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
+                  <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
                     ✅
                   </span>
                   <span>{line}</span>
                 </div>
               ))}
             </div>
-            <div style={{ height: "100px" }} />
+            <div style={{ height: CHECKKIT2026.footerSpacerPx }} />
             <div style={T.footer}>
               <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
                 Ergebnis jetzt anzeigen

@@ -92,6 +92,16 @@ export const KATALOG: Template[] = [
     preis: 59,
     accentColor: "#b45309",
   },
+  {
+    slug: "immo-check",
+    icon: "🏛️",
+    name: "Immo-Schutz-Dach",
+    desc: "Weg, Risiko-Scanner & Vorsorge: Bank & Existenz, Objektschutz, Zukunft & Recht — Schutz-Dach.",
+    tags: ["Immobilien", "Eigentümer", "Bau"],
+    kategorie: "finanzen",
+    preis: 59,
+    accentColor: "#b45309",
+  },
 ];
 
 /** Kurz-Label für Karten-Badges (Kategorie) */

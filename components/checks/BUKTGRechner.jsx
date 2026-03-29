@@ -6,6 +6,8 @@ import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import { CheckLoader } from "@/components/checks/CheckLoader";
+import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
+import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 
 // ─── GLOBAL SETUP ────────────────────────────────────────────────────────────
 (() => {
@@ -55,6 +57,24 @@ import { CheckLoader } from "@/components/checks/CheckLoader";
 
 const phaseBarColor = (pct) =>
   pct >= 75 ? "#22c55e" : pct >= 45 ? "#eab308" : "#C0392B";
+
+/** Phase-2-Ergebnis: Fortschrittsleiste (nur Ergebnis-Screen) */
+const BUKTG_PHASE2_PROG_TRACK = {
+  background: "rgba(31,41,55,0.08)",
+  borderRadius: "999px",
+  overflow: "hidden",
+};
+const BUKTG_PHASE2_PROG_FILL = { borderRadius: "999px" };
+
+/** Phase-2 Swiper: Timeline-Track (Ergebnis) — 4px, Pill-Track, grauer Slate-Ton */
+const BUKTG_PHASE2_TIMELINE_TRACK = {
+  background: "rgba(31,41,55,0.08)",
+  borderRadius: "999px",
+  overflow: "hidden",
+  height: "4px",
+  marginTop: "12px",
+};
+const BUKTG_PHASE2_TIMELINE_FILL = { borderRadius: "999px" };
 
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 
@@ -400,21 +420,6 @@ function SmartHintCard({ children, icon = "💡", compact = false }) {
   );
 }
 
-const STORY_H1 = { fontSize: "52px", fontWeight: "800", letterSpacing: "-1.5px", lineHeight: 1.12, color: "#111", margin: "0 0 22px" };
-const STORY_BODY = { fontSize: "16px", color: "#4B5563", lineHeight: 1.65, margin: 0, maxWidth: "42ch", marginLeft: "auto", marginRight: "auto" };
-
-function StoryHeroBUKTG({ emoji, title, text }) {
-  return (
-    <div style={{ textAlign: "center", padding: "36px 24px 20px", maxWidth: "600px", margin: "0 auto" }}>
-      <div style={{ fontSize: "64px", lineHeight: 1, marginBottom: "24px" }} aria-hidden>
-        {emoji}
-      </div>
-      <h1 style={STORY_H1}>{title}</h1>
-      {text ? <p style={STORY_BODY}>{text}</p> : null}
-    </div>
-  );
-}
-
 /**
  * Slide 2 „Status-Check“ — Logik nur für angestellt | beamter | selbst (Selbstständige).
  * `p.beruf` entspricht formData.status im Wizard; azubi/student: neutrales Fallback ohne Zusatzannahmen.
@@ -452,7 +457,7 @@ function storyStaatCopyForStatus(beruf) {
 function makeBUKTGT(C) {
   return {
   page:    { minHeight: "100vh", background: "#ffffff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
-  header:  { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid #e8e8e8", padding: "0 24px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between" },
+  header:  { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(31,41,55,0.06)", padding: "0 24px", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between" },
   logo:    { display: "flex", alignItems: "center", gap: "10px" },
   logoMk:  { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
   logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111", letterSpacing: "-0.1px" },
@@ -461,26 +466,63 @@ function makeBUKTGT(C) {
   progFil: (w) => ({ height: "100%", width: `${w}%`, background: C, transition: "width 0.4s ease" }),
   hero:    { padding: "32px 24px 16px" },
   label:   { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
-  h1:      { fontSize: "22px", fontWeight: "700", color: "#111", lineHeight: 1.25, letterSpacing: "-0.5px" },
+  h1:      { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
   body:    { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
   section: { padding: "0 24px", marginBottom: "20px" },
   divider: { height: "1px", background: "#f0f0f0", margin: "0 24px 20px" },
-  card:    { border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden" },
+  card:    { border: "1px solid #e8e8e8", borderRadius: "18px", overflow: "hidden" },
+  /** Kontakt-Summary: Lücke BU (warn) + zweite Kachel im EU-Box-Stil */
+  kpiKontaktLuecke: {
+    borderRadius: "16px",
+    background: "#FFF7F7",
+    border: "1px solid #F2CFCF",
+    padding: "12px 14px",
+    minWidth: 0,
+    flex: "1 1 140px",
+  },
+  kpiKontaktEu: {
+    borderRadius: "14px",
+    background: "rgba(255,255,255,0.96)",
+    border: "1px solid rgba(17,24,39,0.06)",
+    padding: "12px 14px",
+    minWidth: 0,
+    flex: "1 1 140px",
+  },
   row:     { padding: "14px 16px", borderBottom: "1px solid #f0f0f0" },
   rowLast: { padding: "14px 16px" },
   fldLbl:  { fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "6px", display: "block" },
   fldVal:  { fontSize: "20px", fontWeight: "700", color: C, letterSpacing: "-0.5px", marginBottom: "8px" },
   fldHint: { fontSize: "11px", color: "#aaa", marginTop: "6px" },
   optRow:  { display: "grid", gap: "8px", marginTop: "6px" },
-  footer:  { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderTop: "1px solid #e8e8e8", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
-  btnPrim: (dis) => ({ width: "100%", padding: "13px 20px", background: dis ? "#e8e8e8" : C, color: dis ? "#aaa" : "#fff", borderRadius: "8px", fontSize: "14px", fontWeight: "600", cursor: dis ? "default" : "pointer", transition: "opacity 0.15s", letterSpacing: "-0.1px" }),
+  footer:  { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(31,41,55,0.06)", boxShadow: "0 -6px 20px rgba(17,24,39,0.05)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
+  btnPrim: (dis) => ({
+    width: "100%",
+    padding: "13px 20px",
+    background: dis ? "#e8e8e8" : C,
+    color: dis ? "#aaa" : "#fff",
+    borderRadius: "999px",
+    fontSize: "14px",
+    fontWeight: "600",
+    cursor: dis ? "default" : "pointer",
+    transition: "opacity 0.15s",
+    letterSpacing: "-0.1px",
+    boxShadow: dis ? "none" : "0 8px 20px rgba(26,58,92,0.18)",
+  }),
   btnSec:  { width: "100%", padding: "10px", color: "#aaa", fontSize: "13px", marginTop: "6px", cursor: "pointer" },
   bigNum:  (warn) => ({ fontSize: "36px", fontWeight: "700", color: warn ? "#c0392b" : C, letterSpacing: "-1px", lineHeight: 1 }),
   bigLbl:  { fontSize: "12px", color: "#888", marginTop: "4px", fontWeight: "500" },
   detRow:  { display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 0", borderBottom: "1px solid #f5f5f5" },
   detLbl:  { fontSize: "13px", color: "#666" },
   detVal:  (hl) => ({ fontSize: "13px", fontWeight: "600", color: hl ? "#c0392b" : "#111" }),
-  infoBox: { padding: "12px 14px", background: "#f9f9f9", borderRadius: "8px", fontSize: "12px", color: "#666", lineHeight: 1.6 },
+  infoBox: {
+    padding: "12px 14px",
+    background: "#F6F8FE",
+    border: "1px solid #DCE6FF",
+    borderRadius: "14px",
+    fontSize: "12px",
+    color: "#315AA8",
+    lineHeight: 1.6,
+  },
   timeBar: { height: "6px", borderRadius: "3px", transition: "width 0.5s ease" },
   inputEl: { width: "100%", padding: "10px 12px", border: "1px solid #e8e8e8", borderRadius: "6px", fontSize: "14px", color: "#111", background: "#fff", outline: "none" },
   // ── Result Design System ──
@@ -510,7 +552,8 @@ function makeBUKTGT(C) {
 }
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
-function Header({ phase, total, makler, T }) {
+function Header({ phase, total, makler, T, progStyle, progFillStyle }) {
+  const w = (phase / total) * 100;
   return (
     <>
       <div style={T.header}>
@@ -527,7 +570,9 @@ function Header({ phase, total, makler, T }) {
         </div>
         <span style={T.badge}>BU + KTG</span>
       </div>
-      <div style={T.prog}><div style={T.progFil((phase / total) * 100)} /></div>
+      <div style={{ ...T.prog, ...progStyle }}>
+        <div style={{ ...T.progFil(w), ...progFillStyle }} />
+      </div>
     </>
   );
 }
@@ -548,7 +593,7 @@ function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
   if (isDemo) {
     return (
       <div style={{ paddingBottom: "120px" }}>
-        {summary && <div style={{ ...T.section }}><div style={T.infoBox}>{summary}</div></div>}
+        {summary && <div style={{ ...T.section }}>{summary}</div>}
         <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
           <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
             Das ist eine Live-Vorschau — so sieht Ihr Kunde die Microsite.
@@ -574,7 +619,7 @@ function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
   }
   return (
     <div style={{ paddingBottom: "120px" }}>
-      {summary && <div style={{ ...T.section }}><div style={T.infoBox}>{summary}</div></div>}
+      {summary && <div style={{ ...T.section }}>{summary}</div>}
       <div style={T.section}>
         <CheckKontaktLeadLine />
         <div style={T.card}>
@@ -762,7 +807,7 @@ export default function BUKTGRechner() {
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak}>
         <Header phase={totalWizSteps} total={totalWizSteps} makler={MAKLER} T={T} />
-        <CheckLoader type="bu" onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="bu" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
       </div>
     );
   }
@@ -802,9 +847,15 @@ export default function BUKTGRechner() {
         summary={
           <div>
             <div style={{ fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "8px" }}>Ihre Berechnung</div>
-            <div style={{ display: "flex", gap: "20px" }}>
-              <div><div style={{ fontSize: "18px", fontWeight: "700", color: "#c0392b", letterSpacing: "-0.5px" }}>{fmt(R.luecke)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Mögliche Lücke</div></div>
-              <div><div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{fmt(R.netto)}</div><div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>{R.isStudentModus ? "Ziel-Netto" : "Ihr Netto"}</div></div>
+            <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+              <div style={T.kpiKontaktLuecke}>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: "#c0392b", letterSpacing: "-0.5px" }}>{fmt(R.luecke)}</div>
+                <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Mögliche Lücke</div>
+              </div>
+              <div style={T.kpiKontaktEu}>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{fmt(R.netto)}</div>
+                <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>{R.isStudentModus ? "Ziel-Netto" : "Ihr Netto"}</div>
+              </div>
             </div>
           </div>
         }
@@ -879,12 +930,19 @@ export default function BUKTGRechner() {
     const toggleLegal = (id) => setLegalOpen((x) => (x === id ? null : id));
 
     return (
-      <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
-        <Header phase={2} total={TOTAL_PHASES} makler={MAKLER} T={T} />
+      <div style={{ ...T.page, "--accent": C, background: "#F8F6F2" }} key={ak} className="fade-in">
+        <Header
+          phase={2}
+          total={TOTAL_PHASES}
+          makler={MAKLER}
+          T={T}
+          progStyle={BUKTG_PHASE2_PROG_TRACK}
+          progFillStyle={BUKTG_PHASE2_PROG_FILL}
+        />
 
         <div style={{ paddingBottom: "120px" }}>
           {/* Hero: große Zahl, darunter Pill */}
-          <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px" }}>
+          <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px", background: "#F8F6F2" }}>
             <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Ihre Absicherung im Überblick</div>
             <div
               style={{
@@ -983,12 +1041,12 @@ export default function BUKTGRechner() {
                       {fmt(ph.monatl)}
                     </div>
                     <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px" }}>{ph.pct} % Ihres Nettos</div>
-                    <div style={{ ...T.progBarTrack, marginTop: "12px", height: "8px", borderRadius: "999px" }}>
+                    <div style={BUKTG_PHASE2_TIMELINE_TRACK}>
                       <div
                         style={{
                           height: "100%",
                           width: `${barW}%`,
-                          borderRadius: "999px",
+                          ...BUKTG_PHASE2_TIMELINE_FILL,
                           background: barCol,
                           transition: "width 0.85s cubic-bezier(0.34, 1.56, 0.64, 1)",
                         }}
@@ -1013,7 +1071,7 @@ export default function BUKTGRechner() {
                         style={{
                           marginTop: "12px",
                           padding: "10px 12px",
-                          borderRadius: "10px",
+                          borderRadius: "18px",
                           background: "#FFF6F5",
                           border: "1px solid #F2D4D0",
                           fontSize: "12px",
@@ -1149,12 +1207,11 @@ export default function BUKTGRechner() {
 
       {curFlow?.kind === "intro" && (
         <>
-          <StoryHeroBUKTG
+          <CheckKitStoryHero
             emoji="🛡️"
             title="Ihr Einkommen im Fokus."
             text="Ihre Arbeitskraft ist Ihr wertvollstes Gut. Wir berechnen in 2 Minuten, wie viel Geld Ihnen bei langer Krankheit oder Berufsunfähigkeit wirklich zum Leben bleibt."
           />
-          <div style={{ height: "120px" }} />
           <Footer onNext={nextWiz} nextLabel="Analyse starten" T={T} />
         </>
       )}
@@ -1163,7 +1220,7 @@ export default function BUKTGRechner() {
         const st = storyStaatCopyForStatus(p.beruf);
         return (
         <>
-          <StoryHeroBUKTG emoji={st.emoji} title={st.title} text={st.text} />
+          <CheckKitStoryHero emoji={st.emoji} title={st.title} text={st.text} />
           <div style={{ height: "120px" }} />
           <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter zur Kalkulation" T={T} />
         </>
@@ -1172,12 +1229,13 @@ export default function BUKTGRechner() {
 
       {curFlow?.kind === "bridge" && (
         <>
-          <StoryHeroBUKTG
+          <CheckKitStoryHero
+            hideFooterSpacer
             emoji="🚀"
             title="Ihre Analyse ist bereit."
             text={`Basierend auf Ihren Angaben von ${fmt(R.netto)} Netto haben wir Ihre Versorgungslücke präzise ermittelt.`}
           />
-          <div style={{ padding: "16px 24px 8px", maxWidth: "440px", margin: "0 auto" }}>
+          <div style={{ padding: "0 24px 8px", ...CHECKKIT2026.storyContentWrap }}>
             {[
               "Berechnung der monatlichen Netto-Lücke.",
               "Ermittlung des notwendigen Krankentagegeldes.",
@@ -1186,23 +1244,22 @@ export default function BUKTGRechner() {
               <div
                 key={line}
                 style={{
+                  ...CHECKKIT2026.storyBody,
                   display: "flex",
                   alignItems: "flex-start",
                   gap: "14px",
-                  fontSize: "15px",
-                  color: "#374151",
-                  lineHeight: 1.55,
-                  marginBottom: "16px",
+                  marginBottom: 16,
+                  textAlign: "left",
                 }}
               >
-                <span style={{ fontSize: "18px", lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
+                <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
                   ✅
                 </span>
                 <span>{line}</span>
               </div>
             ))}
           </div>
-          <div style={{ height: "100px" }} />
+          <div style={{ height: CHECKKIT2026.footerSpacerPx }} />
           <div style={T.footer}>
             <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
               Ergebnis jetzt anzeigen
@@ -1561,7 +1618,7 @@ export default function BUKTGRechner() {
                 Wussten Sie? Psychische Erkrankungen sind mit Ø 42 Monaten die längsten Leistungsfälle — weit über die typische Krankengeld-Dauer von 18 Monaten hinaus.
               </SmartHintCard>
             )}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {SZENARIEN.map((sz) => (
                 <SelectionCard key={sz.id} value={sz.id} label={sz.label}
                   description={`${sz.desc} · Ø ${sz.dauer} Mon.`}

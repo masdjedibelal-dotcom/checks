@@ -1,1 +1,1 @@
-export { default } from "./PflegekostenplanungRechner";
+export { default, pflegeKostenMapping } from "./PflegekostenplanungRechner";

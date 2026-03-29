@@ -14,6 +14,7 @@ const SLUG_NAMES: Record<string, string> = {
   risikoleben: "Risikoleben-Check",
   "pflege-check": "Pflege-Check",
   "immobilien-check": "Immobilien-Check",
+  "immo-check": "Immo-Check (Schutz-Dach)",
 };
 
 function escapeHtml(s: string): string {

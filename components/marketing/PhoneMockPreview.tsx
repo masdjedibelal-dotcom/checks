@@ -11,6 +11,7 @@ const PREVIEW_BG: Record<string, string> = {
   "gkv-pkv": "linear-gradient(160deg,#fff5f5 0%,#ffc9c9 100%)",
   "pflege-check": "linear-gradient(160deg,#e0f2fe 0%,#bae6fd 100%)",
   "immobilien-check": "linear-gradient(160deg,#fffbeb 0%,#fde68a 100%)",
+  "immo-check": "linear-gradient(160deg,#fffbeb 0%,#fde68a 100%)",
 };
 
 function PhoneShell({ c, children }: { c: string; children: React.ReactNode }) {
@@ -256,7 +257,35 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
         </>
       );
 
-    /* ── 8. Immobilien-Check ──────────────────────────────────── */
+    /* ── 8. Immo-Check (Schutz-Dach) ──────────────────────────── */
+    case "immo-check":
+      return (
+        <>
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Schutz-Dach</div>
+          <div className="mb-0.5 text-[22px] font-black leading-none tracking-tight" style={{ color: c }}>
+            3
+          </div>
+          <div className="mb-2 text-[8px] text-[#9CA3AF]">Säulen · Bank & Existenz · Objekt · Zukunft & Recht</div>
+          <div className="mb-2 flex flex-col gap-1">
+            {["Bank & Existenz", "Objektschutz", "Zukunft & Recht"].map((t) => (
+              <div
+                key={t}
+                className="rounded-md border border-black/[0.06] px-1.5 py-1 text-[7px] font-semibold text-[#374151]"
+                style={{ background: "rgba(180,83,9,0.08)" }}
+              >
+                {t}
+              </div>
+            ))}
+          </div>
+          <div className="mb-2 flex gap-1">
+            <div className="h-2 flex-1 rounded-sm bg-[#FFF6F5]" />
+            <div className="h-2 flex-1 rounded-sm bg-[#FFFBEB]" />
+            <div className="h-2 flex-1 rounded-sm bg-[#FAFAF8]" />
+          </div>
+          <ResultBadge label="Immo-Check" />
+        </>
+      );
+
     case "immobilien-check":
       return (
         <>
