@@ -607,10 +607,13 @@ export default function PflegekostenplanungRechner() {
                       Empfohlen
                     </span>
                   </div>
-                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
-                    <div style={{ fontSize: "14px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>{R.empfTagegeld} €/Tag empfohlen</div>
-                    <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "1px" }}>
-                      = {fmt(R.empfTagegeld * 30)}/Mon. bei 30 Tagen · aus monatlicher Restlücke (÷ 30, auf 5 € aufgerundet, max. 200 €/Tag)
+                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px", minWidth: 0 }}>
+                    <div style={{ fontSize: "26px", fontWeight: "800", color: C, letterSpacing: "-0.6px", lineHeight: 1.1 }}>
+                      {R.empfTagegeld} €
+                    </div>
+                    <div style={{ fontSize: "11px", fontWeight: "600", color: "#6B7280", marginTop: "4px" }}>empfohlener Tagessatz</div>
+                    <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "6px", lineHeight: 1.35 }}>
+                      ca. {fmt(R.empfTagegeld * 30)} € pro Monat (30 Tage)
                     </div>
                   </div>
                 </div>
@@ -678,7 +681,7 @@ export default function PflegekostenplanungRechner() {
                     <strong>Formel Restlücke:</strong> max(0, regionaler Eigenanteil − monatliche Leistung aus angegebener privater Pflege-Vorsorge). Andere Einkünfte oder gesetzliche Zahlungen mindern diese Kennzahl nicht.
                   </p>
                   <p style={{ marginBottom: "10px" }}>
-                    <strong>Pflegetagegeld (Orientierung):</strong> Tagesleistung = min(200 €, Aufrunden der Restlücke ÷ 30 auf volle 5 €). Vor dem Ergebnis nutzen wir den Pflegegrad aus Ihrer Szenario-Wahl (Schritt 2) nur noch im erklärenden Text.
+                    <strong>Pflegetagegeld (Orientierung):</strong> Bei monatlicher Restlücke von {fmt(R.mtlLuecke)} ergibt sich ein empfohlener Tagessatz von <strong>{R.empfTagegeld} €</strong> (auf volle 5 € gerundet, höchstens 200 €/Tag). Der Pflegegrad aus Ihrer Szenario-Wahl (Schritt 2) fließt nur in den erklärenden Text ein, nicht in diese Zahl.
                   </p>
                   <p style={{ margin: 0, color: "#b8884a" }}>Keine Rechtsberatung. Orientierung u. a. § 43 SGB XI.</p>
                 </div>
@@ -738,7 +741,19 @@ export default function PflegekostenplanungRechner() {
               await fetch("/api/lead", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, slug: "pflege-check", kundenName: fd.name, kundenEmail: fd.email, kundenTel: fd.tel || "" }),
+                body: JSON.stringify({
+                  token,
+                  slug: "pflege-check",
+                  kundenName: fd.name,
+                  kundenEmail: fd.email,
+                  kundenTel: fd.tel || "",
+                  highlights: [
+                    { label: "Restbedarf / Monat", value: `${fmt(R.luecke)}/Mon.` },
+                    { label: "Szenario", value: meta ? meta.kurzLabel : "—" },
+                    { label: "Alter", value: `${p.alter} J.` },
+                    { label: "Empf. Pflegetagegeld", value: `${R.empfTagegeld} €/Tag` },
+                  ],
+                }),
               }).catch(() => {});
             }
             setDanke(true);

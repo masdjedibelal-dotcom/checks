@@ -866,6 +866,10 @@ export default function BUKTGRechner() {
                 kundenName: fd.name,
                 kundenEmail: fd.email,
                 kundenTel: fd.tel || "",
+                highlights: [
+                  { label: "Mögliche Lücke (Monat)", value: fmt(R.luecke) },
+                  { label: R.isStudentModus ? "Ziel-Netto" : "Ihr Netto", value: fmt(R.netto) },
+                ],
               }),
             }).catch(() => {});
           }

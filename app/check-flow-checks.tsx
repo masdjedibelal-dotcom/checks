@@ -75,7 +75,7 @@ export const CHECK_FLOW_META = [
     slug: "immobilien-check" as const,
     catClass: "ck-cat-immobilien",
     cat: "Immobilie",
-    name: "Immo-Schutz-Dach",
+    name: "Immobilienabsicherung",
     hook: "Risiko-Scanner für Finanzierung, Bau und Bestand",
     erlebnis:
       "Drei Säulen: Bank & Existenz, Objektschutz, Zukunft & Recht — inkl. RLV/BU, Pflege und Eigentümer-Rechtsschutz.",
@@ -281,7 +281,7 @@ export function CheckFlowPhoneMock({ slug }: { slug: CheckFlowSlug }): ReactNode
       return (
         <ResultPhoneShell accent="#b45309">
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 6.5, color: "#6b7280", marginBottom: 4 }}>Schutz-Dach</div>
+            <div style={{ fontSize: 6.5, color: "#6b7280", marginBottom: 4 }}>Immobilienabsicherung</div>
             <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.4px", color: "#b45309", lineHeight: 1.05 }}>
               3 Säulen
             </div>

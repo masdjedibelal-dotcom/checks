@@ -13,7 +13,7 @@ const SLUG_NAMES: Record<string, string> = {
   "vorsorge-check": "Vorsorge-Check",
   risikoleben: "Risikoleben-Check",
   "pflege-check": "Pflege-Check",
-  "immobilien-check": "Immo-Schutz-Dach",
+  "immobilien-check": "Immobilienabsicherung",
 };
 
 function escapeHtml(s: string): string {
@@ -22,6 +22,49 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+const MAX_LEAD_HIGHLIGHTS = 12;
+const MAX_HIGHLIGHT_LABEL = 80;
+const MAX_HIGHLIGHT_VALUE = 220;
+
+function parseLeadHighlights(raw: unknown): { label: string; value: string }[] {
+  if (!Array.isArray(raw)) return [];
+  const out: { label: string; value: string }[] = [];
+  for (const item of raw) {
+    if (out.length >= MAX_LEAD_HIGHLIGHTS) break;
+    if (!item || typeof item !== "object") continue;
+    const o = item as Record<string, unknown>;
+    const label =
+      typeof o.label === "string" ? o.label.trim().slice(0, MAX_HIGHLIGHT_LABEL) : "";
+    const value =
+      typeof o.value === "string" ? o.value.trim().slice(0, MAX_HIGHLIGHT_VALUE) : "";
+    if (!label || !value) continue;
+    out.push({ label, value });
+  }
+  return out;
+}
+
+function highlightsEmailBlock(highlights: { label: string; value: string }[]): string {
+  if (highlights.length === 0) return "";
+  const rows = highlights
+    .map(
+      (h) => `<div style="padding:10px 0;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+          <span style="font-size:13px;color:#6b7280;flex:1;min-width:0;">${escapeHtml(h.label)}</span>
+          <span style="font-size:13px;font-weight:600;color:#1a1a1a;text-align:right;flex-shrink:0;max-width:55%;word-break:break-word;">${escapeHtml(h.value)}</span>
+        </div>`,
+    )
+    .join("");
+  return `<div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#faf9f6;border-bottom:1px solid #f3f4f6;">
+        <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1.5px;text-transform:uppercase;">
+          Ergebnis-Kennzahlen
+        </div>
+      </div>
+      <div style="padding:0 16px 4px;">
+        ${rows}
+      </div>
+    </div>`;
 }
 
 export async function POST(req: NextRequest) {
@@ -42,6 +85,19 @@ export async function POST(req: NextRequest) {
       : typeof body.kundenTelefon === "string"
         ? body.kundenTelefon.trim()
         : "";
+
+  const PAKET_KEYS = new Set(["basis", "komfort", "premium"]);
+  const rawPakete = body.gewaehltePakete;
+  let gewaehltePakete: string[] = [];
+  if (Array.isArray(rawPakete)) {
+    gewaehltePakete = Array.from(
+      new Set(
+        rawPakete.filter((x): x is string => typeof x === "string" && PAKET_KEYS.has(x)),
+      ),
+    );
+  }
+
+  const highlights = parseLeadHighlights(body.highlights);
 
   if (!token || !slug || !kundenName || !kundenEmail) {
     return NextResponse.json({ error: "Pflichtfelder fehlen" }, { status: 400 });
@@ -77,6 +133,17 @@ export async function POST(req: NextRequest) {
   const safeEmail = escapeHtml(kundenEmail);
   const safeTel = escapeHtml(kundenTel || "—");
   const safeTool = escapeHtml(toolName);
+
+  const paketLabel: Record<string, string> = {
+    basis: "Basis",
+    komfort: "Komfort",
+    premium: "Premium",
+  };
+  const paketText =
+    slug === "bedarfscheck" && gewaehltePakete.length > 0
+      ? gewaehltePakete.map((k) => paketLabel[k] ?? k).join(", ")
+      : "";
+  const safePakete = escapeHtml(paketText);
 
   const resendKey = process.env.RESEND_API_KEY?.trim();
   const fromRaw = process.env.RESEND_FROM_EMAIL?.trim();
@@ -162,6 +229,26 @@ border:1px solid #e5e7eb;">
       <div style="font-size:12px;color:#9ca3af;margin-top:2px;">Eingebunden auf Ihrer Website</div>
     </div>
 
+    ${
+      paketText
+        ? `<div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:20px;">
+      <div style="padding:12px 16px;background:#faf9f6;border-bottom:1px solid #f3f4f6;">
+        <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1.5px;text-transform:uppercase;">
+          Gewünschte Absicherungspakete
+        </div>
+      </div>
+      <div style="padding:16px;">
+        <div style="font-size:14px;font-weight:600;color:#1a1a1a;">${safePakete}</div>
+        <div style="font-size:12px;color:#9ca3af;margin-top:6px;line-height:1.45;">
+          Vom Kunden im Versicherungs-Check ausgewählt — mehrfach möglich.
+        </div>
+      </div>
+    </div>`
+        : ""
+    }
+
+    ${highlightsEmailBlock(highlights)}
+
     <a href="mailto:${encodeURIComponent(kundenEmail)}?subject=${encodeURIComponent(`Re: Ihre Anfrage über ${toolName}`)}"
     style="display:block;width:100%;padding:13px;background:#0f1a14;color:#fff;border-radius:10px;
     font-size:14px;font-weight:700;text-align:center;text-decoration:none;box-sizing:border-box;">
@@ -185,14 +272,22 @@ border:1px solid #e5e7eb;">
     return NextResponse.json({ error: "E-Mail-Versand fehlgeschlagen" }, { status: 502 });
   }
 
-  const { error: leadErr } = await supabase.from("leads").insert({
+  const leadRow: Record<string, unknown> = {
     token,
     slug,
     kunden_name: kundenName,
     kunden_email: kundenEmail,
     kunden_tel: kundenTel || null,
     makler_email: purchase.email,
-  });
+  };
+  if (slug === "bedarfscheck" && gewaehltePakete.length > 0) {
+    leadRow.gewaehlte_pakete = JSON.stringify(gewaehltePakete);
+  }
+  if (highlights.length > 0) {
+    leadRow.highlights = JSON.stringify(highlights);
+  }
+
+  const { error: leadErr } = await supabase.from("leads").insert(leadRow);
   if (leadErr) {
     console.error("Supabase leads insert:", leadErr);
   }

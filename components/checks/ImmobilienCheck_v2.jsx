@@ -279,6 +279,12 @@ export default function ImmobilienCheck(){
   // ── Phase 4: Kontakt ─────────────────────────────────────────────────────
   if(phase===4){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
+    const immoHighlights=(()=>{
+      if(modul==="mk"){const RMK=berechneMK(mk);const pref=RMK.diffMonatl>0?"+":"";return[{label:"Modul",value:"Kaufen vs. Mieten"},{label:"Diff. Rate − Miete (Monat)",value:`${pref}${fmt(Math.abs(RMK.diffMonatl))}`},{label:"Immobilienrate",value:fmt(RMK.rate)}];}
+      if(modul==="anschluss"){const RA=berechneAnschluss(anschluss);return[{label:"Modul",value:"Anschlussfinanzierung"},{label:"Rate alt → neu",value:`${fmt(RA.altRate)} → ${fmt(RA.neuRate)}`},{label:"Differenz (Monat)",value:fmt(RA.diffMonatl)}];}
+      if(modul==="wg"){const RWG=berechneWG(wg);return[{label:"Modul",value:"Wohngebäude"},{label:"Empfohlene VS",value:fmtK(RWG.empfohleneVS)},{label:"Deckung",value:`${RWG.deckung}%`}];}
+      return[];
+    })();
     return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
       <div style={T.hero}><div style={T.eyebrow}>Letzter Schritt</div><div style={T.h1}>Ergebnis besprechen</div><div style={T.body}>Wir gehen dein Ergebnis gemeinsam durch — konkret, ohne Druck.</div></div>
       {isDemo ? (
@@ -315,7 +321,7 @@ export default function ImmobilienCheck(){
           <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
         </div>
       </div>
-      <div style={T.footer}><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"immobilien-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Ergebnis besprechen":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      <div style={T.footer}><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"immobilien-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights:immoHighlights})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Ergebnis besprechen":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
       </>
       )}
     </div>);

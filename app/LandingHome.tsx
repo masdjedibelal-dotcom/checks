@@ -25,7 +25,7 @@ const CK_CARD_RASTER: Partial<
 > = {
   "immobilien-check": {
     src: "/images/ck-card-immobilien-check.png",
-    alt: "Immo-Schutz-Dach: Vorschau auf dem Smartphone",
+    alt: "Immobilienabsicherung: Vorschau auf dem Smartphone",
   },
   "lebenssituations-check": {
     src: "/images/ck-card-jahresgespraech.png",

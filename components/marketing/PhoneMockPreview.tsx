@@ -256,11 +256,11 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
         </>
       );
 
-    /* ── Immobilien: Immo-Schutz-Dach (Slug: immobilien-check) ── */
+    /* ── Immobilien: Immobilienabsicherung (Slug: immobilien-check) ── */
     case "immobilien-check":
       return (
         <>
-          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Schutz-Dach</div>
+          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Immobilienabsicherung</div>
           <div className="mb-0.5 text-[22px] font-black leading-none tracking-tight" style={{ color: c }}>
             3
           </div>
@@ -281,7 +281,7 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
             <div className="h-2 flex-1 rounded-sm bg-[#FFFBEB]" />
             <div className="h-2 flex-1 rounded-sm bg-[#FAFAF8]" />
           </div>
-          <ResultBadge label="Immo-Schutz-Dach" />
+          <ResultBadge label="Immobilienabsicherung" />
         </>
       );
 

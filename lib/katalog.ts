@@ -85,8 +85,8 @@ export const KATALOG: Template[] = [
   {
     slug: "immobilien-check",
     icon: "🏛️",
-    name: "Immo-Schutz-Dach",
-    desc: "Weg, Risiko-Scanner & Vorsorge: Bank & Existenz, Objektschutz, Zukunft & Recht — Schutz-Dach.",
+    name: "Immobilienabsicherung",
+    desc: "Weg, Risiko-Scanner & Vorsorge: Bank & Existenz, Objektschutz, Zukunft & Recht — Immobilienabsicherung.",
     tags: ["Immobilien", "Eigentümer", "Bau"],
     kategorie: "finanzen",
     preis: 59,

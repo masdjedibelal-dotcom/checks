@@ -22,7 +22,7 @@ const calcHintFooter: CSSProperties = {
   fontSize: "11px",
   color: "#868686",
   lineHeight: 1.6,
-  borderTop: "1px solid #EAE5DC",
+  borderTop: "1px solid #E5E7EB",
   background: "#F7F6F3",
 };
 

@@ -723,7 +723,18 @@ export default function RisikolebenRechner() {
 
     const breakdownRows = [
       { l: "Monatsbedarf Familie", v: fmt(p.monatsBedarf) + "/Mon.", c: "#1F2937", bold: false },
-      { l: "Vorhandene Einnahmen", v: "− " + fmt(einnahmen) + "/Mon.", c: "#059669", bold: false },
+      { l: "Partnereinkommen (netto)", v: "− " + fmt(p.partnerEinkommen) + "/Mon.", c: "#059669", bold: false },
+      { l: "Witwen-/Waisenrente (ca.)", v: "− " + fmt(p.witwenRente) + "/Mon.", c: "#059669", bold: false },
+      ...(p.sonstiges > 0
+        ? [{ l: "Sonstige Einnahmen", v: "− " + fmt(p.sonstiges) + "/Mon.", c: "#059669", bold: false }]
+        : []),
+      {
+        l: "Summe laufende Einnahmen",
+        v: "− " + fmt(einnahmen) + "/Mon.",
+        c: "#047857",
+        bold: false,
+        border: false,
+      },
       { l: "Monatliche Lücke", v: fmt(luecke) + "/Mon.", c: luecke > 0 ? WARN_RL : "#059669", bold: true, border: true },
       ...(p.kredite > 0 ? [{ l: "+ Kredite / Darlehen", v: "+ " + fmtK(p.kredite), c: "#1F2937", bold: false }] : []),
       { l: "Gesamtbedarf", v: fmtK(gesamt), c: C, bold: true, border: true },
@@ -770,6 +781,54 @@ export default function RisikolebenRechner() {
             <div style={T.kpiKontaktEu}>
               <div style={{ fontSize: "18px", fontWeight: "700", color: luecke > 0 ? WARN_RL : "#059669", letterSpacing: "-0.5px" }}>{fmt(luecke)}</div>
               <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatliche Lücke</div>
+            </div>
+          </div>
+          <div
+            style={{
+              marginTop: "12px",
+              padding: "12px 14px",
+              borderRadius: "12px",
+              background: "#F9FAFB",
+              border: "1px solid rgba(17,24,39,0.06)",
+              fontSize: "12px",
+              color: "#6B7280",
+              lineHeight: 1.55,
+            }}
+          >
+            <div style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: "8px" }}>
+              Berücksichtigte Einnahmen (monatlich)
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                <span>Partnereinkommen (netto)</span>
+                <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(p.partnerEinkommen)}/Mon.</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                <span>Witwen-/Waisenrente (ca.)</span>
+                <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(p.witwenRente)}/Mon.</span>
+              </div>
+              {p.sonstiges > 0 ? (
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                  <span>Sonstige Einnahmen</span>
+                  <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(p.sonstiges)}/Mon.</span>
+                </div>
+              ) : null}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                  marginTop: "4px",
+                  paddingTop: "8px",
+                  borderTop: "1px solid rgba(17,24,39,0.06)",
+                  fontWeight: "600",
+                  color: "#374151",
+                }}
+              >
+                <span>Summe</span>
+                <span style={{ flexShrink: 0 }}>{fmt(einnahmen)}/Mon.</span>
+              </div>
             </div>
           </div>
         </div>
@@ -954,11 +1013,10 @@ export default function RisikolebenRechner() {
                     Bestehende Absicherung {fmtK(p.vorhanden)} ist in der Summe berücksichtigt.
                   </p>
                 )}
-                {einnahmen > 0 && (
-                  <p style={{ marginBottom: "10px", fontSize: "12px", color: "#9CA3AF", lineHeight: 1.55 }}>
-                    Angenommene Einnahmen: {fmt(einnahmen)}/Mon.
-                  </p>
-                )}
+                <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.55 }}>
+                  <strong style={{ color: "#374151" }}>Einnahmen im Modell:</strong> Partnereinkommen {fmt(p.partnerEinkommen)}/Mon., Witwen-/Waisenrente {fmt(p.witwenRente)}/Mon.
+                  {p.sonstiges > 0 ? <>, sonstige Einnahmen {fmt(p.sonstiges)}/Mon.</> : null} — Summe {fmt(einnahmen)}/Mon.
+                </p>
                 <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
                   <strong style={{ color: "#374151" }}>Nächste Schritte:</strong> Richtwert Versicherungssumme {fmtK(netto > 0 ? netto : gesamt)} — Laufzeit {p.laufzeit} Jahre prüfen; bestehende Policen mit der Situation abgleichen.
                 </p>
@@ -1020,6 +1078,15 @@ export default function RisikolebenRechner() {
                   if (!valid) return;
                   const token = new URLSearchParams(window.location.search).get("token");
                   if (token) {
+                    const { luecke, netto, gesamt, empfPraemie } = R;
+                    const summe = netto > 0 ? netto : gesamt;
+                    const highlights = [
+                      { label: "Empfohlene Vers.-Summe", value: fmtK(summe) },
+                      { label: "Laufzeit", value: `${p.laufzeit} Jahre` },
+                      { label: "Monatliche Lücke", value: `${fmt(luecke)}/Mon.` },
+                    ];
+                    if (p.vorhanden > 0) highlights.push({ label: "Bestehende Absicherung", value: fmtK(p.vorhanden) });
+                    if (empfPraemie > 0) highlights.push({ label: "Schätz-Prämie", value: `ca. ${fmt(empfPraemie)}/Mon.` });
                     await fetch("/api/lead", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
@@ -1029,6 +1096,7 @@ export default function RisikolebenRechner() {
                         kundenName: formData.name,
                         kundenEmail: formData.email,
                         kundenTel: formData.telefon || "",
+                        highlights,
                       }),
                     }).catch(() => {});
                   }

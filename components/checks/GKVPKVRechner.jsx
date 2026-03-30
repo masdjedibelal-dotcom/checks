@@ -30,7 +30,7 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
   if (unterGrenze) {
     empfehlung = "gkv";
     headline = "Aktuell: GKV Pflicht";
-    subline = "Einkommensgrenze 6.450 € noch nicht erreicht";
+    subline = "Noch unter der Pflichtgrenze für Angestellte";
   } else if (beruf === "beamter") {
     empfehlung = "pkv";
     headline = "PKV für Sie naheliegend";
@@ -455,7 +455,7 @@ export default function GKVPKVRechner(){
               <button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
             </>
           ) : (
-            <><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"gkv-pkv",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Individuelle Einschätzung erhalten":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
+            <><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){const highlights=[{label:"Ergebnis",value:R.headline},{label:"Kontext",value:R.subline},{label:"GKV (Orient., Monat)",value:fmtKvGehaltEUR(R.gkvSchMonat)},{label:"PKV (Orient., Monat)",value:fmtKvGehaltEUR(R.pkvSchMonat)}];if(R.diff>0&&R.empfehlungKosten)highlights.push({label:"Modell-Ersparnis (Monat)",value:`${fmtKvGehaltEUR(R.diff)} (${R.empfehlungKosten})`});await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"gkv-pkv",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Individuelle Einschätzung erhalten":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
           )}
         </div>
       </div>

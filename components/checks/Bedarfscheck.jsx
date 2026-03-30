@@ -16,6 +16,9 @@ import { CHECKKIT2026 } from "@/lib/checkKitStandard2026";
 
 const formatBedarfEuro = (n) => `${Math.round(Number(n)).toLocaleString("de-DE")} €`;
 
+const BEDARF_PAKET_DEFAULT_KEYS = ["basis", "komfort", "premium"];
+const BEDARF_PAKET_LABELS = { basis: "Basis", komfort: "Komfort", premium: "Premium" };
+
 // ─── SCORING_MAPPING + Paket-Engine ───────────────────────────────────────────
 const SCORING_MAPPING = {
   PH: { base: 999, name: "Privathaftpflicht" },
@@ -190,6 +193,7 @@ function buildPackageScoringResult(profil, existing) {
 
   const topVierAnzahl = topFour.length;
   const abgedecktInTopVier = topFour.filter((r) => existingCoversScoringId(existingSet, r.id)).length;
+  const anzahlLuecken = topFour.filter((r) => !existingCoversScoringId(existingSet, r.id)).length;
 
   const ranked = allRanked.filter((r) => !existingCoversScoringId(existingSet, r.id));
 
@@ -206,7 +210,6 @@ function buildPackageScoringResult(profil, existing) {
   };
   const nettoSchatz = incomeMap[profil.netIncome] || 2000;
   const empfBU = Math.round((nettoSchatz * 0.7) / 50) * 50;
-  const anzahlLuecken = basis.length;
 
   return {
     basis,
@@ -246,7 +249,7 @@ function Opts({ k, opts, profil, set, C, T, cols = 1 }) {
                   <div style={T.optLabel}>{labelText}</div>
                   {sub ? <div style={T.optSub}>{sub}</div> : null}
                 </div>
-                <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, border: `1.5px solid ${active ? C : "#EAE5DC"}`, background: active ? C : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, border: `1.5px solid ${active ? C : "#E5E7EB"}`, background: active ? C : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {active ? (
                     <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
                       <path d="M1 4L3.5 6.5L9 1" stroke={mark} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -454,11 +457,11 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma}){
         <div style={dimDuringMicro}>
           <div style={T.section}>
             <div style={sectionLbl}>Rechtlicher Status</div>
-            <div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="employmentStatus" opts={EMP_OPTS} profil={profil} set={set} C={C} T={T}/></div></div>
+            <Opts k="employmentStatus" opts={EMP_OPTS} profil={profil} set={set} C={C} T={T} />
           </div>
           <div style={T.section}>
             <div style={sectionLbl}>Tätigkeitsart</div>
-            <div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="jobType" opts={JOB_OPTS} cols={2} profil={profil} set={set} C={C} T={T}/></div></div>
+            <Opts k="jobType" opts={JOB_OPTS} cols={2} profil={profil} set={set} C={C} T={T} />
           </div>
         </div>
         <div style={{height:"120px"}}/>
@@ -499,7 +502,9 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma}){
           <div style={T.eyebrow}>Ihre Verantwortung</div>
           <div style={T.h1}>Für wen tragen Sie aktuell Verantwortung?</div>
         </div>
-        <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="familyStatus" opts={FAM_OPTS} profil={profil} set={set} C={C} T={T}/></div></div></div>
+        <div style={T.section}>
+          <Opts k="familyStatus" opts={FAM_OPTS} profil={profil} set={set} C={C} T={T} />
+        </div>
         <div style={{height:"120px"}}/>
         <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
@@ -509,7 +514,9 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma}){
           <div style={T.eyebrow}>Ihre Wohnsituation</div>
           <div style={T.h1}>Wie wohnen Sie aktuell?</div>
         </div>
-        <div style={T.section}><div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="housingStatus" opts={HSG_OPTS} profil={profil} set={set} C={C} T={T}/></div></div></div>
+        <div style={T.section}>
+          <Opts k="housingStatus" opts={HSG_OPTS} profil={profil} set={set} C={C} T={T} />
+        </div>
         <div style={{height:"120px"}}/>
         <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
@@ -521,7 +528,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma}){
         </div>
         {microTransition?.fromScr === 6 ? <WizardMicroMomentBanner text={microTransition.text} C={C} /> : null}
         <div style={{ ...T.section, ...dimDuringMicro }}>
-          <div style={T.sliderCard}><div style={T.sliderRowLast}><Opts k="netIncome" opts={INC_OPTS} cols={2} profil={profil} set={set} C={C} T={T}/></div></div>
+          <Opts k="netIncome" opts={INC_OPTS} cols={2} profil={profil} set={set} C={C} T={T} />
         </div>
         <div style={{height:"120px"}}/>
         <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
@@ -611,8 +618,13 @@ function BedarfStoryScreen({ profil, onContinue, C, T, firma }) {
 }
 
 // ── Phase 3: Ergebnis — 3 Pakete (Level-up, Anker-Reihenfolge) ────────────────
-function Phase3({ result, onCTA, onReset, isDemo, C, T, firma }) {
+function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, onTogglePaket }) {
   const { basis, komfort, premium, alreadyCovered, showKinderHint, schutzProzent, topVierAnzahl, abgedecktInTopVier, empfBU, anzahlLuecken } = result;
+
+  const alreadyHasBuOrEu = alreadyCovered.some(
+    (item) => item.id === "berufsunfaehigkeit" || item.id === "erwerbsunfaehigkeit",
+  );
+  const showEmpfBuCard = !alreadyHasBuOrEu;
 
   const columns = [
     {
@@ -696,7 +708,13 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma }) {
           >
             Auf Basis deiner Angaben
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: showEmpfBuCard ? "1fr 1fr" : "1fr",
+              gap: "10px",
+            }}
+          >
             <div
               style={{
                 background: "#FFF7F7",
@@ -718,27 +736,29 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma }) {
               </div>
               <div style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: "500", marginTop: "3px" }}>wichtige Lücken</div>
             </div>
-            <div
-              style={{
-                background: "#F5F8FF",
-                border: "1px solid rgba(26,58,92,0.14)",
-                borderRadius: "14px",
-                padding: "14px 12px",
-                textAlign: "center",
-              }}
-            >
+            {showEmpfBuCard ? (
               <div
                 style={{
-                  fontSize: "22px",
-                  fontWeight: "700",
-                  color: C,
-                  letterSpacing: "-0.5px",
+                  background: "#F5F8FF",
+                  border: "1px solid rgba(26,58,92,0.14)",
+                  borderRadius: "14px",
+                  padding: "14px 12px",
+                  textAlign: "center",
                 }}
               >
-                {formatBedarfEuro(empfBU)}
+                <div
+                  style={{
+                    fontSize: "22px",
+                    fontWeight: "700",
+                    color: C,
+                    letterSpacing: "-0.5px",
+                  }}
+                >
+                  {formatBedarfEuro(empfBU)}
+                </div>
+                <div style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: "500", marginTop: "3px" }}>Empfohlene BU-Rente</div>
               </div>
-              <div style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: "500", marginTop: "3px" }}>Empfohlene BU-Rente</div>
-            </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -792,73 +812,109 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma }) {
       ) : null}
 
       <div style={{ ...T.section, paddingTop: "4px" }}>
+        <div
+          style={{
+            fontSize: "12px",
+            fontWeight: "600",
+            color: "#6B7280",
+            marginBottom: "10px",
+            lineHeight: 1.45,
+          }}
+        >
+          Für die Beratung auswählen — tippe ein oder mehrere Pakete an.
+        </div>
         <CheckKitResultGrid>
-          {columns.map((col) => (
-            <div key={col.key} style={col.wrapStyle}>
-              {col.badge ? (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "-11px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: "#F59E0B",
-                    color: "#fff",
-                    fontSize: "10px",
-                    fontWeight: "800",
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    padding: "4px 12px",
-                    borderRadius: "999px",
-                    whiteSpace: "nowrap",
-                    boxShadow: "0 4px 12px rgba(245, 158, 11, 0.35)",
-                  }}
-                >
-                  {col.badge}
-                </div>
-              ) : null}
-              <div
+          {columns.map((col) => {
+            const paketAn = gewaehltePakete.includes(col.key);
+            const stack = { ...CHECKKIT2026.resultColumnStack, ...col.wrapStyle };
+            const wrapStyle = paketAn
+              ? {
+                  ...stack,
+                  border: `2px solid ${C}`,
+                  boxShadow: `0 0 0 1px ${C}29, ${stack.boxShadow || "0 2px 10px rgba(17,24,39,0.06)"}`,
+                }
+              : stack;
+            return (
+              <button
+                key={col.key}
+                type="button"
+                aria-pressed={paketAn}
+                aria-label={`Paket ${col.title}, ${paketAn ? "ausgewählt" : "nicht ausgewählt"}. Antippen zum Umschalten.`}
+                onClick={() => onTogglePaket(col.key)}
                 style={{
-                  marginBottom: "12px",
-                  paddingBottom: "10px",
-                  borderBottom: "1px solid rgba(17,24,39,0.08)",
+                  ...wrapStyle,
+                  width: "100%",
+                  margin: 0,
+                  textAlign: "left",
+                  position: col.badge ? "relative" : undefined,
                 }}
               >
-                <div style={{ fontSize: "18px", lineHeight: 1.2, marginBottom: "4px" }} aria-hidden>
-                  {col.emoji}
+                {col.badge ? (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "-11px",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      background: "#F59E0B",
+                      color: "#fff",
+                      fontSize: "10px",
+                      fontWeight: "800",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      padding: "4px 12px",
+                      borderRadius: "999px",
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 4px 12px rgba(245, 158, 11, 0.35)",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {col.badge}
+                  </div>
+                ) : null}
+                <div
+                  style={{
+                    marginBottom: "12px",
+                    paddingBottom: "10px",
+                    borderBottom: "1px solid rgba(17,24,39,0.08)",
+                  }}
+                >
+                  <div style={{ fontSize: "18px", lineHeight: 1.2, marginBottom: "4px" }} aria-hidden>
+                    {col.emoji}
+                  </div>
+                  <div style={{ fontSize: "16px", fontWeight: "800", color: "#1F2937" }}>{col.title}</div>
+                  <div style={{ fontSize: "11px", color: "#6B7280", fontWeight: "600", marginTop: "4px" }}>
+                    Top {col.count} · {col.key === "basis" ? col.tagline : col.key === "premium" ? col.tagline : "Meistgewählt"}
+                  </div>
                 </div>
-                <div style={{ fontSize: "16px", fontWeight: "800", color: "#1F2937" }}>{col.title}</div>
-                <div style={{ fontSize: "11px", color: "#6B7280", fontWeight: "600", marginTop: "4px" }}>
-                  Top {col.count} · {col.key === "basis" ? col.tagline : col.key === "premium" ? col.tagline : "Meistgewählt"}
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
+                  {col.items.length === 0 ? (
+                    <div style={{ fontSize: "12px", color: "#9CA3AF" }}>—</div>
+                  ) : (
+                    col.items.map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          ...CHECKKIT2026.resultCard,
+                          padding: "12px 14px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <span style={{ fontSize: "22px", lineHeight: 1 }} aria-hidden>
+                          {item.icon}
+                        </span>
+                        <span style={{ fontSize: "13px", fontWeight: "600", color: "#374151" }}>
+                          {item.shortLabel}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
-                {col.items.length === 0 ? (
-                  <div style={{ fontSize: "12px", color: "#9CA3AF" }}>—</div>
-                ) : (
-                  col.items.map((item) => (
-                    <div
-                      key={item.id}
-                      style={{
-                        ...CHECKKIT2026.resultCard,
-                        padding: "12px 14px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
-                    >
-                      <span style={{ fontSize: "22px", lineHeight: 1 }} aria-hidden>
-                        {item.icon}
-                      </span>
-                      <span style={{ fontSize: "13px", fontWeight: "600", color: "#374151" }}>
-                        {item.shortLabel}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          ))}
+              </button>
+            );
+          })}
         </CheckKitResultGrid>
       </div>
 
@@ -892,10 +948,15 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma }) {
       </div>
 
       <div style={T.footer}>
-        {isDemo
-          ? <button style={T.btnPrim(false)} onClick={() => window.parent.postMessage({ type: "openConfig", slug: "bedarfscheck" }, "*")}>Anpassen & kaufen</button>
-          : <button style={T.btnPrim(false)} onClick={onCTA}>Absicherung gemeinsam durchgehen</button>
-        }
+        {isDemo ? (
+          <button style={T.btnPrim(false)} onClick={() => window.parent.postMessage({ type: "openConfig", slug: "bedarfscheck" }, "*")}>
+            Anpassen & kaufen
+          </button>
+        ) : (
+          <button style={T.btnPrim(gewaehltePakete.length === 0)} disabled={gewaehltePakete.length === 0} onClick={onCTA}>
+            {gewaehltePakete.length === 0 ? "Mind. ein Paket wählen" : "Absicherung gemeinsam durchgehen"}
+          </button>
+        )}
         <button style={T.btnSec} onClick={onReset}>Neue Einschätzung starten</button>
       </div>
     </div>
@@ -903,7 +964,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma }) {
 }
 
 // Phase 4: Kontakt
-function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma }) {
+function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehltePakete = [], leadHighlights = [] }) {
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[consent,setConsent]=useState(false);
   const valid=fd.name.trim()&&fd.email.trim()&&consent;
@@ -914,6 +975,34 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma }) {
       <div style={T.h1}>Wo können wir dich erreichen?</div>
       <div style={T.hint}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div>
     </div>
+    {!isDemo && gewaehltePakete.length > 0 ? (
+      <div style={{ padding: "0 24px", marginBottom: "12px" }}>
+        <div
+          style={{
+            padding: "14px 16px",
+            background: "#F9FAFB",
+            border: "1px solid #E5E7EB",
+            borderRadius: "14px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "11px",
+              fontWeight: "700",
+              color: "#6B7280",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              marginBottom: "6px",
+            }}
+          >
+            Deine Paketauswahl
+          </div>
+          <div style={{ fontSize: "14px", fontWeight: "600", color: "#111827" }}>
+            {gewaehltePakete.map((k) => BEDARF_PAKET_LABELS[k] ?? k).join(", ")}
+          </div>
+        </div>
+      </div>
+    ) : null}
     {isDemo ? (
       <>
         <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
@@ -948,7 +1037,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma }) {
       <CheckKontaktBeforeSubmitBlock maklerName={makler.name} consent={consent} onConsentChange={setConsent} />
     </div>
     </div>
-    <div style={T.footer}><button style={T.btnPrim(!valid)} disabled={!valid} onClick={()=>valid&&onAbsenden(fd)}>{valid?"Ergebnis gemeinsam durchgehen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
+    <div style={T.footer}><button style={T.btnPrim(!valid)} disabled={!valid} onClick={()=>valid&&onAbsenden(fd, leadHighlights)}>{valid?"Ergebnis gemeinsam durchgehen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
     </>
     )}
   </div>);}
@@ -997,11 +1086,17 @@ export default function Bedarfscheck(){
   });
   const[profil,setProfil]=useState(emptyProfil);
   const[existing,setExisting]=useState([]);
+  const [gewaehltePakete, setGewaehltePakete] = useState(() => [...BEDARF_PAKET_DEFAULT_KEYS]);
   const set=(k,v)=>setProfil(x=>({...x,[k]:v}));
   const toggle=(id)=>setExisting(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
+  const togglePaket = (key) => {
+    setGewaehltePakete((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    );
+  };
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);};
   useCheckScrollToTop([phase, ak, danke, loading, storyScreen]);
-  const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setLoading(false);setStoryScreen(false);setProfil(emptyProfil());setExisting([]);setKontaktName("");};
+  const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setLoading(false);setStoryScreen(false);setProfil(emptyProfil());setExisting([]);setKontaktName("");setGewaehltePakete([...BEDARF_PAKET_DEFAULT_KEYS]);};
   const profilReady=
     profil.employmentStatus &&
     profil.jobType &&
@@ -1014,7 +1109,15 @@ export default function Bedarfscheck(){
   if(danke)return <DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma}/>;
   if(loading)return <div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={WIZARD_TOTAL} total={WIZARD_TOTAL} accentColor={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>;
   if(storyScreen&&result)return <BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma}/>;
-  if(phase===4)return <Phase4 key={ak} isDemo={isDemo} onAbsenden={async (fd)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>;
-  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>;
+  if(phase===4){
+    const leadHighlights=result?[
+      {label:"Schutzquote (Top 4)",value:`${result.schutzProzent}%`},
+      {label:"Lücken in Top 4",value:String(result.anzahlLuecken)},
+      {label:"Empf. BU-Rente (Orient.)",value:formatBedarfEuro(result.empfBU)},
+      {label:"Abgedeckt in Top 4",value:`${result.abgedecktInTopVier} von ${result.topVierAnzahl}`},
+    ]:[];
+    return <Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>;
+  }
+  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} gewaehltePakete={gewaehltePakete} onTogglePaket={togglePaket} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>;
   return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma}/>;
 }

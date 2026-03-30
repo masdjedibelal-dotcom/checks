@@ -171,7 +171,7 @@ function ImmoTuvScanLoader({ accent, onComplete, familyContext = false, showCred
           letterSpacing: "-0.3px",
         }}
       >
-        TÜV-Scan Ihres Immobilien-Projekts
+        Prüfung Ihres Immobilien-Projekts
       </div>
 
       <div
@@ -259,7 +259,7 @@ const PATHS = [
   },
 ];
 
-/** Scoring + Spalten (Schutz-Dach): Bank & Existenz | Objektschutz | Zukunft & Recht */
+/** Scoring + Spalten (Immobilienabsicherung): Bank & Existenz | Objektschutz | Zukunft & Recht */
 function buildImmoEmpfehlungen(path, a) {
   const bauphase = path === "bau";
   const fin = a.finanzierung === true;
@@ -390,7 +390,7 @@ function buildImmoEmpfehlungen(path, a) {
   };
 }
 
-/** Phase 3: globale Priorisierung — Score &gt; 700 | 300–700 | &lt; 300 */
+/** Phase 3: drei Dringlichkeitsstufen (intern nach Gewichtung) */
 function bucketImmoEmpfehlungenByScore(emp) {
   const all = [...emp.bank, ...emp.existenz, ...emp.werterhalt];
   const seen = new Set();
@@ -785,7 +785,7 @@ export default function ImmoCheck() {
           </div>
           <span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{MAKLER.firma}</span>
         </div>
-        <span style={T.badge}>Immo-Check</span>
+        <span style={T.badge}>Immobilienabsicherung</span>
       </div>
       <div style={T.prog}>
         <div style={T.progFil(Math.round((curStep / totalSteps) * 100))} />
@@ -896,12 +896,13 @@ export default function ImmoCheck() {
 
   if (phase === 4) {
     const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
+    const pathLabel = PATHS.find((p) => p.id === path);
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header />
         <div style={T.hero}>
           <div style={T.eyebrow}>Kontakt</div>
-          <div style={T.h1}>Schutz-Dach besprechen</div>
+          <div style={T.h1}>Immobilienabsicherung besprechen</div>
           <div style={T.body}>Wir gehen Ihre Prioritäten mit Ihnen durch — unverbindlich.</div>
         </div>
         {isDemo ? (
@@ -970,6 +971,12 @@ export default function ImmoCheck() {
                         kundenName: fd.name,
                         kundenEmail: fd.email,
                         kundenTel: fd.tel || "",
+                        highlights: [
+                          ...(pathLabel
+                            ? [{ label: "Situation", value: `${pathLabel.icon} ${pathLabel.label}` }]
+                            : []),
+                          { label: "Anzahl Empfehlungen", value: String(totalEmpf) },
+                        ],
                       }),
                     }).catch(() => {});
                   }
@@ -1012,11 +1019,11 @@ export default function ImmoCheck() {
           >
             🛡️
           </div>
-          <div style={T.resultBadge(C)}>Schutz-Dach · Priorität nach Score</div>
+          <div style={T.resultBadge(C)}>Immobilienabsicherung · Priorisierte Empfehlungen</div>
           <div style={T.resultH1}>Ihr Plan für ein sorgenfreies Zuhause.</div>
           <div style={T.resultNum(C)}>{totalEmpf}</div>
           <div style={T.resultLead}>
-            Empfehlungen in drei Spalten: Existenz &amp; Pflicht (Score über 700), wichtiger Standard (300–700) und optional (unter 300) — abgeleitet aus Ihren Angaben im Risiko-Scanner.
+            Empfehlungen in drei Spalten: Existenz und Pflicht, wichtiger Standard sowie optionaler Plus-Schutz — abgeleitet aus Ihren Angaben im Risiko-Scanner.
           </div>
           {pathLabel && (
             <div
@@ -1044,7 +1051,7 @@ export default function ImmoCheck() {
             <ResultCol
               emoji="🔴"
               wallTitle="Existenz / Pflicht"
-              pillarTitle="Score > 700"
+              pillarTitle="Unverzichtbare Bausteine"
               wallDesc="Höchste Dringlichkeit — ohne diese Bausteine drohen die größten Lücken."
               bg={CHECKKIT2026.colExistenz}
               items={empfehlungBuckets.pflicht}
@@ -1052,7 +1059,7 @@ export default function ImmoCheck() {
             <ResultCol
               emoji="🟡"
               wallTitle="Wichtiger Standard"
-              pillarTitle="Score 300–700"
+              pillarTitle="Zeitnah sinnvoll"
               wallDesc="Solide Absicherung, die in vielen Fällen bald relevant wird."
               bg={CHECKKIT2026.colStandard}
               items={empfehlungBuckets.standard}
@@ -1060,7 +1067,7 @@ export default function ImmoCheck() {
             <ResultCol
               emoji="⚪"
               wallTitle="Optional / Plus"
-              pillarTitle="Score unter 300"
+              pillarTitle="Nach Bedarf"
               wallDesc="Ergänzungen je nach Lebenslage — weniger dringend, aber klug abzuwägen."
               bg={CHECKKIT2026.colPlus}
               items={empfehlungBuckets.optional}
@@ -1071,7 +1078,7 @@ export default function ImmoCheck() {
         <div style={{ padding: "0 24px", marginBottom: "120px" }}>
           <CheckBerechnungshinweis>
             <>
-              Priorisierung per <strong>Score</strong>: Finanzierung → Risikoleben 999 und hohe BU (Ratenabsicherung); Bauphase → Bauherrenhaftpflicht 999; PV/Wallbox → Photovoltaik-Schutz; Erbe, Altersvorsorge-Immobilie oder Alter 40+ → Pflege; Bau/Bestand → Eigentümer-Rechtsschutz in <strong>Zukunft & Recht</strong>. Keine individuelle Rechtsberatung.{" "}
+              Priorisierung nach Dringlichkeit: Bei Finanzierung Risikoleben und eine starke BU (Ratenabsicherung); in der Bauphase die Bauherrenhaftpflicht; bei PV/Wallbox der Photovoltaik-Schutz; bei Erbe, Altersvorsorge-Immobilie oder höherem Alter die Pflege-Vorsorge; bei Bau oder Bestand der Eigentümer-Rechtsschutz unter <strong>Zukunft &amp; Recht</strong>. Keine individuelle Rechtsberatung.{" "}
               <span style={{ color: "#b8884a" }}>Orientierung für Ihr Gespräch mit dem Makler.</span>
             </>
           </CheckBerechnungshinweis>
@@ -1222,7 +1229,7 @@ export default function ImmoCheck() {
           <p style={CHECKKIT2026.storyBody}>{PATH_INTRO_STORY[path]}</p>
         </div>
         <div style={T.footer}>
-          <button type="button" style={T.btnPrim(true)} onClick={() => goTo(2)}>
+          <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Weiter zum Risiko-Scanner
           </button>
           <button
@@ -1244,7 +1251,7 @@ export default function ImmoCheck() {
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header />
       <div style={T.hero}>
-        <div style={T.eyebrow}>Immobilien-Check</div>
+        <div style={T.eyebrow}>Immobilienabsicherung</div>
         <div style={T.h1}>Wo stehen Sie?</div>
         <div style={T.body}>Wählen Sie Ihre Situation — wir passen Risiko-Scanner und Empfehlungen an.</div>
       </div>

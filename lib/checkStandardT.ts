@@ -184,7 +184,7 @@ export const checkStandardT = (C: string) => {
       width: "50px",
       height: "50px",
       borderRadius: "14px",
-      background: selected ? `rgba(26,58,92,0.09)` : "#F7F3EC",
+      background: selected ? `rgba(26,58,92,0.09)` : "#F3F4F6",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -232,7 +232,7 @@ export const checkStandardT = (C: string) => {
       width: "46px",
       height: "46px",
       borderRadius: "14px",
-      background: selected ? `rgba(26,58,92,0.09)` : "#F7F3EC",
+      background: selected ? `rgba(26,58,92,0.09)` : "#F3F4F6",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -264,7 +264,7 @@ export const checkStandardT = (C: string) => {
       width: "22px",
       height: "22px",
       borderRadius: "7px",
-      border: checked ? `1.5px solid ${C}` : "1.5px solid #EAE5DC",
+      border: checked ? `1.5px solid ${C}` : "1.5px solid #E5E7EB",
       background: checked ? C : "#FFFFFF",
       display: "flex",
       alignItems: "center",
@@ -327,7 +327,7 @@ export const checkStandardT = (C: string) => {
     // ── INFO BOX ──────────────────────────────
     infoBox: {
       ...infoBoxBase,
-      background: "#faf9f6",
+      background: "#F9FAFB",
       color: "#6B7280",
     },
     infoBlue: {
@@ -570,7 +570,7 @@ export const checkStandardT = (C: string) => {
     },
     maklerTop: {
       padding: "14px 18px",
-      borderBottom: "1px solid #EAE5DC",
+      borderBottom: "1px solid #E5E7EB",
       background: "#fafafa",
     },
     maklerName: {
@@ -610,7 +610,7 @@ export const checkStandardT = (C: string) => {
     calcHintBtn: {
       width: "100%",
       padding: "14px 18px",
-      background: "#faf9f6",
+      background: "#F9FAFB",
       border: "none",
       cursor: "pointer",
       display: "flex",
@@ -623,7 +623,7 @@ export const checkStandardT = (C: string) => {
       fontSize: "13px",
       color: "#6B7280",
       lineHeight: 1.7,
-      borderTop: "1px solid #EAE5DC",
+      borderTop: "1px solid #E5E7EB",
       background: "#FFFFFF",
     },
 
@@ -876,7 +876,7 @@ export const checkStandardT = (C: string) => {
     body: hint,
     divider: {
       height: "1px",
-      background: "#EAE5DC",
+      background: "#E5E7EB",
       margin: "0 20px 20px",
     },
     card: {

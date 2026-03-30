@@ -637,6 +637,15 @@ export default function JahresCheck(){
   // Phase 4: Kontakt
   if(phase===4){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
+    const akutJ=sortJahresResultItems(E.abschliessen.filter((x)=>x.h));
+    const optimierungJ=sortJahresResultItems([...E.anpassen]);
+    const ergaenzungJ=sortJahresResultItems([...E.ergaenzen,...E.abschliessen.filter((x)=>!x.h)]);
+    const kpiJ=(n)=>(n===0?"—":String(n));
+    const jahresHighlights=[
+      {label:"Jetzt klären",value:kpiJ(akutJ.length)},
+      {label:"Anpassen prüfen",value:kpiJ(optimierungJ.length)},
+      {label:"Ergänzen",value:kpiJ(ergaenzungJ.length)},
+    ];
     return(<div style={T.page} key={ak} className="fade-in">
       <Header phase={100} total={100} />
       <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir dich erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div></div>
@@ -674,7 +683,7 @@ export default function JahresCheck(){
           <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
         </div>
       </div>
-      <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"lebenssituations-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Situation gemeinsam prüfen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"lebenssituations-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights:jahresHighlights})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Situation gemeinsam prüfen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
       </>
       )}
     </div>);

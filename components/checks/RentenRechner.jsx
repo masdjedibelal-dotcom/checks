@@ -503,7 +503,7 @@ export default function RentenRechner() {
               if (!valid) return;
               const token = new URLSearchParams(window.location.search).get("token");
               if (token) {
-                await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, slug: "vorsorge-check", kundenName: fd.name, kundenEmail: fd.email, kundenTel: fd.tel || "" }) }).catch(() => {});
+                await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, slug: "vorsorge-check", kundenName: fd.name, kundenEmail: fd.email, kundenTel: fd.tel || "", highlights: [{ label: "Monatliche Lücke", value: fmt(R.lueckeAdjusted) }, { label: "Deckungsgrad", value: `${R.deckung}%` }, { label: "Bis Rente", value: `${R.jahreBis} J.` }] }) }).catch(() => {});
               }
               setName(fd.name);
               setDanke(true);
