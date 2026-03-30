@@ -469,8 +469,8 @@ export default function LandingHome() {
             <div className="hero-float-wrap">
               <div className="hero-phones-clip">
                 <Image
-                  src="/images/landing-hero-main.png"
-                  alt="FlowLeads Microsite auf dem Smartphone: Einkommens-Check mit Ergebnisbetrag und Bedienelementen"
+                  src="/images/hero_mock.png"
+                  alt="FlowLeads Microsite auf dem Smartphone: Check mit Symbolen, Ergebnis 1.840 € und unterer Aktionsleiste"
                   fill
                   priority
                   sizes="(max-width: 960px) min(88vw, 340px), min(calc(50vw - 84px), 360px)"

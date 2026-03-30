@@ -10,8 +10,8 @@ export function VertriebVisNeukontakt(): ReactNode {
       <Image
         src="/images/vertrieb-neue-kontakte.png"
         alt=""
-        width={1024}
-        height={1024}
+        width={2048}
+        height={2048}
         className="vertrieb-ec-raster-img"
         sizes="(max-width: 768px) 85vw, 280px"
       />
@@ -26,8 +26,8 @@ export function VertriebVisBestand(): ReactNode {
       <Image
         src="/images/vertrieb-bestandskunden.png"
         alt=""
-        width={1024}
-        height={1024}
+        width={2048}
+        height={2048}
         className="vertrieb-ec-raster-img"
         sizes="(max-width: 768px) 85vw, 280px"
       />
@@ -42,8 +42,8 @@ export function VertriebVisGespraech(): ReactNode {
       <Image
         src="/images/vertrieb-gespraeche-vorbereiten.png"
         alt=""
-        width={1024}
-        height={1024}
+        width={2048}
+        height={2048}
         className="vertrieb-ec-raster-img"
         sizes="(max-width: 768px) 85vw, 280px"
       />
