@@ -34,17 +34,6 @@ import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatar
       border: 2px solid #ffffff; box-shadow: 0 0 0 1px var(--accent);
     }
     a { text-decoration: none; }
-    .buktg-swiper {
-      display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch; padding: 4px 24px 12px; margin: 0 -24px;
-      scrollbar-width: none;
-    }
-    .buktg-swiper::-webkit-scrollbar { display: none; }
-    .buktg-swiper-card {
-      flex: 0 0 85%; max-width: 85%; min-width: 0; scroll-snap-align: start;
-      border-radius: 16px; background: #F9FAFB; border: 1px solid rgba(17,24,39,0.06);
-      padding: 16px 18px; box-sizing: border-box;
-    }
     .buktg-acc-item { border-radius: 12px; background: #F9FAFB; border: 1px solid rgba(17,24,39,0.06); margin-bottom: 8px; overflow: hidden; }
     .buktg-acc-btn {
       width: 100%; display: flex; align-items: center; justify-content: space-between;
@@ -58,16 +47,6 @@ import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatar
 
 const phaseBarColor = (pct) =>
   pct >= 75 ? "#22c55e" : pct >= 45 ? "#eab308" : "#C0392B";
-
-/** Phase-2 Swiper: Timeline-Track (Ergebnis) — 4px, Pill-Track, grauer Slate-Ton */
-const BUKTG_PHASE2_TIMELINE_TRACK = {
-  background: "rgba(31,41,55,0.08)",
-  borderRadius: "999px",
-  overflow: "hidden",
-  height: "4px",
-  marginTop: "12px",
-};
-const BUKTG_PHASE2_TIMELINE_FILL = { borderRadius: "999px" };
 
 const fmt = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 
@@ -957,7 +936,6 @@ export default function BUKTGRechner() {
     if (secondaryEinordnung?.type === "beamterWiderruf") omitDetailKeys.add("beamterWiderruf");
     const accordionDetailHints = detailHintRows.filter((h) => !omitDetailKeys.has(h.key));
 
-    const showEinordnungSection = R.luecke > 0 || secondaryEinordnung != null;
     const showDetailsAccordion = accordionDetailHints.length > 0;
 
     const toggleLegal = (id) => setLegalOpen((x) => (x === id ? null : id));
@@ -980,13 +958,7 @@ export default function BUKTGRechner() {
               {R.luecke > 0 ? fmt(R.luecke) : "Gedeckt"}
             </div>
             <div style={{ ...T.resultUnit, marginBottom: "14px" }}>
-              {R.isStudentModus
-                ? R.luecke > 0
-                  ? "Lücke zwischen Ziel-Netto und privater Absicherung (staatliche EMR im Modell 0 €)"
-                  : "Ziel-Netto im Modell durch private Absicherung gedeckt"
-                : R.luecke > 0
-                  ? "mögliche monatliche Lücke"
-                  : "Ihr Einkommen ist weitgehend abgesichert"}
+              {R.luecke > 0 ? "mögliche monatliche Lücke" : "Ihr Einkommen ist weitgehend abgesichert"}
             </div>
             {R.luecke > 0 ? (
               <div style={{ ...T.statusWarn, margin: "0 auto", width: "fit-content" }}>Absicherungslücke erkannt</div>
@@ -1016,97 +988,138 @@ export default function BUKTGRechner() {
             <div style={{ ...T.resultSub, marginTop: "16px" }}>Vereinfachte Einordnung · auf Basis Ihrer Angaben</div>
           </div>
 
-          {showEinordnungSection && (
-            <div style={{ ...T.section, marginTop: "4px" }}>
-              <div style={{ ...T.sectionLbl, marginBottom: "8px" }}>Einordnung</div>
-              {R.luecke > 0 && (
-                <SmartHintCard icon="📊">
-                  <strong style={{ fontWeight: "700" }}>Szenario-Kosten:</strong>{" "}
-                  <span style={{ fontWeight: "700", color: "#B45309" }}>{fmt(R.gesamtschadenSzenario)}</span>
-                  <span style={{ display: "block", marginTop: "6px", fontWeight: "500", opacity: 0.88, fontSize: "12px" }}>
-                    {R.sz.label} · Monatslücke {fmt(R.luecke)} × Ø {R.sz.dauer} Monate
-                    {R.showPkvAgZuschussWarn && R.pkvAgZuschussSchaetzungMonat > 0 && (
-                      <span style={{ display: "block", marginTop: "4px" }}>
-                        zzgl. geschätzt {fmt(R.pkvAgZuschussSchaetzungMonat)}/Mon. entfallener AG-PKV-Zuschuss × {R.sz.dauer} Mon.
-                      </span>
-                    )}
-                  </span>
-                </SmartHintCard>
-              )}
-              {secondaryEinordnung && (
-                <SmartHintCard icon="💡">{secondaryEinordnung.text}</SmartHintCard>
-              )}
-              {R.showDrvEmrHinweisSelbst && (
-                <SmartHintCard icon="📋">
-                  Hinweis: Anspruch auf Erwerbsminderungsrente besteht nur, wenn Sie pflichtversichert in der DRV sind oder freiwillig einzahlen.
-                </SmartHintCard>
-              )}
+          {/* ── NEU: KPI-Kacheln ── */}
+          <div style={{ padding: "0 24px", marginBottom: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+              <div
+                style={{
+                  background: "rgba(31,41,55,0.04)",
+                  borderRadius: "12px",
+                  padding: "12px 14px",
+                }}
+              >
+                <div style={{ fontSize: "11px", color: "#9CA3AF", marginBottom: "3px" }}>
+                  {R.isStudentModus ? "Ziel-Netto" : "Netto heute"}
+                </div>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: "#111827", letterSpacing: "-0.3px" }}>
+                  {fmt(R.netto)}
+                </div>
+              </div>
+              <div
+                style={{
+                  background: "rgba(31,41,55,0.04)",
+                  borderRadius: "12px",
+                  padding: "12px 14px",
+                }}
+              >
+                <div style={{ fontSize: "11px", color: "#9CA3AF", marginBottom: "3px" }}>Absicherung</div>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: "#111827", letterSpacing: "-0.3px" }}>
+                  {fmt(R.p3.monatl)}
+                </div>
+              </div>
             </div>
-          )}
+          </div>
 
-          {/* Horizontal Swiper (snap) */}
-          <div style={T.section}>
-            <div style={{ ...T.sectionLbl, paddingLeft: 0 }}>
-              {R.isStudentModus ? "Modell ohne laufendes Arbeitseinkommen" : "So entwickelt sich Ihr Einkommen"}
+          {/* ── NEU: Breakdown-Balken ── */}
+          <div style={{ padding: "0 24px", marginBottom: "20px" }}>
+            {[
+              { label: p.beruf === "beamter" ? "Ruhegehalt" : "EU/EMR", value: R.emSchaetzung, color: "#9CA3AF" },
+              { label: p.beruf === "beamter" ? "DU-Rente" : "BU-Rente", value: R.p3.monatl - R.emSchaetzung, color: C },
+              { label: "Lücke", value: R.luecke, color: "#C0392B" },
+            ]
+              .filter((row) => row.value > 0)
+              .map((row) => {
+                const pct = R.netto > 0 ? Math.min(100, Math.round((row.value / R.netto) * 100)) : 0;
+                return (
+                  <div key={row.label} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                    <div style={{ fontSize: "11px", color: "#6B7280", width: "52px", flexShrink: 0 }}>{row.label}</div>
+                    <div style={{ flex: 1, height: "5px", background: "rgba(31,41,55,0.08)", borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: row.color, borderRadius: "999px", transition: "width 0.7s ease" }} />
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#6B7280", width: "52px", textAlign: "right", flexShrink: 0 }}>
+                      {fmt(row.value)}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* ── Phasen: kompakte Cards statt Swiper ── */}
+          <div style={{ ...T.section, marginBottom: "20px" }}>
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: "600",
+                color: "#9CA3AF",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                marginBottom: "10px",
+              }}
+            >
+              {R.isStudentModus ? "Modell ohne Arbeitseinkommen" : "Einkommensphasen"}
             </div>
-            <div className="buktg-swiper" role="region" aria-label="Phasen Einkommen">
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {phasen.map((ph, i) => {
-                const diff = R.netto - ph.monatl;
                 const barW = phaseBarsReady ? Math.min(100, ph.pct) : 0;
                 const barCol = phaseBarColor(ph.pct);
-                const emrIdx = phasen.length - 1;
-                const showEmZeroWarn = i === emrIdx && (R.emSchaetzung === 0 || R.isStudentModus);
                 return (
-                  <div key={i} className="buktg-swiper-card">
-                    <div style={{ fontSize: "11px", fontWeight: "700", color: "#9CA3AF", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "6px" }}>
-                      Phase {i + 1}
+                  <div
+                    key={i}
+                    style={{
+                      background: "#F9FAFB",
+                      border: "1px solid rgba(17,24,39,0.06)",
+                      borderRadius: "12px",
+                      padding: "12px 14px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
+                      <div style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: "600" }}>Phase {i + 1}</div>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                        <div
+                          style={{
+                            fontSize: "15px",
+                            fontWeight: "700",
+                            color: ph.pct < 45 ? "#C0392B" : "#111827",
+                            letterSpacing: "-0.3px",
+                          }}
+                        >
+                          {fmt(ph.monatl)}
+                        </div>
+                        <div style={{ fontSize: "10px", color: "#9CA3AF" }}>{ph.pct} %</div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: "15px", fontWeight: "700", color: "#111827", lineHeight: 1.3 }}>{ph.label}</div>
-                    <div style={{ fontSize: "12px", color: "#6B7280", marginTop: "4px", lineHeight: 1.45 }}>{ph.sub}</div>
-                    <div style={{ fontSize: "22px", fontWeight: "800", color: ph.pct < 45 ? "#C0392B" : "#111827", letterSpacing: "-0.5px", marginTop: "12px" }}>
-                      {fmt(ph.monatl)}
-                    </div>
-                    <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px" }}>{ph.pct} % Ihres Nettos</div>
-                    <div style={BUKTG_PHASE2_TIMELINE_TRACK}>
+                    <div style={{ fontSize: "11px", color: "#6B7280", marginBottom: "8px", lineHeight: 1.4 }}>{ph.label}</div>
+                    <div style={{ height: "4px", background: "rgba(31,41,55,0.08)", borderRadius: "999px", overflow: "hidden" }}>
                       <div
                         style={{
                           height: "100%",
                           width: `${barW}%`,
-                          ...BUKTG_PHASE2_TIMELINE_FILL,
                           background: barCol,
+                          borderRadius: "999px",
                           transition: "width 0.85s cubic-bezier(0.34, 1.56, 0.64, 1)",
                         }}
                       />
                     </div>
-                    {showEmZeroWarn && (
-                      <div style={{ marginTop: "10px" }} role="alert">
-                        <SmartHintCard
-                          icon="⚠️"
-                          compact
-                        >
-                          {p.beruf === "azubi" && p.szenario !== "unfall"
-                            ? "Wartezeit von 5 Jahren noch nicht erfüllt. EMR in diesem Schritt 0 € — Ausnahme: Unfall-Szenario."
-                            : R.isStudentModus
-                              ? "Keine gesetzliche EMR aus Erwerbstätigkeit modelliert — bitte private Vorsorge (z. B. BU) prüfen."
-                              : "Achtung: EMR in diesem Schritt 0 € — hohes Absicherungsrisiko bis zur gesetzlichen Rente."}
-                        </SmartHintCard>
-                      </div>
-                    )}
-                    {diff > 0 && (
+                    {i === phasen.length - 1 && (R.emSchaetzung === 0 || R.isStudentModus) && (
                       <div
+                        role="alert"
                         style={{
-                          marginTop: "12px",
-                          padding: "10px 12px",
-                          borderRadius: "18px",
+                          marginTop: "10px",
+                          padding: "8px 10px",
+                          borderRadius: "10px",
                           background: "#FFF6F5",
                           border: "1px solid #F2D4D0",
-                          fontSize: "12px",
+                          fontSize: "11px",
                           fontWeight: "600",
                           color: "#C0392B",
                           lineHeight: 1.45,
                         }}
                       >
-                        Lücke zu Ihrem Netto: − {fmt(diff)} / Monat
+                        {p.beruf === "azubi" && p.szenario !== "unfall"
+                          ? "Wartezeit von 5 Jahren noch nicht erfüllt. EMR in diesem Schritt 0 € — Ausnahme: Unfall-Szenario."
+                          : R.isStudentModus
+                            ? "Keine gesetzliche EMR aus Erwerbstätigkeit modelliert — bitte private Vorsorge (z. B. BU) prüfen."
+                            : "Achtung: EMR in diesem Schritt 0 € — hohes Absicherungsrisiko bis zur gesetzlichen Rente."}
                       </div>
                     )}
                   </div>
@@ -1115,62 +1128,39 @@ export default function BUKTGRechner() {
             </div>
           </div>
 
-          {/* Kompakt-Empfehlung: Lückenschließung */}
-          <div style={{ ...T.section, marginBottom: "8px" }}>
-            <div
-              style={{
-                fontSize: "17px",
-                fontWeight: "800",
-                color: C,
-                lineHeight: 1.35,
-                marginBottom: "14px",
-              }}
-            >
-              {R.luecke > 0 ? (
-                <>So schließen Sie Ihre Lücke von {fmt(R.luecke)}</>
-              ) : (
-                <>Im Modell ist Ihre monatliche Lücke gedeckt</>
-              )}
-            </div>
-            <div
-              style={{
-                border: `1px solid rgba(17,24,39,0.08)`,
-                borderRadius: "14px",
-                padding: "14px 16px",
-                background: "#FFFFFF",
-                boxShadow: "0 2px 12px rgba(17,24,39,0.04)",
-              }}
-            >
-              <div>
-                <div style={{ fontSize: "13px", fontWeight: "700", color: "#111827" }}>Krankentagegeld</div>
-                <div style={{ fontSize: "17px", fontWeight: "800", color: C, marginTop: "4px", letterSpacing: "-0.3px" }}>
-                  + {R.empfKTG} € / Tag
-                </div>
-                <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "3px", lineHeight: 1.45 }}>
-                  Sichert die Krankengeld-Phase (ab Woche 7)
-                </div>
-              </div>
-              <div style={{ borderTop: "1px solid rgba(17,24,39,0.06)", paddingTop: "14px", marginTop: "14px" }}>
-                <div style={{ fontSize: "13px", fontWeight: "700", color: "#111827" }}>
-                  {p.beruf === "beamter" ? "DU-Absicherung" : "BU-Absicherung"}
-                </div>
-                <div style={{ fontSize: "17px", fontWeight: "800", color: C, marginTop: "4px", letterSpacing: "-0.3px" }}>
-                  + {fmt(R.empfBU)} / Monat
-                </div>
-                <div style={{ fontSize: "11px", color: "#6B7280", marginTop: "3px", lineHeight: 1.45 }}>
-                  Sichert Phase 3 (EMR) dauerhaft
-                </div>
-              </div>
-            </div>
+          {/* ── Empfehlung: 2 Kacheln ── */}
+          <div style={{ ...T.section, marginBottom: "20px" }}>
             <div
               style={{
                 fontSize: "11px",
-                color: "#6B7280",
-                marginTop: "10px",
-                textAlign: "center",
-                lineHeight: 1.5,
+                fontWeight: "600",
+                color: "#9CA3AF",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                marginBottom: "10px",
               }}
             >
+              Empfehlung
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+              <div style={{ border: "1px solid rgba(17,24,39,0.08)", borderRadius: "14px", padding: "14px 14px", background: "#FFFFFF" }}>
+                <div style={{ fontSize: "11px", color: "#9CA3AF", marginBottom: "4px" }}>Krankentagegeld</div>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>
+                  {R.empfKTG > 0 ? `${R.empfKTG} €` : "—"}
+                </div>
+                <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "2px" }}>pro Tag</div>
+              </div>
+              <div style={{ border: "1px solid rgba(17,24,39,0.08)", borderRadius: "14px", padding: "14px 14px", background: "#FFFFFF" }}>
+                <div style={{ fontSize: "11px", color: "#9CA3AF", marginBottom: "4px" }}>
+                  {p.beruf === "beamter" ? "DU-Absicherung" : "BU-Rente"}
+                </div>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>
+                  {R.empfBU > 0 ? fmt(R.empfBU) : "—"}
+                </div>
+                <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "2px" }}>pro Monat</div>
+              </div>
+            </div>
+            <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "8px", textAlign: "center" }}>
               Risiko bei {R.sz.label}: {R.sz.buWahrsch} %
             </div>
           </div>
@@ -1178,6 +1168,34 @@ export default function BUKTGRechner() {
           {/* Accordion Rechtliches */}
           <div style={{ ...T.section, marginBottom: "24px" }}>
             <div style={{ ...T.sectionLbl, marginBottom: "10px" }}>Hinweise & Rechtliches</div>
+            {R.luecke > 0 && (
+              <div className="buktg-acc-item">
+                <button type="button" className="buktg-acc-btn" onClick={() => toggleLegal("szenario")} aria-expanded={legalOpen === "szenario"}>
+                  <span>Szenario-Kosten & Einordnung</span>
+                  <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{legalOpen === "szenario" ? "▲" : "▼"}</span>
+                </button>
+                {legalOpen === "szenario" && (
+                  <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
+                    <p style={{ marginBottom: "10px" }}>
+                      <strong>Geschätzte Gesamtkosten im Szenario {R.sz.label}:</strong> {fmt(R.gesamtschadenSzenario)}
+                      <br />
+                      <span style={{ fontSize: "11px" }}>Monatslücke {fmt(R.luecke)} × Ø {R.sz.dauer} Monate</span>
+                      {R.showPkvAgZuschussWarn && R.pkvAgZuschussSchaetzungMonat > 0 && (
+                        <span style={{ display: "block", marginTop: "4px", fontSize: "11px" }}>
+                          zzgl. ca. {fmt(R.pkvAgZuschussSchaetzungMonat)}/Mon. entfallener AG-PKV-Zuschuss × {R.sz.dauer} Mon.
+                        </span>
+                      )}
+                    </p>
+                    {secondaryEinordnung && <p style={{ marginBottom: "10px" }}>{secondaryEinordnung.text}</p>}
+                    {R.showDrvEmrHinweisSelbst && (
+                      <p>
+                        Hinweis: Anspruch auf Erwerbsminderungsrente besteht nur bei Pflichtversicherung oder freiwilliger Einzahlung in die DRV.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             {showDetailsAccordion && (
               <div className="buktg-acc-item">
                 <button type="button" className="buktg-acc-btn" onClick={() => toggleLegal("details")} aria-expanded={legalOpen === "details"}>
@@ -1221,7 +1239,7 @@ export default function BUKTGRechner() {
           </div>
         </div>
 
-        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Absicherung gemeinsam prüfen" T={T} />
+        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} nextLabel="Absicherung prüfen lassen" T={T} />
       </div>
     );
   }
