@@ -505,21 +505,7 @@ function makeBUKTGT(C) {
   resultSub: { fontSize: "13px", color: "#9CA3AF", lineHeight: 1.55, marginTop: "12px" },
   statusOk: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: "#15803D" },
   statusWarn: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: "#FFF6F5", border: "1px solid #F2D4D0", borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: "#C0392B" },
-  warnCard: { background: "#FFF6F5", border: "1px solid #F2D4D0", borderLeft: "3px solid #C0392B", borderRadius: "14px", padding: "18px 20px" },
-  warnCardTitle: { fontSize: "13px", fontWeight: "700", color: "#C0392B", marginBottom: "6px" },
-  warnCardText: { fontSize: "13px", color: "#7B2A2A", lineHeight: 1.65 },
-  cardPrimary: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "20px", overflow: "hidden", background: "#FFFFFF", boxShadow: "0 6px 24px rgba(17,24,39,0.08)" },
-  cardContext: { background: "#FAFAF8", border: "1px solid rgba(17,24,39,0.05)", borderRadius: "16px", padding: "18px 20px" },
   sectionLbl: { fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" },
-  recCard: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "18px", overflow: "hidden", background: "#FFFFFF", boxShadow: "0 4px 16px rgba(17,24,39,0.06)" },
-  recRow: { padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid rgba(17,24,39,0.04)" },
-  recRowLast: { padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" },
-  recLabel: { fontSize: "14px", fontWeight: "600", color: "#1F2937" },
-  recSub: { fontSize: "12px", color: "#9CA3AF", marginTop: "3px", lineHeight: 1.4 },
-  recValue: { fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px", textAlign: "right", flexShrink: 0, marginLeft: "12px" },
-  recValueSub: { fontSize: "11px", color: "#9CA3AF", textAlign: "right", marginTop: "2px" },
-  progBarTrack: { height: "10px", background: "#F3F4F6", borderRadius: "999px", overflow: "hidden", marginTop: "10px" },
-  progBarFill: (pct, color) => ({ height: "100%", width: `${pct}%`, background: color, borderRadius: "999px", transition: "width 0.7s cubic-bezier(0.34,1.56,0.64,1)" }),
 };
 }
 
@@ -663,7 +649,7 @@ function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
   );
 }
 
-function DankeScreen({ name, onBack, makler, C }) {
+function DankeScreen({ name, onBack, makler, C, luecke, empfKTG, empfBU }) {
   return (
     <div style={{ padding: "48px 24px", textAlign: "center" }} className="fade-in">
       <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: `1.5px solid ${C}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
@@ -677,6 +663,47 @@ function DankeScreen({ name, onBack, makler, C }) {
       <div style={{ fontSize: "14px", color: "#666", lineHeight: 1.65, marginBottom: "32px" }}>
         Wir schauen uns Ihr Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.
       </div>
+      {luecke > 0 && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "8px",
+            marginBottom: "24px",
+          }}
+        >
+          <div
+            style={{
+              background: "#FFF7F7",
+              border: "1px solid #F2CFCF",
+              borderRadius: "12px",
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Ihre Lücke</div>
+            <div style={{ fontSize: "18px", fontWeight: "700", color: "#C0392B", letterSpacing: "-0.3px" }}>
+              {Math.round(Math.abs(luecke)).toLocaleString("de-DE")} €
+            </div>
+            <div style={{ fontSize: "10px", color: "#999", marginTop: "2px" }}>pro Monat</div>
+          </div>
+          <div
+            style={{
+              background: "rgba(31,41,55,0.03)",
+              border: "1px solid rgba(31,41,55,0.08)",
+              borderRadius: "12px",
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Empfehlung</div>
+            <div style={{ fontSize: "14px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
+              KTG {empfKTG} €/Tag
+            </div>
+            <div style={{ fontSize: "11px", fontWeight: "600", color: C, marginTop: "2px" }}>
+              BU {Math.round(Math.abs(empfBU)).toLocaleString("de-DE")} €/Mon.
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden", textAlign: "left" }}>
         <div style={{ padding: "14px 16px", borderBottom: "1px solid #f0f0f0" }}>
           <div style={{ fontSize: "11px", color: "#999", fontWeight: "600", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "4px" }}>Ihr Berater</div>
@@ -733,12 +760,11 @@ export default function BUKTGRechner() {
     return ids;
   }, [p.kv, p.beruf]);
 
-  /** Intro → Beruf → [Staats-Story nur wenn kein Azubi/Student] → restliche Daten → Bridge → Loader */
+  /** Intro → Beruf → [Staats-Story nur wenn kein Azubi/Student] → restliche Daten → danach Loader → Bridge (eigene Phase) → Ergebnis */
   const wizardFlow = useMemo(() => {
     const ids = STEP_IDS;
     const flow = [{ kind: "intro" }];
     if (ids.length === 0) {
-      flow.push({ kind: "bridge" });
       return flow;
     }
     flow.push({ kind: "data", sid: ids[0] });
@@ -749,7 +775,6 @@ export default function BUKTGRechner() {
     for (let i = 1; i < ids.length; i++) {
       flow.push({ kind: "data", sid: ids[i] });
     }
-    flow.push({ kind: "bridge" });
     return flow;
   }, [STEP_IDS, p.beruf]);
 
@@ -785,6 +810,25 @@ export default function BUKTGRechner() {
   const curFlow = wizardFlow[wizStep - 1];
   const sid = curFlow?.kind === "data" ? curFlow.sid : null;
 
+  const ktgBuHint = (() => {
+    if (p.beruf === "selbst")
+      return {
+        text: "Anders als Angestellte haben Sie keinen Anspruch auf Lohnfortzahlung durch einen Arbeitgeber — in den ersten Wochen einer Krankheit fehlt dieser Betrag vollständig, sofern Sie nicht privat vorsorgen. Prüfen Sie eine Absicherung ab dem 15. oder 43. Tag.",
+      };
+    if (p.kv === "pkv" && p.beruf !== "selbst")
+      return {
+        text:
+          p.beruf === "beamter"
+            ? "Achtung: Der Zuschuss des Dienstherren zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch Ihren KV-Beitrag decken."
+            : "Achtung: Der Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen — im Ergebnis gesondert ausgewiesen.",
+      };
+    if (p.ktgTag === 0 && p.kv === "gkv" && p.beruf !== "selbst")
+      return {
+        text: "Sie verlassen sich rein auf das gesetzliche Minimum beim Einkommen — ein zusätzliches Krankentagegeld ist oft der schnellste Hebel.",
+      };
+    return null;
+  })();
+
   const R = berechne({
     ...p,
     gkvKrankengeldJa: p.beruf === "selbst" && p.kv === "gkv" ? p.gkvKrankengeldJa : false,
@@ -807,7 +851,15 @@ export default function BUKTGRechner() {
   if (danke) return (
     <div style={{ ...T.page, "--accent": C }}>
       <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} C={C} />
-      <DankeScreen name={name} onBack={() => { setDanke(false); goTo(1); }} makler={MAKLER} C={C} />
+      <DankeScreen
+        name={name}
+        onBack={() => { setDanke(false); goTo(1); }}
+        makler={MAKLER}
+        C={C}
+        luecke={R.luecke}
+        empfKTG={R.empfKTG}
+        empfBU={R.empfBU}
+      />
     </div>
   );
 
@@ -815,10 +867,64 @@ export default function BUKTGRechner() {
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak}>
         <Header phase={totalWizSteps} total={totalWizSteps} makler={MAKLER} C={C} />
-        <CheckLoader type="bu" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="bu" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
     );
   }
+
+  // ── Bridge (nach Loader, vor Result) ──────────────────────────────────────
+  if (phase === "bridge")
+    return (
+      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+        <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} C={C} />
+        <CheckKitStoryHero
+          hideFooterSpacer
+          emoji="🚀"
+          title="Ihre Analyse ist bereit."
+          text="Wir haben Ihre persönliche Versorgungslücke und den Absicherungsbedarf ermittelt."
+        />
+        <div style={{ padding: "0 24px 8px", ...CHECKKIT2026.storyContentWrap }}>
+          {(R.luecke === 0
+            ? [
+                "Ihr Einkommen ist im Modell weitgehend abgesichert.",
+                "Krankengeld-Phase ab Woche 7 analysiert.",
+                "Kein zusätzlicher Absicherungsbedarf ermittelt.",
+              ]
+            : [
+                `Monatliche Lücke: ${fmt(R.luecke > 0 ? R.luecke : 0)} ermittelt.`,
+                "Krankengeld-Phase ab Woche 7 analysiert.",
+                `Absicherungsbedarf: KTG ${R.empfKTG} €/Tag + BU ${fmt(R.empfBU)}/Mon.`,
+              ]
+          ).map((line) => (
+            <div
+              key={line}
+              style={{
+                ...CHECKKIT2026.storyBody,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "14px",
+                marginBottom: 16,
+                textAlign: "left",
+              }}
+            >
+              <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
+                ✅
+              </span>
+              <span>{line}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ height: CHECKKIT2026.footerSpacerPx }} />
+        <div style={T.footer}>
+          <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
+            Ergebnis ansehen
+          </button>
+          <button type="button" style={T.btnSec} onClick={() => goTo(1)}>
+            Neu berechnen
+          </button>
+        </div>
+      </div>
+    );
 
   // ── Kontakt (nach Ergebnis) ─────────────────────────────────────────────────
   if (phase === 3) return (
@@ -826,8 +932,14 @@ export default function BUKTGRechner() {
       <Header phase={4} total={TOTAL_PHASES} makler={MAKLER} C={C} />
       <div style={T.hero}>
         <div style={T.label}>Fast geschafft</div>
-        <div style={T.h1}>Wo können wir Sie erreichen?</div>
-        <div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div>
+        <div style={T.h1}>
+          {R.luecke > 0
+            ? `Lücke von ${fmt(R.luecke)} absichern.`
+            : "Ihre Absicherung optimieren."}
+        </div>
+        <div style={T.body}>
+          Wir melden uns innerhalb von 24 Stunden mit konkreten Tarifen für Ihre Situation.
+        </div>
       </div>
       <ContactForm
         isDemo={isDemo}
@@ -1244,7 +1356,7 @@ export default function BUKTGRechner() {
     );
   }
 
-  // ── Phase 1: Story + dynamischer Flow + Bridge ─────────────────────────────
+  // ── Phase 1: Story + dynamischer Wizard ─────────────────────────────────────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={wizStep} total={totalWizSteps} makler={MAKLER} C={C} />
@@ -1271,50 +1383,6 @@ export default function BUKTGRechner() {
         );
       })()}
 
-      {curFlow?.kind === "bridge" && (
-        <>
-          <CheckKitStoryHero
-            hideFooterSpacer
-            emoji="🚀"
-            title="Ihre Analyse ist bereit."
-            text={`Basierend auf Ihren Angaben von ${fmt(R.netto)} Netto haben wir Ihre Versorgungslücke präzise ermittelt.`}
-          />
-          <div style={{ padding: "0 24px 8px", ...CHECKKIT2026.storyContentWrap }}>
-            {[
-              "Berechnung der monatlichen Netto-Lücke.",
-              "Ermittlung des notwendigen Krankentagegeldes.",
-              "Strategie zur dauerhaften Einkommenssicherung.",
-            ].map((line) => (
-              <div
-                key={line}
-                style={{
-                  ...CHECKKIT2026.storyBody,
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "14px",
-                  marginBottom: 16,
-                  textAlign: "left",
-                }}
-              >
-                <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
-                  ✅
-                </span>
-                <span>{line}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ height: CHECKKIT2026.footerSpacerPx }} />
-          <div style={T.footer}>
-            <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
-              Ergebnis jetzt anzeigen
-            </button>
-            <button type="button" style={T.btnSec} onClick={backWiz}>
-              Zurück
-            </button>
-          </div>
-        </>
-      )}
-
       {sid === "beruf" && (
         <>
           <div style={T.hero}>
@@ -1337,7 +1405,7 @@ export default function BUKTGRechner() {
               ))}
             </div>
             {p.beruf === "beamter" && (
-              <div style={{ marginTop: "16px" }}>
+              <div style={{ marginTop: "28px" }}>
                 <div style={{ ...T.fldLbl, marginBottom: "8px" }}>Ihr Beamtenverhältnis</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   <SelectionCard
@@ -1602,18 +1670,7 @@ export default function BUKTGRechner() {
             <div style={T.body}>Beide Felder sind optional — geben Sie 0 ein, wenn kein Vertrag vorhanden ist.</div>
           </div>
           <div style={T.section}>
-            {p.beruf === "selbst" && (
-              <SmartHintCard>
-                Anders als Angestellte haben Sie keinen Anspruch auf Lohnfortzahlung durch einen Arbeitgeber — in den ersten Wochen einer Krankheit fehlt dieser Betrag vollständig, sofern Sie nicht privat vorsorgen. Prüfen Sie eine Absicherung ab dem 15. oder 43. Tag.
-              </SmartHintCard>
-            )}
-            {p.kv === "pkv" && p.beruf !== "selbst" && (
-              <SmartHintCard>
-                {p.beruf === "beamter"
-                  ? "Achtung: Der Zuschuss des Dienstherren zur PKV entfällt nach 6 Wochen. Ihr Krankentagegeld muss auch Ihren KV-Beitrag decken."
-                  : "Achtung: Der Arbeitgeberzuschuss zur PKV entfällt nach 6 Wochen — im Ergebnis gesondert ausgewiesen."}
-              </SmartHintCard>
-            )}
+            {ktgBuHint && <SmartHintCard>{ktgBuHint.text}</SmartHintCard>}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <SliderCard label="Krankentagegeld (KTG)" value={p.ktgTag} min={0} max={150} step={5} unit="€/Tag"
                 display={p.ktgTag > 0 ? `= ${fmt(p.ktgTag * 30)}/Monat` : "Kein KTG vorhanden"}
@@ -1637,13 +1694,6 @@ export default function BUKTGRechner() {
                 hint={p.beruf === "beamter" ? "0, wenn keine DU-Absicherung vorhanden" : "0, wenn keine BU vorhanden"}
               />
             </div>
-            {p.ktgTag === 0 && p.kv === "gkv" && (
-              <div style={{ marginTop: "12px" }}>
-                <SmartHintCard>
-                  Sie verlassen sich rein auf das gesetzliche Minimum beim Einkommen — ein zusätzliches Krankentagegeld ist oft der schnellste Hebel.
-                </SmartHintCard>
-              </div>
-            )}
           </div>
           <div style={{ height: "120px" }} />
           <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
@@ -1657,11 +1707,6 @@ export default function BUKTGRechner() {
             <div style={T.h1}>Welches Szenario beschäftigt Sie am meisten?</div>
           </div>
           <div style={T.section}>
-            {p.szenario === "psyche" && (
-              <SmartHintCard>
-                Wussten Sie? Psychische Erkrankungen sind mit Ø 42 Monaten die längsten Leistungsfälle — weit über die typische Krankengeld-Dauer von 18 Monaten hinaus.
-              </SmartHintCard>
-            )}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {SZENARIEN.map((sz) => (
                 <SelectionCard key={sz.id} value={sz.id} label={sz.label}
@@ -1670,9 +1715,16 @@ export default function BUKTGRechner() {
                   selected={p.szenario === sz.id} accent={C} onClick={() => set("szenario", sz.id)} />
               ))}
             </div>
+            {p.szenario === "psyche" && (
+              <div style={{ marginTop: "12px" }}>
+                <SmartHintCard>
+                  Wussten Sie? Psychische Erkrankungen sind mit Ø 42 Monaten die längsten Leistungsfälle — weit über die typische Krankengeld-Dauer von 18 Monaten hinaus.
+                </SmartHintCard>
+              </div>
+            )}
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextWiz} onBack={backWiz} nextLabel="Weiter" T={T} />
+          <Footer onNext={() => setLoading(true)} onBack={backWiz} nextLabel="Analyse starten" T={T} />
         </>
       )}
     </div>

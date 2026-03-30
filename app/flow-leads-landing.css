@@ -449,6 +449,26 @@ html {
   object-position: center center;
 }
 
+@media (max-width: 960px) {
+  .hero-phones-clip {
+    max-height: 300px;
+  }
+  .hero-float-wrap {
+    max-height: 320px;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-phones-clip {
+    max-height: 240px;
+  }
+  .hero-float-wrap {
+    max-height: 260px;
+    overflow: hidden;
+  }
+}
+
 /* ─── FACTS — Kennzahlen, kompakte Cards ─────────────────────────────────── */
 .flow-leads-landing .facts-section {
   padding: 112px 32px 120px;
@@ -652,12 +672,6 @@ html {
   position: relative;
   z-index: 2;
   flex-shrink: 0;
-  opacity: 0;
-  transform: scale(0.92);
-  transition:
-    opacity 0.5s ease,
-    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: var(--how-step-delay);
 }
 /* Schritt-Farben: Gold (Aufmerksamkeit) → Orange (Interesse) → Primary (Abschluss) */
 .flow-leads-landing .how-tl-step--1 .how-tl-step-marker {
@@ -672,22 +686,10 @@ html {
   border-color: var(--primary);
   color: var(--primary);
 }
-.flow-leads-landing .how-timeline-block--visible .how-tl-step-marker {
-  opacity: 1;
-  transform: scale(1);
-}
 .flow-leads-landing .how-tl-step-content {
   padding-top: 6px;
   min-width: 0;
   text-align: left;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.52s ease, transform 0.52s ease;
-  transition-delay: var(--how-step-delay);
-}
-.flow-leads-landing .how-timeline-block--visible .how-tl-step-content {
-  opacity: 1;
-  transform: translateY(0);
 }
 .flow-leads-landing .how-tl-content-title {
   font-size: clamp(1.5rem, 4.5vw, 2.125rem);
@@ -747,8 +749,6 @@ html {
   .flow-leads-landing .how-timeline-block--visible .how-timeline-line-fill {
     transition: none;
   }
-  .flow-leads-landing .how-timeline-block--visible .how-tl-step-marker,
-  .flow-leads-landing .how-timeline-block--visible .how-tl-step-content,
   .flow-leads-landing .how-timeline-block--visible .how-tl-cta-wrap {
     opacity: 1;
     transform: none;
@@ -799,13 +799,7 @@ html {
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   overflow: hidden;
-  transition: box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-              transform  0.22s cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow: var(--shadow-card);
-}
-.flow-leads-landing .ck-card:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-3px);
 }
 .flow-leads-landing .ck-card-preview {
   flex: none;
@@ -1063,37 +1057,22 @@ html {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
-}
-.flow-leads-landing .vertrieb-ec-card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.14);
 }
 .flow-leads-landing .vertrieb-ec-card--dark {
   background: #1d4f91;
   box-shadow: 0 12px 40px rgba(29, 79, 145, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
-.flow-leads-landing .vertrieb-ec-card--dark:hover {
-  box-shadow: 0 22px 56px rgba(29, 79, 145, 0.45);
-}
 .flow-leads-landing .vertrieb-ec-card--mist {
   background: #ffffff;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
 }
-.flow-leads-landing .vertrieb-ec-card--mist:hover {
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.11);
-}
 .flow-leads-landing .vertrieb-ec-card--soft {
   background: #eef2ff;
   border: 1px solid rgba(99, 102, 241, 0.12);
   box-shadow: 0 8px 32px rgba(79, 70, 229, 0.1);
-}
-.flow-leads-landing .vertrieb-ec-card--soft:hover {
-  box-shadow: 0 20px 48px rgba(79, 70, 229, 0.16);
 }
 .flow-leads-landing .vertrieb-ec-card-title {
   font-size: clamp(21px, 2.4vw, 26px);

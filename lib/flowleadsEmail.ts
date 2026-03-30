@@ -34,26 +34,25 @@ export function buildOnboardingEmailSubject(slug: string): string {
 export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: string; html: string } {
   const checkName = slugToDisplayName(p.slug);
   const iframeCode = buildLicensedIframeCode(p.slug, p.token);
-  const firstName = p.name?.split(" ")[0] || "dort";
+  const firstName = p.name?.trim().split(/\s+/)[0] || "";
   const appUrl = publicAppUrl();
   const directUrl = buildLicensedDemoUrl(p.slug, p.token);
   const subject = buildOnboardingEmailSubject(p.slug);
+  const contactEmail = flowleadsContactEmail();
 
   const safeFirst = escapeHtml(firstName);
   const safeCheck = escapeHtml(checkName);
-  const safeIframeInBox = escapeHtml(iframeCode);
+  const safeIframe = escapeHtml(iframeCode);
   const safeDirectUrl = escapeHtml(directUrl);
   const safeAppUrl = escapeHtml(appUrl);
-  const contactEmail = flowleadsContactEmail();
   const safeContact = escapeHtml(contactEmail);
-  const qrBlock = p.qrDataUrl
-    ? `
-      <img src="${p.qrDataUrl}"
-      width="160" height="160"
-      alt="QR-Code"
-      style="border-radius:8px;margin-bottom:12px;display:block;margin:0 auto 12px;"/>
-    `
-    : "";
+
+  const successUrl = p.sessionId
+    ? `${appUrl}/success?session_id=${encodeURIComponent(p.sessionId)}`
+    : `${appUrl}`;
+  const safeSuccessUrl = escapeHtml(successUrl);
+
+  const greetingName = safeFirst ? `Vielen Dank, ${safeFirst}.` : "Vielen Dank für Ihren Kauf.";
 
   const html = `<!DOCTYPE html>
 <html lang="de">
@@ -62,168 +61,121 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:#f0ede6;font-family:'DM Sans',Helvetica,'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;padding:40px 16px;}
-  .wrap{max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;}
-  .header{background:#1a1a1a;padding:24px 32px;display:flex;align-items:center;gap:12px;}
-  .header-name{color:#ffffff;font-size:17px;font-weight:700;letter-spacing:-0.3px;}
-  .body{padding:36px 32px;}
-  .greeting{font-size:22px;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;margin-bottom:8px;}
-  .intro{font-size:14px;color:#6b7280;line-height:1.7;margin-bottom:28px;}
-  .code-box{background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:#374151;word-break:break-all;line-height:1.7;margin-bottom:6px;}
-  .steps-box{background:#fdf6ec;border:1px solid #f0d9b5;border-radius:12px;padding:22px 24px;margin-bottom:24px;}
-  .steps-title{font-size:11px;font-weight:700;color:#b8884a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}
-  .step-line{font-size:13px;color:#4b5563;line-height:1.55;padding:4px 0;}
-  .domain-box{background:#ffffff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#6b7280;line-height:1.65;}
-  .domain-box strong{color:#1a1a1a;}
-  .cta-btn{display:inline-block;background:#1a1a1a;color:#ffffff;padding:12px 24px;border-radius:9px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:24px;}
-  .divider{height:1px;background:#f3f4f6;margin:24px 0;}
-  .hint{font-size:12px;color:#9ca3af;line-height:1.65;}
-  .hint a{color:#b8884a;}
-  .footer{background:#faf9f6;border-top:1px solid #f3f4f6;padding:18px 32px;font-size:11px;color:#9ca3af;text-align:center;}
-  .footer a{color:#9ca3af;}
+  body{background:#f9fafb;font-family:'DM Sans',Helvetica,'Helvetica Neue',Arial,sans-serif;color:#111827;padding:32px 16px;}
+  .wrap{max-width:540px;margin:0 auto;}
+  .card{background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;}
+  .hd{background:#111827;padding:18px 28px;display:flex;align-items:center;gap:10px;}
+  .hd-name{color:#ffffff;font-size:15px;font-weight:700;letter-spacing:-0.2px;}
+  .body{padding:32px 28px;}
+  .eyebrow{font-size:10px;font-weight:700;color:#3B6D11;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+  .greeting{font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;}
+  .sub{font-size:14px;color:#6B7280;line-height:1.65;margin-bottom:20px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#EAF3DE;border:1px solid #C0DD97;border-radius:999px;font-size:12px;font-weight:600;color:#3B6D11;margin-bottom:24px;}
+  .chip-dot{width:6px;height:6px;border-radius:50%;background:#3B6D11;flex-shrink:0;}
+  .cta{display:block;background:#111827;color:#ffffff;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:700;text-align:center;text-decoration:none;margin-bottom:28px;}
+  .divider{height:1px;background:#F3F4F6;margin:0 0 20px;}
+  .section-lbl{font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+  .variant{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid #F3F4F6;}
+  .variant:last-child{border-bottom:none;}
+  .v-icon{width:34px;height:34px;border-radius:9px;background:#F9FAFB;border:1px solid #E5E7EB;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;}
+  .v-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:2px;}
+  .v-sub{font-size:11px;color:#9CA3AF;margin-bottom:6px;line-height:1.45;}
+  .v-code{font-size:10px;font-family:ui-monospace,monospace;color:#6B7280;background:#F9FAFB;padding:7px 9px;border-radius:6px;border:1px solid #E5E7EB;margin-bottom:5px;overflow:hidden;display:block;word-break:break-all;line-height:1.6;}
+  .v-action{font-size:11px;color:#185FA5;font-weight:600;text-decoration:none;}
+  .steps{background:#FFFBEB;border:1px solid #FCD34D;border-radius:12px;padding:18px 20px;margin:24px 0;}
+  .steps-lbl{font-size:10px;font-weight:700;color:#854F0B;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+  .step{font-size:13px;color:#4B5563;line-height:1.55;padding:3px 0;display:flex;gap:8px;}
+  .step-n{color:#854F0B;font-weight:700;flex-shrink:0;}
+  .hint{font-size:12px;color:#9CA3AF;line-height:1.7;}
+  .hint a{color:#854F0B;}
+  .footer{background:#F9FAFB;border-top:1px solid #F3F4F6;padding:16px 28px;font-size:11px;color:#9CA3AF;text-align:center;}
+  .footer a{color:#9CA3AF;}
 </style>
 </head>
 <body>
 <div class="wrap">
+<div class="card">
 
-  <div class="header">
-    <div class="header-logo" style="width:32px;height:32px;background:#1a1a1a;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div class="hd">
+    <div style="width:28px;height:28px;background:#1a1a1a;border-radius:7px;border:1px solid #333;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <rect x="1" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a"/>
         <rect x="9.5" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4"/>
         <rect x="1" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4"/>
         <rect x="9.5" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a"/>
       </svg>
     </div>
-    <span class="header-name">FlowLeads</span>
+    <span class="hd-name">FlowLeads</span>
   </div>
 
   <div class="body">
 
-    <div class="greeting">Ihre Microsite ist bereit, ${safeFirst}.</div>
-    <p class="intro">
-      Ihr <strong>${safeCheck}</strong> wurde erfolgreich konfiguriert und ist aktiv.
-    </p>
-    <p class="intro" style="margin-bottom:28px;">
-      Ihre Microsite ist in 3 Varianten verfügbar — wählen Sie was am besten zu Ihnen passt:
-    </p>
+    <div class="eyebrow">Kauf bestätigt</div>
+    <div class="greeting">${greetingName}</div>
+    <p class="sub">Ihre Microsite ist aktiv. Hier sind alle Varianten für den sofortigen Start.</p>
 
-    <div style="margin-bottom:24px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <div style="width:28px;height:28px;border-radius:7px;background:#f0ede6;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="1" y="2" width="12" height="9" rx="1.5" stroke="#b8884a" stroke-width="1.3"/>
-            <path d="M4 6l-2 1.5L4 9M10 6l2 1.5L10 9" stroke="#b8884a" stroke-width="1.3" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#1a1a1a;">Variante 1 — iFrame einbetten</div>
-          <div style="font-size:11px;color:#9ca3af;">Direkt auf Ihrer Website</div>
-        </div>
-      </div>
-      <div style="background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;font-family:monospace;font-size:11px;color:#374151;word-break:break-all;line-height:1.7;">
-        ${safeIframeInBox}
-      </div>
-      <div style="font-size:11px;color:#9ca3af;margin-top:5px;text-align:center;">
-        ↑ Code markieren und kopieren
-      </div>
+    <div class="chip">
+      <span class="chip-dot"></span>
+      ${safeCheck} &middot; aktiv
     </div>
 
-    <div style="margin-bottom:24px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <div style="width:28px;height:28px;border-radius:7px;background:#f0ede6;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2 7h10M7 2l5 5-5 5" stroke="#b8884a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#1a1a1a;">Variante 2 — Direkt-Link teilen</div>
-          <div style="font-size:11px;color:#9ca3af;">Per E-Mail, WhatsApp oder Social Media</div>
-        </div>
-      </div>
-      <div style="background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;font-size:12px;color:#374151;word-break:break-all;line-height:1.7;">
-        <a href="${directUrl}" style="color:#b8884a;">
-          ${safeDirectUrl}
-        </a>
-      </div>
-      <div style="font-size:11px;color:#9ca3af;margin-top:5px;">
-        Einfach kopieren und in jede Nachricht einfügen.
-      </div>
-    </div>
-
-    <div style="margin-bottom:24px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <div style="width:28px;height:28px;border-radius:7px;background:#f0ede6;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="1" y="1" width="5" height="5" rx="1" stroke="#b8884a" stroke-width="1.3"/>
-            <rect x="8" y="1" width="5" height="5" rx="1" stroke="#b8884a" stroke-width="1.3"/>
-            <rect x="1" y="8" width="5" height="5" rx="1" stroke="#b8884a" stroke-width="1.3"/>
-            <path d="M8 8h2v2H8zM10 10h3v3h-3z" fill="#b8884a"/>
-          </svg>
-        </div>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#1a1a1a;">Variante 3 — QR-Code drucken</div>
-          <div style="font-size:11px;color:#9ca3af;">Für Visitenkarte, Flyer oder Messestand</div>
-        </div>
-      </div>
-      <div style="background:#f7f6f3;border:1px solid #e5e7eb;border-radius:10px;padding:20px;text-align:center;">
-        ${qrBlock}
-        <a href="${directUrl}"
-        style="display:inline-block;padding:9px 18px;background:#0f1a14;color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
-          QR-Code herunterladen →
-        </a>
-        <div style="font-size:11px;color:#9ca3af;margin-top:8px;">
-          Auf Visitenkarte oder Flyer — Kunde scannt und startet die Microsite direkt.
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-bottom:24px;">
-      <div class="steps-title" style="margin-bottom:10px;">So binden Sie die Microsite ein</div>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">1.</td>
-        <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
-        iFrame-Code, Direkt-Link oder QR-Code aus dieser E-Mail wählen</td></tr>
-        <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">2.</td>
-        <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
-        iFrame: Im Website-Editor ein &#8222;HTML-Element&#8220; einfügen und Code einfügen</td></tr>
-        <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">3.</td>
-        <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
-        Link: Direkt in E-Mail oder Social Media teilen</td></tr>
-        <tr><td style="padding:5px 0;vertical-align:top;width:20px;font-size:13px;color:#b8884a;font-weight:700;">4.</td>
-        <td style="padding:5px 0;font-size:13px;color:#4b5563;line-height:1.55;">
-        QR-Code: Herunterladen und drucken lassen</td></tr>
-      </table>
-    </div>
-
-    <a href="${directUrl}" class="cta-btn">
-      Microsite in der Vorschau ansehen →
-    </a>
-
-    <div class="domain-box">
-      Die Microsite kann auf Ihrer Website eingebunden werden.<br/>
-      Weitergabe des Codes ist gemäß AGB nicht gestattet.
-    </div>
+    <a href="${safeSuccessUrl}" class="cta">Microsite ansehen und Code kopieren &rarr;</a>
 
     <div class="divider"></div>
+    <div class="section-lbl">Ihre Einbettungs-Varianten</div>
+
+    <div class="variant">
+      <div class="v-icon">🔗</div>
+      <div style="flex:1;min-width:0;">
+        <div class="v-title">Direkt-Link</div>
+        <div class="v-sub">Für E-Mail, WhatsApp, Social Media</div>
+        <span class="v-code">${safeDirectUrl}</span>
+        <a href="${safeSuccessUrl}" class="v-action">&rarr; Auf Bestätigungsseite kopieren</a>
+      </div>
+    </div>
+
+    <div class="variant">
+      <div class="v-icon" style="font-family:monospace;font-size:11px;color:#6B7280;font-weight:700;">&lt;/&gt;</div>
+      <div style="flex:1;min-width:0;">
+        <div class="v-title">iFrame einbetten</div>
+        <div class="v-sub">Direkt auf Ihrer Website</div>
+        <span class="v-code">${safeIframe.substring(0, 80)}…</span>
+        <a href="${safeSuccessUrl}" class="v-action">&rarr; Vollständigen Code auf Bestätigungsseite kopieren</a>
+      </div>
+    </div>
+
+    <div class="variant">
+      <div class="v-icon">⬜</div>
+      <div style="flex:1;min-width:0;">
+        <div class="v-title">QR-Code</div>
+        <div class="v-sub">Für Visitenkarte, Flyer, Messestand</div>
+        <a href="${safeSuccessUrl}" class="v-action">&rarr; QR-Code auf Bestätigungsseite herunterladen</a>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="steps-lbl">So geht&apos;s</div>
+      <div class="step"><span class="step-n">1.</span><span>Bestätigungsseite öffnen — Link oben oder im Button</span></div>
+      <div class="step"><span class="step-n">2.</span><span>Direkt-Link oder iFrame-Code per Klick kopieren</span></div>
+      <div class="step"><span class="step-n">3.</span><span>QR-Code herunterladen und drucken lassen</span></div>
+    </div>
 
     <div class="hint">
-      Bei Fragen stehen wir gerne zur Verfügung:<br/>
-      <a href="mailto:${contactEmail.replace(/"/g, "")}">${safeContact}</a><br/><br/>
-      <strong>Wichtiger Hinweis:</strong> Bitte ergänzen Sie Ihre Datenschutzerklärung
-      um die Einbindung der Microsite. Die Verarbeitung der Kundendaten liegt in
-      Ihrer Verantwortung als Makler.
+      Bei Fragen: <a href="mailto:${safeContact}">${safeContact}</a><br/><br/>
+      <strong style="color:#374151;">Datenschutz:</strong> Bitte ergänzen Sie Ihre Datenschutzerklärung
+      um die Einbindung der Microsite. Die Verarbeitung der Kundendaten liegt in Ihrer Verantwortung.
     </div>
 
   </div>
 
   <div class="footer">
-    © ${new Date().getFullYear()} FlowLeads · Belal Masdjedi · Seitzstraße 15, 80538 München<br/>
-    <a href="${safeAppUrl}/impressum">Impressum</a> ·
-    <a href="${safeAppUrl}/datenschutz">Datenschutz</a> ·
+    &copy; ${new Date().getFullYear()} FlowLeads &middot; Belal Masdjedi &middot; Seitzstraße 15, 80538 München<br/>
+    <a href="${safeAppUrl}/impressum">Impressum</a> &middot;
+    <a href="${safeAppUrl}/datenschutz">Datenschutz</a> &middot;
     <a href="${safeAppUrl}/agb">AGB</a>
   </div>
 
+</div>
 </div>
 </body>
 </html>`;

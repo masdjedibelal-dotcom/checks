@@ -85,9 +85,8 @@ const pathContent = {
   pflicht: {
     heroH1: "GKV-Pflicht",
     heroSubline:
-      "Unter der gesetzlichen Pflichtgrenze für Angestellte bleibst du in der GKV — ein Wechsel in die PKV ist derzeit ausgeschlossen. Mit Zusatzbausteinen wertest du deine Versorgung dennoch auf.",
-    tableIntro:
-      "Ihr Brutto liegt unter {incomeLimit} — als Angestellte/r ist der PKV-Wechsel derzeit ausgeschlossen. Hier die Einordnung:",
+      "Unter der gesetzlichen Pflichtgrenze für Angestellte bleiben Sie in der GKV — ein Wechsel in die PKV ist derzeit ausgeschlossen. Mit Zusatzbausteinen werten Sie Ihre Versorgung dennoch auf.",
+    tableIntro: "Kurzvergleich — GKV-Pflicht unter {incomeLimit}",
     gkv: {
       tagline: "Empfehlung",
       badge: "Unsere Empfehlung",
@@ -127,7 +126,7 @@ const pathContent = {
     heroH1: "PKV naheliegend",
     heroSubline:
       "Als Beamte/r prägt Ihr Beihilfe-Anspruch die Kosten — die private Krankenversicherung ist auf die typischen Restkosten zugeschnitten und oft sehr günstig.",
-    tableIntro: "Kurzvergleich — Beamtenstatus und Beihilfe-Anspruch",
+    tableIntro: "Kurzvergleich — Beamtenstatus mit Beihilfe",
     gkv: {
       tagline: "Unwirtschaftlich",
       badge: "Unwirtschaftlich",
@@ -165,7 +164,7 @@ const pathContent = {
     heroH1: "PKV naheliegend",
     heroSubline:
       "Sie sind nicht GKV-pflichtig bzw. oberhalb der Pflichtgrenze — hier zählen Beitragshöhe, Leistungsumfang und langfristige Stabilität im direkten Vergleich.",
-    tableIntro: "Kurzvergleich — ohne Pflicht zur gesetzlichen Krankenversicherung",
+    tableIntro: "Kurzvergleich — ohne GKV-Pflicht",
     gkv: {
       tagline: "Teuer",
       badge: "GKV-Höchstbeitrag",
@@ -245,7 +244,7 @@ const pathContent = {
     heroH1: "GKV-Wirtschaftlich",
     heroSubline:
       "Mit drei oder mehr Kindern ist die Familienversicherung in der GKV meist der stärkste Hebel — ein Haushaltsbeitrag statt vieler PKV-Einzelverträge.",
-    tableIntro: "Kurzvergleich — drei oder mehr Kinder im Haushalt",
+    tableIntro: "Kurzvergleich — Großfamilie (3+ Kinder)",
     gkv: {
       tagline: "Wirtschaftlich",
       badge: "Wirtschaftlich sinnvoll",
@@ -596,7 +595,7 @@ function CompareCard({ label, tagline, color, bg, beitrag, leistung, border, bad
 
 export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo, FAKTOREN }) {
   const [gkvArchiv, setGkvArchiv] = useState(null);
-  const [kontextOpen, setKontextOpen] = useState(false);
+  const [kontextOpen, setKontextOpen] = useState(true);
   const resultPath = resolveGkvPkvResultPath(p);
   const copy = resolvePathCopy(resultPath, p);
   const kontextItems = buildInfoGrid(p, R).map((c) => ({
@@ -657,7 +656,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
           }}
         >
           {/* Block 1: Tendenz + Eligibility */}
-          <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Deine Einschätzung</div>
+          <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Ihre Einschätzung</div>
 
           {R.unterGrenze && p.beruf === "angestellt" ? (
             <>
@@ -679,7 +678,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                   margin: "0 auto 8px",
                 }}
               >
-                Du liegst unter der gesetzlichen Versicherungspflichtgrenze für Angestellte — ein Wechsel in die PKV ist derzeit nicht möglich. In der GKV bleibst du typischerweise mit Zusatzbausteinen gut aufgestellt.
+                Sie liegen unter der Versicherungspflichtgrenze — ein Wechsel in die PKV ist derzeit nicht möglich. Mit Zusatzbausteinen sind Sie in der GKV gut aufgestellt.
               </p>
             </>
           ) : p.beruf === "beamter" ? (
@@ -702,7 +701,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                   margin: "0 auto 8px",
                 }}
               >
-                Als Beamter übernimmt dein Dienstherr 50–70 % — die PKV deckt den Rest günstig ab.
+                Als Beamte/r übernimmt Ihr Dienstherr 50–70 % der Kosten — die PKV deckt den Rest günstig ab.
               </p>
             </>
           ) : heroGkvFokus ? (
@@ -716,7 +715,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                   marginRight: "auto",
                 }}
               >
-                {dreiPlusKinder ? "GKV ist für dich günstiger" : "GKV passt besser zu dir"}
+                {dreiPlusKinder ? "GKV ist für Sie günstiger" : "GKV passt besser zu Ihnen"}
               </div>
               <p
                 style={{
@@ -726,8 +725,8 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 }}
               >
                 {dreiPlusKinder
-                  ? `Mit ${kinderN} Kindern überwiegt tendenziell die GKV-Familienversicherung — ein Haushaltsbeitrag statt mehrerer separater PKV-Verträge.`
-                  : "Auf Basis deiner Situation spricht tendenziell mehr für die GKV — vor allem bei Beitragslogik und Mitversicherung."}
+                  ? `Mit ${kinderN} Kindern überwiegt tendenziell die GKV — ein Haushaltsbeitrag statt mehrerer PKV-Einzelverträge.`
+                  : "Auf Basis Ihrer Situation spricht tendenziell mehr für die GKV — vor allem bei Beitragslogik und Mitversicherung."}
               </p>
             </>
           ) : heroPkvFokus ? (
@@ -741,7 +740,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                   marginRight: "auto",
                 }}
               >
-                {kinderN > 0 ? "Kommt auf deine Familie an" : "Tendenz: PKV lohnt sich"}
+                {kinderN > 0 ? "Kommt auf Ihre Familie an" : "Tendenz: PKV lohnt sich"}
               </div>
               <p
                 style={{
@@ -751,8 +750,8 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 }}
               >
                 {kinderN > 0
-                  ? `Mit ${kinderN} Kind${kinderN === 1 ? "" : "ern"} lohnt ein genauer Vergleich — GKV-Familienversicherung versus mehrere PKV-Verträge.`
-                  : "Tendenziell ist die PKV für deine Situation wirtschaftlich attraktiver als der volle GKV-Beitrag — konkrete Tarife klären sich im persönlichen Gespräch."}
+                  ? `Mit ${kinderN} Kind${kinderN === 1 ? "" : "ern"} lohnt ein genauer Vergleich — GKV-Familienversicherung vs. mehrere PKV-Verträge.`
+                  : "Tendenziell ist die PKV für Ihre Situation wirtschaftlich attraktiver — konkrete Tarife klären sich im persönlichen Gespräch."}
               </p>
             </>
           ) : (
@@ -889,7 +888,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 marginBottom: "10px",
               }}
             >
-              Darum passt das zu deiner Situation
+              Darum passt das zu Ihrer Situation
             </div>
             <div style={T.card}>
               {FAKTOREN.filter((f) => {
@@ -1050,7 +1049,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                         }}
                       >
                         <span style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280" }}>
-                          Was das konkret für dich bedeutet
+                          Was das konkret für Sie bedeutet
                         </span>
                         <svg
                           width="12"
@@ -1104,25 +1103,13 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                     </div>
                   </div>
                 )}
+                <p style={{ marginTop: "10px", marginBottom: 0, color: "#b8884a", fontSize: "12px" }}>
+                  Orientierungswerte — keine Rechtsberatung. PKV-Beiträge sind Schätzwerte nach Alter.
+                  Für konkrete Tarife empfehlen wir ein persönliches Gespräch. Grundlage u. a. § 241 SGB V,
+                  § 257 SGB V, § 9 SGB V.
+                </p>
               </div>
             )}
-          </div>
-        </div>
-
-        <div style={{ ...T.section, marginBottom: "8px" }}>
-          {/* Disclaimer */}
-          <div
-            style={{
-              padding: "15px 16px",
-              borderRadius: "14px",
-              background: "#F6F8FE",
-              border: "1px solid #DCE6FF",
-              color: "#315AA8",
-              fontSize: "13px",
-              lineHeight: 1.7,
-            }}
-          >
-            Orientierungswerte — keine Rechtsberatung. PKV-Beiträge sind Schätzwerte nach Alter. Für konkrete Tarife empfehlen wir ein persönliches Gespräch.
           </div>
         </div>
       </div>

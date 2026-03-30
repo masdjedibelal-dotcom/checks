@@ -146,17 +146,6 @@ const PFLEGE_SORGE_OPTIONEN = [
   },
 ];
 
-/** Pflegegrad 1–5 aus Szenario-Wahl (Schritt 2) — für Texte/Einordnung; Eigenanteil kommt aus Region/Ort. */
-function pflegegradAusSorge(pflegeSorge) {
-  const m = {
-    heim_eigenanteil: 5,
-    demenz_langzeit: 4,
-    ambulant_zuhause: 3,
-    angehoerige_belastung: 3,
-  };
-  return m[pflegeSorge] ?? 3;
-}
-
 function makePflegeT(C) {
   return {
     page: { minHeight: "100vh", background: "#ffffff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
@@ -280,19 +269,7 @@ function pflegeStoryKostenFokusCopy(pflegeOrt, region) {
   };
 }
 
-function pflegeBridgeSicherheitCopy(pflegegrad, region, pflegeOrt) {
-  const eff = eigenanteilEffektivMonat(pflegeOrt, region);
-  const regLabel =
-    !region || region === "" || region === "__bund__"
-      ? `den bundesweiten Durchschnitt (${fmt(PFLEGE_EIGENANTEIL_BUND_DURCHSCHNITT)} Heim-Eigenanteil)`
-      : region;
-  return {
-    title: "Ihre Sicherheits-Analyse.",
-    text: `Für ${regLabel} rechnen wir mit etwa ${fmt(eff)} monatlicher Eigenbelastung (${pflegeOrt === "stationär" ? "stationär" : "ambulant"}). Im nächsten Schritt erfassen wir nur Alter und bestehende private Pflege-Vorsorge — daraus ergibt sich Ihr Restbedarf zum Eigenanteil, ohne weitere Abzüge. Pflegegrad ${pflegegrad} leiten wir aus Ihrer Szenario-Wahl ab.`,
-  };
-}
-
-function Danke({ name, onBack, makler, C }) {
+function Danke({ name, onBack, makler, C, luecke, tagegeld }) {
   return (
     <div style={{ padding: "48px 24px", textAlign: "center" }} className="fade-in">
       <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: `1.5px solid ${C}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
@@ -304,6 +281,37 @@ function Danke({ name, onBack, makler, C }) {
       <div style={{ fontSize: "14px", color: "#666", lineHeight: 1.65, marginBottom: "32px" }}>
         Wir prüfen Ihr Ergebnis und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.
       </div>
+      {luecke > 0 && (
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "8px",
+          marginBottom: "24px",
+        }}>
+          <div style={{
+            background: "#FFF7F7",
+            border: "1px solid #F2CFCF",
+            borderRadius: "12px",
+            padding: "12px 14px",
+          }}>
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Restbedarf / Mon.</div>
+            <div style={{ fontSize: "16px", fontWeight: "700", color: "#C0392B", letterSpacing: "-0.3px" }}>
+              {Math.round(Math.abs(luecke)).toLocaleString("de-DE")} €
+            </div>
+          </div>
+          <div style={{
+            background: "rgba(31,41,55,0.03)",
+            border: "1px solid rgba(31,41,55,0.08)",
+            borderRadius: "12px",
+            padding: "12px 14px",
+          }}>
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Pflegetagegeld</div>
+            <div style={{ fontSize: "16px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
+              {tagegeld} €/Tag
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ border: "1px solid #e8e8e8", borderRadius: "10px", overflow: "hidden", textAlign: "left" }}>
         <div style={{ padding: "14px 16px", borderBottom: "1px solid #f0f0f0" }}>
           <div style={{ fontSize: "14px", fontWeight: "600", color: "#111" }}>{makler.name}</div>
@@ -398,7 +406,7 @@ function berechne({ pflegeOrt, region, vorsorgeMonat }) {
   };
 }
 
-const WIZARD_STEPS = 6;
+const WIZARD_STEPS = 5;
 
 export default function PflegekostenplanungRechner() {
   const MAKLER = useCheckConfig();
@@ -438,7 +446,6 @@ export default function PflegekostenplanungRechner() {
     vorsorgeMonat: p.vorsorgeMonat,
   });
   const meta = PFLEGE_ORT_MODELL[p.pflegeOrt] || PFLEGE_ORT_MODELL.ambulant;
-  const pflegegradAbgeleitet = pflegegradAusSorge(p.pflegeSorge);
 
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
@@ -509,7 +516,14 @@ export default function PflegekostenplanungRechner() {
     return (
       <div style={{ ...T.page, "--accent": C }}>
         <Header phase={progPct} total={100} />
-        <Danke name={fd.name} onBack={() => { setDanke(false); goTo(1); }} makler={MAKLER} C={C} />
+        <Danke
+          name={fd.name}
+          onBack={() => { setDanke(false); goTo(1); }}
+          makler={MAKLER}
+          C={C}
+          luecke={R.luecke}
+          tagegeld={R.empfTagegeld}
+        />
       </div>
     );
   }
@@ -518,7 +532,54 @@ export default function PflegekostenplanungRechner() {
     return (
       <div style={{ ...T.page, "--accent": C }}>
         <Header phase={progPct} total={100} />
-        <CheckLoader type="pflege" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="pflege" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
+      </div>
+    );
+  }
+
+  if (phase === "bridge") {
+    return (
+      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+        <Header phase={progPct} total={100} />
+        <CheckKitStoryHero
+          hideFooterSpacer
+          emoji="💸"
+          title="Ihre Pflegekosten-Analyse ist bereit."
+          text="Wir haben Ihren regionalen Eigenanteil und Ihre Vorsorgesituation vollständig berechnet."
+        />
+        <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
+          {[
+            `Eigenanteil in ${p.region && p.region !== "__bund__" ? p.region : "Ihrer Region"}: ca. ${fmt(R.eigenEff)}/Mon. ermittelt.`,
+            R.vorsorgeEff > 0
+              ? `Bestehende Vorsorge: ${fmt(R.vorsorgeEff)}/Mon. angerechnet.`
+              : "Monatliche Restlücke ohne bestehende Vorsorge berechnet.",
+            `Pflegetagegeld-Empfehlung: ${R.empfTagegeld} €/Tag erstellt.`,
+          ].map((line) => (
+            <div
+              key={line}
+              style={{
+                ...CHECKKIT2026.storyBody,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "12px",
+                marginBottom: 14,
+                textAlign: "left",
+              }}
+            >
+              <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>✅</span>
+              <span>{line}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
+        <div style={T.footer}>
+          <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
+            Ergebnis ansehen
+          </button>
+          <button type="button" style={T.btnSec} onClick={() => goTo(1)}>
+            Neu berechnen
+          </button>
+        </div>
       </div>
     );
   }
@@ -622,49 +683,6 @@ export default function PflegekostenplanungRechner() {
             </div>
           </div>
 
-          <div style={T.section}>
-            <div style={T.sectionLbl}>Einordnung</div>
-            <div style={T.einordnungHintCard}>
-              <span style={T.einordnungHintEmoji} aria-hidden>
-                🏥
-              </span>
-              <div style={T.einordnungHintText}>
-                Die gesetzliche Pflegeversicherung deckt nur einen Teil — den Rest tragen Sie oder Ihre Familie selbst.
-              </div>
-            </div>
-          </div>
-
-          {p.pflegeOrt === "stationär" ? (
-            <div style={T.section}>
-              <div
-                style={{
-                  padding: "15px 16px",
-                  borderRadius: "14px",
-                  background: "#FDF8F0",
-                  border: "1px solid #EDD9BB",
-                  color: "#94622D",
-                  fontSize: "13px",
-                  lineHeight: 1.7,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: "700",
-                    color: "#94622D",
-                    letterSpacing: "0.5px",
-                    textTransform: "uppercase",
-                    marginBottom: "6px",
-                  }}
-                >
-                  §43c SGB XI — Leistungszuschlag
-                </div>
-                Ab dem <strong>13. Monat</strong> im Heim sinkt Ihr Eigenanteil schrittweise: Monate 13–24: −25&nbsp;% · Monate 25–36: −50&nbsp;% · ab
-                Monat 37: −75&nbsp;% des einrichtungseinheitlichen Eigenanteils (EEE).
-              </div>
-            </div>
-          ) : null}
-
           <div style={{ ...T.section, marginBottom: "16px" }}>
             <div style={T.sectionLbl}>SGB XI, Modellannahmen &amp; Rechtliches</div>
             <div className="pflege-acc-item">
@@ -674,6 +692,33 @@ export default function PflegekostenplanungRechner() {
               </button>
               {pflegeArchiv === "legal" && (
                 <div className="pflege-acc-panel" style={{ paddingTop: "12px" }}>
+                  <div style={{ ...T.einordnungHintCard, marginBottom: "14px" }}>
+                    <span style={T.einordnungHintEmoji} aria-hidden>
+                      🏥
+                    </span>
+                    <div style={T.einordnungHintText}>
+                      Die gesetzliche Pflegeversicherung deckt nur einen Teil — den Rest tragen Sie oder Ihre Familie selbst.
+                    </div>
+                  </div>
+                  {p.pflegeOrt === "stationär" && (
+                    <div
+                      style={{
+                        padding: "14px 16px",
+                        borderRadius: "12px",
+                        background: "#FDF8F0",
+                        border: "1px solid #EDD9BB",
+                        color: "#94622D",
+                        fontSize: "12px",
+                        lineHeight: 1.65,
+                        marginBottom: "14px",
+                      }}
+                    >
+                      <div style={{ fontSize: "10px", fontWeight: "700", color: "#94622D", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "6px" }}>
+                        §43c SGB XI — Leistungszuschlag
+                      </div>
+                      Ab dem <strong>13. Monat</strong> im Heim sinkt Ihr Eigenanteil schrittweise: Monate 13–24: −25 % · Monate 25–36: −50 % · ab Monat 37: −75 % des einrichtungseinheitlichen Eigenanteils (EEE).
+                    </div>
+                  )}
                   <p style={{ marginBottom: "10px" }}>
                     Diese Berechnung nutzt ein Bundesland-Mapping typischer monatlicher Eigenanteile (stationäre Pflege, Orientierungswerte). Ambulant wird daraus proportional geschätzt. Tatsächliche Kosten variieren je nach Einrichtung, Vertrag und individuellem Budget.
                   </p>
@@ -684,13 +729,12 @@ export default function PflegekostenplanungRechner() {
                     <strong>Pflegetagegeld (Orientierung):</strong> Bei monatlicher Restlücke von {fmt(R.mtlLuecke)} ergibt sich ein empfohlener Tagessatz von <strong>{R.empfTagegeld} €</strong> (auf volle 5 € gerundet, höchstens 200 €/Tag). Der Pflegegrad aus Ihrer Szenario-Wahl (Schritt 2) fließt nur in den erklärenden Text ein, nicht in diese Zahl.
                   </p>
                   <p style={{ margin: 0, color: "#b8884a" }}>Keine Rechtsberatung. Orientierung u. a. § 43 SGB XI.</p>
+                  <div style={{ marginTop: "14px", padding: "12px 14px", background: "#F6F8FE", border: "1px solid #DCE6FF", borderRadius: "14px", fontSize: "11px", color: "#315AA8", lineHeight: 1.6 }}>
+                    {CHECK_LEGAL_DISCLAIMER_FOOTER}
+                  </div>
                 </div>
               )}
             </div>
-          </div>
-
-          <div style={{ ...T.section, marginBottom: "8px" }}>
-            <div style={{ ...T.infoBox, fontSize: "11px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
           </div>
         </div>
 
@@ -712,8 +756,14 @@ export default function PflegekostenplanungRechner() {
         <Header phase={progPct} total={100} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
-          <div style={T.h1}>Wo können wir Sie erreichen?</div>
-          <div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
+          <div style={T.h1}>
+            {R.luecke > 0
+              ? `Restbedarf von ${fmt(R.luecke)}/Mon. absichern.`
+              : "Ihre Pflegevorsorge besprechen."}
+          </div>
+          <div style={T.body}>
+            Wir melden uns innerhalb von 24 Stunden mit konkreten Produktempfehlungen.
+          </div>
         </div>
         <div style={{ ...T.section, marginBottom: "8px" }}>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
@@ -919,8 +969,8 @@ export default function PflegekostenplanungRechner() {
           </div>
           <div style={{ height: "120px" }} />
           <div style={T.footer}>
-            <button type="button" style={T.btnPrim(false)} onClick={() => setScr(6)}>
-              Weiter
+            <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
+              Analyse starten
             </button>
             <button type="button" style={T.btnSec} onClick={backScr}>
               Zurück
@@ -928,48 +978,6 @@ export default function PflegekostenplanungRechner() {
           </div>
         </>
       )}
-
-      {scr === 6 && (() => {
-        const b3 = pflegeBridgeSicherheitCopy(pflegegradAbgeleitet, p.region, p.pflegeOrt);
-        return (
-          <>
-            <CheckKitStoryHero hideFooterSpacer emoji="💸" title={b3.title} text={b3.text} />
-            <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
-              {[
-                "Abgleich der gesetzlichen Leistungen (Pflegekasse).",
-                "Ermittlung Ihres realen monatlichen Eigenanteils.",
-                "Strategie zum Schutz Ihres Privatvermögens (und Erbes).",
-              ].map((line) => (
-                <div
-                  key={line}
-                  style={{
-                    ...CHECKKIT2026.storyBody,
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "12px",
-                    marginBottom: 14,
-                    textAlign: "left",
-                  }}
-                >
-                  <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
-                    ✅
-                  </span>
-                  <span>{line}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ height: CHECKKIT2026.footerSpacerPx }} />
-            <div style={T.footer}>
-              <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
-                Ergebnis jetzt anzeigen
-              </button>
-              <button type="button" style={T.btnSec} onClick={backScr}>
-                Zurück
-              </button>
-            </div>
-          </>
-        );
-      })()}
     </div>
   );
 }

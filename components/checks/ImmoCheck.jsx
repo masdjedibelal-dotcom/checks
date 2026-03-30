@@ -850,7 +850,7 @@ export default function ImmoCheck() {
             </svg>
           </div>
           <div style={{ fontSize: "20px", fontWeight: "700", color: "#111", marginBottom: "8px" }}>
-            {fd.name ? `Danke, ${fd.name.split(" ")[0]}.` : "Anfrage gesendet."}
+            {fd.name ? `Vielen Dank, ${fd.name.split(" ")[0]}.` : "Anfrage gesendet."}
           </div>
           <div style={{ fontSize: "14px", color: "#666", lineHeight: 1.65, marginBottom: "32px" }}>
             Wir melden uns mit den nächsten Schritten zu Ihrem Immobilien-Schutz.
@@ -1023,7 +1023,7 @@ export default function ImmoCheck() {
           <div style={T.resultH1}>Ihr Plan für ein sorgenfreies Zuhause.</div>
           <div style={T.resultNum(C)}>{totalEmpf}</div>
           <div style={T.resultLead}>
-            Empfehlungen in drei Spalten: Existenz und Pflicht, wichtiger Standard sowie optionaler Plus-Schutz — abgeleitet aus Ihren Angaben im Risiko-Scanner.
+            Priorisiert nach Dringlichkeit — abgeleitet aus Ihren Angaben im Risiko-Scanner.
           </div>
           {pathLabel && (
             <div
@@ -1082,7 +1082,20 @@ export default function ImmoCheck() {
               <span style={{ color: "#b8884a" }}>Orientierung für Ihr Gespräch mit dem Makler.</span>
             </>
           </CheckBerechnungshinweis>
-          <div style={{ ...T.infoBox, marginTop: "12px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+          <div
+            style={{
+              marginTop: "10px",
+              padding: "10px 12px",
+              background: "rgba(246,248,254,0.6)",
+              border: "1px solid #DCE6FF",
+              borderRadius: "8px",
+              fontSize: "10px",
+              color: "#9CA3AF",
+              lineHeight: 1.55,
+            }}
+          >
+            {CHECK_LEGAL_DISCLAIMER_FOOTER}
+          </div>
         </div>
         <div style={T.footer}>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(4)}>

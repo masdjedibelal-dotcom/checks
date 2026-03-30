@@ -140,9 +140,9 @@ const MATRIX={
   },
   nachwuchs:{
     b:[
-      {p:"Risikolebensversicherung",h:true,tVorhanden:"Deine Risikolebensversicherung sollte an deine neue familiäre Situation angepasst werden.",tNeu:"Mit einem Kind ist eine finanzielle Absicherung deiner Familie besonders wichtig."},
-      {p:"Berufsunfähigkeitsversicherung",h:true,tVorhanden:"Prüfe, ob deine BU-Rente ausreichend ist, um deine Familie abzusichern.",tNeu:"Deine Arbeitskraft ist jetzt die wichtigste finanzielle Grundlage für deine Familie."},
-      {p:"Krankenhauszusatzversicherung",h:false,tVorhanden:"Deine Gesundheitsabsicherung kann für deine Familie erweitert werden.",tNeu:"Zusätzliche Gesundheitsleistungen können für dein Kind sinnvoll sein."},
+      {p:"Risikolebensversicherung",h:true,tVorhanden:"Ihre Risikolebensversicherung sollte an Ihre neue familiäre Situation angepasst werden.",tNeu:"Mit einem Kind ist eine finanzielle Absicherung Ihrer Familie besonders wichtig."},
+      {p:"Berufsunfähigkeitsversicherung",h:true,tVorhanden:"Prüfen Sie, ob Ihre BU-Rente ausreichend ist, um Ihre Familie abzusichern.",tNeu:"Ihre Arbeitskraft ist jetzt die wichtigste finanzielle Grundlage für Ihre Familie."},
+      {p:"Krankenhauszusatzversicherung",h:false,tVorhanden:"Ihre Gesundheitsabsicherung kann für Ihre Familie erweitert werden.",tNeu:"Zusätzliche Gesundheitsleistungen können für Ihr Kind sinnvoll sein."},
       {p:"Privathaftpflicht",h:true,tVorhanden:"Mit {householdCount} Personen im Haushalt: Kind in die Familienhaftpflicht aufnehmen — Umstellung auf Familien-Tarif ist typischerweise notwendig.",tNeu:"Familienhaftpflicht abschließen — Kinder haften selbst nicht, Sie schon."},
     ],
     n:[
@@ -161,19 +161,19 @@ const MATRIX={
   jobwechsel:{
     b:[
       {p:"Berufsunfähigkeitsversicherung",h:true,tVorhanden:"Bei {netIncome} € Netto monatlich sollte Ihre BU-Rente mindestens ca. {buMin} € betragen — prüfen Sie den Anpassungsbedarf; Ihre aktuelle Absicherung reicht vermutlich nicht mehr aus.",tNeu:"Mit höherem Einkommen wächst die Lücke: Als Orientierung oft mind. {buMin} € BU-Rente bei {netIncome} € Netto — jetzt absichern oder erhöhen."},
-      {p:"Krankentagegeld",h:true,tVorhanden:"Ihr Schutz muss zu {netIncome} € Netto passen — Krankentagegeld und Leistungshöhe prüfen.",tNeu:"Ohne ausreichendes Krankentagegeld kann dein Einkommen bei Krankheit deutlich sinken."},
+      {p:"Krankentagegeld",h:true,tVorhanden:"Ihr Schutz muss zu {netIncome} € Netto passen — Krankentagegeld und Leistungshöhe prüfen.",tNeu:"Ohne ausreichendes Krankentagegeld kann Ihr Einkommen bei Krankheit deutlich sinken."},
       {p:"Altersvorsorge / private Rentenversicherung",h:true,tVorhanden:"Bei {netIncome} € Netto können Sparraten und steuerliche Spielräume steigen — Altersvorsorge anpassen.",tNeu:"Ein höheres Einkommen bietet die Chance, gezielt Vermögen aufzubauen."},
     ],
     n:[
-      {p:"Private Krankenversicherung (PKV)",h:false,tNeu:"Mit höherem Einkommen kann ein Wechsel in die PKV eine Option sein – abhängig von deiner Situation.",condition:{employmentStatus:"angestellt"}},
-      {p:"Sparen & Investieren",h:false,tNeu:"Ein Teil deines höheren Einkommens kann gezielt für Vermögensaufbau genutzt werden."},
+      {p:"Private Krankenversicherung (PKV)",h:false,tNeu:"Mit höherem Einkommen kann ein Wechsel in die PKV eine Option sein – abhängig von Ihrer Situation.",condition:{employmentStatus:"angestellt"}},
+      {p:"Sparen & Investieren",h:false,tNeu:"Ein Teil Ihres höheren Einkommens kann gezielt für Vermögensaufbau genutzt werden."},
     ]
   },
   elternzeit:{
     b:[
-      {p:"Krankentagegeld",h:true,tVorhanden:"Während der Elternzeit ruht der KTG-Anspruch in der Regel — prüfe mit deiner Versicherung, ob Beiträge angepasst oder ausgesetzt werden können.",tNeu:"Ohne KTG besteht nach der Elternzeit beim Wiedereinstieg kein Schutz — vor allem für Selbstständige ist der Abschluss vor der Geburt wichtig."},
-      {p:"Berufsunfähigkeitsversicherung",h:true,tVorhanden:"BU-Schutz bleibt in der Elternzeit bestehen — prüfe ob Beitragsstundung möglich ist und ob die Nachversicherungsgarantie bei Geburt genutzt werden kann.",tNeu:"Jetzt abschließen ist wichtig: Nach der Elternzeit steigt das Eintrittsalter und es folgen neue Gesundheitsfragen — Schutz wird teurer oder schwieriger."},
-      {p:"Altersvorsorge / private Rentenversicherung",h:false,tVorhanden:"Deine Altersvorsorge sollte überprüft werden, da Beiträge während der Elternzeit reduziert sein können.",tNeu:"Während der Elternzeit entstehen oft Lücken in der Altersvorsorge."},
+      {p:"Krankentagegeld",h:true,tVorhanden:"Während der Elternzeit ruht der KTG-Anspruch in der Regel — klären Sie mit Ihrer Versicherung, ob Beiträge angepasst oder ausgesetzt werden können.",tNeu:"Ohne KTG besteht nach der Elternzeit beim Wiedereinstieg kein Schutz — vor allem für Selbstständige ist der Abschluss vor der Geburt wichtig."},
+      {p:"Berufsunfähigkeitsversicherung",h:true,tVorhanden:"BU-Schutz bleibt in der Elternzeit bestehen — prüfen Sie ob Beitragsstundung möglich ist und ob die Nachversicherungsgarantie bei Geburt genutzt werden kann.",tNeu:"Jetzt abschließen ist wichtig: Nach der Elternzeit steigt das Eintrittsalter und es folgen neue Gesundheitsfragen — Schutz wird teurer oder schwieriger."},
+      {p:"Altersvorsorge / private Rentenversicherung",h:false,tVorhanden:"Ihre Altersvorsorge sollte überprüft werden, da Beiträge während der Elternzeit reduziert sein können.",tNeu:"Während der Elternzeit entstehen oft Lücken in der Altersvorsorge."},
     ],
     n:[
       {p:"Risikolebensversicherung",h:true,tNeu:"Mit einem Kind steigt die finanzielle Verantwortung – eine Risikolebensversicherung kann sinnvoll sein."},
@@ -203,7 +203,7 @@ const MATRIX={
     b:[
       {p:"Berufsunfähigkeitsversicherung",h:true,tVorhanden:"Bei {netIncome} € Netto zum Berufsstart: BU-Rente zielend auf mind. ca. {buMin} € prüfen — früh absichern ist günstiger.",tNeu:"Zu Berufsbeginn BU prüfen — Gesundheitsprüfung ist meist noch unkompliziert, Prämien niedriger."},
       {p:"Krankentagegeld",h:true,tVorhanden:"Krankentagegeld an {netIncome} € Netto und neues Beschäftigungsverhältnis anpassen.",tNeu:"Krankentagegeld zum Berufsstart absichern — Lücke nach Ende des gesetzlichen Krankengelds schließen."},
-      {p:"Altersvorsorge / private Rentenversicherung",h:false,tVorhanden:"Auch kleine Sparraten am Anfang wirken über Jahrzehnte — Vertrag auf Einstieg prüfen.",tNeu:"Jetzt mit Altersvorsorge starten — Zeit arbeitet für dich."},
+      {p:"Altersvorsorge / private Rentenversicherung",h:false,tVorhanden:"Auch kleine Sparraten am Anfang wirken über Jahrzehnte — Vertrag auf Einstieg prüfen.",tNeu:"Jetzt mit Altersvorsorge starten — Zeit arbeitet für Sie."},
     ],
     n:[
       {p:"Sparen & Investieren",h:false,tNeu:"Erste Gehälter gezielt anlegen — Notgroschen und langfristiger Aufbau parallel denken."},
@@ -607,8 +607,8 @@ export default function JahresCheck(){
     <div style={T.page}><Header phase={100} total={100} />
     <div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in">
       <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-      <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
-      <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
+      <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Vielen Dank, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
+      <div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir prüfen Ihr Ergebnis und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
       <div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div>
       <button onClick={()=>{setDanke(false);setSelEventIds([]);setSelProdukte([]);setProds([]);setKontext(emptyKontext());goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neuen Check starten</button>
     </div></div>
@@ -648,7 +648,7 @@ export default function JahresCheck(){
     ];
     return(<div style={T.page} key={ak} className="fade-in">
       <Header phase={100} total={100} />
-      <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir dich erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div></div>
+      <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir Sie erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div></div>
       {isDemo ? (
         <>
           <div style={{ textAlign: "center", padding: "24px 0 8px" }}>
@@ -675,7 +675,7 @@ export default function JahresCheck(){
       <div style={T.section}>
         <CheckKontaktLeadLine />
         <div style={T.card}>
-          {[{k:"name",l:"Dein Name",t:"text",ph:"Vor- und Nachname",req:true},{k:"email",l:"Deine E-Mail",t:"email",ph:"deine@email.de",req:true},{k:"tel",l:"Deine Nummer",t:"tel",ph:"Optional",req:false,hint:"Optional — für eine schnellere Rückmeldung"}].map(({k,l,t,ph,req,hint},i,arr)=>(
+          {[{k:"name",l:"Ihr Name",t:"text",ph:"Vor- und Nachname",req:true},{k:"email",l:"Ihre E-Mail",t:"email",ph:"ihre@email.de",req:true},{k:"tel",l:"Ihre Nummer",t:"tel",ph:"Optional",req:false,hint:"Optional — für eine schnellere Rückmeldung"}].map(({k,l,t,ph,req,hint},i,arr)=>(
               <div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.inputEl,marginTop:"4px"}}/>{hint&&<div style={T.fldHint}>{hint}</div>}</div>
             ))}
         </div>
@@ -871,7 +871,7 @@ export default function JahresCheck(){
                 marginBottom: "10px",
               }}
             >
-              Dein Ergebnis
+              Ihr Ergebnis
             </div>
             <div
               style={{
@@ -921,8 +921,8 @@ export default function JahresCheck(){
             </div>
             <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.55 }}>
               {totalAnpassungen === 0 && E.ergaenzen.length === 0
-                ? "Deine Verträge sind aktuell — beim nächsten Gespräch prüfen wir Details."
-                : `${totalAnpassungen > 0 ? `${totalAnpassungen} Anpassungen` : ""}${totalAnpassungen > 0 && E.ergaenzen.length > 0 ? " und " : ""}${E.ergaenzen.length > 0 ? `${E.ergaenzen.length} neue Themen` : ""} auf Basis deiner Situation.`}
+                ? "Ihre Verträge sind aktuell — beim nächsten Gespräch prüfen wir Details."
+                : `${totalAnpassungen > 0 ? `${totalAnpassungen} Anpassungen` : ""}${totalAnpassungen > 0 && E.ergaenzen.length > 0 ? " und " : ""}${E.ergaenzen.length > 0 ? `${E.ergaenzen.length} neue Themen` : ""} auf Basis Ihrer Situation.`}
             </div>
           </div>
         </div>
@@ -1024,6 +1024,9 @@ export default function JahresCheck(){
                 borderRadius: "0 0 14px 0",
                 marginTop: 0,
                 borderTop: "1px solid rgba(26,58,92,0.12)",
+                fontSize: "10px",
+                color: "#9CA3AF",
+                background: "rgba(246,248,254,0.6)",
               }}
             >
               {CHECK_LEGAL_DISCLAIMER_FOOTER}

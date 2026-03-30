@@ -13,6 +13,7 @@
 }
 
 html {
+  scroll-behavior: smooth;
   color-scheme: light !important;
 }
 
@@ -39,6 +40,35 @@ button:active {
   opacity: 1;
 }
 
+/* CK tool cards — Hover-Lift (Landing #tools & überall mit .ck-card) */
+.ck-card,
+.flow-leads-landing .ck-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ck-card:hover,
+.flow-leads-landing .ck-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.1);
+}
+
+/* Vertrieb „Erlebnis“-Karten — Hover-Lift */
+.vertrieb-ec-card,
+.flow-leads-landing .vertrieb-ec-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vertrieb-ec-card:hover,
+.flow-leads-landing .vertrieb-ec-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+}
+
+.vertrieb-ec-card--dark:hover,
+.flow-leads-landing .vertrieb-ec-card--dark:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -53,6 +83,20 @@ button:active {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes successCheckPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -94,7 +138,7 @@ input[type="range"]::-webkit-slider-thumb {
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(22px);
   }
   to {
     opacity: 1;
@@ -108,6 +152,117 @@ input[type="range"]::-webkit-slider-thumb {
 
 .animate-fade-up-delay {
   animation: fadeUp 0.6s ease 0.08s both;
+}
+
+/* Landing Hero H1 — satzweise Einblendung (ohne .au / scroll fade-up) */
+.hero-h1-line {
+  display: inline;
+  opacity: 0;
+  animation: heroLineFadeIn 0.5s ease forwards;
+}
+.hero-h1-line--1 {
+  animation-delay: 0.1s;
+}
+.hero-h1-line--2 {
+  animation-delay: 0.35s;
+}
+.hero-h1-line--3 {
+  animation-delay: 0.6s;
+}
+
+@keyframes heroLineFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-h1-line {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+/* How-Timeline (#how): Staffelung über --how-step-delay (s. LandingHome inline style) */
+.how-tl-step,
+.flow-leads-landing .how-tl-step {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.how-timeline-block--visible .how-tl-step,
+.flow-leads-landing .how-timeline-block--visible .how-tl-step {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.45s ease var(--how-step-delay, 0s),
+    transform 0.45s ease var(--how-step-delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-leads-landing .how-timeline-block--visible .how-tl-step {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Warum FlowLeads — Listenzeilen: gestaffelt, sobald .benefits-premium-card.fade-up.visible */
+.flow-leads-landing .benefits-premium-card .benefits-premium-list .benefits-premium-row {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.flow-leads-landing .benefits-premium-card.visible .benefits-premium-list .benefits-premium-row {
+  opacity: 1;
+  transform: translateY(0);
+}
+.benefits-premium-row:nth-child(1),
+.flow-leads-landing .benefits-premium-list .benefits-premium-row:nth-child(1) {
+  transition-delay: 0.05s;
+}
+.benefits-premium-row:nth-child(2),
+.flow-leads-landing .benefits-premium-list .benefits-premium-row:nth-child(2) {
+  transition-delay: 0.1s;
+}
+.benefits-premium-row:nth-child(3),
+.flow-leads-landing .benefits-premium-list .benefits-premium-row:nth-child(3) {
+  transition-delay: 0.15s;
+}
+.benefits-premium-row:nth-child(4),
+.flow-leads-landing .benefits-premium-list .benefits-premium-row:nth-child(4) {
+  transition-delay: 0.2s;
+}
+.benefits-premium-row:nth-child(5),
+.flow-leads-landing .benefits-premium-list .benefits-premium-row:nth-child(5) {
+  transition-delay: 0.25s;
+}
+.benefits-premium-row:nth-child(6),
+.flow-leads-landing .benefits-premium-list .benefits-premium-row:nth-child(6) {
+  transition-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-leads-landing .benefits-premium-card .benefits-premium-list .benefits-premium-row,
+  .flow-leads-landing .benefits-premium-card.visible .benefits-premium-list .benefits-premium-row {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0s;
+  }
+}
+
+/* Facts-Section: Scroll-fade wie @keyframes fadeUp (22px), nicht 24px von .fade-up */
+.flow-leads-landing .facts-card.fade-up {
+  transform: translateY(22px);
+}
+.flow-leads-landing .facts-card.fade-up.visible {
+  transform: translateY(0);
 }
 
 @layer utilities {

@@ -206,8 +206,6 @@ function makeRentenT(C) {
   statusWarn: { display: "inline-flex", alignItems: "center", gap: "5px", padding: "5px 13px", background: "#FFF6F5", border: "1px solid #F2D4D0", borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: "#C0392B" },
   statusInfo: (C2) => ({ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 14px", background: `${C2}14`, border: `1px solid ${C2}33`, borderRadius: "999px", fontSize: "12px", fontWeight: "600", color: C2 }),
   cardPrimary: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "20px", overflow: "hidden", background: "#FFFFFF", boxShadow: "0 6px 24px rgba(17,24,39,0.08)" },
-  cardContext: { background: "#FAFAF8", border: "1px solid rgba(17,24,39,0.05)", borderRadius: "16px", padding: "18px 20px" },
-  warnCard: { background: "#FFF6F5", border: "1px solid #F2D4D0", borderLeft: "3px solid #C0392B", borderRadius: "14px", padding: "18px 20px" },
   sectionLbl: { fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px" },
   stackedBarOuter: { width: "100%", maxWidth: "100%", height: "16px", borderRadius: "999px", overflow: "hidden", display: "flex", background: "rgba(31,41,55,0.08)", boxShadow: "inset 0 1px 2px rgba(0,0,0,0.04)" },
   stackedBarSeg: (pct, color) => ({
@@ -221,7 +219,6 @@ function makeRentenT(C) {
   compareGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "12px" },
   compareCard: { border: "1px solid rgba(17,24,39,0.08)", borderRadius: "16px", padding: "16px 18px", background: "#fff", boxShadow: "0 4px 16px rgba(17,24,39,0.06)", minWidth: 0 },
   compareCardTitle: { fontSize: "14px", fontWeight: "700", color: "#1F2937", marginBottom: "10px", letterSpacing: "-0.2px" },
-  compareBullet: { fontSize: "12px", color: "#4B5563", lineHeight: 1.5, marginBottom: "6px", paddingLeft: "14px", position: "relative" },
 };
 }
 
@@ -259,22 +256,6 @@ function rentenStoryZeitEinkommenCopy(alter, nettoEinkommen, wunschRentenalter) 
   return {
     title: "Präzision im Endspurt.",
     text: `Bis zu Ihrem Wunsch-Rentenalter (${ra}) sind es noch wichtige Jahre. Wir kalkulieren jetzt, wie wir Ihr heutiges Netto von ${nettoStr} inflationsgeschützt in die Rente übertragen.`,
-  };
-}
-
-/** Monatliche gesetzliche Rente laut Eingabe (`p.gesRente`); 0 = nicht ausgefüllt */
-function rentenBridgeAnspruchCopy(rentenanspruchMonat) {
-  const r = Number(rentenanspruchMonat);
-  if (r > 0) {
-    const s = `${Math.round(r).toLocaleString("de-DE")} €`;
-    return {
-      title: "Basis-Check abgeschlossen.",
-      text: `Ihre bereits erworbenen Ansprüche von ${s} sind das Fundament. Wir ziehen jetzt die Inflation und Steuern ab, um die reale Lücke zu schließen.`,
-    };
-  }
-  return {
-    title: "Vorsorge-Check bereit.",
-    text: "Wir berechnen jetzt Ihren kompletten Bedarf von Null auf, damit Sie im Alter keine Kompromisse bei Ihrem Lebensstandard machen müssen.",
   };
 }
 
@@ -348,7 +329,7 @@ function Footer({ onNext, onBack, label="Weiter", disabled=false, T }) {
   );
 }
 
-function DankeScreen({ name, onBack, makler, C }) {
+function DankeScreen({ name, onBack, makler, C, luecke, deckung }) {
   return (
     <div style={{ padding:"48px 24px", textAlign:"center" }} className="fade-in">
       <div style={{ width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px" }}>
@@ -356,6 +337,43 @@ function DankeScreen({ name, onBack, makler, C }) {
       </div>
       <div style={{ fontSize:"20px",fontWeight:"700",color:"#111",letterSpacing:"-0.4px",marginBottom:"8px" }}>{name?`Vielen Dank, ${name.split(" ")[0]}.`:"Ihre Anfrage wurde gesendet."}</div>
       <div style={{ fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px" }}>Wir prüfen Ihr Ergebnis und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
+      {luecke > 0 && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "8px",
+            marginBottom: "24px",
+          }}
+        >
+          <div
+            style={{
+              background: "#FFF7F7",
+              border: "1px solid #F2CFCF",
+              borderRadius: "12px",
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Monatliche Lücke</div>
+            <div style={{ fontSize: "18px", fontWeight: "700", color: "#C0392B", letterSpacing: "-0.3px" }}>
+              {Math.round(Math.abs(luecke)).toLocaleString("de-DE")} €
+            </div>
+          </div>
+          <div
+            style={{
+              background: "rgba(31,41,55,0.03)",
+              border: "1px solid rgba(31,41,55,0.08)",
+              borderRadius: "12px",
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Deckungsgrad</div>
+            <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
+              {deckung} %
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left" }}>
         <div style={{ padding:"14px 16px",borderBottom:"1px solid #f0f0f0" }}>
           <div style={{ fontSize:"11px",color:"#999",fontWeight:"600",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:"4px" }}>Ihr Ansprechpartner</div>
@@ -404,8 +422,8 @@ export default function RentenRechner() {
   /** Strategie-Karten: Details-Accordion — nur Hybrid standardmäßig aufgeklappt */
   const [stratAccOpen, setStratAccOpen] = useState({ hybrid: true, steuer: false, etf: false });
   const toggleStratAcc = (k) => setStratAccOpen((s) => ({ ...s, [k]: !s[k] }));
-  /** Intro, Alter, Rentenalter, Netto, Zeit-&-Einkommens-Story, Ziel, Vorsorge, Inflation, Bridge → Loader → Ergebnis */
-  const TOTAL_SCR = 9;
+  /** Intro, Alter, Rentenalter, Netto, Zeit-&-Einkommens-Story, Ziel, Vorsorge, Inflation → Loader → Bridge → Ergebnis */
+  const TOTAL_SCR = 8;
   const goTo   = (ph) => {
     setAk(k => k + 1);
     setPhase(ph);
@@ -429,7 +447,14 @@ export default function RentenRechner() {
   if (danke) return (
     <div style={{ ...T.page, "--accent": C }}>
       <Header phase={TOTAL} total={TOTAL} makler={MAKLER} C={C} />
-      <DankeScreen name={name} onBack={() => { setDanke(false); goTo(1); }} makler={MAKLER} C={C} />
+      <DankeScreen
+        name={name}
+        onBack={() => { setDanke(false); goTo(1); }}
+        makler={MAKLER}
+        C={C}
+        luecke={R.lueckeHeute}
+        deckung={R.deckung}
+      />
     </div>
   );
 
@@ -437,10 +462,56 @@ export default function RentenRechner() {
     return (
       <div style={{ ...T.page, "--accent": C }}>
         <Header phase={TOTAL_SCR} total={TOTAL_SCR} makler={MAKLER} C={C} />
-        <CheckLoader type="rente" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="rente" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
     );
   }
+
+  if (phase === "bridge")
+    return (
+      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+        <Header phase={TOTAL} total={TOTAL} makler={MAKLER} C={C} />
+        <CheckKitStoryHero
+          hideFooterSpacer
+          emoji="🎯"
+          title="Ihre Analyse ist bereit."
+          text="Wir haben Ihre Vorsorgesituation vollständig berechnet."
+        />
+        <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
+          {[
+            `Monatliche Lücke: ${fmt(R.lueckeHeute > 0 ? R.lueckeHeute : 0)} ermittelt.`,
+            `Deckungsgrad: ${R.deckung} % Ihrer Zielrente analysiert.`,
+            `Strategieempfehlung für ${R.jahreBis} Jahre Ansparphase erstellt.`,
+          ].map((line) => (
+            <div
+              key={line}
+              style={{
+                ...CHECKKIT2026.storyBody,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "12px",
+                marginBottom: 14,
+                textAlign: "left",
+              }}
+            >
+              <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
+                ✅
+              </span>
+              <span>{line}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
+        <div style={T.footer}>
+          <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
+            Ergebnis ansehen
+          </button>
+          <button type="button" style={T.btnSec} onClick={() => goTo(1)}>
+            Neu berechnen
+          </button>
+        </div>
+      </div>
+    );
 
   // Phase 3: Kontakt
   if (phase === 3) {
@@ -450,8 +521,14 @@ export default function RentenRechner() {
         <Header phase={3} total={TOTAL} makler={MAKLER} C={C} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
-          <div style={T.h1}>Wo können wir Sie erreichen?</div>
-          <div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div>
+          <div style={T.h1}>
+            {R.lueckeHeute > 0
+              ? `Lücke von ${fmt(R.lueckeHeute)} gemeinsam schließen.`
+              : "Ihre Vorsorge gemeinsam optimieren."}
+          </div>
+          <div style={T.body}>
+            Wir melden uns innerhalb von 24 Stunden mit konkreten Vorsorge-Empfehlungen.
+          </div>
         </div>
         <div style={T.section}>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
@@ -521,8 +598,6 @@ export default function RentenRechner() {
   // Phase 2: Ergebnis (BUKTG-Schema)
   if (phase === 2) {
     const lh = R.lueckeHeute;
-    const kap20 = lh * 12 * 20;
-    const kap24 = lh * 12 * 24;
     const statusPill =
       lh <= 0 ? (
         <div style={T.statusOk}>Ziel weitgehend erreicht</div>
@@ -554,9 +629,6 @@ export default function RentenRechner() {
             <div style={{ ...T.resultNumber(lh > 0), fontSize: "52px", textAlign: "center" }}>{lh > 0 ? fmt(lh) : fmt(0)}</div>
             <div style={{ ...T.resultUnit, marginBottom: "14px" }}>mtl. Lücke heute</div>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>{statusPill}</div>
-            <div style={{ ...T.resultSub, marginTop: "4px", maxWidth: "36ch" }}>
-              {R.deckung} % Ihrer Zielrente gedeckt · {R.jahreBis} Jahre bis zur Rente · statistisch ca. {R.renteDauer} Jahre Rentenphase
-            </div>
           </div>
 
           <div style={T.section}>
@@ -603,25 +675,6 @@ export default function RentenRechner() {
           </div>
 
           <div style={T.section}>
-            <div style={T.sectionLbl}>Kapitalbedarf (Orientierung)</div>
-            <SmartHintCard icon="📊">
-              <span style={{ display: "block", fontSize: "13px", lineHeight: 1.55 }}>
-                Grobe Summe ohne Abzinsung: monatliche Lücke heute × 12 × statistische Rentenphase (20 bzw. 24 Jahre).
-              </span>
-              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                <div>
-                  <div style={{ fontSize: "10px", fontWeight: "600", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.04em" }}>Mann (20 J.)</div>
-                  <div style={{ fontSize: "20px", fontWeight: "800", color: "#1F2937", letterSpacing: "-0.4px" }}>{fmt(kap20)}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: "10px", fontWeight: "600", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.04em" }}>Frau (24 J.)</div>
-                  <div style={{ fontSize: "20px", fontWeight: "800", color: "#1F2937", letterSpacing: "-0.4px" }}>{fmt(kap24)}</div>
-                </div>
-              </div>
-            </SmartHintCard>
-          </div>
-
-          <div style={T.section}>
             <div style={T.sectionLbl}>Strategien</div>
             <div style={{ ...T.compareGrid, alignItems: "stretch" }}>
               <div style={T.compareCard} id="hybrid">
@@ -643,8 +696,8 @@ export default function RentenRechner() {
                     Empfohlen
                   </span>
                 </div>
-                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, margin: 0 }}>
-                  Kombination aus steuerlich attraktiver Vorsorge und marktnahem Kapitalaufbau — Risiko und Förderung ausgewogen mischen.
+                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.45, margin: 0 }}>
+                  Rente + Fonds kombiniert — Förderung und Rendite ausgewogen.
                 </p>
                 <div style={{ marginTop: "10px", borderRadius: "12px", border: "1px solid rgba(17,24,39,0.08)", overflow: "hidden", background: "#FAFAFA" }}>
                   <button
@@ -722,8 +775,8 @@ export default function RentenRechner() {
 
               <div style={T.compareCard} id="steuer">
                 <div style={T.compareCardTitle}>Steuerfokus (Rürup / bAV)</div>
-                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, margin: 0 }}>
-                  Beiträge in die Basis-/Rürup-Vorsorge können Ihr zu versteuerndes Einkommen senken — die Nettobelastung pro Monat fällt geringer aus als die nominale Sparrate.
+                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.45, margin: 0 }}>
+                  Steuerlich gefördert — Nettorate oft geringer als die Sparrate.
                 </p>
                 <div style={{ marginTop: "10px", borderRadius: "12px", border: "1px solid rgba(17,24,39,0.08)", overflow: "hidden", background: "#FAFAFA" }}>
                   <button
@@ -816,8 +869,8 @@ export default function RentenRechner() {
 
               <div style={T.compareCard} id="etf">
                 <div style={T.compareCardTitle}>ETF &amp; Fonds (Aktienquote)</div>
-                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, margin: 0 }}>
-                  Breit gestreute Indexfonds können langfristig Kaufkraft aufbauen — mit Schwankungen unterwegs und ohne Garantie der Einzahlungen.
+                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.45, margin: 0 }}>
+                  Breit gestreut, flexibel — mit Kursschwankungen unterwegs.
                 </p>
                 <div style={{ marginTop: "10px", borderRadius: "12px", border: "1px solid rgba(17,24,39,0.08)", overflow: "hidden", background: "#FAFAFA" }}>
                   <button
@@ -895,65 +948,76 @@ export default function RentenRechner() {
             </div>
           </div>
 
-          <div style={T.section}>
-            <div style={T.sectionLbl}>Einordnung</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px", alignItems: "stretch" }}>
-              <SmartHintCard icon="⏱️">
-                <strong style={{ fontWeight: "700" }}>Der Zeitfaktor — Kosten des Wartens</strong>
-                <span style={{ display: "block", marginTop: "8px" }}>
-                  Je länger Sie mit dem Aufbau zusätzlicher Vorsorge warten, desto höher wird die nötige Sparrate. Der Zinseszinseffekt wirkt am stärksten, wenn Sie früh einsteigen.
-                </span>
-              </SmartHintCard>
-              {!gutAufgestellt && R.mehrKosten > 10 && (
-                <SmartHintCard icon="⏳">
-                  <strong style={{ fontWeight: "700" }}>Was 5 Jahre Warten kosten</strong>
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "10px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        textAlign: "center",
-                        padding: "12px 10px",
-                        background: "rgba(255,255,255,0.55)",
-                        borderRadius: "12px",
-                        border: "1px solid rgba(146, 64, 14, 0.18)",
-                      }}
-                    >
-                      <div style={{ fontSize: "20px", fontWeight: "700", color: "#166534", letterSpacing: "-0.4px" }}>{fmt(R.rateA)}</div>
-                      <div style={{ fontSize: "11px", color: "#92400E", opacity: 0.85, marginTop: "4px", fontWeight: "500" }}>Heute starten</div>
+          <div style={{ ...T.section, marginBottom: "16px" }}>
+            <div style={T.sectionLbl}>Hinweise &amp; Details</div>
+
+            <div className="renten-acc-item">
+              <button
+                type="button"
+                className="renten-acc-btn"
+                onClick={() => setRentenArchiv((x) => (x === "kapital" ? null : "kapital"))}
+                aria-expanded={rentenArchiv === "kapital"}
+              >
+                <span>Kapitalbedarf (Orientierung)</span>
+                <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rentenArchiv === "kapital" ? "▲" : "▼"}</span>
+              </button>
+              {rentenArchiv === "kapital" && (
+                <div className="renten-acc-panel" style={{ paddingTop: "12px" }}>
+                  <p style={{ marginBottom: "10px", fontSize: "12px" }}>
+                    Grobe Summe ohne Abzinsung: monatliche Lücke heute × 12 × statistische Rentenphase (20 bzw. 24 Jahre).
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "8px" }}>
+                    <div style={{ background: "rgba(31,41,55,0.04)", borderRadius: "10px", padding: "10px 12px" }}>
+                      <div style={{ fontSize: "10px", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>Mann (20 J.)</div>
+                      <div style={{ fontSize: "18px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.4px" }}>{fmt(R.lueckeHeute * 12 * 20)}</div>
                     </div>
-                    <div
-                      style={{
-                        textAlign: "center",
-                        padding: "12px 10px",
-                        background: "rgba(255,255,255,0.55)",
-                        borderRadius: "12px",
-                        border: "1px solid rgba(146, 64, 14, 0.18)",
-                      }}
-                    >
-                      <div style={{ fontSize: "20px", fontWeight: "700", color: "#B45309", letterSpacing: "-0.4px" }}>{fmt(R.rateA5)}</div>
-                      <div style={{ fontSize: "11px", color: "#92400E", opacity: 0.85, marginTop: "4px", fontWeight: "500" }}>In 5 Jahren</div>
+                    <div style={{ background: "rgba(31,41,55,0.04)", borderRadius: "10px", padding: "10px 12px" }}>
+                      <div style={{ fontSize: "10px", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>Frau (24 J.)</div>
+                      <div style={{ fontSize: "18px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.4px" }}>{fmt(R.lueckeHeute * 12 * 24)}</div>
                     </div>
                   </div>
-                  <span style={{ display: "block", marginTop: "10px" }}>
-                    Warten kostet{" "}
-                    <strong style={{ fontWeight: "700", color: "#78350F" }}>{fmt(R.mehrKosten)}/Monat mehr</strong>
-                    {" "}— bei gleicher Zielrente.
-                  </span>
-                </SmartHintCard>
+                </div>
               )}
             </div>
-          </div>
 
-          <div style={{ ...T.section, marginBottom: "16px" }}>
-            <div style={T.sectionLbl}>Details zur Berechnung</div>
+            {!gutAufgestellt && R.mehrKosten > 10 && (
+              <div className="renten-acc-item">
+                <button
+                  type="button"
+                  className="renten-acc-btn"
+                  onClick={() => setRentenArchiv((x) => (x === "warten" ? null : "warten"))}
+                  aria-expanded={rentenArchiv === "warten"}
+                >
+                  <span>Was 5 Jahre Warten kosten</span>
+                  <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rentenArchiv === "warten" ? "▲" : "▼"}</span>
+                </button>
+                {rentenArchiv === "warten" && (
+                  <div className="renten-acc-panel" style={{ paddingTop: "12px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "10px" }}>
+                      <div style={{ background: "rgba(31,41,55,0.04)", borderRadius: "10px", padding: "10px 12px", textAlign: "center" }}>
+                        <div style={{ fontSize: "16px", fontWeight: "700", color: "#166534", letterSpacing: "-0.3px" }}>{fmt(R.rateA)}</div>
+                        <div style={{ fontSize: "10px", color: "#6B7280", marginTop: "3px" }}>Heute starten</div>
+                      </div>
+                      <div style={{ background: "rgba(31,41,55,0.04)", borderRadius: "10px", padding: "10px 12px", textAlign: "center" }}>
+                        <div style={{ fontSize: "16px", fontWeight: "700", color: "#B45309", letterSpacing: "-0.3px" }}>{fmt(R.rateA5)}</div>
+                        <div style={{ fontSize: "10px", color: "#6B7280", marginTop: "3px" }}>In 5 Jahren</div>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: "12px" }}>
+                      Warten kostet <strong style={{ color: "#78350F" }}>{fmt(R.mehrKosten)}/Monat mehr</strong> — bei gleicher Zielrente.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="renten-acc-item">
-              <button type="button" className="renten-acc-btn" onClick={() => setRentenArchiv((x) => (x === "calc" ? null : "calc"))} aria-expanded={rentenArchiv === "calc"}>
+              <button
+                type="button"
+                className="renten-acc-btn"
+                onClick={() => setRentenArchiv((x) => (x === "calc" ? null : "calc"))}
+                aria-expanded={rentenArchiv === "calc"}
+              >
                 <span>Methodik, Inflation &amp; Steuer</span>
                 <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rentenArchiv === "calc" ? "▲" : "▼"}</span>
               </button>
@@ -985,19 +1049,32 @@ export default function RentenRechner() {
                 </div>
               )}
             </div>
-          </div>
 
-          <div style={{ ...T.section, marginBottom: "8px" }}>
-            <div style={{ ...T.infoBox, fontSize: "11px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+            <div className="renten-acc-item">
+              <button
+                type="button"
+                className="renten-acc-btn"
+                onClick={() => setRentenArchiv((x) => (x === "legal" ? null : "legal"))}
+                aria-expanded={rentenArchiv === "legal"}
+              >
+                <span>Rechtliche Hinweise</span>
+                <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rentenArchiv === "legal" ? "▲" : "▼"}</span>
+              </button>
+              {rentenArchiv === "legal" && (
+                <div className="renten-acc-panel" style={{ paddingTop: "12px" }}>
+                  {CHECK_LEGAL_DISCLAIMER_FOOTER}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} label="Vorsorge prüfen" T={T} />
+        <Footer onNext={() => goTo(3)} onBack={() => goTo(1)} label="Vorsorge prüfen lassen" T={T} />
       </div>
     );
   }
 
-  // Phase 1: Intro + Daten + Story (Alter/Netto/Rentenalter) + … + Bridge → Loader → Phase 2
+  // Phase 1: Intro + Daten + Story (Alter/Netto/Rentenalter) + … + Inflation → Loader → Bridge → Phase 2
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={scr} total={TOTAL_SCR} makler={MAKLER} C={C} />
@@ -1111,6 +1188,22 @@ export default function RentenRechner() {
                 <SelectionCard key={v} value={String(v)} label={l} description={d} selected={p.zielProzent === v} accent={C} onClick={() => set("zielProzent", v)} />
               ))}
             </div>
+            <div
+              style={{
+                marginTop: "14px",
+                padding: "10px 14px",
+                background: "rgba(31,41,55,0.04)",
+                borderRadius: "10px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+              }}
+            >
+              <div style={{ fontSize: "12px", color: "#6B7280" }}>Ihre Zielrente</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
+                {fmt(R.zielHeute)}/Mon.
+              </div>
+            </div>
           </div>
           <div style={{ height: "120px" }} />
           <Footer onNext={nextScr} onBack={backScr} label="Weiter" T={T} />
@@ -1163,6 +1256,41 @@ export default function RentenRechner() {
                 hint="Private Rentenversicherung, Fondssparplan u. Ä."
               />
             </div>
+            <div
+              style={{
+                marginTop: "16px",
+                padding: "12px 14px",
+                background: R.deckung >= 90
+                  ? "rgba(21,128,61,0.06)"
+                  : R.deckung >= 60
+                    ? `color-mix(in srgb, ${C} 6%, white)`
+                    : "rgba(192,57,43,0.06)",
+                border: `1px solid ${R.deckung >= 90 ? "#BBF7D0" : R.deckung >= 60 ? `${C}30` : "#F2D4D0"}`,
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "11px", color: "#6B7280", marginBottom: "2px" }}>Aktuell gedeckt</div>
+                <div style={{ fontSize: "11px", color: "#9CA3AF", lineHeight: 1.4 }}>
+                  {fmt(R.vorhanden)}/Mon. von {fmt(R.zielHeute)}/Mon. Zielrente
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: "22px",
+                  fontWeight: "700",
+                  color: R.deckung >= 90 ? "#15803D" : R.deckung >= 60 ? C : "#C0392B",
+                  letterSpacing: "-0.5px",
+                  flexShrink: 0,
+                }}
+              >
+                {R.deckung} %
+              </div>
+            </div>
           </div>
           <div style={{ height: "120px" }} />
           <Footer onNext={nextScr} onBack={backScr} label="Weiter" T={T} />
@@ -1196,51 +1324,9 @@ export default function RentenRechner() {
             </div>
           </div>
           <div style={{ height: "120px" }} />
-          <Footer onNext={nextScr} onBack={backScr} label="Weiter" T={T} />
+          <Footer onNext={() => setLoading(true)} onBack={backScr} label="Analyse starten" T={T} />
         </>
       )}
-
-      {scr === 9 && (() => {
-        const b3 = rentenBridgeAnspruchCopy(p.gesRente);
-        return (
-        <>
-          <CheckKitStoryHero hideFooterSpacer emoji="🎯" title={b3.title} text={b3.text} />
-          <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
-            {[
-              "Hochrechnung der Kaufkraft (Inflations-Check).",
-              "Abgleich der Ansprüche mit dem Wunsch-Szenario.",
-              "Ermittlung des monatlichen Sparpotenzials.",
-            ].map((line) => (
-              <div
-                key={line}
-                style={{
-                  ...CHECKKIT2026.storyBody,
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "12px",
-                  marginBottom: 14,
-                  textAlign: "left",
-                }}
-              >
-                <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
-                  ✅
-                </span>
-                <span>{line}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
-          <div style={T.footer}>
-            <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
-              Ergebnis jetzt anzeigen
-            </button>
-            <button type="button" style={T.btnSec} onClick={backScr}>
-              Zurück
-            </button>
-          </div>
-        </>
-        );
-      })()}
     </div>
   );
 }

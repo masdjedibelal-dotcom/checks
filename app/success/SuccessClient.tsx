@@ -130,21 +130,22 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
   const S = {
     page: {
       minHeight: "100vh",
-      background: "#f0ede6",
+      background: "#ffffff",
       fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
       padding: "48px 24px",
     },
     wrap: { maxWidth: "600px", margin: "0 auto" },
     checkCircle: {
-      width: "52px",
-      height: "52px",
+      width: "68px",
+      height: "68px",
       borderRadius: "50%",
-      background: "#d1fae5",
-      border: "1.5px solid #6ee7b7",
+      background: "#EAF3DE",
+      border: "2px solid #639922",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      margin: "0 auto 20px",
+      margin: "0 auto 16px",
+      animation: "successCheckPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
     },
     h1: {
       fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
@@ -160,7 +161,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
       color: "#6b7280",
       lineHeight: "1.65",
       textAlign: "center" as const,
-      marginBottom: "36px",
+      marginBottom: "0",
     },
     tabWrap: {
       display: "flex",
@@ -328,13 +329,29 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           alignItems: "center",
           justifyContent: "center",
           gap: 20,
-          background: "#f0ede6",
+          background: "#ffffff",
           fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
           padding: 24,
         }}
       >
-        <div style={{ color: "#9ca3af", fontSize: 14, textAlign: "center" }}>
-          Lade Ihre Bestellung…
+        <div style={{ textAlign: "center", maxWidth: "320px" }}>
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              border: "2px solid #E5E7EB",
+              borderTopColor: "#111",
+              animation: "spin 0.8s linear infinite",
+              margin: "0 auto 16px",
+            }}
+          />
+          <div style={{ fontSize: "15px", fontWeight: "600", color: "#111", marginBottom: "6px" }}>
+            Bestellung wird geladen…
+          </div>
+          <div style={{ fontSize: "13px", color: "#9CA3AF", lineHeight: 1.6 }}>
+            Stripe bestätigt Ihre Zahlung — das dauert meist unter einer Minute.
+          </div>
         </div>
         <a href="/" style={{ color: "#b8884a", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
           ← Zurück zur Startseite
@@ -351,7 +368,7 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f0ede6",
+          background: "#ffffff",
           padding: 24,
           fontFamily: "'DM Sans', var(--font-sans), system-ui, sans-serif",
         }}
@@ -407,27 +424,64 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
     <div style={S.page}>
       <div style={S.wrap}>
         <div style={S.checkCircle}>
-          <svg width="22" height="18" viewBox="0 0 22 18" fill="none" aria-hidden>
+          <svg width="26" height="22" viewBox="0 0 22 18" fill="none" aria-hidden>
             <path
               d="M2 9l6 7L20 2"
-              stroke="#16a34a"
+              stroke="#639922"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
         </div>
-        <h1 style={S.h1}>Danke, {firstName}.</h1>
-        <p style={S.sub}>
-          Ihr{" "}
-          <strong style={{ color: "#1a1a1a" }}>{slugToDisplayName(data.slug)}</strong> ist aktiv. Wählen Sie, wie Sie
-          es einsetzen möchten.
-        </p>
+        <div
+          style={{
+            fontSize: "11px",
+            fontWeight: "700",
+            color: "#3B6D11",
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+            marginBottom: "6px",
+            textAlign: "center",
+          }}
+        >
+          Kauf bestätigt
+        </div>
+        <h1 style={S.h1}>Vielen Dank, {firstName}.</h1>
+        <p style={S.sub}>Ihre Microsite ist aktiv und bereit zum Einsatz.</p>
+
+        <div style={{ textAlign: "center", marginTop: "10px", marginBottom: "28px" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "6px 14px",
+              background: "#fff",
+              border: "1px solid #E5E7EB",
+              borderRadius: "999px",
+              fontSize: "12px",
+              fontWeight: "600",
+              color: "#374151",
+            }}
+          >
+            <span
+              style={{
+                width: "7px",
+                height: "7px",
+                borderRadius: "50%",
+                background: "#639922",
+                flexShrink: 0,
+              }}
+            />
+            {slugToDisplayName(data.slug)} · aktiv
+          </div>
+        </div>
 
         <div style={S.tabWrap}>
           {(["iframe", "link", "qr"] as const).map((t) => (
             <button key={t} type="button" style={S.tab(tab === t)} onClick={() => setTab(t)}>
-              {t === "iframe" ? "⟨/⟩ iFrame" : t === "link" ? "🔗 Direkt-Link" : "⬜ QR-Code"}
+              {t === "iframe" ? "Einbetten" : t === "link" ? "Direkt-Link" : "QR-Code"}
             </button>
           ))}
         </div>
@@ -477,6 +531,55 @@ export default function SuccessClient({ contactEmail }: SuccessClientProps) {
               <span>{s}</span>
             </div>
           ))}
+        </div>
+
+        <div
+          style={{
+            marginTop: "8px",
+            marginBottom: "16px",
+            padding: "14px 16px",
+            background: "#fff",
+            border: "1px solid #E5E7EB",
+            borderRadius: "14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: "13px", fontWeight: "700", color: "#111", marginBottom: "2px" }}>
+              Weitere Microsites entdecken
+            </div>
+            <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.5 }}>
+              Ergänzen Sie Ihren Vertrieb mit weiteren Themen.
+            </div>
+          </div>
+          <a
+            href="/"
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              background: "#111",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              textDecoration: "none",
+            }}
+            aria-label="Zurück zur Startseite"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+              <path
+                d="M2 6h8M7 3l3 3-3 3"
+                stroke="white"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </a>
         </div>
 
         <p style={S.hint}>

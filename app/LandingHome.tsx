@@ -294,7 +294,7 @@ function FactsSection() {
             <article
               key={card.stat}
               className="facts-card fade-up"
-              style={{ transitionDelay: `${0.05 + i * 0.05}s` }}
+              style={{ transitionDelay: `${0.06 + i * 0.1}s` }}
             >
               <span className="facts-card-icon" aria-hidden>
                 <FactsCardIcon name={card.icon} />
@@ -447,8 +447,12 @@ export default function LandingHome() {
 
           {/* Left: Text */}
           <div className="hero-text">
-            <h1 className="au d1">
-              Mehr Anfragen. Weniger Aufwand. Mehr Abschluss.
+            <h1 className="hero-h1-split">
+              <span className="hero-h1-line hero-h1-line--1">Mehr Anfragen.</span>
+              {" "}
+              <span className="hero-h1-line hero-h1-line--2">Weniger Aufwand.</span>
+              {" "}
+              <span className="hero-h1-line hero-h1-line--3">Mehr Abschluss.</span>
             </h1>
 
             <p className="hero-sub au d2">
@@ -512,7 +516,7 @@ export default function LandingHome() {
                 <div
                   key={c.slug}
                   className="ck-card fade-up"
-                  style={{ transitionDelay: `${(i % 2) * 0.05}s` }}
+                  style={{ transitionDelay: `${i * 0.08}s` }}
                 >
                   <div
                     className={

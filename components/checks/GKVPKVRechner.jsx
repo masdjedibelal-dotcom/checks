@@ -154,7 +154,7 @@ infoGridBody:{fontSize:"13px",color:"#666",lineHeight:1.65},
 infoGridShell:{border:"1px solid rgba(17,24,39,0.08)",borderRadius:"14px",padding:"16px 16px 17px",background:"#fff",boxShadow:"0 1px 6px rgba(17,24,39,0.04)"},
 infoGridIconWrap:{width:"42px",height:"42px",borderRadius:"11px",background:"#f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",color:"#888",flexShrink:0},
 };}
-/** Intro + Beruf + Einkommen + Alter + System-Story + Familie + Bridge (Fortschrittsanzeige) */
+/** Intro + Beruf + Einkommen + Alter + System-Story + Familie (Fortschrittsanzeige) */
 const KV_FLOW_STEPS = 8;
 
 function fmtKvGehaltEUR(n) {
@@ -186,14 +186,6 @@ function kvStoryStatusGehaltCopy(beruf, brutto) {
         text: "Wir führen die Auswertung anhand Ihrer Angaben fort.",
       };
   }
-}
-
-/** Slide 3 Bridge: Familien-Baustein — Kinder nur bei partner_kinder */
-function kvBridgeFamilieBaustein(familiensituation) {
-  if (familiensituation === "partner_kinder") {
-    return "Dabei berücksichtigen wir die kostenfreie Familienversicherung der GKV vs. die individuellen Tarife der PKV für Ihre Kinder.";
-  }
-  return "Wir optimieren die Kalkulation auf Ihre persönliche Flexibilität und langfristige Planbarkeit.";
 }
 
 function Header({ phase, total, maklerFirma, C }) {
@@ -316,7 +308,7 @@ export default function GKVPKVRechner(){
     p.haushaltMehrverdiener === "partner" ||
     p.haushaltMehrverdiener === "gleich";
 
-  const goToBridge = () => setScr(7);
+  const goToBridge = () => setLoading(true);
 
   const nextScr = () => {
     if (scr < 4) setScr((s) => s + 1);
@@ -328,10 +320,6 @@ export default function GKVPKVRechner(){
   };
 
   const backScr = () => {
-    if (scr === 7) {
-      setScr(6);
-      return;
-    }
     if (scr === 6 && famSubStep > 0) {
       setFamSubStep((s) => s - 1);
       return;
@@ -342,7 +330,6 @@ export default function GKVPKVRechner(){
   const wizardProgPct = useMemo(() => {
     if (scr <= 5) return (scr / 8) * 100;
     if (scr === 6) return (5 / 8 + ((famSubStep + 1) / 3) * (2 / 8)) * 100;
-    if (scr === 7) return 100;
     return 0;
   }, [scr, famSubStep]);
 
@@ -385,6 +372,41 @@ export default function GKVPKVRechner(){
         <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
         <div style={T.dankeTitle}>{fd.name?`Vielen Dank, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
         <div style={T.dankeBody}>Wir prüfen Ihre Angaben und melden uns innerhalb von 24 Stunden mit den nächsten Schritten.</div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "8px",
+            marginBottom: "24px",
+          }}
+        >
+          <div
+            style={{
+              background: `${C}0d`,
+              border: `1px solid ${C}33`,
+              borderRadius: "12px",
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Einschätzung</div>
+            <div style={{ fontSize: "14px", fontWeight: "700", color: C, letterSpacing: "-0.2px", lineHeight: 1.3 }}>
+              {R.headline}
+            </div>
+          </div>
+          <div
+            style={{
+              background: "rgba(31,41,55,0.03)",
+              border: "1px solid rgba(31,41,55,0.08)",
+              borderRadius: "12px",
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Kontext</div>
+            <div style={{ fontSize: "12px", fontWeight: "500", color: "#374151", lineHeight: 1.3 }}>
+              {R.subline}
+            </div>
+          </div>
+        </div>
         <div style={T.dankeCard}>
           <div style={T.dankeCardHead}>
             <div style={T.dankeEyebrow}>Ihr Ansprechpartner</div>
@@ -405,10 +427,60 @@ export default function GKVPKVRechner(){
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak}>
         <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
-        <CheckLoader type="gkvpkv" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="gkvpkv" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
     );
   }
+
+  if (phase === "bridge")
+    return (
+      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+        <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
+        <CheckKitStoryHero
+          hideFooterSpacer
+          emoji="🔍"
+          title="System-Analyse bereit."
+          text="Wir haben Ihre Angaben ausgewertet."
+        />
+        <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
+          {[
+            R.unterGrenze
+              ? "GKV-Pflicht bestätigt — PKV derzeit nicht möglich."
+              : `Versicherungspflichtgrenze: ${p.brutto >= JAEG_MONAT ? "überschritten" : "nicht erreicht"}.`,
+            `Beitragsvergleich: GKV ca. ${Math.round(R.gkvSchMonat).toLocaleString("de-DE")} € vs. PKV ca. ${Math.round(R.pkvSchMonat).toLocaleString("de-DE")} € / Monat.`,
+            p.familiensituation === "partner_kinder"
+              ? `Familienversicherung mit ${p.kinderImHaushalt === 3 ? "3+" : p.kinderImHaushalt} Kind${p.kinderImHaushalt === 1 ? "" : "ern"} berücksichtigt.`
+              : "Persönliche Situation analysiert.",
+          ].map((line) => (
+            <div
+              key={line}
+              style={{
+                ...CHECKKIT2026.storyBody,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "12px",
+                marginBottom: 14,
+                textAlign: "left",
+              }}
+            >
+              <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
+                ✅
+              </span>
+              <span>{line}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
+        <div style={T.footer}>
+          <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
+            Ergebnis ansehen
+          </button>
+          <button type="button" style={T.btnSec} onClick={() => goTo(1)}>
+            Neu berechnen
+          </button>
+        </div>
+      </div>
+    );
 
   // ── Phase 3: Kontakt ─────────────────────────────────────────────────────
   if(phase===3){
@@ -416,7 +488,13 @@ export default function GKVPKVRechner(){
     return(
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
         <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
-        <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir Sie erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div></div>
+        <div style={T.hero}>
+          <div style={T.eyebrow}>Fast geschafft</div>
+          <div style={T.h1}>{R.headline} — nächster Schritt.</div>
+          <div style={T.body}>
+            Wir melden uns innerhalb von 24 Stunden mit konkreten Tarif-Empfehlungen.
+          </div>
+        </div>
         <div style={T.section}>
           <div style={T.kontaktSummary}>
             <div style={{ fontSize: "15px", fontWeight: "700", color: C, letterSpacing: "-0.3px", marginBottom: "2px" }}>{R.headline}</div>
@@ -505,7 +583,7 @@ export default function GKVPKVRechner(){
     );
   }
 
-  // ── Phase 1: Wizard (Intro, Daten 2–4, System-Story, Familie, Bridge) ────
+  // ── Phase 1: Wizard (Intro, Daten 2–4, System-Story, Familie) → Loader → Bridge-Phase ────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={wizardProgPct} total={100} maklerFirma={MAKLER.firma} C={C} />
@@ -719,7 +797,11 @@ export default function GKVPKVRechner(){
               )}
               {famSubStep === 2 && (famCase.showBeihilfePill || famCase.showGkvKinderPill) && (
                 <>
-                  <div style={T.h1}>Einordnung für Ihre Konstellation</div>
+                  <div style={T.h1}>
+                    {famCase.showBeihilfePill
+                      ? "Ihre Kinder sind mit Beihilfe gut abgesichert."
+                      : "GKV deckt Ihre Kinder beitragsfrei mit."}
+                  </div>
                   <div style={T.body}>Kurz zusammengefasst — ohne weitere Eingabe von Ihrer Seite.</div>
                 </>
               )}
@@ -783,9 +865,9 @@ export default function GKVPKVRechner(){
                             d: "Gleiche Einordnung wie bei Single — ohne Abfrage zum KV-Status Ihres Partners",
                             emoji: "👫",
                           },
-                          { n: 1, l: "1 Kind", d: "Für die Ergebnis-Weiche (Kostenvergleich vs. große Familie)" },
-                          { n: 2, l: "2 Kinder", d: "Für die Ergebnis-Weiche (Kostenvergleich vs. große Familie)" },
-                          { n: 3, l: "3 oder mehr Kinder", d: "Schwerpunkt: GKV-Ersparnis bei mehreren Tarifen in der PKV" },
+                          { n: 1, l: "1 Kind", d: "Einkind-Haushalt — ein separater PKV-Tarif vs. GKV-Familienversicherung" },
+                          { n: 2, l: "2 Kinder", d: "Zwei Kinder im Haushalt — GKV-Familienversicherung oft attraktiv" },
+                          { n: 3, l: "3 oder mehr Kinder", d: "Großfamilie — GKV-Haushaltsbeitrag meist günstiger als viele PKV-Verträge" },
                         ].map(({ n, l, d, emoji }) => (
                           <SelectionCard
                             key={n}
@@ -932,61 +1014,6 @@ export default function GKVPKVRechner(){
           </>
         );
       })()}
-
-      {/* Slide 3: Bridge (Alter & Familiensituation im Text) */}
-      {scr === 7 && (
-        <>
-          <CheckKitStoryHero hideFooterSpacer emoji="🔍" title="System-Analyse bereit.">
-            <p style={{ ...CHECKKIT2026.storyBody, marginBottom: 16 }}>
-              Ihr Alter von {p.alter} Jahren ist ein entscheidender Faktor für die langfristige Beitragsstabilität.
-            </p>
-            <p style={{ ...CHECKKIT2026.storyBody, marginBottom: 24 }}>{kvBridgeFamilieBaustein(p.familiensituation)}</p>
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: "12px 0 0",
-                textAlign: "left",
-                maxWidth: "42ch",
-                marginLeft: "auto",
-                marginRight: "auto",
-              }}
-            >
-              {[
-                "Prüfung der Versicherungspflicht (JAEG).",
-                "Gegenüberstellung von GKV-Beitrag vs. PKV-Leistung.",
-                "Auswertung der langfristigen Kostenentwicklung.",
-              ].map((line) => (
-                <li
-                  key={line}
-                  style={{
-                    ...CHECKKIT2026.storyBody,
-                    display: "flex",
-                    gap: "10px",
-                    alignItems: "flex-start",
-                    marginBottom: "14px",
-                    maxWidth: "none",
-                  }}
-                >
-                  <span style={{ flexShrink: 0 }} aria-hidden>
-                    ✅
-                  </span>
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ul>
-          </CheckKitStoryHero>
-          <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
-          <div style={T.footer}>
-            <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
-              Ergebnis jetzt anzeigen
-            </button>
-            <button type="button" style={T.btnSec} onClick={backScr}>
-              Zurück
-            </button>
-          </div>
-        </>
-      )}
     </div>
   );
 }

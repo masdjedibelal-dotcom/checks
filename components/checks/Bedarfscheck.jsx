@@ -374,7 +374,7 @@ function WizardMicroMomentBanner({ text, C }) {
 // ─── Phase 1: Wizard (7 Screens) ─────────────────────────────────────────────
 const WIZARD_TOTAL = 7;
 
-function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma}){
+function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
   const[scr,setScr]=useState(1);
   const[microTransition,setMicroTransition]=useState(null);
   useCheckScrollToTop([scr,microTransition]);
@@ -562,6 +562,26 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma}){
             </div>
           </div>
         ))}
+        {result && result.anzahlLuecken > 0 && (
+          <div style={{ padding: "0 24px", marginBottom: "12px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 14px",
+                background: "rgba(31,41,55,0.03)",
+                border: "1px solid rgba(31,41,55,0.08)",
+                borderRadius: "12px",
+              }}
+            >
+              <div style={{ fontSize: "12px", color: "#6B7280" }}>Erkannte Lücken (Top 4)</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#B83232", letterSpacing: "-0.3px" }}>
+                {result.anzahlLuecken}
+              </div>
+            </div>
+          </div>
+        )}
         <div style={{padding:"0 24px",marginBottom:"8px"}}><div style={T.infoBlue}>Nicht sicher? Einfach weitergehen — im Ergebnis sehen Sie was fehlt.</div></div>
         <div style={{height:"120px"}}/>
         <div style={T.footer}>
@@ -706,7 +726,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
               marginBottom: "10px",
             }}
           >
-            Auf Basis deiner Angaben
+            Auf Basis Ihrer Angaben
           </div>
           <div
             style={{
@@ -942,9 +962,11 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
             Vereinfachte Priorisierung per <strong>Score-Modell</strong> (Basiswerte + Anpassung nach Alter, Beruf und
             Familie). Bereits gewählte Produkte fließen nicht in die Pakete. <strong>Kein Ersatz</strong> für individuelle
             Beratung.
+            <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid rgba(17,24,39,0.06)", fontSize: "11px", color: "#9CA3AF", lineHeight: 1.55 }}>
+              {CHECK_LEGAL_DISCLAIMER_FOOTER}
+            </div>
           </>
         </CheckBerechnungshinweis>
-        <div style={T.infoGold}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
       </div>
 
       <div style={T.footer}>
@@ -972,8 +994,8 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
     <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} accentColor={C} />
     <div style={T.hero}>
       <div style={T.eyebrow}>Fast geschafft</div>
-      <div style={T.h1}>Wo können wir dich erreichen?</div>
-      <div style={T.hint}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div>
+      <div style={T.h1}>Wo können wir Sie erreichen?</div>
+      <div style={T.hint}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div>
     </div>
     {!isDemo && gewaehltePakete.length > 0 ? (
       <div style={{ padding: "0 24px", marginBottom: "12px" }}>
@@ -1029,7 +1051,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
     <div style={T.section}>
       <CheckKontaktLeadLine />
       <div style={T.card}>
-      {[{k:"name",l:"Dein Name",t:"text",ph:"Vor- und Nachname",req:true},{k:"email",l:"Deine E-Mail",t:"email",ph:"deine@email.de",req:true},{k:"tel",l:"Deine Nummer",t:"tel",ph:"Optional",req:false,hint:"Optional — für eine schnellere Rückmeldung"}].map(({k,l,t,ph,req,hint},i,arr)=>(
+      {[{k:"name",l:"Ihr Name",t:"text",ph:"Vor- und Nachname",req:true},{k:"email",l:"Ihre E-Mail",t:"email",ph:"ihre@email.de",req:true},{k:"tel",l:"Ihre Nummer",t:"tel",ph:"Optional",req:false,hint:"Optional — für eine schnellere Rückmeldung"}].map(({k,l,t,ph,req,hint},i,arr)=>(
         <div key={k} style={i<arr.length-1?T.row:T.rowLast}><label style={T.fldLbl}>{l}{req?" *":""}</label><input type={t} placeholder={ph} value={fd[k]} onChange={e=>setFd(f=>({...f,[k]:e.target.value}))} style={{...T.input,marginTop:"4px"}}/>{hint&&<div style={T.fldHint}>{hint}</div>}</div>
       ))}
     </div>
@@ -1052,8 +1074,8 @@ function DankeScreen({ name, onReset, makler, C, T, firma }) {
           <path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
-      <div style={T.dankeH}>{name?`Danke, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
-      <div style={T.dankeBody}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
+      <div style={T.dankeH}>{name?`Vielen Dank, ${name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
+      <div style={T.dankeBody}>Wir prüfen Ihr Ergebnis und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div>
       <div style={T.maklerCard}>
         <div style={T.maklerTop}>
           <div style={T.maklerName}>{makler.name}</div>
@@ -1119,5 +1141,5 @@ export default function Bedarfscheck(){
     return <Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>;
   }
   if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} gewaehltePakete={gewaehltePakete} onTogglePaket={togglePaket} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>;
-  return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma}/>;
+  return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} result={result}/>;
 }

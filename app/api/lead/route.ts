@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { formatResendFrom } from "@/lib/flowleadsMailConfig";
+import { formatResendFrom, flowleadsContactEmail } from "@/lib/flowleadsMailConfig";
+import { publicAppUrl } from "@/lib/licenseUtils";
 import { getSupabaseServiceRole } from "@/lib/supabaseService";
 
 export const runtime = "nodejs";
@@ -49,21 +50,17 @@ function highlightsEmailBlock(highlights: { label: string; value: string }[]): s
   if (highlights.length === 0) return "";
   const rows = highlights
     .map(
-      (h) => `<div style="padding:10px 0;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
-          <span style="font-size:13px;color:#6b7280;flex:1;min-width:0;">${escapeHtml(h.label)}</span>
-          <span style="font-size:13px;font-weight:600;color:#1a1a1a;text-align:right;flex-shrink:0;max-width:55%;word-break:break-word;">${escapeHtml(h.value)}</span>
+      (h) => `<div class="kv-row" style="align-items:flex-start;">
+          <span class="kv-label" style="flex:1;min-width:0;text-align:left;">${escapeHtml(h.label)}</span>
+          <span class="kv-val" style="max-width:55%;word-break:break-word;">${escapeHtml(h.value)}</span>
         </div>`,
     )
     .join("");
-  return `<div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:20px;">
-      <div style="padding:12px 16px;background:#faf9f6;border-bottom:1px solid #f3f4f6;">
-        <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1.5px;text-transform:uppercase;">
-          Ergebnis-Kennzahlen
-        </div>
+  return `<div class="kv-wrap" style="margin-bottom:20px;">
+      <div class="kv-head">
+        <div class="kv-head-lbl">Ergebnis-Kennzahlen</div>
       </div>
-      <div style="padding:0 16px 4px;">
-        ${rows}
-      </div>
+      <div class="kv-body">${rows}</div>
     </div>`;
 }
 
@@ -152,6 +149,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "E-Mail-Versand nicht konfiguriert" }, { status: 500 });
   }
 
+  const appUrl = publicAppUrl();
+  const safeAppUrl = escapeHtml(appUrl);
+  const safeContact = escapeHtml(flowleadsContactEmail());
+  const mailtoLead = `mailto:${encodeURIComponent(kundenEmail)}?subject=${encodeURIComponent(`Re: Ihre Anfrage über ${toolName}`)}`;
+  const mailtoSimple = `mailto:${encodeURIComponent(kundenEmail)}`;
+
+  const paketBlock = paketText
+    ? `<div class="kv-wrap" style="margin-bottom:20px;">
+      <div class="kv-head">
+        <div class="kv-head-lbl">Gewünschte Absicherungspakete</div>
+      </div>
+      <div class="kv-body" style="padding:16px;">
+        <div style="font-size:14px;font-weight:600;color:#111827;">${safePakete}</div>
+        <div class="hint" style="margin-top:8px;line-height:1.45;">
+          Vom Kunden im Versicherungs-Check ausgewählt — mehrfach möglich.
+        </div>
+      </div>
+    </div>`
+    : "";
+
   const resend = new Resend(resendKey);
   const { error: mailErr } = await resend.emails.send({
     from: formatResendFrom(fromRaw),
@@ -160,108 +177,118 @@ export async function POST(req: NextRequest) {
     subject: `Neue Anfrage über ${toolName} — ${kundenName}`,
     html: `<!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"/></head>
-<body style="font-family:'DM Sans',Helvetica,Arial,
-sans-serif;background:#f0ede6;margin:0;padding:40px 16px;">
-<div style="max-width:520px;margin:0 auto;
-background:#fff;border-radius:16px;overflow:hidden;
-border:1px solid #e5e7eb;">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#f9fafb;font-family:'DM Sans',Helvetica,'Helvetica Neue',Arial,sans-serif;color:#111827;padding:32px 16px;}
+  .wrap{max-width:540px;margin:0 auto;}
+  .card{background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;}
+  .hd{background:#111827;padding:18px 28px;display:flex;align-items:center;gap:10px;}
+  .hd-name{color:#ffffff;font-size:15px;font-weight:700;letter-spacing:-0.2px;}
+  .body{padding:32px 28px;}
+  .eyebrow{font-size:10px;font-weight:700;color:#3B6D11;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+  .greeting{font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.4px;margin-bottom:8px;line-height:1.2;}
+  .sub{font-size:14px;color:#6B7280;line-height:1.65;margin-bottom:20px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#EAF3DE;border:1px solid #C0DD97;border-radius:999px;font-size:12px;font-weight:600;color:#3B6D11;margin-bottom:24px;}
+  .chip-dot{width:6px;height:6px;border-radius:50%;background:#3B6D11;flex-shrink:0;}
+  .cta{display:block;background:#111827;color:#ffffff;padding:13px 20px;border-radius:10px;font-size:14px;font-weight:700;text-align:center;text-decoration:none;margin-bottom:28px;}
+  .divider{height:1px;background:#F3F4F6;margin:0 0 20px;}
+  .kv-head-lbl{font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:1px;text-transform:uppercase;}
+  .kv-wrap{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:20px;}
+  .kv-head{padding:12px 16px;background:#F9FAFB;border-bottom:1px solid #F3F4F6;}
+  .kv-body{padding:0 16px 4px;}
+  .kv-row{padding:12px 0;border-bottom:1px solid #F3F4F6;display:flex;justify-content:space-between;gap:12px;align-items:center;}
+  .kv-row:last-child{border-bottom:none;}
+  .kv-label{font-size:13px;color:#6B7280;}
+  .kv-val{font-size:13px;font-weight:600;color:#111827;text-align:right;flex-shrink:0;}
+  .kv-val a{color:#185FA5;font-weight:600;text-decoration:none;}
+  .meta-box{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;margin-bottom:24px;}
+  .meta-box-lbl{font-size:10px;font-weight:700;color:#9CA3AF;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .meta-box-title{font-size:14px;font-weight:700;color:#111827;}
+  .meta-box-sub{font-size:12px;color:#9CA3AF;margin-top:4px;line-height:1.45;}
+  .hint{font-size:12px;color:#9CA3AF;line-height:1.7;}
+  .hint a{color:#854F0B;}
+  .footer{background:#F9FAFB;border-top:1px solid #F3F4F6;padding:16px 28px;font-size:11px;color:#9CA3AF;text-align:center;}
+  .footer a{color:#9CA3AF;}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
 
-  <div style="background:#0f1a14;padding:22px 28px;
-  display:flex;align-items:center;gap:10px;">
-    <div style="width:32px;height:32px;background:#1a1a1a;
-    border-radius:8px;display:inline-flex;align-items:center;
-    justify-content:center;flex-shrink:0;">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+  <div class="hd">
+    <div style="width:28px;height:28px;background:#1a1a1a;border-radius:7px;border:1px solid #333;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <rect x="1" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a"/>
         <rect x="9.5" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4"/>
         <rect x="1" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4"/>
         <rect x="9.5" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a"/>
       </svg>
     </div>
-    <span style="color:#fff;font-size:16px;font-weight:700;letter-spacing:-.3px;">
-      FlowLeads
-    </span>
+    <span class="hd-name">FlowLeads</span>
   </div>
 
-  <div style="padding:28px;">
-    <div style="background:#fdf6ec;border:1px solid #f0d9b5;
-    border-radius:10px;padding:14px 16px;margin-bottom:24px;
-    display:flex;align-items:center;gap:10px;">
-      <div style="width:8px;height:8px;border-radius:50%;
-      background:#b8884a;flex-shrink:0;"></div>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:#1a1a1a;">Neue Anfrage eingegangen</div>
-        <div style="font-size:12px;color:#9ca3af;margin-top:2px;">${escapeHtml(now)} · ${safeTool}</div>
-      </div>
+  <div class="body">
+
+    <div class="eyebrow">Neue Anfrage</div>
+    <div class="greeting">${safeName} möchte ein Gespräch.</div>
+    <p class="sub">${escapeHtml(now)} · ${safeTool}</p>
+
+    <div class="chip">
+      <span class="chip-dot"></span>
+      ${safeTool} &middot; eingegangen
     </div>
 
-    <h2 style="font-size:20px;font-weight:700;color:#1a1a1a;letter-spacing:-.4px;margin-bottom:20px;">
-      ${safeName} möchte ein Gespräch.
-    </h2>
+    <div class="divider"></div>
 
-    <div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:20px;">
-      <div style="padding:12px 16px;background:#faf9f6;border-bottom:1px solid #f3f4f6;">
-        <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1.5px;text-transform:uppercase;">
-          Kontaktdaten
-        </div>
+    <div class="kv-wrap" style="margin-bottom:20px;">
+      <div class="kv-head">
+        <div class="kv-head-lbl">Kontaktdaten</div>
       </div>
-      <div style="padding:0 16px;">
-        <div style="padding:12px 0;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;">
-          <span style="font-size:13px;color:#6b7280;">Name</span>
-          <span style="font-size:13px;font-weight:600;color:#1a1a1a;">${safeName}</span>
+      <div class="kv-body" style="padding-top:4px;">
+        <div class="kv-row">
+          <span class="kv-label">Name</span>
+          <span class="kv-val">${safeName}</span>
         </div>
-        <div style="padding:12px 0;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;">
-          <span style="font-size:13px;color:#6b7280;">E-Mail</span>
-          <a href="mailto:${encodeURIComponent(kundenEmail)}"
-          style="font-size:13px;font-weight:600;color:#b8884a;">${safeEmail}</a>
+        <div class="kv-row">
+          <span class="kv-label">E-Mail</span>
+          <a class="kv-val" href="${escapeHtml(mailtoSimple)}">${safeEmail}</a>
         </div>
-        <div style="padding:12px 0;display:flex;justify-content:space-between;">
-          <span style="font-size:13px;color:#6b7280;">Telefon</span>
-          <span style="font-size:13px;font-weight:600;color:#1a1a1a;">${safeTel}</span>
+        <div class="kv-row">
+          <span class="kv-label">Telefon</span>
+          <span class="kv-val">${safeTel}</span>
         </div>
       </div>
     </div>
 
-    <div style="background:#f7f6f3;border-radius:10px;padding:14px 16px;margin-bottom:20px;">
-      <div style="font-size:12px;color:#9ca3af;margin-bottom:4px;">Anfrage über</div>
-      <div style="font-size:14px;font-weight:600;color:#1a1a1a;">${safeTool}</div>
-      <div style="font-size:12px;color:#9ca3af;margin-top:2px;">Eingebunden auf Ihrer Website</div>
+    <div class="meta-box">
+      <div class="meta-box-lbl">Anfrage über</div>
+      <div class="meta-box-title">${safeTool}</div>
+      <div class="meta-box-sub">Eingebunden auf Ihrer Website</div>
     </div>
 
-    ${
-      paketText
-        ? `<div style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:20px;">
-      <div style="padding:12px 16px;background:#faf9f6;border-bottom:1px solid #f3f4f6;">
-        <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:1.5px;text-transform:uppercase;">
-          Gewünschte Absicherungspakete
-        </div>
-      </div>
-      <div style="padding:16px;">
-        <div style="font-size:14px;font-weight:600;color:#1a1a1a;">${safePakete}</div>
-        <div style="font-size:12px;color:#9ca3af;margin-top:6px;line-height:1.45;">
-          Vom Kunden im Versicherungs-Check ausgewählt — mehrfach möglich.
-        </div>
-      </div>
-    </div>`
-        : ""
-    }
+    ${paketBlock}
 
     ${highlightsEmailBlock(highlights)}
 
-    <a href="mailto:${encodeURIComponent(kundenEmail)}?subject=${encodeURIComponent(`Re: Ihre Anfrage über ${toolName}`)}"
-    style="display:block;width:100%;padding:13px;background:#0f1a14;color:#fff;border-radius:10px;
-    font-size:14px;font-weight:700;text-align:center;text-decoration:none;box-sizing:border-box;">
-      Jetzt antworten →
-    </a>
+    <div class="hint" style="margin-bottom:24px;">
+      Bei Fragen zum Produkt: <a href="mailto:${safeContact}">${safeContact}</a>
+    </div>
+
+    <a href="${escapeHtml(mailtoLead)}" class="cta" style="margin-bottom:0;">Jetzt antworten &rarr;</a>
+
   </div>
 
-  <div style="padding:16px 28px;background:#faf9f6;border-top:1px solid #f3f4f6;font-size:11px;
-  color:#9ca3af;text-align:center;">
-    © 2026 FlowLeads ·
-    <a href="https://versicherung-leadrechner.netlify.app"
-    style="color:#9ca3af;">flowleads.de</a>
+  <div class="footer">
+    &copy; ${new Date().getFullYear()} FlowLeads &middot; Belal Masdjedi &middot; Seitzstraße 15, 80538 München<br/>
+    <a href="${safeAppUrl}/impressum">Impressum</a> &middot;
+    <a href="${safeAppUrl}/datenschutz">Datenschutz</a> &middot;
+    <a href="${safeAppUrl}/agb">AGB</a>
   </div>
+
+</div>
 </div>
 </body>
 </html>`,

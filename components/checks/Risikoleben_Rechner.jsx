@@ -36,8 +36,8 @@ import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatar
 const alpha = (hex,a) => { const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; };
 const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n>=10000 ? Math.round(n/1000)+".000 €" : fmt(n);
-/** Intro + Familie + Kredit + Bedarfs-Story + 2 Datenschritte + Bridge */
-const RL_WIZARD_STEPS = 7;
+/** Intro + Familie + Kredit + Bedarfs-Story + 2 Datenschritte (ohne Bridge im Wizard) */
+const RL_WIZARD_STEPS = 6;
 /** Priorität: Restschuld → Kinder → Paar (ohne Kinder) — keine Bestattung/ErbSt */
 function risikoStoryBedarfCopy(restschuld, familienModus) {
   const rs = Number(restschuld) || 0;
@@ -71,13 +71,6 @@ function risikoStoryBedarfCopy(restschuld, familienModus) {
   };
 }
 
-function risikoBridgeSicherheitCopy(nettoEinkommen, laufzeitJahre) {
-  const nettoStr = `${Math.round(Number(nettoEinkommen)).toLocaleString("de-DE")} €`;
-  return {
-    title: "Ihre Sicherheits-Zahl steht.",
-    text: `Um Ihr monatliches Netto von ${nettoStr} über die nächsten ${laufzeitJahre} Jahre abzusichern, haben wir die optimale Versicherungssumme ermittelt.`,
-  };
-}
 const WARN_RL = "#c0392b";
 const BAR_KREDIT = "#2563eb";
 
@@ -173,7 +166,7 @@ export default function RisikolebenRechner() {
   const nextScr = () => {
     if (scr === 2 && !p.familienModus) return;
     if (scr === 3 && hatKredit == null) return;
-    if (scr < 7) setScr((s) => s + 1);
+    if (scr < 6) setScr((s) => s + 1);
   };
   const backScr = () => {
     if (scr > 1) setScr((s) => s - 1);
@@ -354,12 +347,64 @@ export default function RisikolebenRechner() {
     return (
       <div style={T.root}>
         <Header phase={progPct} total={100} />
-        <CheckLoader type="risikoleben" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
+        <CheckLoader type="risikoleben" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
     );
   }
 
-  // ── Phase 1: Story + Eingabe (7 Schritte) + Bridge ───────────────────────
+  if (phase === "bridge")
+    return (
+      <div style={T.root}>
+        <Header phase={100} total={100} />
+        <div key={animKey} className="fade-in" style={T.body}>
+          <CheckKitStoryHero
+            hideFooterSpacer
+            emoji="🎯"
+            title="Ihre Sicherheits-Zahl steht."
+            text="Wir haben Ihren Absicherungsbedarf vollständig berechnet."
+          />
+          <div style={{ padding: "0 24px 8px", ...CHECKKIT2026.storyContentWrap }}>
+            {[
+              `Kapitalbedarf: ${fmtK(R.gesamt)} über ${p.laufzeit} Jahre ermittelt.`,
+              R.luecke > 0
+                ? `Monatliche Lücke: ${fmt(R.luecke)}/Mon. berücksichtigt.`
+                : "Laufende Einnahmen vollständig berücksichtigt.",
+              p.kredite > 0
+                ? `Restschuld von ${fmtK(p.kredite)} eingerechnet.`
+                : "Optimale Absicherungsstrategie berechnet.",
+            ].map((line) => (
+              <div
+                key={line}
+                style={{
+                  ...CHECKKIT2026.storyBody,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "14px",
+                  marginBottom: 16,
+                  textAlign: "left",
+                }}
+              >
+                <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
+                  ✅
+                </span>
+                <span>{line}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
+        </div>
+        <div style={T.footer}>
+          <button type="button" style={T.btnMain(false)} onClick={() => goTo(2)}>
+            Ergebnis ansehen
+          </button>
+          <button type="button" style={T.btnBack} onClick={() => goTo(1)}>
+            Neu berechnen
+          </button>
+        </div>
+      </div>
+    );
+
+  // ── Phase 1: Story + Eingabe (6 Schritte) → Loader → Bridge ───────────────
   if (phase === 1) {
     const dataTitle =
       scr === 2 ? "Wie ist Ihre familiäre Situation?" :
@@ -408,7 +453,7 @@ export default function RisikolebenRechner() {
           </div>
         );
       }
-      if (scr >= 4 && scr <= 6) {
+      if (scr >= 4 && scr <= 5) {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <button type="button" style={T.btnMain(false)} onClick={nextScr}>
@@ -420,16 +465,19 @@ export default function RisikolebenRechner() {
           </div>
         );
       }
-      return (
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <button type="button" style={T.btnMain(false)} onClick={() => setLoading(true)}>
-            Ergebnis jetzt anzeigen
-          </button>
-          <button type="button" style={T.btnBack} onClick={backScr}>
-            Zurück
-          </button>
-        </div>
-      );
+      if (scr === 6) {
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <button type="button" style={T.btnMain(false)} onClick={() => setLoading(true)}>
+              Analyse starten
+            </button>
+            <button type="button" style={T.btnBack} onClick={backScr}>
+              Zurück
+            </button>
+          </div>
+        );
+      }
+      return null;
     })();
 
     return (
@@ -457,40 +505,6 @@ export default function RisikolebenRechner() {
           {scr === 4 && (() => {
             const s2 = risikoStoryBedarfCopy(p.kredite, p.familienModus);
             return <CheckKitStoryHero emoji="🏠" title={s2.title} text={s2.text} />;
-          })()}
-
-          {scr === 7 && (() => {
-            const b3 = risikoBridgeSicherheitCopy(p.monatsBedarf, p.laufzeit);
-            return (
-              <>
-                <CheckKitStoryHero hideFooterSpacer emoji="🎯" title={b3.title} text={b3.text} />
-                <div style={{ padding: "0 24px 8px", ...CHECKKIT2026.storyContentWrap }}>
-                  {[
-                    "Berechnung des Kapitalbedarfs für Hinterbliebene.",
-                    "Berücksichtigung laufender Kreditverbindlichkeiten.",
-                    "Ermittlung der günstigsten Absicherungsstrategie.",
-                  ].map((line) => (
-                    <div
-                      key={line}
-                      style={{
-                        ...CHECKKIT2026.storyBody,
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: "14px",
-                        marginBottom: 16,
-                        textAlign: "left",
-                      }}
-                    >
-                      <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
-                        ✅
-                      </span>
-                      <span>{line}</span>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
-              </>
-            );
           })()}
 
           {((scr >= 2 && scr <= 3) || scr === 5 || scr === 6) && (
@@ -948,26 +962,6 @@ export default function RisikolebenRechner() {
           </div>
         ) : null}
 
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Einordnung</div>
-          <div style={{ ...T.compareGrid, alignItems: "stretch" }}>
-            <RisikoHintCard icon="📊" accent={C}>
-              <strong style={{ fontWeight: 700 }}>Monatliche Versorgungslücke</strong>
-              <span style={{ display: "block", marginTop: "8px" }}>
-                {fmt(luecke)} pro Monat — über {p.laufzeit} Jahre entspricht das rund {fmtK(bedarfKapital)} Kapitalbedarf (ohne Kredit).
-              </span>
-            </RisikoHintCard>
-            <RisikoHintCard icon={p.kredite > 0 ? "🏦" : "🛡️"} accent={p.kredite > 0 ? BAR_KREDIT : C}>
-              <strong style={{ fontWeight: 700 }}>{p.kredite > 0 ? "Restschuld & Strategie" : "Konstant vs. fallend"}</strong>
-              <span style={{ display: "block", marginTop: "8px" }}>
-                {p.kredite > 0
-                  ? `Einmalig ${fmtK(p.kredite)} tilgen — häufig sinnvoll: fallende Summe parallel zur Restschuld; für Lebensstandard zusätzlich konstante Absicherung prüfen.`
-                  : "Konstante Summe schützt den Lebensstandard über die Laufzeit. Fallende Summe ist günstiger, wenn der Schwerpunkt auf der Kredittilgung liegt."}
-              </span>
-            </RisikoHintCard>
-          </div>
-        </div>
-
         <div style={{ ...T.section, marginBottom: "16px" }}>
           <div style={T.sectionLbl}>Details zur Berechnung</div>
           <div className="rl-acc-item">
@@ -977,11 +971,34 @@ export default function RisikolebenRechner() {
               onClick={() => setRlErgebnisAcc((x) => (x === "details" ? null : "details"))}
               aria-expanded={rlErgebnisAcc === "details"}
             >
-              <span>Aufschlüsselung, Hinweise &amp; Methodik</span>
+              <span>Bedarfsrechnung &amp; Details</span>
               <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rlErgebnisAcc === "details" ? "▲" : "▼"}</span>
             </button>
             {rlErgebnisAcc === "details" && (
               <div className="rl-acc-panel" style={{ paddingTop: "12px" }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
+                    gap: "10px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <RisikoHintCard icon="📊" accent={C}>
+                    <strong style={{ fontWeight: 700 }}>Monatliche Versorgungslücke</strong>
+                    <span style={{ display: "block", marginTop: "8px" }}>
+                      {fmt(luecke)} pro Monat — über {p.laufzeit} Jahre entspricht das rund {fmtK(bedarfKapital)} Kapitalbedarf (ohne Kredit).
+                    </span>
+                  </RisikoHintCard>
+                  <RisikoHintCard icon={p.kredite > 0 ? "🏦" : "🛡️"} accent={p.kredite > 0 ? BAR_KREDIT : C}>
+                    <strong style={{ fontWeight: 700 }}>{p.kredite > 0 ? "Restschuld & Strategie" : "Konstant vs. fallend"}</strong>
+                    <span style={{ display: "block", marginTop: "8px" }}>
+                      {p.kredite > 0
+                        ? `Einmalig ${fmtK(p.kredite)} tilgen — häufig sinnvoll: fallende Summe parallel zur Restschuld; für Lebensstandard zusätzlich konstante Absicherung prüfen.`
+                        : "Konstante Summe schützt den Lebensstandard über die Laufzeit. Fallende Summe ist günstiger, wenn der Schwerpunkt auf der Kredittilgung liegt."}
+                    </span>
+                  </RisikoHintCard>
+                </div>
                 <div style={{ fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "10px" }}>Rechenweg</div>
                 <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(17,24,39,0.08)", marginBottom: "16px" }}>
                   {breakdownRows.map((row, i, arr) => (
@@ -1032,13 +1049,23 @@ export default function RisikolebenRechner() {
                     <span style={{ color: "#b8884a" }}>Grundlage: §46–48 SGB VI. Keine Rechtsberatung.</span>
                   </>
                 </CheckBerechnungshinweis>
+                <div
+                  style={{
+                    marginTop: "14px",
+                    padding: "12px 14px",
+                    background: "#F6F8FE",
+                    border: "1px solid #DCE6FF",
+                    borderRadius: "14px",
+                    fontSize: "11px",
+                    color: "#315AA8",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {CHECK_LEGAL_DISCLAIMER_FOOTER}
+                </div>
               </div>
             )}
           </div>
-        </div>
-
-        <div style={{ ...T.section, paddingBottom: "120px" }}>
-          <div style={{ ...T.infoBox, fontSize: "11px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
         </div>
 
       </Shell>
@@ -1050,8 +1077,8 @@ export default function RisikolebenRechner() {
     return (
       <Shell
         eyebrow="Fast geschafft"
-        title="Wo können wir Sie erreichen?"
-        lead="Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis und den nächsten Schritten."
+        title={R.netto > 0 ? `Summe von ${fmtK(R.netto)} absichern.` : "Ihre Absicherung besprechen."}
+        lead="Wir melden uns innerhalb von 24 Stunden mit konkreten Tarifen für Ihre Situation."
         footer={
           isDemo ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -1195,6 +1222,32 @@ export default function RisikolebenRechner() {
         </h1>
         <div style={{ fontSize: "14px", color: "#666", lineHeight: 1.65, marginBottom: "32px" }}>
           Wir kontaktieren Sie innerhalb von 24 Stunden mit konkreten nächsten Schritten.
+        </div>
+      </div>
+      <div style={{ padding: "0 24px", marginBottom: "24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+          <div style={{
+            background: "#FFF7F7",
+            border: "1px solid #F2CFCF",
+            borderRadius: "12px",
+            padding: "12px 14px",
+          }}>
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Versicherungssumme</div>
+            <div style={{ fontSize: "16px", fontWeight: "700", color: WARN_RL, letterSpacing: "-0.3px" }}>
+              {fmtK(R.netto > 0 ? R.netto : R.gesamt)}
+            </div>
+          </div>
+          <div style={{
+            background: "rgba(31,41,55,0.03)",
+            border: "1px solid rgba(31,41,55,0.08)",
+            borderRadius: "12px",
+            padding: "12px 14px",
+          }}>
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Laufzeit</div>
+            <div style={{ fontSize: "16px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
+              {p.laufzeit} Jahre
+            </div>
+          </div>
         </div>
       </div>
       <div style={{ padding: "0 24px 0" }}>
