@@ -527,7 +527,7 @@ export default function LandingHome() {
                           src={raster.src}
                           alt={raster.alt}
                           fill
-                          sizes="(max-width: 680px) min(92vw, 300px), min(42vw, 300px)"
+                          sizes="(max-width: 680px) min(92vw, 560px), min(48vw, 520px)"
                           className="ck-card-raster-img"
                         />
                       </div>
