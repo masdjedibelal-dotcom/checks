@@ -9,6 +9,7 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitResultGrid } from "@/components/checks/CheckKitResultGrid";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
 // ─── Screen 1: gruppierte Ereignisse (UI-ID → matrixKey in MATRIX) ────────────
 const EVENT_GROUPS = [
@@ -376,14 +377,12 @@ function jahresResultProductIcon(p) {
 
 function makeJahresCheckT(C){return{page:{minHeight:"100vh",background:"#fff","--accent":C,fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid rgba(31,41,55,0.06)",padding:"0 24px",height:"56px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},prog:{height:"2px",background:"rgba(31,41,55,0.08)"},progFil:(w)=>({height:"100%",width:`${w}%`,background:C,transition:"width 0.4s ease"}),hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",color:"#111",lineHeight:1.25,...CHECKKIT_HERO_TITLE_TYPO},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"18px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.88)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderTop:"1px solid rgba(31,41,55,0.06)",boxShadow:"0 -6px 20px rgba(17,24,39,0.05)",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"999px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer",letterSpacing:"-0.1px",boxShadow:d?"none":"0 8px 20px rgba(26,58,92,0.18)"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#F6F8FE",border:"1px solid #DCE6FF",borderRadius:"14px",fontSize:"12px",color:"#315AA8",lineHeight:1.6},hinweisCardWrap:{border:"1px solid rgba(26,58,92,0.15)",borderLeft:`3px solid ${C}`,borderRadius:"0 14px 14px 0",overflow:"hidden",background:"#fff"},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},
 resultHero:{padding:"52px 24px 40px",textAlign:"center",background:"#fff"},
-resultHeroWarm:{padding:"40px 24px 32px",textAlign:"center",background:"#F8F6F2",borderBottom:"1px solid rgba(17,24,39,0.06)"},
-resultBadgeYear:(accent)=>({display:"inline-block",fontSize:"11px",fontWeight:"700",color:accent,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:"14px",padding:"6px 14px",borderRadius:"999px",background:`${accent}18`,border:`1px solid ${accent}40`}),
+resultHeroWarm:{padding:"40px 24px 32px",textAlign:"center",background:"#ffffff",borderBottom:"1px solid rgba(17,24,39,0.06)"},
 resultH1:{fontSize:"24px",color:"#111827",lineHeight:1.25,marginBottom:"10px",maxWidth:"420px",marginLeft:"auto",marginRight:"auto",...CHECKKIT_HERO_TITLE_TYPO},
 resultLead:{fontSize:"14px",color:"#6B7280",lineHeight:1.55,maxWidth:"380px",marginLeft:"auto",marginRight:"auto",marginBottom:"20px"},
 resultEyebrow:{fontSize:"12px",fontWeight:"500",color:"#9CA3AF",letterSpacing:"0.2px",marginBottom:"14px"},
 resultNumber:(C2)=>({fontSize:"52px",fontWeight:"800",color:C2,letterSpacing:"-2.5px",lineHeight:1,marginBottom:"8px"}),
 resultUnit:{fontSize:"14px",color:"#9CA3AF",marginBottom:"18px"},
-resultSub:{fontSize:"13px",color:"#9CA3AF",lineHeight:1.55,marginTop:"12px"},
 statusWarn:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#FFF6F5",border:"1px solid #F2D4D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#C0392B"},
 statusOk:{display:"inline-flex",alignItems:"center",gap:"5px",padding:"5px 13px",background:"#F0FDF4",border:"1px solid #BBF7D0",borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:"#15803D"},
 statusInfo:(C2)=>({display:"inline-flex",alignItems:"center",gap:"5px",padding:"6px 14px",background:`${C2}14`,border:`1px solid ${C2}33`,borderRadius:"999px",fontSize:"12px",fontWeight:"600",color:C2}),
@@ -392,7 +391,6 @@ cardContext:{background:"#FAFAF8",border:"1px solid rgba(17,24,39,0.05)",borderR
 warnCard:{background:"rgba(192,57,43,0.025)",border:"1px solid rgba(192,57,43,0.27)",borderLeft:"3px solid #c0392b",borderRadius:"18px",padding:"14px 16px"},
 sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"},
 };}
-function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
 
 // ─── Screen 3: Bestand nach „Ordnern“ (Mehrfachauswahl → matrixNames fürs Cross-Check) ──
 /** Extern optional: sessionStorage.setItem(JAHRES_BESTAND_PREFILL_KEY, JSON.stringify(["bu","kv",…])) */
@@ -491,10 +489,6 @@ export default function JahresCheck(){
     if(qualNeeded)return scr<=1?33.33:scr===2?66.66:100;
     return scr===1?50:100;
   },[qualNeeded,scr]);
-  const wizardBadge=useMemo(()=>{
-    if(qualNeeded)return `Schritt ${scr} / 3`;
-    return `Schritt ${scr===1?1:2} / 2`;
-  },[qualNeeded,scr]);
   useEffect(()=>{
     if(scr!==2)return;
     setKontext((x)=>{
@@ -548,8 +542,69 @@ export default function JahresCheck(){
   }, [scr]);
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
+  function Header({ phase, total }) {
+    const pct = total > 0 ? (phase / total) * 100 : 0;
+    return (
+      <>
+        <div
+          style={{
+            background: "rgba(255,255,255,0.9)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            borderBottom: "1px solid rgba(31,41,55,0.06)",
+            padding: "16px 20px 12px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "6px",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+          }}
+        >
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              background: C,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+            }}
+          >
+            <MaklerFirmaAvatarInitials firma={MAKLER.firma} />
+          </div>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: "700",
+              color: "#1F2937",
+              letterSpacing: "-0.1px",
+              textAlign: "center",
+            }}
+          >
+            {MAKLER.firma}
+          </span>
+        </div>
+        <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${pct}%`,
+              background: C,
+              borderRadius: "999px",
+              transition: "width 0.35s ease",
+            }}
+          />
+        </div>
+      </>
+    );
+  }
+
   if(danke)return(
-    <div style={T.page}><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
+    <div style={T.page}><Header phase={100} total={100} />
     <div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in">
       <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
       <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
@@ -561,8 +616,7 @@ export default function JahresCheck(){
 
   if(loading)return(
     <div style={T.page} key={ak}>
-      <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Lebenssituations-Check</span></div>
-      <div style={T.prog}><div style={T.progFil(100)}/></div>
+      <Header phase={100} total={100} />
       <CheckLoader
         type="jahrescheck"
         checkmarkColor={C}
@@ -584,8 +638,7 @@ export default function JahresCheck(){
   if(phase===4){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
     return(<div style={T.page} key={ak} className="fade-in">
-      <div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Jahresgespräch</span></div>
-      <div style={T.prog}><div style={T.progFil(100)}/></div>
+      <Header phase={100} total={100} />
       <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir dich erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit deinem Ergebnis.</div></div>
       {isDemo ? (
         <>
@@ -741,22 +794,10 @@ export default function JahresCheck(){
 
     return (
       <div style={T.page} key={ak} className="fade-in">
-        <div style={T.header}>
-          <div style={T.logo}>
-            <div style={T.logoMk}>
-              <LogoSVG />
-            </div>
-            <span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{MAKLER.firma}</span>
-          </div>
-          <span style={T.badge}>Lebenssituations-Check</span>
-        </div>
-        <div style={T.prog}>
-          <div style={T.progFil(88)} />
-        </div>
+        <Header phase={88} total={100} />
 
-        {/* Hero — warmes Off-White, Badge Jahr, H1, Zahl, Chips */}
+        {/* Hero — H1, Zahl, Chips */}
         <div style={T.resultHeroWarm}>
-          <div style={T.resultBadgeYear(C)}>Jahresgespräch {new Date().getFullYear()}</div>
           <div style={T.resultH1}>Ihr persönlicher Check-up-Bericht</div>
           <div style={T.resultNumber(totalCount > 0 ? C : "#059669")}>{totalCount === 0 ? "✓" : totalCount}</div>
           <div style={T.resultLead}>
@@ -801,7 +842,6 @@ export default function JahresCheck(){
               })}
             </div>
           )}
-          <div style={{ ...T.resultSub, marginTop: eventChipIds.length ? 6 : 0 }}>Orientierung · keine Rechts- oder Steuerberatung</div>
 
           <div
             style={{
@@ -842,9 +882,9 @@ export default function JahresCheck(){
                   style={{
                     textAlign: "center",
                     padding: "8px",
-                    background: warn ? "#FFF7F7" : "rgba(255,255,255,0.7)",
+                    background: warn ? "#FFF7F7" : "#ffffff",
                     borderRadius: "10px",
-                    border: warn ? "1px solid #F2CFCF" : "none",
+                    border: warn ? "1px solid #F2CFCF" : "1px solid rgba(17,24,39,0.06)",
                   }}
                 >
                   <div
@@ -886,9 +926,9 @@ export default function JahresCheck(){
                 sectionLbl="Das sollten Sie jetzt prüfen"
                 sectionLblColor="#c0392b"
                 title="Existenz / Pflicht"
-                subtitle="Akuter Bedarf (Priorität wie Score > 700)"
+                subtitle="Akuter Bedarf"
                 emoji="🔴"
-                bg={CHECKKIT2026.colExistenz}
+                bg="#ffffff"
                 accent="#C0392B"
                 items={akut}
               />
@@ -896,9 +936,9 @@ export default function JahresCheck(){
                 sectionLbl="Das ist für Ihre Situation relevant"
                 sectionLblColor={C}
                 title="Wichtiger Standard"
-                subtitle="Anpassen im Bestand (wie Score 300–700)"
+                subtitle="Anpassen im Bestand"
                 emoji="🟡"
-                bg={CHECKKIT2026.colStandard}
+                bg="#ffffff"
                 accent="#D97706"
                 items={optimierung}
               />
@@ -906,9 +946,9 @@ export default function JahresCheck(){
                 sectionLbl="Das kann zusätzlich sinnvoll sein"
                 sectionLblColor="#6B7280"
                 title="Optional / Plus"
-                subtitle="Ergänzung (wie Score < 300)"
+                subtitle="Ergänzung"
                 emoji="⚪"
-                bg={CHECKKIT2026.colPlus}
+                bg="#ffffff"
                 accent="#6B7280"
                 items={ergaenzung}
               />
@@ -929,8 +969,8 @@ export default function JahresCheck(){
             <div
               style={{
                 ...T.cardContext,
-                background: "#F3F4F6",
-                borderColor: "rgba(17,24,39,0.06)",
+                background: "#ffffff",
+                borderColor: "rgba(17,24,39,0.08)",
               }}
             >
               <div style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px", opacity: 0.92 }}>
@@ -1005,11 +1045,7 @@ export default function JahresCheck(){
   });
   return (
     <div style={T.page} key={ak} className="fade-in">
-      <div style={T.header}>
-        <div style={T.logo}><div style={T.logoMk}><LogoSVG /></div><span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{MAKLER.firma}</span></div>
-        <span style={T.badge}>{wizardBadge}</span>
-      </div>
-      <div style={T.prog}><div style={T.progFil(wizardProgPct)} /></div>
+      <Header phase={wizardProgPct} total={100} />
 
       {/* Screen 1: Was hat sich verändert? */}
       {scr === 1 && <>

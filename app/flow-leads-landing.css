@@ -76,8 +76,8 @@ html {
 .flow-leads-landing .fade-up.d2 { transition-delay: 0.09s; }
 .flow-leads-landing .fade-up.d3 { transition-delay: 0.15s; }
 
-/* ─── NAV ────────────────────────────────────────────────────────────────── */
-.flow-leads-landing nav {
+/* ─── NAV (nur Kopfzeile — nicht .footer-slim-nav) ─────────────────────────── */
+.flow-leads-landing .landing-nav {
   position: sticky;
   top: 0;
   z-index: 200;
@@ -155,7 +155,7 @@ html {
 }
 
 @media (max-width: 680px) {
-  .flow-leads-landing nav {
+  .flow-leads-landing .landing-nav {
     padding: 0 20px;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
   }
@@ -358,7 +358,7 @@ html {
 
 /* ─── HERO ───────────────────────────────────────────────────────────────── */
 .flow-leads-landing .hero-section {
-  background: linear-gradient(180deg, #ffffff 0%, #f7f8fb 100%);
+  background: linear-gradient(180deg, #fff7f7 0%, #fffbfb 42%, #ffffff 100%);
   border-bottom: 1px solid rgba(29, 79, 145, 0.08);
   overflow: hidden;
 }
@@ -432,21 +432,22 @@ html {
 }
 .flow-leads-landing .hero-float-wrap {
   animation: float 7s ease-in-out infinite;
-  filter: drop-shadow(0 32px 64px rgba(29,79,145,0.16));
+  filter: drop-shadow(0 28px 56px rgba(29, 79, 145, 0.14));
   width: 100%;
-  max-width: min(380px, 90vw);
+  max-width: min(360px, 88vw);
 }
 .flow-leads-landing .hero-phones-clip {
   position: relative;
   width: 100%;
-  /* Schmaler sichtbarer Ausschnitt = Rand-Weißfläche im PNG wird weggeschnitten */
-  aspect-ratio: 16 / 10;
+  /* Hochformat-Smartphone-Mockup (Hero-Grafik) */
+  aspect-ratio: 9 / 19.5;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 36px;
+  background: #fff7f7;
 }
 .flow-leads-landing .hero-phones-img {
-  object-fit: cover;
-  object-position: 50% 44%;
+  object-fit: contain;
+  object-position: center center;
 }
 
 /* ─── FACTS — Kennzahlen, kompakte Cards ─────────────────────────────────── */
@@ -1132,6 +1133,19 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.flow-leads-landing .vertrieb-ec-vis--raster {
+  padding: 2px 10px 0;
+}
+.flow-leads-landing .vertrieb-ec-raster-img {
+  width: 100%;
+  max-width: 268px;
+  height: auto;
+  max-height: 132px;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  margin: 0 auto;
 }
 .flow-leads-landing .vertrieb-ec-vis--traffic {
   flex-direction: row;

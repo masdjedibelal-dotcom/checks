@@ -5,7 +5,7 @@ export const CHECK_FLOW_META = [
     slug: "einkommens-check" as const,
     catClass: "ck-cat-schutz",
     cat: "Einkommen · Absicherung",
-    name: "Zielgruppenpakete",
+    name: "Einkommensabsicherung",
     hook: "Wenn Ihr Einkommen wegfällt",
     erlebnis:
       "Der Nutzer sieht, wie stark sein Einkommen einbricht und wo die finanzielle Lücke entsteht.",
@@ -73,16 +73,6 @@ export const CHECK_FLOW_META = [
   },
   {
     slug: "immobilien-check" as const,
-    catClass: "ck-cat-immobilien",
-    cat: "Immobilie",
-    name: "Immobilien",
-    hook: "Was Ihre Entscheidung finanziell bedeutet",
-    erlebnis:
-      "Der Nutzer bekommt Klarheit bei Kauf, Finanzierung oder Absicherung seiner Immobilie.",
-    price: "59",
-  },
-  {
-    slug: "immo-check" as const,
     catClass: "ck-cat-immobilien",
     cat: "Immobilie",
     name: "Immo-Schutz-Dach",
@@ -255,7 +245,7 @@ export function CheckFlowPhoneMock({ slug }: { slug: CheckFlowSlug }): ReactNode
             </div>
             <div style={{ borderRadius: 5, border: "1px solid #e7e5e4", padding: "4px 5px", background: "#fafaf9" }}>
               <div style={{ fontSize: 7, fontWeight: 700, color: "#1c1917", marginBottom: 3 }}>Premium</div>
-              <div style={{ fontSize: 5.8, color: "#44403c", lineHeight: 1.35 }}>✓ + Vorsorge</div>
+              <div style={{ fontSize: 5.8, color: "#44403c", lineHeight: 1.35 }}>✓ + Altersvorsorge</div>
               <div style={{ fontSize: 5.8, color: "#44403c", lineHeight: 1.35 }}>✓ + Pflege</div>
             </div>
           </div>
@@ -288,22 +278,6 @@ export function CheckFlowPhoneMock({ slug }: { slug: CheckFlowSlug }): ReactNode
         </ResultPhoneShell>
       );
     case "immobilien-check":
-      return (
-        <ResultPhoneShell accent="#b45309">
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.4px", color: "#111", lineHeight: 1.05 }}>
-              +250 €
-            </div>
-            <div style={{ fontSize: 6.5, color: "#6b7280", marginTop: 2, marginBottom: 8 }}>monatlicher Unterschied</div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 4px" }}>
-              <span style={{ fontSize: 7, fontWeight: 700, color: "#374151" }}>Kaufen</span>
-              <span style={{ fontSize: 5.5, color: "#d1d5db" }}>·</span>
-              <span style={{ fontSize: 7, fontWeight: 700, color: "#374151" }}>Mieten</span>
-            </div>
-          </div>
-        </ResultPhoneShell>
-      );
-    case "immo-check":
       return (
         <ResultPhoneShell accent="#b45309">
           <div style={{ textAlign: "center" }}>

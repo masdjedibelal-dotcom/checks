@@ -11,7 +11,6 @@ const PREVIEW_BG: Record<string, string> = {
   "gkv-pkv": "linear-gradient(160deg,#fff5f5 0%,#ffc9c9 100%)",
   "pflege-check": "linear-gradient(160deg,#e0f2fe 0%,#bae6fd 100%)",
   "immobilien-check": "linear-gradient(160deg,#fffbeb 0%,#fde68a 100%)",
-  "immo-check": "linear-gradient(160deg,#fffbeb 0%,#fde68a 100%)",
 };
 
 function PhoneShell({ c, children }: { c: string; children: React.ReactNode }) {
@@ -110,7 +109,7 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
         </>
       );
 
-    /* ── 3. Zielgruppenpakete (einkommens-check) ──────────────── */
+    /* ── 3. Einkommensabsicherung (einkommens-check) ─────────── */
     case "einkommens-check":
       return (
         <>
@@ -257,8 +256,8 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
         </>
       );
 
-    /* ── 8. Immo-Check (Schutz-Dach) ──────────────────────────── */
-    case "immo-check":
+    /* ── Immobilien: Immo-Schutz-Dach (Slug: immobilien-check) ── */
+    case "immobilien-check":
       return (
         <>
           <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Schutz-Dach</div>
@@ -282,37 +281,7 @@ function MockInner({ slug, c }: { slug: string; c: string }) {
             <div className="h-2 flex-1 rounded-sm bg-[#FFFBEB]" />
             <div className="h-2 flex-1 rounded-sm bg-[#FAFAF8]" />
           </div>
-          <ResultBadge label="Immo-Check" />
-        </>
-      );
-
-    case "immobilien-check":
-      return (
-        <>
-          <div className="mb-0.5 text-[7px] text-[#9CA3AF]">Monatliche Rate</div>
-          <div
-            className="mb-0.5 text-[28px] font-black leading-none tracking-tight"
-            style={{ color: c }}
-          >
-            1.450 €
-          </div>
-          <div className="mb-2.5 text-[8px] text-[#9CA3AF]">Kaufen · Rate/Monat</div>
-          <div className="mb-2 rounded-lg border border-black/[0.06] bg-[#f9f9f9] px-2 py-1.5">
-            <div className="mb-1 flex justify-between text-[8px]">
-              <span className="text-[#9CA3AF]">Kaufen (Rate)</span>
-              <span className="font-bold" style={{ color: c }}>
-                1.450 €
-              </span>
-            </div>
-            <div className="flex justify-between text-[8px]">
-              <span className="text-[#9CA3AF]">Mieten</span>
-              <span className="font-bold text-[#059669]">1.200 €</span>
-            </div>
-            <div className="mt-1.5 text-[7px] text-[#9CA3AF]">
-              + 250 € · Break-even ab Jahr 12
-            </div>
-          </div>
-          <ResultBadge label="Vergleich auf einen Blick" />
+          <ResultBadge label="Immo-Schutz-Dach" />
         </>
       );
 

@@ -8,6 +8,7 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 
 // ─── GLOBAL SETUP ────────────────────────────────────────────────────────────
 (() => {
@@ -57,14 +58,6 @@ import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard20
 
 const phaseBarColor = (pct) =>
   pct >= 75 ? "#22c55e" : pct >= 45 ? "#eab308" : "#C0392B";
-
-/** Phase-2-Ergebnis: Fortschrittsleiste (nur Ergebnis-Screen) */
-const BUKTG_PHASE2_PROG_TRACK = {
-  background: "rgba(31,41,55,0.08)",
-  borderRadius: "999px",
-  overflow: "hidden",
-};
-const BUKTG_PHASE2_PROG_FILL = { borderRadius: "999px" };
 
 /** Phase-2 Swiper: Timeline-Track (Ergebnis) — 4px, Pill-Track, grauer Slate-Ton */
 const BUKTG_PHASE2_TIMELINE_TRACK = {
@@ -552,26 +545,62 @@ function makeBUKTGT(C) {
 }
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
-function Header({ phase, total, makler, T, progStyle, progFillStyle }) {
-  const w = (phase / total) * 100;
+function Header({ phase, total, makler, C }) {
+  const pct = total > 0 ? (phase / total) * 100 : 0;
   return (
     <>
-      <div style={T.header}>
-        <div style={T.logo}>
-          <div style={T.logoMk}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="1" y="1" width="5" height="5" rx="1" fill="white"/>
-              <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/>
-              <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/>
-              <rect x="8" y="8" width="5" height="5" rx="1" fill="white"/>
-            </svg>
-          </div>
-          <span style={T.logoTxt}>{makler.firma}</span>
+      <div
+        style={{
+          background: "rgba(255,255,255,0.9)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          borderBottom: "1px solid rgba(31,41,55,0.06)",
+          padding: "16px 20px 12px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "6px",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+        }}
+      >
+        <div
+          style={{
+            width: "44px",
+            height: "44px",
+            borderRadius: "50%",
+            background: C,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+          }}
+        >
+          <MaklerFirmaAvatarInitials firma={makler.firma} />
         </div>
-        <span style={T.badge}>Zielgruppenpakete</span>
+        <span
+          style={{
+            fontSize: "13px",
+            fontWeight: "700",
+            color: "#1F2937",
+            letterSpacing: "-0.1px",
+            textAlign: "center",
+          }}
+        >
+          {makler.firma}
+        </span>
       </div>
-      <div style={{ ...T.prog, ...progStyle }}>
-        <div style={{ ...T.progFil(w), ...progFillStyle }} />
+      <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
+        <div
+          style={{
+            height: "100%",
+            width: `${pct}%`,
+            background: C,
+            borderRadius: "999px",
+            transition: "width 0.35s ease",
+          }}
+        />
       </div>
     </>
   );
@@ -798,7 +827,7 @@ export default function BUKTGRechner() {
 
   if (danke) return (
     <div style={{ ...T.page, "--accent": C }}>
-      <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} T={T} />
+      <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} C={C} />
       <DankeScreen name={name} onBack={() => { setDanke(false); goTo(1); }} makler={MAKLER} C={C} />
     </div>
   );
@@ -806,7 +835,7 @@ export default function BUKTGRechner() {
   if (loading) {
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak}>
-        <Header phase={totalWizSteps} total={totalWizSteps} makler={MAKLER} T={T} />
+        <Header phase={totalWizSteps} total={totalWizSteps} makler={MAKLER} C={C} />
         <CheckLoader type="bu" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
       </div>
     );
@@ -815,7 +844,7 @@ export default function BUKTGRechner() {
   // ── Kontakt (nach Ergebnis) ─────────────────────────────────────────────────
   if (phase === 3) return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={4} total={TOTAL_PHASES} makler={MAKLER} T={T} />
+      <Header phase={4} total={TOTAL_PHASES} makler={MAKLER} C={C} />
       <div style={T.hero}>
         <div style={T.label}>Fast geschafft</div>
         <div style={T.h1}>Wo können wir Sie erreichen?</div>
@@ -930,19 +959,12 @@ export default function BUKTGRechner() {
     const toggleLegal = (id) => setLegalOpen((x) => (x === id ? null : id));
 
     return (
-      <div style={{ ...T.page, "--accent": C, background: "#F8F6F2" }} key={ak} className="fade-in">
-        <Header
-          phase={2}
-          total={TOTAL_PHASES}
-          makler={MAKLER}
-          T={T}
-          progStyle={BUKTG_PHASE2_PROG_TRACK}
-          progFillStyle={BUKTG_PHASE2_PROG_FILL}
-        />
+      <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
+        <Header phase={2} total={TOTAL_PHASES} makler={MAKLER} C={C} />
 
         <div style={{ paddingBottom: "120px" }}>
           {/* Hero: große Zahl, darunter Pill */}
-          <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px", background: "#F8F6F2" }}>
+          <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px", background: "#ffffff" }}>
             <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Ihre Absicherung im Überblick</div>
             <div
               style={{
@@ -1203,7 +1225,7 @@ export default function BUKTGRechner() {
   // ── Phase 1: Story + dynamischer Flow + Bridge ─────────────────────────────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={wizStep} total={totalWizSteps} makler={MAKLER} T={T} />
+      <Header phase={wizStep} total={totalWizSteps} makler={MAKLER} C={C} />
 
       {curFlow?.kind === "intro" && (
         <>
@@ -1274,7 +1296,7 @@ export default function BUKTGRechner() {
       {sid === "beruf" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Einkommensabsicherung · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Wie sind Sie aktuell beschäftigt?</div>
             <div style={T.body}>Davon hängt ab, welche gesetzlichen Leistungen greifen.</div>
           </div>
@@ -1326,7 +1348,7 @@ export default function BUKTGRechner() {
       {sid === "kv" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Einkommensabsicherung · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Wie sind Sie krankenversichert?</div>
             <div style={T.body}>
               {p.beruf === "selbst"
@@ -1378,7 +1400,7 @@ export default function BUKTGRechner() {
       {sid === "selbstGkvKg" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Einkommensabsicherung · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Haben Sie in Ihrem GKV-Tarif Anspruch auf Krankengeld gewählt?</div>
             <div style={T.body}>
               Ohne diese Option gibt es im Krankheitsfall in der Regel kein gesetzliches Krankengeld — nur privates KTG zählt.
@@ -1414,7 +1436,7 @@ export default function BUKTGRechner() {
       {sid === "pkvBeitrag" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Einkommensabsicherung · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>
               {p.beruf === "angestellt"
                 ? "Wie hoch ist Ihr privater Krankenversicherungs-Beitrag (Gesamtbetrag)?"
@@ -1465,7 +1487,7 @@ export default function BUKTGRechner() {
       {sid === "brutto" && p.beruf === "student" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Einkommensabsicherung · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Welches Netto-Einkommen streben Sie nach dem Studium an?</div>
             <div style={T.body}>
               Fokus: keine gesetzliche EMR aus Erwerbstätigkeit im Modell — private Vorsorge (z. B. BU) schließt die Lücke.
@@ -1493,7 +1515,7 @@ export default function BUKTGRechner() {
       {sid === "brutto" && p.beruf !== "student" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Einkommensabsicherung · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>
               {p.beruf === "selbst"
                 ? "Wie hoch ist Ihr monatlicher Gewinn (vor Steuern)?"
@@ -1553,7 +1575,7 @@ export default function BUKTGRechner() {
       {sid === "ktgBu" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Einkommensabsicherung · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
             <div style={T.body}>Beide Felder sind optional — geben Sie 0 ein, wenn kein Vertrag vorhanden ist.</div>
           </div>
@@ -1609,7 +1631,7 @@ export default function BUKTGRechner() {
       {sid === "szenario" && (
         <>
           <div style={T.hero}>
-            <div style={T.label}>Zielgruppenpakete · {wizStep} / {totalWizSteps}</div>
+            <div style={T.label}>Einkommensabsicherung · {wizStep} / {totalWizSteps}</div>
             <div style={T.h1}>Welches Szenario beschäftigt Sie am meisten?</div>
           </div>
           <div style={T.section}>

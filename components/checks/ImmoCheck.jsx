@@ -10,6 +10,7 @@ import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshin
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import { CheckKitResultGrid } from "@/components/checks/CheckKitResultGrid";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 
 (() => {
   const s = document.createElement("style");
@@ -597,7 +598,7 @@ function makeImmoCheckT(C) {
     resultHeroWarm: {
       padding: "36px 24px 28px",
       textAlign: "center",
-      background: "#F8F6F2",
+      background: "#ffffff",
       borderBottom: "1px solid rgba(17,24,39,0.06)",
     },
     resultBadge: (accent) => ({
@@ -645,17 +646,6 @@ function makeImmoCheckT(C) {
       marginBottom: "12px",
     },
   };
-}
-
-function LogoSVG() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
-      <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-      <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-      <rect x="8" y="8" width="5" height="5" rx="1" fill="white" />
-    </svg>
-  );
 }
 
 function BoolRow({ label, hint, value, onChange, accent }) {
@@ -791,7 +781,7 @@ export default function ImmoCheck() {
       <div style={T.header}>
         <div style={T.logo}>
           <div style={T.logoMk}>
-            <LogoSVG />
+            <MaklerFirmaAvatarInitials firma={MAKLER.firma} />
           </div>
           <span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{MAKLER.firma}</span>
         </div>
@@ -921,7 +911,7 @@ export default function ImmoCheck() {
               <button
                 type="button"
                 style={{ ...T.btnPrim(false) }}
-                onClick={() => window.parent.postMessage({ type: "openConfig", slug: "immo-check" }, "*")}
+                onClick={() => window.parent.postMessage({ type: "openConfig", slug: "immobilien-check" }, "*")}
               >
                 Anpassen & kaufen
               </button>
@@ -976,7 +966,7 @@ export default function ImmoCheck() {
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         token,
-                        slug: "immo-check",
+                        slug: "immobilien-check",
                         kundenName: fd.name,
                         kundenEmail: fd.email,
                         kundenTel: fd.tel || "",

@@ -8,6 +8,7 @@ import ResultPage from "@/components/checks/gkvpkv/ResultPage";
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#ffffff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}.gkvpkv-smart-block{animation:fadeIn 0.42s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#f0f0f0;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}@media (max-width:540px){.gkvpkv-stack-sm{grid-template-columns:1fr !important;}}.gkvpkv-acc-item{border-radius:12px;background:#F9FAFB;border:1px solid rgba(17,24,39,0.06);margin-bottom:8px;overflow:hidden;}.gkvpkv-acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-align:left;font-size:13px;font-weight:600;color:#1F2937;background:transparent;cursor:pointer;border:none;font-family:inherit;}.gkvpkv-acc-panel{padding:0 16px 14px;font-size:12px;color:#6B7280;line-height:1.65;border-top:1px solid rgba(17,24,39,0.06);}`;document.head.appendChild(s);})();
 // JAEG 2026: 77.400 € / Jahr = 6.450 € / Monat
 const JAEG_MONAT = 6450;
@@ -16,8 +17,9 @@ const BBG_KV    = 5812.5;
 function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderImHaushalt }) {
   const unterGrenze = beruf === "angestellt" && brutto < JAEG_MONAT;
   const hatKinder = familiensituation === "partner_kinder";
-  const hatPartner = familiensituation !== "single";
-  const partnerInGKV = hatPartner && partnerKV === "gkv";
+  /** Nur bei Kindern im Haushalt (Familien-Kontext im Ergebnis). */
+  const hatPartner = familiensituation === "partner_kinder";
+  const partnerInGKV = hatKinder && partnerKV === "gkv";
 
   // GKV AN-Anteil (8,75 % bis BBG) — nur für Orientierung im Kontext
   const gkvANAnteil = Math.round(Math.min(brutto, BBG_KV) * 0.0875);
@@ -33,7 +35,7 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
     empfehlung = "pkv";
     headline = "PKV für Sie naheliegend";
     subline = "Beihilfe macht PKV für Beamte typisch sinnvoll";
-  } else if (hatKinder || partnerInGKV) {
+  } else if (hatKinder) {
     empfehlung = "gkv";
     headline = "GKV aktuell sinnvoll";
     subline = "Familienversicherung spricht für GKV";
@@ -186,23 +188,6 @@ function kvStoryStatusGehaltCopy(beruf, brutto) {
   }
 }
 
-/** Drei wichtigste Faktoren je nach Kinder, Empfehlung & Schwerpunkten */
-function pickTopGkvPkvFaktoren(faktoren, R) {
-  const pref = R.empfehlung;
-  const scored = faktoren.map((f, idx) => {
-    let s = 0;
-    if (f.fav === pref) s += 3;
-    if (f.label === "Kinder" && R.hatKinder) s += 4;
-    if (f.label === "Einkommen") s += 2;
-    if (f.label === "Alter") s += 2;
-    if (f.label === "Gesundheit" && pref === "gkv") s += 2;
-    if (f.label === "Gesundheit" && pref === "pkv") s += 1;
-    return { f, s, idx };
-  });
-  scored.sort((a, b) => b.s - a.s || a.idx - b.idx);
-  return scored.slice(0, 3).map((x) => x.f);
-}
-
 /** Slide 3 Bridge: Familien-Baustein — Kinder nur bei partner_kinder */
 function kvBridgeFamilieBaustein(familiensituation) {
   if (familiensituation === "partner_kinder") {
@@ -211,22 +196,64 @@ function kvBridgeFamilieBaustein(familiensituation) {
   return "Wir optimieren die Kalkulation auf Ihre persönliche Flexibilität und langfristige Planbarkeit.";
 }
 
-function KvNavigatorHeader({ T, maklerFirma }) {
+function Header({ phase, total, maklerFirma, C }) {
+  const pct = total > 0 ? (phase / total) * 100 : 0;
   return (
-    <div style={T.header}>
-      <div style={T.logo}>
-        <div style={T.logoMk}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-            <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
-            <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-            <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-            <rect x="8" y="8" width="5" height="5" rx="1" fill="white" />
-          </svg>
+    <>
+      <div
+        style={{
+          background: "rgba(255,255,255,0.9)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          borderBottom: "1px solid rgba(31,41,55,0.06)",
+          padding: "16px 20px 12px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "6px",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+        }}
+      >
+        <div
+          style={{
+            width: "44px",
+            height: "44px",
+            borderRadius: "50%",
+            background: C,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+          }}
+        >
+          <MaklerFirmaAvatarInitials firma={maklerFirma} />
         </div>
-        <span style={T.logoTxt}>{maklerFirma}</span>
+        <span
+          style={{
+            fontSize: "13px",
+            fontWeight: "700",
+            color: "#1F2937",
+            letterSpacing: "-0.1px",
+            textAlign: "center",
+          }}
+        >
+          {maklerFirma}
+        </span>
       </div>
-      <span style={T.badge}>KV-Navigator</span>
-    </div>
+      <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
+        <div
+          style={{
+            height: "100%",
+            width: `${pct}%`,
+            background: C,
+            borderRadius: "999px",
+            transition: "width 0.35s ease",
+          }}
+        />
+      </div>
+    </>
   );
 }
 export default function GKVPKVRechner(){
@@ -263,7 +290,13 @@ export default function GKVPKVRechner(){
       setScr(1);
       setFamSubStep(0);
       setLoading(false);
-      setP((x) => ({ ...x, kinderImHaushalt: null }));
+      setP((x) => ({
+        ...x,
+        kinderImHaushalt: null,
+        familiensituation: "single",
+        partnerKV: "keine",
+        haushaltMehrverdiener: null,
+      }));
     }
   };
 
@@ -347,7 +380,7 @@ export default function GKVPKVRechner(){
   // Danke
   if(danke)return(
     <div style={{...T.page,"--accent":C}}>
-      <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
+      <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
       <div style={T.dankePadding} className="fade-in">
         <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
         <div style={T.dankeTitle}>{fd.name?`Vielen Dank, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
@@ -371,8 +404,7 @@ export default function GKVPKVRechner(){
   if (loading) {
     return (
       <div style={{ ...T.page, "--accent": C }} key={ak}>
-        <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
-        <div style={T.prog}><div style={T.progFil(100)} /></div>
+        <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
         <CheckLoader type="gkvpkv" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
       </div>
     );
@@ -383,8 +415,7 @@ export default function GKVPKVRechner(){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
     return(
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-        <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
-        <div style={T.prog}><div style={T.progFil(100)}/></div>
+        <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
         <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir Sie erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div></div>
         <div style={T.section}>
           <div style={T.kontaktSummary}>
@@ -460,8 +491,6 @@ export default function GKVPKVRechner(){
       },
     ];
 
-    const topFaktoren = pickTopGkvPkvFaktoren(FAKTOREN, R);
-
     return (
       <ResultPage
         key={ak}
@@ -471,7 +500,7 @@ export default function GKVPKVRechner(){
         accentColor={C}
         maklerFirma={MAKLER.firma}
         goTo={goTo}
-        FAKTOREN={topFaktoren}
+        FAKTOREN={FAKTOREN}
       />
     );
   }
@@ -479,8 +508,7 @@ export default function GKVPKVRechner(){
   // ── Phase 1: Wizard (Intro, Daten 2–4, System-Story, Familie, Bridge) ────
   return (
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <KvNavigatorHeader T={T} maklerFirma={MAKLER.firma} />
-      <div style={T.prog}><div style={T.progFil(wizardProgPct)} /></div>
+      <Header phase={wizardProgPct} total={100} maklerFirma={MAKLER.firma} C={C} />
 
       {/* Slide 1: Intro */}
       {scr === 1 && (
@@ -629,10 +657,10 @@ export default function GKVPKVRechner(){
       {/* Screen 6: Familie — Smart-Steps */}
       {scr === 6 && (() => {
         const kinderZahlOk =
-          p.familiensituation !== "partner_kinder" ||
-          p.kinderImHaushalt === 1 ||
-          p.kinderImHaushalt === 2 ||
-          p.kinderImHaushalt === 3;
+          p.familiensituation === "single" ||
+          p.familiensituation === "partnerschaft_ohne_kinder" ||
+          (p.familiensituation === "partner_kinder" &&
+            (p.kinderImHaushalt === 1 || p.kinderImHaushalt === 2 || p.kinderImHaushalt === 3));
 
         const famPrimaryDisabled =
           (famSubStep === 0 && !kinderZahlOk) ||
@@ -641,17 +669,17 @@ export default function GKVPKVRechner(){
 
         const famPrimaryLabel =
           famSubStep === 0
-            ? p.familiensituation === "single"
-              ? "Meine Einschätzung anzeigen"
-              : "Weiter →"
+            ? p.familiensituation === "partner_kinder"
+              ? "Weiter →"
+              : "Meine Einschätzung anzeigen"
             : famSubStep === 1 && p.familiensituation === "partner_kinder"
               ? "Weiter →"
               : "Meine Einschätzung anzeigen";
 
         const onFamPrimary = () => {
           if (famSubStep === 0) {
-            if (p.familiensituation === "single") goToBridge();
-            else setFamSubStep(1);
+            if (p.familiensituation === "partner_kinder") setFamSubStep(1);
+            else goToBridge();
             return;
           }
           if (famSubStep === 1) {
@@ -668,11 +696,8 @@ export default function GKVPKVRechner(){
               <div style={T.eyebrow}>KV-Navigator · Schritt 6 von {KV_FLOW_STEPS}</div>
               {famSubStep === 0 && (
                 <>
-                  <div style={T.h1}>Ihre Familiensituation</div>
-                  <div style={T.body}>
-                    Die Absicherung Ihrer Angehörigen beeinflusst die Wahl des Systems und die monatlichen Kosten
-                    erheblich.
-                  </div>
+                  <div style={T.h1}>Single oder in Partnerschaft?</div>
+                  <div style={T.body}>Mit oder ohne Partner.</div>
                 </>
               )}
               {famSubStep === 1 && (
@@ -703,58 +728,94 @@ export default function GKVPKVRechner(){
               {famSubStep === 0 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {[
-                    { v: "single", l: "Single", d: "Allein — kein Partner im Haushalt", emoji: "👤" },
-                    { v: "partner", l: "Partner", d: "Mit Partner — keine Kinder im Haushalt", emoji: "👫" },
+                    { v: "single", l: "Single", d: "Ich lebe allein", emoji: "👤" },
                     {
-                      v: "partner_kinder",
-                      l: "Partner & Kinder",
-                      d: "Familie mit Kindern — Familienversicherung und Kosten besonders relevant",
-                      emoji: "👨‍👩‍👧‍👦",
+                      v: "partnerschaft",
+                      l: "In Partnerschaft",
+                      d: "Mit oder ohne Kinder im Haushalt — wir fragen als Nächstes nach",
+                      emoji: "👫",
                     },
-                  ].map(({ v, l, d, emoji }) => (
-                    <SelectionCard
-                      key={v}
-                      value={v}
-                      label={l}
-                      description={d}
-                      icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
-                      selected={p.familiensituation === v}
-                      accent={C}
-                      onClick={() => {
-                        set("familiensituation", v);
-                        set("haushaltMehrverdiener", null);
-                        if (v === "single") {
-                          set("partnerKV", "keine");
-                          set("kinderImHaushalt", null);
-                        } else if (v === "partner") {
-                          set("partnerKV", "");
-                          set("kinderImHaushalt", null);
-                        } else {
-                          set("partnerKV", "");
-                        }
-                      }}
-                    />
-                  ))}
-                  {p.familiensituation === "partner_kinder" && (
+                  ].map(({ v, l, d, emoji }) => {
+                    const partnerschaftAuswahl =
+                      p.familiensituation === "partnerschaft" ||
+                      p.familiensituation === "partnerschaft_ohne_kinder" ||
+                      p.familiensituation === "partner_kinder";
+                    const selected =
+                      v === "single"
+                        ? p.familiensituation === "single"
+                        : partnerschaftAuswahl;
+                    return (
+                      <SelectionCard
+                        key={v}
+                        value={v}
+                        label={l}
+                        description={d}
+                        icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{emoji}</span>}
+                        selected={selected}
+                        accent={C}
+                        onClick={() => {
+                          set("haushaltMehrverdiener", null);
+                          if (v === "single") {
+                            set("familiensituation", "single");
+                            set("partnerKV", "keine");
+                            set("kinderImHaushalt", null);
+                          } else {
+                            set("familiensituation", "partnerschaft");
+                            set("partnerKV", "");
+                            set("kinderImHaushalt", null);
+                          }
+                        }}
+                      />
+                    );
+                  })}
+                  {(p.familiensituation === "partnerschaft" ||
+                    p.familiensituation === "partnerschaft_ohne_kinder" ||
+                    p.familiensituation === "partner_kinder") && (
                     <div className="gkvpkv-smart-block" style={{ marginTop: "4px" }}>
                       <div style={{ ...T.fldLbl, marginBottom: "8px" }}>
                         Wie viele Kinder leben bei Ihnen im Haushalt?
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         {[
+                          {
+                            n: 0,
+                            l: "Keine Kinder",
+                            d: "Gleiche Einordnung wie bei Single — ohne Abfrage zum KV-Status Ihres Partners",
+                            emoji: "👫",
+                          },
                           { n: 1, l: "1 Kind", d: "Für die Ergebnis-Weiche (Kostenvergleich vs. große Familie)" },
                           { n: 2, l: "2 Kinder", d: "Für die Ergebnis-Weiche (Kostenvergleich vs. große Familie)" },
                           { n: 3, l: "3 oder mehr Kinder", d: "Schwerpunkt: GKV-Ersparnis bei mehreren Tarifen in der PKV" },
-                        ].map(({ n, l, d }) => (
+                        ].map(({ n, l, d, emoji }) => (
                           <SelectionCard
                             key={n}
                             value={String(n)}
                             label={l}
                             description={d}
-                            icon={<span style={{ fontSize: "20px", lineHeight: 1 }}>{n === 3 ? "👨‍👩‍👧‍👦" : n === 2 ? "👧👦" : "👶"}</span>}
+                            icon={
+                              <span style={{ fontSize: "20px", lineHeight: 1 }}>
+                                {emoji != null
+                                  ? emoji
+                                  : n === 3
+                                    ? "👨‍👩‍👧‍👦"
+                                    : n === 2
+                                      ? "👧👦"
+                                      : "👶"}
+                              </span>
+                            }
                             selected={p.kinderImHaushalt === n}
                             accent={C}
-                            onClick={() => set("kinderImHaushalt", n)}
+                            onClick={() => {
+                              if (n === 0) {
+                                set("familiensituation", "partnerschaft_ohne_kinder");
+                                set("partnerKV", "keine");
+                                set("kinderImHaushalt", 0);
+                              } else {
+                                set("familiensituation", "partner_kinder");
+                                set("partnerKV", "");
+                                set("kinderImHaushalt", n);
+                              }
+                            }}
                           />
                         ))}
                       </div>

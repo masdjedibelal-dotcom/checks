@@ -8,13 +8,12 @@ export const runtime = "nodejs";
 const SLUG_NAMES: Record<string, string> = {
   bedarfscheck: "Versicherungs-Check",
   "lebenssituations-check": "Lebenssituations-Check",
-  "einkommens-check": "Zielgruppenpakete",
+  "einkommens-check": "Einkommensabsicherung",
   "gkv-pkv": "KV-Navigator",
   "vorsorge-check": "Vorsorge-Check",
   risikoleben: "Risikoleben-Check",
   "pflege-check": "Pflege-Check",
-  "immobilien-check": "Immobilien-Check",
-  "immo-check": "Immo-Check (Schutz-Dach)",
+  "immobilien-check": "Immo-Schutz-Dach",
 };
 
 function escapeHtml(s: string): string {

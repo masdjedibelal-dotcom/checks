@@ -8,6 +8,7 @@ import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshin
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}`;document.head.appendChild(s);})();
 
 const WARN="#c0392b";
@@ -144,8 +145,6 @@ function makeImmobilienT(C){return{
   sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"},
 };}
 
-function LogoSVG(){return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" fill="white"/><rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6"/><rect x="8" y="8" width="5" height="5" rx="1" fill="white"/></svg>;}
-
 // ─── ABSICHERUNGS-BLOCK ───────────────────────────────────────────────────────
 function AbsicherungBlock({modul,T,RWG}){
   const base=ABSICHERUNG[modul]||[];
@@ -211,17 +210,76 @@ export default function ImmobilienCheck(){
   const curStep=phase===1?1:phase===2?1+scr2:1+scr2Total+1;
   useCheckScrollToTop([phase, ak, danke, scr2, loading]);
 
-  const Header=()=>(<><div style={T.header}><div style={T.logo}><div style={T.logoMk}><LogoSVG/></div><span style={{fontSize:"13px",fontWeight:"600",color:"#111"}}>{MAKLER.firma}</span></div><span style={T.badge}>Immobilien-Check</span></div><div style={T.prog}><div style={T.progFil(Math.round(curStep/totalSteps*100))}/></div></>);
+  function Header({ phase, total }) {
+    const pct = total > 0 ? (phase / total) * 100 : 0;
+    return (
+      <>
+        <div
+          style={{
+            background: "rgba(255,255,255,0.9)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            borderBottom: "1px solid rgba(31,41,55,0.06)",
+            padding: "16px 20px 12px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "6px",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+          }}
+        >
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              background: C,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+            }}
+          >
+            <MaklerFirmaAvatarInitials firma={MAKLER.firma} />
+          </div>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: "700",
+              color: "#1F2937",
+              letterSpacing: "-0.1px",
+              textAlign: "center",
+            }}
+          >
+            {MAKLER.firma}
+          </span>
+        </div>
+        <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${pct}%`,
+              background: C,
+              borderRadius: "999px",
+              transition: "width 0.35s ease",
+            }}
+          />
+        </div>
+      </>
+    );
+  }
 
   // Danke
-  if(danke)return(<div style={T.page}><Header/><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
+  if(danke)return(<div style={T.page}><Header phase={totalSteps} total={totalSteps} /><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
 
-  if(loading)return(<div style={T.page} key={ak}><Header/><CheckLoader type="immobilie" checkmarkColor={C} onComplete={()=>{setLoading(false);goTo(3);}}/></div>);
+  if(loading)return(<div style={T.page} key={ak}><Header phase={totalSteps} total={totalSteps} /><CheckLoader type="immobilie" checkmarkColor={C} onComplete={()=>{setLoading(false);goTo(3);}}/></div>);
 
   // ── Phase 4: Kontakt ─────────────────────────────────────────────────────
   if(phase===4){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
-    return(<div style={T.page} key={ak} className="fade-in"><Header/>
+    return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
       <div style={T.hero}><div style={T.eyebrow}>Letzter Schritt</div><div style={T.h1}>Ergebnis besprechen</div><div style={T.body}>Wir gehen dein Ergebnis gemeinsam durch — konkret, ohne Druck.</div></div>
       {isDemo ? (
         <>
@@ -269,7 +327,7 @@ export default function ImmobilienCheck(){
     const RA=modul==="anschluss"?berechneAnschluss(anschluss):null;
     const RWG=modul==="wg"?berechneWG(wg):null;
 
-    return(<div style={T.page} key={ak} className="fade-in"><Header/>
+    return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
 
       {/* MODUL: Mieten vs. Kaufen */}
       {modul==="mk"&&RMK&&(<>
@@ -515,7 +573,7 @@ export default function ImmobilienCheck(){
         },
       ];
       const s=screens[scr2-1];
-      return(<div style={T.page} key={ak} className="fade-in"><Header/>
+      return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
         <div style={T.hero}>
           <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -571,7 +629,7 @@ export default function ImmobilienCheck(){
         },
       ];
       const s=screens[scr2-1];
-      return(<div style={T.page} key={ak} className="fade-in"><Header/>
+      return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
         <div style={T.hero}>
           <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -662,7 +720,7 @@ export default function ImmobilienCheck(){
       },
     ];
     const s=screens[scr2-1];
-    return(<div style={T.page} key={ak} className="fade-in"><Header/>
+    return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
       <div style={T.hero}>
         <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
           <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -709,7 +767,7 @@ export default function ImmobilienCheck(){
     },
   ];
 
-  return(<div style={T.page} key={ak} className="fade-in"><Header/>
+  return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
     <div style={{padding:"36px 24px 20px"}}>
       <div style={{fontSize:"11px",fontWeight:"700",color:"#9CA3AF",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:"8px"}}>Immobilien-Check</div>
       <div style={{fontSize:"24px",color:"#111",lineHeight:1.2,marginBottom:"6px",...CHECKKIT_HERO_TITLE_TYPO}}>Was möchten Sie prüfen?</div>

@@ -65,7 +65,7 @@ const SCORING_SHORT = {
   BU: "BU",
   RLV: "Risikoleben",
   KTG: "KTG",
-  AV: "Vorsorge",
+  AV: "Altersvorsorge",
   PFLEGE: "Pflege",
   UNFALL: "Unfall",
   HAUSRAT: "Hausrat",
@@ -151,11 +151,21 @@ function idToCoveredName(id) {
   return COVERED_NAME_FALLBACK[id] || id;
 }
 
+/**
+ * Liegt für diese Scoring-Sparte (Paket-ID) bereits Absicherung vor?
+ * EU zählt wie BU (gleiches Bedürfnisfeld im Wizard).
+ */
+function existingCoversScoringId(existingSet, scoringId) {
+  if (existingSet.has(scoringId)) return true;
+  if (scoringId === "berufsunfaehigkeit" && existingSet.has("erwerbsunfaehigkeit")) return true;
+  return false;
+}
+
 function buildPackageScoringResult(profil, existing) {
   const existingSet = new Set(existing);
   const scored = applyScoringRules(profil);
 
-  const ranked = Object.keys(SCORING_MAPPING)
+  const allRanked = Object.keys(SCORING_MAPPING)
     .map((key) => ({
       key,
       id: SCORING_KEY_TO_ID[key],
@@ -164,16 +174,28 @@ function buildPackageScoringResult(profil, existing) {
       icon: SCORING_ICONS[key] || "📌",
       score: scored[key].base,
     }))
-    .filter((r) => r.score > 0 && !existingSet.has(r.id))
+    .filter((r) => r.score > 0)
     .sort((a, b) => b.score - a.score);
+
+  const topFour = allRanked.slice(0, 4);
+  const weightTopFour = topFour.reduce((s, r) => s + r.score, 0);
+  const weightCoveredInTopFour = topFour.reduce(
+    (s, r) => s + (existingCoversScoringId(existingSet, r.id) ? r.score : 0),
+    0,
+  );
+  const schutzProzent =
+    weightTopFour > 0
+      ? Math.min(100, Math.max(0, Math.round((100 * weightCoveredInTopFour) / weightTopFour)))
+      : 0;
+
+  const topVierAnzahl = topFour.length;
+  const abgedecktInTopVier = topFour.filter((r) => existingCoversScoringId(existingSet, r.id)).length;
+
+  const ranked = allRanked.filter((r) => !existingCoversScoringId(existingSet, r.id));
 
   const basis = ranked.slice(0, 2);
   const komfort = ranked.slice(0, 3);
   const premium = ranked.slice(0, 4);
-  const schutzProzent = Math.min(
-    94,
-    Math.max(52, Math.round(40 + existing.length * 7 + premium.length * 12)),
-  );
 
   const incomeMap = {
     under_1500: 1200,
@@ -192,24 +214,14 @@ function buildPackageScoringResult(profil, existing) {
     premium,
     ranked,
     schutzProzent,
-    prioritaetenImFokus: premium.length,
+    topVierAnzahl,
+    abgedecktInTopVier,
     alreadyCovered: existing.map((id) => ({ id, name: idToCoveredName(id) })),
     showKinderHint: profil.familyStatus === "mit_kindern",
     nettoSchatz,
     empfBU,
     anzahlLuecken,
   };
-}
-
-function LogoSVG({ color = "#ffffff" }) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <rect x="1" y="1" width="5" height="5" rx="1" fill={color} />
-      <rect x="8" y="1" width="5" height="5" rx="1" fill={color} opacity="0.6" />
-      <rect x="1" y="8" width="5" height="5" rx="1" fill={color} opacity="0.6" />
-      <rect x="8" y="8" width="5" height="5" rx="1" fill={color} />
-    </svg>
-  );
 }
 
 function Opts({ k, opts, profil, set, C, T, cols = 1 }) {
@@ -308,7 +320,7 @@ const WIZARD_MICRO_NET_LABEL = {
   over_6000: "über 5.000 € Netto",
 };
 
-const WIZARD_MICRO_STORY_MS = 2600;
+const WIZARD_MICRO_STORY_MS = 3600;
 
 function wizardMicroStoryEmployment(profil) {
   const emp =
@@ -359,7 +371,7 @@ function WizardMicroMomentBanner({ text, C }) {
 // ─── Phase 1: Wizard (7 Screens) ─────────────────────────────────────────────
 const WIZARD_TOTAL = 7;
 
-function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
+function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma}){
   const[scr,setScr]=useState(1);
   const[microTransition,setMicroTransition]=useState(null);
   useCheckScrollToTop([scr,microTransition]);
@@ -420,7 +432,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
   const sectionLbl = { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" };
   return(
     <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={scr} total={WIZARD_TOTAL} logo={<LogoSVG color={logoIconColor}/>}/>
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={scr} total={WIZARD_TOTAL} accentColor={C} />
 
       {scr===1&&<>
         <div style={T.hero}>
@@ -555,7 +567,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,logoIconColor}){
 }
 
 // ── Story: Übergang vor Paketen ──────────────────────────────────────────────
-function BedarfStoryScreen({ profil, onContinue, C, T, firma, logoIconColor }) {
+function BedarfStoryScreen({ profil, onContinue, C, T, firma }) {
   let body =
     "Wir haben Ihre Angaben mit typischen Risiken abgeglichen. Als Nächstes zeigen wir Ihre drei Pakete — von Basis bis Premium.";
   if (profil.employmentStatus === "ausbildung_studium") {
@@ -571,8 +583,8 @@ function BedarfStoryScreen({ profil, onContinue, C, T, firma, logoIconColor }) {
 
   return (
     <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={9} logo={<LogoSVG color={logoIconColor} />} />
-      <div style={{ ...CHECKKIT2026.storyRoot, background: "#FAFAF9" }}>
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={9} accentColor={C} />
+      <div style={{ ...CHECKKIT2026.storyRoot, background: "#ffffff" }}>
         <div style={{ ...CHECKKIT2026.storySection, background: "transparent" }}>
           <div style={CHECKKIT2026.storyContentWrap}>
             <div
@@ -599,8 +611,8 @@ function BedarfStoryScreen({ profil, onContinue, C, T, firma, logoIconColor }) {
 }
 
 // ── Phase 3: Ergebnis — 3 Pakete (Level-up, Anker-Reihenfolge) ────────────────
-function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) {
-  const { basis, komfort, premium, alreadyCovered, showKinderHint, schutzProzent, prioritaetenImFokus, empfBU, anzahlLuecken } = result;
+function Phase3({ result, onCTA, onReset, isDemo, C, T, firma }) {
+  const { basis, komfort, premium, alreadyCovered, showKinderHint, schutzProzent, topVierAnzahl, abgedecktInTopVier, empfBU, anzahlLuecken } = result;
 
   const columns = [
     {
@@ -613,7 +625,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) 
       items: basis,
       wrapStyle: {
         ...CHECKKIT2026.resultColumnStack,
-        background: CHECKKIT2026.colExistenz,
+        background: "#ffffff",
         minHeight: 0,
       },
     },
@@ -627,7 +639,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) 
       items: komfort,
       wrapStyle: {
         ...CHECKKIT2026.resultColumnStack,
-        background: CHECKKIT2026.colStandard,
+        background: "#ffffff",
         border: "2px solid #F59E0B",
         boxShadow: "0 8px 28px rgba(245, 158, 11, 0.12)",
         position: "relative",
@@ -644,7 +656,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) 
       items: premium,
       wrapStyle: {
         ...CHECKKIT2026.resultColumnStack,
-        background: CHECKKIT2026.colPlus,
+        background: "#ffffff",
         border: `1px solid ${C}40`,
         boxShadow: "0 4px 20px rgba(17,24,39,0.07)",
         minHeight: 0,
@@ -654,9 +666,9 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) 
 
   return (
     <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={9} logo={<LogoSVG color={logoIconColor} />} />
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={9} accentColor={C} />
 
-      <div style={{ ...CHECKKIT2026.storySection, textAlign: "center", background: "#F8F6F2" }}>
+      <div style={{ ...CHECKKIT2026.storySection, textAlign: "center", background: "#ffffff" }}>
         <div style={{ fontSize: "12px", fontWeight: "600", color: "#6B7280", letterSpacing: "0.04em", marginBottom: "10px" }}>
           Ihre Absicherung im Überblick
         </div>
@@ -665,7 +677,9 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) 
         </div>
         <div style={{ fontSize: "14px", color: "#374151", fontWeight: "600", marginBottom: "4px" }}>geschätzt abgedeckt</div>
         <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.5 }}>
-          {prioritaetenImFokus} wichtige {prioritaetenImFokus === 1 ? "Thema" : "Themen"} im Premium-Paket · gleiche Reihenfolge in allen Spalten — nach rechts kommen weitere Themen dazu.
+          {topVierAnzahl > 0
+            ? `${abgedecktInTopVier} von ${topVierAnzahl} wichtigen Themen abgedeckt`
+            : "Keine priorisierten Schwerpunkte im Modell."}
         </div>
       </div>
 
@@ -889,12 +903,12 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, logoIconColor }) 
 }
 
 // Phase 4: Kontakt
-function Phase4({ onAbsenden, onZurueck, isDemo, makler, T, firma, logoIconColor }) {
+function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma }) {
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[consent,setConsent]=useState(false);
   const valid=fd.name.trim()&&fd.email.trim()&&consent;
   return(<div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} logo={<LogoSVG color={logoIconColor} />} />
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} accentColor={C} />
     <div style={T.hero}>
       <div style={T.eyebrow}>Fast geschafft</div>
       <div style={T.h1}>Wo können wir dich erreichen?</div>
@@ -940,9 +954,9 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, T, firma, logoIconColor
   </div>);}
 
 // Danke
-function DankeScreen({ name, onReset, makler, C, T, firma, logoIconColor }) {
+function DankeScreen({ name, onReset, makler, C, T, firma }) {
   return(<div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} logo={<LogoSVG color={logoIconColor} />} />
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} accentColor={C} />
     <div style={T.dankeScreen}>
       <div style={T.dankeRing(C)}>
         <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -969,9 +983,7 @@ export default function Bedarfscheck(){
   const isDemo = isCheckDemoMode();
   const makler = useCheckConfig();
   const C = makler.primaryColor;
-  const onAccent = useMemo(() => textOnAccent(C), [C]);
   const T = useMemo(() => checkStandardT(C), [C]);
-  const logoIconColor = onAccent;
   const firma = makler.firma;
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[loading,setLoading]=useState(false);const[storyScreen,setStoryScreen]=useState(false);const[kontaktName,setKontaktName]=useState("");
   const emptyProfil = () => ({
@@ -999,10 +1011,10 @@ export default function Bedarfscheck(){
     profil.familyStatus &&
     profil.housingStatus;
   const result=profilReady?buildPackageScoringResult(profil,existing):null;
-  if(danke)return <DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
-  if(loading)return <div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={WIZARD_TOTAL} total={WIZARD_TOTAL} logo={<LogoSVG color={logoIconColor}/>}/><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>;
-  if(storyScreen&&result)return <BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
-  if(phase===4)return <Phase4 key={ak} isDemo={isDemo} onAbsenden={async (fd)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} T={T} firma={firma} logoIconColor={logoIconColor}/>;
-  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
-  return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} logoIconColor={logoIconColor}/>;
+  if(danke)return <DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma}/>;
+  if(loading)return <div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={WIZARD_TOTAL} total={WIZARD_TOTAL} accentColor={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>;
+  if(storyScreen&&result)return <BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma}/>;
+  if(phase===4)return <Phase4 key={ak} isDemo={isDemo} onAbsenden={async (fd)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||""})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>;
+  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>;
+  return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma}/>;
 }

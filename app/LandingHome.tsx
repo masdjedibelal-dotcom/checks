@@ -25,11 +25,35 @@ const CK_CARD_RASTER: Partial<
 > = {
   "immobilien-check": {
     src: "/images/ck-card-immobilien-check.png",
-    alt: "Immobilien-Check: Vorschau auf dem Smartphone",
+    alt: "Immo-Schutz-Dach: Vorschau auf dem Smartphone",
   },
   "lebenssituations-check": {
     src: "/images/ck-card-jahresgespraech.png",
-    alt: "Jahresgespräch: Vorschau mit Lebensereignis und Status",
+    alt: "Lebenssituations-Check: Anlässe, Status-Karten und Ergebnis-CTA auf dem Smartphone",
+  },
+  "einkommens-check": {
+    src: "/images/ck-card-einkommens-check.png",
+    alt: "Einkommens-Check: Vorschau mit Betrag, Balken und Handlungsimpuls auf dem Smartphone",
+  },
+  "gkv-pkv": {
+    src: "/images/ck-card-gkv-pkv.png",
+    alt: "KV-Navigator: GKV vs. PKV mit Beitragsvergleich und Ersparnis auf dem Smartphone",
+  },
+  "vorsorge-check": {
+    src: "/images/ck-card-vorsorge-check.png",
+    alt: "Vorsorge-Check: Rentenlücke mit Betrag, Schichten-Balken und Strategieauswahl auf dem Smartphone",
+  },
+  risikoleben: {
+    src: "/images/ck-card-risikoleben.png",
+    alt: "Risikoleben: Familienabsicherung mit empfohlener Versicherungssumme auf dem Smartphone",
+  },
+  "pflege-check": {
+    src: "/images/ck-card-pflege-check.png",
+    alt: "Pflege-Check: monatliche Eigenbelastung und Ergebnisübersicht auf dem Smartphone",
+  },
+  bedarfscheck: {
+    src: "/images/ck-card-bedarfscheck.png",
+    alt: "Versicherungs-Check: Absicherungspakete mit Stufen und Kennzeichnung auf dem Smartphone",
   },
 };
 import { VertriebCardVisual } from "./VertriebCardVisuals";
@@ -259,7 +283,7 @@ function FactsSection() {
       <div className="facts-inner">
         <p className="facts-bridge fade-up">Für Versicherungsagenturen.</p>
         <h2 id="facts-heading" className="facts-h2 fade-up d1">
-          Mehr Anfragen. Weniger Aufwand. Mehr Abschluss.
+          Was das konkret bedeutet
         </h2>
         <p className="facts-sub fade-up d2">
           Klare Ergebnisse für Ihren Vertrieb – messbar im Alltag.
@@ -386,7 +410,7 @@ export default function LandingHome() {
     <div className="flow-leads-landing">
 
       {/* ── NAV ───────────────────────────────────────────────────────────── */}
-      <nav>
+      <nav className="landing-nav" aria-label="Hauptnavigation">
         <div className="logo">
           <div className="logo-mark">
             <svg
@@ -424,14 +448,13 @@ export default function LandingHome() {
           {/* Left: Text */}
           <div className="hero-text">
             <h1 className="au d1">
-              Mehr Anfragen durch<br />Microsites
+              Mehr Anfragen. Weniger Aufwand. Mehr Abschluss.
             </h1>
 
             <p className="hero-sub au d2">
-              Fertige Microsites mit integrierten Rechnern.
-              Einmal kaufen und direkt einsetzen.
-              Auf Ihrer Website, über Social Media oder per QR-Code.
-              Entwickelt für die Versicherungsberatung und optimiert auf Leadgenerierung.
+              Fertige Microsites mit Rechnern, die Kunden durch ihre Situation führen — mobil,
+              individualisiert und überall einsetzbar: QR-Code, Social Media oder direkt auf Ihrer
+              Website.
             </p>
 
             <div className="hero-btns au d3">
@@ -446,11 +469,11 @@ export default function LandingHome() {
             <div className="hero-float-wrap">
               <div className="hero-phones-clip">
                 <Image
-                  src="/images/landing-hero-phones.png"
-                  alt="Microsite auf dem Smartphone: Einkommens-Check mit Einkommenslücke und Phasen"
+                  src="/images/landing-hero-main.png"
+                  alt="FlowLeads Microsite auf dem Smartphone: Einkommens-Check mit Ergebnisbetrag und Bedienelementen"
                   fill
                   priority
-                  sizes="(max-width: 960px) min(90vw, 380px), min(calc(50vw - 84px), 380px)"
+                  sizes="(max-width: 960px) min(88vw, 340px), min(calc(50vw - 84px), 360px)"
                   className="hero-phones-img"
                 />
               </div>

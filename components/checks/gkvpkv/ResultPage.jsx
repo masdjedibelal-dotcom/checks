@@ -6,7 +6,6 @@
 "use client";
 
 import { useState } from "react";
-import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { fmt, fmtK } from "@/lib/utils";
 
 const JAEG_MONAT = 6450;
@@ -595,7 +594,25 @@ function CompareCard({ label, tagline, color, bg, beitrag, leistung, border, bad
   );
 }
 
-function SmartHintKv({ children, icon = "💡" }) {
+/** Fließtext unter der Überschrift — gleiche Typo wie Strategie-Karte */
+const SMART_HINT_KV_TEXT = { display: "block", marginTop: "8px", fontSize: "13px", lineHeight: 1.55 };
+
+function SmartHintKv({ children, icon = "💡", variant = "amber" }) {
+  const shell =
+    variant === "caution"
+      ? {
+          background: "linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%)",
+          border: "1px solid rgba(225, 29, 72, 0.32)",
+          boxShadow: "0 4px 14px rgba(190, 18, 60, 0.1)",
+          color: "#881337",
+        }
+      : {
+          background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+          border: "1px solid rgba(245, 158, 11, 0.35)",
+          boxShadow: "0 4px 14px rgba(245, 158, 11, 0.08)",
+          color: "#78350F",
+        };
+
   return (
     <div
       style={{
@@ -604,18 +621,15 @@ function SmartHintKv({ children, icon = "💡" }) {
         alignItems: "flex-start",
         padding: "16px 18px",
         borderRadius: "16px",
-        background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-        border: "1px solid rgba(245, 158, 11, 0.35)",
-        boxShadow: "0 4px 14px rgba(245, 158, 11, 0.08)",
-        fontSize: "13px",
-        color: "#78350F",
-        lineHeight: 1.55,
+        ...shell,
       }}
     >
       <span style={{ fontSize: "22px", lineHeight: 1, flexShrink: 0 }} aria-hidden>
         {icon}
       </span>
-      <div style={{ minWidth: 0 }}>{children}</div>
+      <div style={{ minWidth: 0, fontSize: "13px", lineHeight: 1.55 }}>
+        {children}
+      </div>
     </div>
   );
 }
@@ -625,19 +639,31 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
   const [kontextOpen, setKontextOpen] = useState(false);
   const resultPath = resolveGkvPkvResultPath(p);
   const copy = resolvePathCopy(resultPath, p);
-  const infoGrid = buildInfoGrid(p, R);
+  const kontextItems = buildInfoGrid(p, R).map((c) => ({
+    key: c.key,
+    icon: (
+      <span style={{ display: "flex", color: "#888" }} aria-hidden>
+        <c.Icon />
+      </span>
+    ),
+    text: (
+      <>
+        <strong style={{ fontWeight: "700", color: "#374151" }}>{c.title}.</strong> {c.body}
+      </>
+    ),
+  }));
 
   const PKV_COLOR = C;
-  const pillLg = { padding: "10px 22px", fontSize: "14px", fontWeight: "700", maxWidth: "min(100%, 340px)", marginLeft: "auto", marginRight: "auto", justifyContent: "center", textAlign: "center", lineHeight: 1.35 };
 
-  const heroPill =
-    R.unterGrenze ? (
-      <div style={{ ...T.statusWarn, ...pillLg, display: "inline-flex", flexWrap: "wrap" }}>Jahresarbeitsentgeltgrenze nicht erreicht</div>
-    ) : R.empfehlung === "gkv" ? (
-      <div style={{ ...T.statusOk, ...pillLg, display: "inline-flex", flexWrap: "wrap" }}>{R.headline}</div>
-    ) : (
-      <div style={{ ...T.statusInfo(C), ...pillLg, display: "inline-flex", flexWrap: "wrap" }}>{R.headline}</div>
-    );
+  const mitPartnerKinder = p.familiensituation === "partner_kinder";
+  const kinderN = mitPartnerKinder ? p.kinderImHaushalt : 0;
+  const dreiPlusKinder = mitPartnerKinder && p.kinderImHaushalt === 3;
+  const heroGkvFokus =
+    !R.unterGrenze &&
+    p.beruf !== "beamter" &&
+    (dreiPlusKinder || R.empfehlung === "gkv" || R.empfehlungKosten === "GKV");
+  const heroPkvFokus =
+    !R.unterGrenze && p.beruf !== "beamter" && R.empfehlungKosten === "PKV" && !dreiPlusKinder;
 
   const bbgFmt = `${BBG_KV_MONAT.toLocaleString("de-DE")} €`;
 
@@ -670,44 +696,293 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
             textAlign: "center",
           }}
         >
-          <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Lebensplanung · Qualität</div>
-          <div
-            style={{
-              ...T.resultH1,
-              marginBottom: "14px",
-              maxWidth: "min(100%, 20ch)",
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
-          >
-            Tendenz: {copy.heroH1}
-          </div>
-          <div style={{ marginBottom: "16px" }}>{heroPill}</div>
-          <p
-            style={{
-              ...T.resultBody,
-              maxWidth: "38ch",
-              margin: "0 auto 8px",
-            }}
-          >
-            {copy.heroSubline}
-          </p>
+          {/* Block 1: Tendenz + Eligibility */}
+          <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Deine Einschätzung</div>
+
+          {R.unterGrenze && p.beruf === "angestellt" ? (
+            <>
+              <div
+                style={{
+                  ...T.resultH1,
+                  marginBottom: "14px",
+                  maxWidth: "min(100%, 26ch)",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              >
+                PKV ist aktuell keine Option
+              </div>
+              <p
+                style={{
+                  ...T.resultBody,
+                  maxWidth: "38ch",
+                  margin: "0 auto 8px",
+                }}
+              >
+                Mit {fmt(p.brutto)}/Monat liegst du unter der Pflichtgrenze von {formatIncomeLimitEur()} — ein Wechsel in die PKV ist für Angestellte derzeit nicht möglich.
+              </p>
+            </>
+          ) : p.beruf === "beamter" ? (
+            <>
+              <div
+                style={{
+                  ...T.resultH1,
+                  marginBottom: "14px",
+                  maxWidth: "min(100%, 26ch)",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              >
+                PKV passt zu deiner Situation
+              </div>
+              <p
+                style={{
+                  ...T.resultBody,
+                  maxWidth: "38ch",
+                  margin: "0 auto 8px",
+                }}
+              >
+                Als Beamter übernimmt dein Dienstherr 50–70 % — die PKV deckt den Rest günstig ab.
+              </p>
+            </>
+          ) : heroGkvFokus ? (
+            <>
+              <div
+                style={{
+                  ...T.resultH1,
+                  marginBottom: "14px",
+                  maxWidth: "min(100%, 26ch)",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              >
+                {dreiPlusKinder ? "GKV ist für dich günstiger" : "GKV passt besser zu dir"}
+              </div>
+              <p
+                style={{
+                  ...T.resultBody,
+                  maxWidth: "38ch",
+                  margin: "0 auto 8px",
+                }}
+              >
+                {dreiPlusKinder
+                  ? `Mit ${kinderN} Kindern überwiegt die GKV-Familienversicherung — ein Beitrag für alle statt mehrere PKV-Verträge.`
+                  : `Auf Basis deiner Situation spricht mehr für die GKV — Beitragsdifferenz ${fmt(R.diff)}/Mon.`}
+              </p>
+            </>
+          ) : heroPkvFokus ? (
+            <>
+              <div
+                style={{
+                  ...T.resultH1,
+                  marginBottom: "14px",
+                  maxWidth: "min(100%, 26ch)",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              >
+                {kinderN > 0 ? "Kommt auf deine Familie an" : "Tendenz: PKV lohnt sich"}
+              </div>
+              <p
+                style={{
+                  ...T.resultBody,
+                  maxWidth: "38ch",
+                  margin: "0 auto 8px",
+                }}
+              >
+                {kinderN > 0
+                  ? `Mit ${kinderN} Kind${kinderN === 1 ? "" : "ern"} lohnt ein genauer Vergleich — GKV-Familienversicherung vs. mehrere PKV-Verträge.`
+                  : `Du zahlst in der GKV ${fmt(R.gkvSchMonat)}/Mon. — in der PKV wären es ca. ${fmt(R.pkvSchMonat)}/Mon. Du sparst ${fmt(R.diff)}/Mon.`}
+              </p>
+            </>
+          ) : (
+            <>
+              <div
+                style={{
+                  ...T.resultH1,
+                  marginBottom: "14px",
+                  maxWidth: "min(100%, 26ch)",
+                  marginLeft: "auto",
+                  marginRight: "auto",
+                }}
+              >
+                Tendenz: {copy.heroH1}
+              </div>
+              <p
+                style={{
+                  ...T.resultBody,
+                  maxWidth: "38ch",
+                  margin: "0 auto 8px",
+                }}
+              >
+                {copy.heroSubline}
+              </p>
+            </>
+          )}
+
           <div style={{ ...T.resultSub, marginTop: "12px", maxWidth: "36ch", marginLeft: "auto", marginRight: "auto" }}>
             {PATH_LABEL_SIE[resultPath]} · {R.subline} · vereinfachte Auswertung, keine Rechtsberatung
           </div>
         </div>
 
+        {/* Eligibility-Hinweis */}
         {R.unterGrenze && (
           <div style={T.section}>
-            <div style={T.warnCard}>
-              <div style={T.warnCardTitle}>PKV aktuell nicht möglich</div>
-              <div style={T.warnCardText}>
-                {tpl(
-                  "Die Versicherungspflichtgrenze 2026 liegt bei {incomeLimit} pro Monat brutto. Sie liegen darunter — ein PKV-Wechsel ist für Angestellte erst ab diesem Einkommen möglich.",
-                  smartVars(p),
-                )}
+            <div
+              style={{
+                border: "1px solid rgba(192,57,43,0.27)",
+                borderLeft: "3px solid #c0392b",
+                borderRadius: "18px",
+                padding: "14px 16px",
+                background: "rgba(192,57,43,0.025)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  color: "#c0392b",
+                  marginBottom: "6px",
+                }}
+              >
+                Was das für dich bedeutet
               </div>
-              <div style={T.warnCardNote}>Ausnahme: Beamte und Selbstständige sind nicht pflichtversichert.</div>
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "#6B7280",
+                  lineHeight: 1.65,
+                  marginBottom: "8px",
+                }}
+              >
+                Du bleibst in der GKV — mit Zusatzbausteinen kannst du Lücken schließen: Zahn, Krankenhaus, Heilpraktiker.
+              </div>
+              <div
+                style={{
+                  fontSize: "11px",
+                  color: "#9CA3AF",
+                }}
+              >
+                Beamte und Selbstständige sind von dieser Regel ausgenommen.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Ersparnis-Block — nur bei PKV-Tendenz und Differenz > 30 € (wirtschaftlich: empfehlungKosten) */}
+        {!R.unterGrenze &&
+          R.empfehlungKosten === "PKV" &&
+          p.beruf !== "beamter" &&
+          !dreiPlusKinder &&
+          R.diff > 30 && (
+            <div style={T.section}>
+              <div
+                style={{
+                  border: `1px solid ${C}30`,
+                  borderLeft: `3px solid ${C}`,
+                  borderRadius: "18px",
+                  padding: "14px 16px",
+                  background: `color-mix(in srgb, ${C} 3%, white)`,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    color: C,
+                    letterSpacing: "0.5px",
+                    textTransform: "uppercase",
+                    marginBottom: "10px",
+                  }}
+                >
+                  Mögliche Ersparnis mit PKV
+                </div>
+                <div
+                  className="gkvpkv-stack-sm"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                    gap: "8px",
+                  }}
+                >
+                  {[
+                    { l: "Pro Monat", v: fmt(R.diff) },
+                    { l: "Pro Jahr", v: fmt(R.diff * 12) },
+                    { l: "In 10 Jahren", v: fmtK(R.diff * 12 * 10) },
+                  ].map(({ l, v }, i) => (
+                    <div
+                      key={l}
+                      style={{
+                        textAlign: "center",
+                        padding: "10px 6px",
+                        background: "rgba(255,255,255,0.7)",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: i === 0 ? "18px" : "15px",
+                          fontWeight: "700",
+                          color: i === 0 ? C : "#1F2937",
+                          letterSpacing: "-0.3px",
+                        }}
+                      >
+                        {v}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "10px",
+                          color: "#9CA3AF",
+                          marginTop: "2px",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {l}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+        {/* Beamten-Hinweis — statt Ersparnis */}
+        {p.beruf === "beamter" && (
+          <div style={T.section}>
+            <div
+              style={{
+                border: `1px solid ${C}30`,
+                borderLeft: `3px solid ${C}`,
+                borderRadius: "18px",
+                padding: "14px 16px",
+                background: `color-mix(in srgb, ${C} 3%, white)`,
+                fontSize: "13px",
+                color: "#6B7280",
+                lineHeight: 1.65,
+              }}
+            >
+              <strong style={{ color: "#1F2937" }}>Beihilfe + PKV</strong> ist für Beamte fast immer günstiger als die freiwillige GKV — dein Dienstherr übernimmt 50–70 % der Kosten direkt.
+            </div>
+          </div>
+        )}
+
+        {/* Familien-Hinweis — bei Kindern */}
+        {kinderN > 0 && !R.unterGrenze && p.beruf !== "beamter" && (
+          <div style={T.section}>
+            <div
+              style={{
+                borderRadius: "14px",
+                padding: "14px 16px",
+                background: "#F6F8FE",
+                border: "1px solid #DCE6FF",
+                fontSize: "13px",
+                color: "#315AA8",
+                lineHeight: 1.65,
+              }}
+            >
+              {dreiPlusKinder
+                ? `Mit ${kinderN} Kindern sind beitragsfreie Mitversicherung in der GKV und ein Haushaltsbeitrag kaum zu schlagen — in der PKV kämen ${kinderN} separate Verträge dazu.`
+                : "In der GKV sind Kinder oft beitragsfrei mitversichert — in der PKV kostet jedes Kind extra (ca. 100–250 €/Mon.)."}
             </div>
           </div>
         )}
@@ -715,6 +990,62 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
         <div style={T.section}>
           <div style={T.sectionLbl}>Systemvergleich</div>
           <div style={{ ...T.tableIntro, marginBottom: "14px" }}>{copy.tableIntro}</div>
+
+          {/* Beitragsvergleich — Monatsbeträge (Orientierung) */}
+          <div style={{ marginBottom: "14px" }}>
+            <div
+              className="gkvpkv-stack-sm"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: "10px",
+              }}
+            >
+              {[
+                { label: "GKV", sub: "GKV 2026 (Ø)", val: fmt(R.gkvSchMonat), valColor: GKV_COLOR },
+                { label: "PKV", sub: "PKV-Schätzwert", val: fmt(R.pkvSchMonat), valColor: PKV_COLOR },
+              ].map((row) => (
+                <div
+                  key={row.label}
+                  style={{
+                    border: "1px solid rgba(17,24,39,0.08)",
+                    borderRadius: "14px",
+                    padding: "12px 14px",
+                    background: "#fafafa",
+                  }}
+                >
+                  <div style={{ fontSize: "13px", fontWeight: "700", color: "#111827" }}>{row.label}</div>
+                  <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px", lineHeight: 1.35 }}>{row.sub}</div>
+                  <div
+                    style={{
+                      fontSize: "20px",
+                      fontWeight: "800",
+                      marginTop: "8px",
+                      letterSpacing: "-0.4px",
+                      color: row.valColor,
+                    }}
+                  >
+                    {row.val}
+                  </div>
+                  <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "2px" }}>/ Mon.</div>
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                fontSize: "11px",
+                color: "#9CA3AF",
+                padding: "6px 10px",
+                background: "rgba(255,255,255,0.6)",
+                borderRadius: "8px",
+                marginTop: "4px",
+                lineHeight: 1.45,
+              }}
+            >
+              GKV: 14,6% + Ø-Zusatzbeitrag 2,9% (2026) · PKV: Faustformel nach Alter
+            </div>
+          </div>
+
           <div
             className="gkvpkv-stack-sm"
             style={{
@@ -750,18 +1081,15 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
           </div>
         </div>
 
-        {!R.unterGrenze && R.diff > 30 && R.empfehlungKosten ? (
+        {!R.unterGrenze && R.diff > 30 && R.empfehlungKosten === "GKV" ? (
           <div style={T.section}>
             <div
               style={{
-                border: `1px solid ${
-                  R.empfehlungKosten === "PKV" ? "rgba(26,58,92,0.2)" : "rgba(5,150,105,0.2)"
-                }`,
-                borderLeft: `3px solid ${R.empfehlungKosten === "PKV" ? C : "#059669"}`,
+                border: "1px solid rgba(5,150,105,0.2)",
+                borderLeft: "3px solid #059669",
                 borderRadius: "18px",
                 padding: "14px 16px",
-                background:
-                  R.empfehlungKosten === "PKV" ? `color-mix(in srgb, ${C} 4%, white)` : "rgba(5,150,105,0.025)",
+                background: "rgba(5,150,105,0.025)",
                 marginBottom: "16px",
               }}
             >
@@ -769,13 +1097,13 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 style={{
                   fontSize: "11px",
                   fontWeight: "700",
-                  color: R.empfehlungKosten === "PKV" ? C : "#059669",
+                  color: "#059669",
                   letterSpacing: "0.5px",
                   textTransform: "uppercase",
                   marginBottom: "8px",
                 }}
               >
-                Ersparnis {R.empfehlungKosten === "PKV" ? "bei PKV-Wechsel" : "mit GKV"}
+                Ersparnis mit GKV
               </div>
               <div
                 className="gkvpkv-stack-sm"
@@ -786,21 +1114,9 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 }}
               >
                 {[
-                  {
-                    l: "Pro Monat",
-                    v: fmt(R.diff),
-                    color: R.empfehlungKosten === "PKV" ? C : "#059669",
-                  },
-                  {
-                    l: "Pro Jahr",
-                    v: fmt(R.diff * 12),
-                    color: "#1F2937",
-                  },
-                  {
-                    l: "In 10 Jahren",
-                    v: fmtK(R.diff * 12 * 10),
-                    color: "#1F2937",
-                  },
+                  { l: "Pro Monat", v: fmt(R.diff), color: "#059669" },
+                  { l: "Pro Jahr", v: fmt(R.diff * 12), color: "#1F2937" },
+                  { l: "In 10 Jahren", v: fmtK(R.diff * 12 * 10), color: "#1F2937" },
                 ].map(({ l, v, color }) => (
                   <div
                     key={l}
@@ -820,98 +1136,17 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
           </div>
         ) : null}
 
-        <div style={T.section}>
-          <div
-            style={{
-              border: "1px solid rgba(17,24,39,0.06)",
-              borderRadius: "14px",
-              overflow: "hidden",
-              boxShadow: "0 2px 10px rgba(17,24,39,0.04)",
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setKontextOpen((x) => !x)}
-              style={{
-                width: "100%",
-                padding: "14px 18px",
-                background: "#faf9f6",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                fontFamily: "inherit",
-                textAlign: "left",
-              }}
-            >
-              <span style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280" }}>
-                Was das für Ihre Situation bedeutet
+        {R.empfehlungKosten === "PKV" && (
+          <div style={T.section}>
+            <div style={T.sectionLbl}>Strategie</div>
+            <SmartHintKv icon="📈">
+              <strong style={{ fontWeight: "700", fontSize: "13px" }}>Strategie: Beitragsentlastung</strong>
+              <span style={SMART_HINT_KV_TEXT}>
+                Wenn die PKV für Sie wirtschaftlich vorteilhaft ist, bleibt häufig ein monatlicher Abstand zum GKV-Höchstbeitrag. Diesen Betrag können Sie strukturiert anlegen — etwa in ETF-Sparpläne oder andere Vermögensbausteine — und so aus der Ersparnis zusätzliches Kapital aufbauen, statt ihn ungenutzt „verstreichen“ zu lassen. Höhe und Tragfähigkeit hängen von Ihrer Situation ab; eine Einordnung ersetzt keine Anlageberatung.
               </span>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                aria-hidden
-                style={{
-                  transition: "transform 0.2s",
-                  transform: kontextOpen ? "rotate(90deg)" : "none",
-                  flexShrink: 0,
-                }}
-              >
-                <path
-                  d="M4 2l4 4-4 4"
-                  stroke="#9CA3AF"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            {kontextOpen ? (
-              <div
-                style={{
-                  padding: "14px 18px",
-                  fontSize: "13px",
-                  color: "#6B7280",
-                  lineHeight: 1.7,
-                  borderTop: "1px solid #EAE5DC",
-                  background: "#fff",
-                }}
-              >
-                {infoGrid.map((c, i) => (
-                  <div
-                    key={c.key}
-                    style={{
-                      display: "flex",
-                      gap: "10px",
-                      alignItems: "flex-start",
-                      marginBottom: i < infoGrid.length - 1 ? "10px" : "0",
-                    }}
-                  >
-                    <span style={{ flexShrink: 0, display: "flex", color: "#888" }} aria-hidden>
-                      <c.Icon />
-                    </span>
-                    <span style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.65 }}>
-                      <strong style={{ fontWeight: "700", color: "#374151" }}>{c.title}.</strong> {c.body}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : null}
+            </SmartHintKv>
           </div>
-        </div>
-
-        <div style={T.section}>
-          <div style={T.sectionLbl}>Strategie</div>
-          <SmartHintKv icon="📈">
-            <strong style={{ fontWeight: "700" }}>Strategie: Beitragsentlastung</strong>
-            <span style={{ display: "block", marginTop: "8px" }}>
-              Wenn die PKV für Sie wirtschaftlich vorteilhaft ist, bleibt häufig ein monatlicher Abstand zum GKV-Höchstbeitrag. Diesen Betrag können Sie strukturiert anlegen — etwa in ETF-Sparpläne oder andere Vermögensbausteine — und so aus der Ersparnis zusätzliches Kapital aufbauen, statt ihn ungenutzt „verstreichen“ zu lassen. Höhe und Tragfähigkeit hängen von Ihrer Situation ab; eine Einordnung ersetzt keine Anlageberatung.
-            </span>
-          </SmartHintKv>
-        </div>
+        )}
 
         <div style={{ ...T.section, marginBottom: "16px" }}>
           <div style={T.sectionLbl}>Details &amp; Tabellen</div>
@@ -933,70 +1168,209 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 <p style={{ marginBottom: "14px", color: "#b8884a" }}>
                   Vereinfachte Einordnung auf Basis Ihrer Angaben. Keine konkreten Beiträge — diese hängen von Tarif, Kasse und individuellem Gesundheitszustand ab. Grundlage u. a. § 241 SGB V, § 257 SGB V, § 9 SGB V.
                 </p>
-                <div style={{ fontSize: "12px", fontWeight: "700", color: "#374151", marginBottom: "8px" }}>Wichtige Faktoren in Ihrer Situation</div>
-                <div style={T.cardPrimary}>
-                  {FAKTOREN.map(({ label, gkv, pkv, fav }, i, arr) => (
+
+                {/* Block 4: Kontext — aufklappbar */}
+                {kontextItems.length > 0 && (
+                  <div style={{ marginBottom: "18px" }}>
                     <div
-                      key={label}
                       style={{
-                        padding: "14px 20px",
-                        borderBottom: i < arr.length - 1 ? "1px solid #f0f0f0" : "none",
+                        border: "1px solid rgba(17,24,39,0.06)",
+                        borderRadius: "14px",
+                        overflow: "hidden",
+                        boxShadow: "0 2px 10px rgba(17,24,39,0.04)",
                       }}
                     >
-                      <div style={T.matrixMuted}>{label}</div>
-                      <div
-                        className="gkvpkv-stack-sm"
+                      <button
+                        type="button"
+                        aria-expanded={kontextOpen}
+                        onClick={() => setKontextOpen((x) => !x)}
                         style={{
-                          display: "grid",
-                          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 148px), 1fr))",
-                          gap: "8px",
+                          width: "100%",
+                          padding: "14px 18px",
+                          background: "#faf9f6",
+                          border: "none",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          fontFamily: "inherit",
+                          textAlign: "left",
+                        }}
+                      >
+                        <span style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280" }}>
+                          Was das konkret für dich bedeutet
+                        </span>
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          aria-hidden
+                          style={{
+                            transition: "transform 0.2s",
+                            transform: kontextOpen ? "rotate(90deg)" : "none",
+                            flexShrink: 0,
+                          }}
+                        >
+                          <path
+                            d="M4 2l4 4-4 4"
+                            stroke="#9CA3AF"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      {kontextOpen ? (
+                        <div
+                          style={{
+                            padding: "14px 18px",
+                            borderTop: "1px solid #EAE5DC",
+                            background: "#fff",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "10px",
+                          }}
+                        >
+                          {kontextItems.map(({ key, icon, text }) => (
+                            <div
+                              key={key}
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                alignItems: "flex-start",
+                              }}
+                            >
+                              <span style={{ fontSize: "16px", flexShrink: 0, display: "flex", alignItems: "flex-start" }}>
+                                {icon}
+                              </span>
+                              <span style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.65 }}>{text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+
+                {/* Block 3: Faktor-Tabelle — nur relevante Faktoren */}
+                <div
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    color: "#9CA3AF",
+                    letterSpacing: "0.5px",
+                    textTransform: "uppercase",
+                    marginBottom: "10px",
+                  }}
+                >
+                  Darum passt das zu deiner Situation
+                </div>
+                <div style={T.card}>
+                  {FAKTOREN.filter((f) => {
+                    if (f.label === "Kinder") return R.hatKinder;
+                    if (f.label === "Gesundheit")
+                      return p.gesundheit == null || p.gesundheit !== "mittel";
+                    if (f.label === "Alter") return p.alter < 35 || p.alter > 45;
+                    if (f.label === "Einkommen") return true;
+                    return true;
+                  })
+                    .slice(0, 3)
+                    .map(({ label, gkv, pkv, fav }, i, arr) => (
+                      <div
+                        key={label}
+                        style={{
+                          padding: "12px 16px",
+                          borderBottom: i < arr.length - 1 ? "1px solid #f5f5f5" : "none",
                         }}
                       >
                         <div
                           style={{
-                            minWidth: 0,
-                            padding: "10px",
-                            background: fav === "gkv" ? "#F0FDF4" : "#f8fafc",
-                            borderRadius: "10px",
-                            border: fav === "gkv" ? "1px solid #BBF7D0" : "1px solid #e8e8e8",
+                            fontSize: "11px",
+                            fontWeight: "600",
+                            color: "#9CA3AF",
+                            marginBottom: "6px",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.3px",
                           }}
                         >
-                          <div
-                            style={{
-                              fontSize: "11px",
-                              fontWeight: "700",
-                              color: fav === "gkv" ? GKV_COLOR : "#888",
-                              marginBottom: "4px",
-                            }}
-                          >
-                            GKV
-                          </div>
-                          <div style={{ ...T.matrixCellText, overflowWrap: "break-word", wordBreak: "break-word" }}>{gkv}</div>
+                          {label}
                         </div>
                         <div
+                          className="gkvpkv-stack-sm"
                           style={{
-                            minWidth: 0,
-                            padding: "10px",
-                            background: fav === "pkv" ? "#EFF6FF" : "#f8fafc",
-                            borderRadius: "10px",
-                            border: fav === "pkv" ? "1px solid #BFDBFE" : "1px solid #e8e8e8",
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: "8px",
                           }}
                         >
                           <div
                             style={{
-                              fontSize: "11px",
-                              fontWeight: "700",
-                              color: fav === "pkv" ? PKV_COLOR : "#888",
-                              marginBottom: "4px",
+                              padding: "8px",
+                              background: fav === "gkv" ? "#F6FCF7" : "rgba(255,255,255,0.96)",
+                              borderRadius: "10px",
+                              border:
+                                fav === "gkv" ? "1px solid #CBE9D4" : "1px solid rgba(17,24,39,0.06)",
                             }}
                           >
-                            PKV
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: fav === "gkv" ? "#1E7A46" : "#9CA3AF",
+                                marginBottom: "3px",
+                              }}
+                            >
+                              GKV
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                color: "#1F2937",
+                                lineHeight: 1.5,
+                                overflowWrap: "break-word",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {gkv}
+                            </div>
                           </div>
-                          <div style={{ ...T.matrixCellText, overflowWrap: "break-word", wordBreak: "break-word" }}>{pkv}</div>
+                          <div
+                            style={{
+                              padding: "8px",
+                              background: fav === "pkv" ? "#F5F8FF" : "rgba(255,255,255,0.96)",
+                              borderRadius: "10px",
+                              border:
+                                fav === "pkv"
+                                  ? `1px solid color-mix(in srgb, ${C} 28%, #e5e7eb)`
+                                  : "1px solid rgba(17,24,39,0.06)",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: fav === "pkv" ? C : "#9CA3AF",
+                                marginBottom: "3px",
+                              }}
+                            >
+                              PKV
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "12px",
+                                color: "#1F2937",
+                                lineHeight: 1.5,
+                                overflowWrap: "break-word",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {pkv}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             )}
@@ -1004,7 +1378,20 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
         </div>
 
         <div style={{ ...T.section, marginBottom: "8px" }}>
-          <div style={{ ...T.infoBox, fontSize: "11px" }}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
+          {/* Disclaimer */}
+          <div
+            style={{
+              padding: "15px 16px",
+              borderRadius: "14px",
+              background: "#F6F8FE",
+              border: "1px solid #DCE6FF",
+              color: "#315AA8",
+              fontSize: "13px",
+              lineHeight: 1.7,
+            }}
+          >
+            Orientierungswerte — keine Rechtsberatung. PKV-Beiträge sind Schätzwerte nach Alter. Für konkrete Tarife empfehlen wir ein persönliches Gespräch.
+          </div>
         </div>
       </div>
 

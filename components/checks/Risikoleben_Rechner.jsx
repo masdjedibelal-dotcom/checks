@@ -9,6 +9,7 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 
 (() => {
   const s = document.createElement("style");
@@ -109,17 +110,6 @@ function RisikoHintCard({ children, icon = "💡", accent = "#2563eb" }) {
   );
 }
 
-function BuktgLogoMark() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-      <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
-      <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-      <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-      <rect x="8" y="8" width="5" height="5" rx="1" fill="white" />
-    </svg>
-  );
-}
-
 // ─── BERECHNUNG (vereinfacht) ─────────────────────────────────────────────────
 function berechne({ monatsBedarf, laufzeit, partnerEinkommen, witwenRente, sonstiges, kredite, vorhanden }) {
   const einnahmen = partnerEinkommen + witwenRente + sonstiges;
@@ -193,6 +183,67 @@ export default function RisikolebenRechner() {
   const R       = berechne(p);
   const progPct = phase === 1 ? (scr / RL_WIZARD_STEPS) * 100 : { 2: 100, 3: 100, 4: 100 }[phase] || 0;
 
+  function Header({ phase: ph, total }) {
+    const pct = total > 0 ? (ph / total) * 100 : 0;
+    return (
+      <>
+        <div
+          style={{
+            background: "rgba(255,255,255,0.9)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            borderBottom: "1px solid rgba(31,41,55,0.06)",
+            padding: "16px 20px 12px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "6px",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+          }}
+        >
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              background: C,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+            }}
+          >
+            <MaklerFirmaAvatarInitials firma={MAKLER.firma} />
+          </div>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: "700",
+              color: "#1F2937",
+              letterSpacing: "-0.1px",
+              textAlign: "center",
+            }}
+          >
+            {MAKLER.firma}
+          </span>
+        </div>
+        <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${pct}%`,
+              background: C,
+              borderRadius: "999px",
+              transition: "width 0.35s ease",
+            }}
+          />
+        </div>
+      </>
+    );
+  }
+
   const cardLift = {
     background: "#fff",
     borderRadius: "18px",
@@ -202,13 +253,6 @@ export default function RisikolebenRechner() {
 
   const T = {
     root: { minHeight: "100vh", background: "#fff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
-    header: { position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(31,41,55,0.06)", padding: "0 24px", height: "56px", display: "flex", alignItems: "center", justifyContent: "space-between" },
-    logoWrap: { display: "flex", alignItems: "center", gap: "10px" },
-    logoBox: { width: "28px", height: "28px", borderRadius: "6px", background: C, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "700" },
-    logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111" },
-    badge: { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
-    progBar: { height: "2px", background: "rgba(31,41,55,0.08)" },
-    progFill: { height: "100%", width: `${progPct}%`, background: C, transition: "width 0.4s ease" },
     hero: { padding: "32px 24px 16px" },
     eyebrow: { fontSize: "11px", fontWeight: "600", letterSpacing: "1px", textTransform: "uppercase", color: "#999", marginBottom: "6px" },
     h1: { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
@@ -297,8 +341,7 @@ export default function RisikolebenRechner() {
 
   const Shell = ({ eyebrow, title, lead, children, footer }) => (
     <div style={T.root}>
-      <div style={T.header}><div style={T.logoWrap}><div style={T.logoBox}><BuktgLogoMark /></div><span style={T.logoTxt}>{MAKLER.firma}</span></div><span style={T.badge}>Risikoleben</span></div>
-      <div style={T.progBar}><div style={T.progFill} /></div>
+      <Header phase={progPct} total={100} />
       <div key={animKey} className="fade-in" style={T.body}>
         <div style={T.hero}>{eyebrow&&<div style={T.eyebrow}>{eyebrow}</div>}{title&&<h1 style={T.h1}>{title}</h1>}{lead&&<p style={T.lead}>{lead}</p>}</div>
         {children}
@@ -310,8 +353,7 @@ export default function RisikolebenRechner() {
   if (loading) {
     return (
       <div style={T.root}>
-        <div style={T.header}><div style={T.logoWrap}><div style={T.logoBox}><BuktgLogoMark /></div><span style={T.logoTxt}>{MAKLER.firma}</span></div><span style={T.badge}>Risikoleben</span></div>
-        <div style={T.progBar}><div style={T.progFill} /></div>
+        <Header phase={progPct} total={100} />
         <CheckLoader type="risikoleben" checkmarkColor={C} onComplete={() => { setLoading(false); goTo(2); }} />
       </div>
     );
@@ -392,18 +434,7 @@ export default function RisikolebenRechner() {
 
     return (
       <div style={T.root}>
-        <div style={T.header}>
-          <div style={T.logoWrap}>
-            <div style={T.logoBox}>
-              <BuktgLogoMark />
-            </div>
-            <span style={T.logoTxt}>{MAKLER.firma}</span>
-          </div>
-          <span style={T.badge}>Risikoleben</span>
-        </div>
-        <div style={T.progBar}>
-          <div style={T.progFill} />
-        </div>
+        <Header phase={progPct} total={100} />
         <div key={animKey} className="fade-in" style={T.body}>
           {scr === 1 && (
             <CheckKitStoryHero
@@ -470,7 +501,6 @@ export default function RisikolebenRechner() {
                     { id: "paar_ohne_kinder", label: "Paar ohne Kinder", desc: "Partnerschaft, keine minderjährigen Kinder im Haushalt." },
                     { id: "paar_mit_kinder", label: "Paar mit Kindern", desc: "Partnerschaft mit Kindern — Bildung und Versorgung im Fokus." },
                     { id: "alleinerziehend", label: "Alleinerziehend", desc: "Sie tragen die Hauptverantwortung für die Kinder." },
-                    { id: "single_ohne_kinder", label: "Single ohne Kinder", desc: "Alleinlebend ohne Kinder." },
                     { id: "single_mit_kinder", label: "Single mit Kindern", desc: "Allein mit Kindern im Haushalt." },
                   ].map(({ id, label, desc }) => (
                     <SelectionCard

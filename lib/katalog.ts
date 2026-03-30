@@ -35,7 +35,7 @@ export const KATALOG: Template[] = [
   {
     slug: "einkommens-check",
     icon: "💼",
-    name: "Zielgruppenpakete",
+    name: "Einkommensabsicherung",
     desc: "BU + KTG Zeitstrahl, Lückenberechnung, Empfehlung und EU als Alternative.",
     tags: ["Einkommensschutz", "BU & Krankentagegeld"],
     kategorie: "luecken",
@@ -84,16 +84,6 @@ export const KATALOG: Template[] = [
   },
   {
     slug: "immobilien-check",
-    icon: "🏠",
-    name: "Immobilien",
-    desc: "Drei Module: Kaufen vs. Mieten, Anschlussfinanzierung, Wohngebäude-Check.",
-    tags: ["Immobilien", "Finanzierung"],
-    kategorie: "finanzen",
-    preis: 59,
-    accentColor: "#b45309",
-  },
-  {
-    slug: "immo-check",
     icon: "🏛️",
     name: "Immo-Schutz-Dach",
     desc: "Weg, Risiko-Scanner & Vorsorge: Bank & Existenz, Objektschutz, Zukunft & Recht — Schutz-Dach.",

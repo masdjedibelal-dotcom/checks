@@ -36,11 +36,7 @@ const CHECKS: Record<DemoSlug, ComponentType> = {
     () => import("@/components/checks/PflegekostenplanungRechner"),
     { ssr: false },
   ),
-  "immobilien-check": dynamic(
-    () => import("@/components/checks/ImmobilienCheck_v2"),
-    { ssr: false },
-  ),
-  "immo-check": dynamic(() => import("@/components/checks/ImmoCheck"), {
+  "immobilien-check": dynamic(() => import("@/components/checks/ImmoCheck"), {
     ssr: false,
   }),
 };

@@ -78,7 +78,7 @@ export const checkStandardT = (C: string) => {
     // ── PAGE ──────────────────────────────────
     page: {
       minHeight: "100vh",
-      background: "#F8F6F2",
+      background: "#ffffff",
       fontFamily: "'DM Sans', system-ui, sans-serif",
       WebkitFontSmoothing: "antialiased" as const,
       ...( { ["--accent"]: C } as Record<string, string> ),
@@ -134,7 +134,7 @@ export const checkStandardT = (C: string) => {
     hero: {
       padding: "44px 24px 32px",
       textAlign: "center" as const,
-      background: "#F8F6F2",
+      background: "#ffffff",
     },
     eyebrow: {
       fontSize: "12px",
@@ -155,7 +155,7 @@ export const checkStandardT = (C: string) => {
     // ── SCREEN BODY ───────────────────────────
     screenBody: {
       padding: "20px 20px 140px",
-      background: "#F8F6F2",
+      background: "#ffffff",
     },
 
     // ── SELECTION CARDS (1-spaltig) ───────────
@@ -515,7 +515,7 @@ export const checkStandardT = (C: string) => {
     loaderScreen: {
       padding: "56px 24px",
       textAlign: "center" as const,
-      background: "#F8F6F2",
+      background: "#ffffff",
     },
     loaderH: {
       fontSize: "19px",
@@ -535,7 +535,7 @@ export const checkStandardT = (C: string) => {
     dankeScreen: {
       padding: "48px 24px",
       textAlign: "center" as const,
-      background: "#F8F6F2",
+      background: "#ffffff",
     },
     dankeRing: (C2: string) => ({
       width: "56px",
@@ -631,7 +631,7 @@ export const checkStandardT = (C: string) => {
     resultHero: {
       padding: "52px 24px 40px",
       textAlign: "center" as const,
-      background: "#F8F6F2",
+      background: "#ffffff",
     },
     resultEyebrow: {
       fontSize: "12px",

@@ -7,7 +7,7 @@ import { publicAppUrl } from "@/lib/licenseUtils";
  * diesem Stripe-Konto passen (oder STRIPE_PRICE_IDS_JSON mit Preisen aus deinem Konto).
  *
  * Slug-Mapping: bedarfscheck=Versicherungs-Check · lebenssituations-check · einkommens-check ·
- * gkv-pkv=KV-Navigator · vorsorge-check · risikoleben · pflege-check · immobilien-check · immo-check (=Immobilien-Preis)
+ * gkv-pkv=KV-Navigator · vorsorge-check · risikoleben · pflege-check · immobilien-check (=Immo-Schutz-Dach)
  */
 const DEFAULT_STRIPE_PRICE_IDS: Record<string, string> = {
   bedarfscheck: "price_1TDlFRCWQbLUwqOtPni0DcmM",
@@ -18,7 +18,6 @@ const DEFAULT_STRIPE_PRICE_IDS: Record<string, string> = {
   risikoleben: "price_1TDlGqCWQbLUwqOtwhkLZNc3",
   "pflege-check": "price_1TDlH4CWQbLUwqOtmW6laQsr",
   "immobilien-check": "price_1TDlHICWQbLUwqOtFct53MTA",
-  "immo-check": "price_1TDlHICWQbLUwqOtFct53MTA",
 };
 
 function parseStripePriceOverrides(): Record<string, string> {
