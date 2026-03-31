@@ -548,8 +548,7 @@ export default function LandingHome() {
                     🌐
                   </span>
                   <span className="hero-benefit-text">
-                    <strong>Flexibel einsetzbar:</strong> QR-Code, Social Media, eigene Website oder
-                    in der Beratung
+                    <strong>Flexibel einsetzbar:</strong>
                   </span>
                 </li>
               </ul>

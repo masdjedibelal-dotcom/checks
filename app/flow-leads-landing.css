@@ -27,7 +27,7 @@ html {
   background: #ffffff;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip; /* clip statt hidden — sticky bleibt funktional */
   min-height: 100vh;
 }
 
