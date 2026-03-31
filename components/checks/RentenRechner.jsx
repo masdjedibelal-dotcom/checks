@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -322,7 +324,7 @@ function Header({ phase, total, makler, C }) {
 
 function Footer({ onNext, onBack, label="Weiter", disabled=false, T }) {
   return (
-    <div style={T.footer}>
+    <div style={T.footer} data-checkkit-footer>
       <button style={T.btnPrim(disabled)} onClick={onNext} disabled={disabled}>{label}</button>
       {onBack && <button style={T.btnSec} onClick={onBack}>Zurück</button>}
     </div>
@@ -392,6 +394,7 @@ function DankeScreen({ name, onBack, makler, C, luecke, deckung }) {
 
 export default function RentenRechner() {
   const MAKLER = useCheckConfig();
+  const { isReady } = MAKLER;
   const C = MAKLER.primaryColor;
   const T = useMemo(() => makeRentenT(C), [C]);
   const isDemo = isCheckDemoMode();
@@ -441,10 +444,16 @@ export default function RentenRechner() {
   };
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
+  if (!isReady) return <CheckConfigLoadingShell />;
+
+  const withStandalone = (el) => (
+    <StandaloneWrapper makler={MAKLER} checkLabel="Vorsorge-Check">{el}</StandaloneWrapper>
+  );
+
   const R = berechne(p);
   const TOTAL = 3;
 
-  if (danke) return (
+  if (danke) return withStandalone(
     <div style={{ ...T.page, "--accent": C }}>
       <Header phase={TOTAL} total={TOTAL} makler={MAKLER} C={C} />
       <DankeScreen
@@ -459,7 +468,7 @@ export default function RentenRechner() {
   );
 
   if (loading) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }}>
         <Header phase={TOTAL_SCR} total={TOTAL_SCR} makler={MAKLER} C={C} />
         <CheckLoader type="rente" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
@@ -468,7 +477,7 @@ export default function RentenRechner() {
   }
 
   if (phase === "bridge")
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={TOTAL} total={TOTAL} makler={MAKLER} C={C} />
         <CheckKitStoryHero
@@ -502,7 +511,7 @@ export default function RentenRechner() {
           ))}
         </div>
         <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Ergebnis ansehen
           </button>
@@ -516,7 +525,7 @@ export default function RentenRechner() {
   // Phase 3: Kontakt
   if (phase === 3) {
     const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={3} total={TOTAL} makler={MAKLER} C={C} />
         <div style={T.hero}>
@@ -573,7 +582,7 @@ export default function RentenRechner() {
           )}
         </div>
         {isDemo ? (
-          <div style={T.footer}><button type="button" style={T.btnSec} onClick={() => goTo(2)}>Zurück</button></div>
+          <div style={T.footer} data-checkkit-footer><button type="button" style={T.btnSec} onClick={() => goTo(2)}>Zurück</button></div>
         ) : (
           <Footer
             onNext={async () => {
@@ -609,7 +618,7 @@ export default function RentenRechner() {
 
     const gutAufgestellt = lh <= 0 || R.deckung >= 90;
 
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
         <Header phase={2} total={TOTAL} makler={MAKLER} C={C} />
 
@@ -1075,7 +1084,7 @@ export default function RentenRechner() {
   }
 
   // Phase 1: Intro + Daten + Story (Alter/Netto/Rentenalter) + … + Inflation → Loader → Bridge → Phase 2
-  return (
+  return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={scr} total={TOTAL_SCR} makler={MAKLER} C={C} />
 

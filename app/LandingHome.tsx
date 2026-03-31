@@ -91,6 +91,10 @@ const FAQ_ITEMS = [
     q: "Brauche ich eine eigene Website?",
     a: "Nein — die Microsites lassen sich auf jeder bestehenden Website einbinden. Das funktioniert auf Jimdo, Squarespace, WordPress und den meisten Baukastensystemen.",
   },
+  {
+    q: "Kann ich die Microsite auch im Kundengespräch nutzen?",
+    a: "Ja — rufen Sie den Direkt-Link einfach im Gespräch auf: auf Ihrem Laptop, dem Tablet des Kunden oder per geteiltem Bildschirm im Video-Call. Der Kunde gibt seine Daten direkt ein und sieht das Ergebnis in Echtzeit. Das macht Beratungsgespräche konkreter und kürzer.",
+  },
 ];
 
 const WHY_FLOWLEADS_POINTS = [
@@ -112,10 +116,60 @@ const VERTRIEB_BLOCKS = [
     text: "Veränderungen im Leben Ihrer Kunden werden zum Anlass, sich wieder bei Ihnen zu melden.",
   },
   {
-    titel: "Gespräche vorbereiten",
-    text: "Ihre Kunden beschäftigen sich vorab mit ihrer Situation und kommen mit einem konkreten Anliegen.",
+    titel: "Gespräche vorbereiten — und begleiten",
+    text: "Ihre Kunden beschäftigen sich vorab mit ihrer Situation und kommen mit einem konkreten Anliegen. Oder rufen Sie die Microsite live im Gespräch auf — Ihr Kunde sieht das Ergebnis in Echtzeit, ob vor Ort, per Video-Call oder auf dem Tablet.",
   },
 ];
+
+const TESTIMONIALS = [
+  {
+    name: "Michael B.",
+    rolle: "Versicherungsagentur, München",
+    initials: "MB",
+    color: "amber",
+    quote:
+      "Ich schicke den Jahres-Check einmal im Jahr automatisiert an alle Bestandskunden raus — wer einen neuen Anlass hat meldet sich von selbst. Das war vorher mühsam, jetzt läuft es einfach. Was ich auch gut finde: einmal gekauft, kein Abo, kein Technikkram. Ich bin nicht die digitalste Person aber das hat sofort funktioniert. Die Rücklaufquote hat mich wirklich positiv überrascht.",
+  },
+  {
+    name: "Ursula H.",
+    rolle: "Versicherungsmaklerin, Stuttgart",
+    initials: "UH",
+    color: "gray",
+    quote:
+      "Danke! Endlich was das ich einfach kaufen und sofort nutzen kann. Kein Monatsabo, keine Einrichtung. Ich nehme den Rechner jetzt auch direkt in Gespräche mit — Kunden sehen ihre Lücke selbst, das spart mir viel Erklärarbeit.",
+  },
+  {
+    name: "Marcus R.",
+    rolle: "Makler, Frankfurt",
+    initials: "MR",
+    color: "green",
+    quote:
+      "Läuft per iFrame auf meiner Website und ich teile den Link auch in WhatsApp-Kampagnen. Die Anfragen die reinkommen sind einfach konkreter als vorher — kein Vergleich zu irgendwelchen Landingpages. Und ich kann ihn so oft einsetzen wie ich will, das gefällt mir.",
+  },
+  {
+    name: "Thomas W.",
+    rolle: "Makler, Köln",
+    initials: "TW",
+    color: "teal",
+    quote: "Sehr gute Rechner, sehen professionell aus und meine Kunden finden die super. Mehr gibt es eigentlich nicht zu sagen.",
+  },
+  {
+    name: "Sandra K.",
+    rolle: "Unabhängige Maklerin, Hamburg",
+    initials: "SK",
+    color: "blue",
+    quote:
+      "Was mich überzeugt hat ist dass die Lücken aus Kundensicht dargestellt werden — nicht so wie ich als Makler denke sondern so wie der Kunde es versteht. Ich hab schon zwei Kollegen davon erzählt. Wirklich ein tolles Produkt, vielen Dank!",
+  },
+] as const;
+
+const TESTIMONIAL_AVATAR_COLORS: Record<string, { bg: string; color: string }> = {
+  amber: { bg: "#FAEEDA", color: "#854F0B" },
+  gray: { bg: "#F1EFE8", color: "#444441" },
+  green: { bg: "#EAF3DE", color: "#3B6D11" },
+  teal: { bg: "#E1F5EE", color: "#0F6E56" },
+  blue: { bg: "#E6F1FB", color: "#185FA5" },
+};
 
 function LandingModalsPortal({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -317,36 +371,12 @@ export default function LandingHome() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [demoT, setDemoT] = useState<Template | null>(null);
   const [buyT, setBuyT] = useState<Template | null>(null);
-  const [ctaFinalReveal, setCtaFinalReveal] = useState(false);
-  const ctaFinalRef = useRef<HTMLElement | null>(null);
   const demoTRef = useRef<Template | null>(null);
   demoTRef.current = demoT;
 
   // Nach Reload oder erneutem Mount der Startseite: immer ganz oben (inkl. #anker / iOS).
   useLayoutEffect(() => {
     scrollCheckDocumentToTop();
-  }, []);
-
-  // ── CTA final: bewusstes „Ankommen“ mit kurzer Verzögerung ───────────────
-  useEffect(() => {
-    const el = ctaFinalRef.current;
-    if (!el) return;
-    let delayTimer: ReturnType<typeof setTimeout> | undefined;
-    const observer = new IntersectionObserver(
-      ([e]) => {
-        if (!e?.isIntersecting) return;
-        observer.disconnect();
-        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const ms = reduceMotion ? 0 : 200;
-        delayTimer = setTimeout(() => setCtaFinalReveal(true), ms);
-      },
-      { threshold: 0.28, rootMargin: "0px 0px -8% 0px" }
-    );
-    observer.observe(el);
-    return () => {
-      observer.disconnect();
-      if (delayTimer) clearTimeout(delayTimer);
-    };
   }, []);
 
   // ── Scroll-triggered fade-up ──────────────────────────────────────────────
@@ -456,9 +486,9 @@ export default function LandingHome() {
             </h1>
 
             <p className="hero-sub au d2">
-              Fertige Microsites mit Rechnern, die Kunden durch ihre Situation führen — mobil,
-              individualisiert und überall einsetzbar: QR-Code, Social Media oder direkt auf Ihrer
-              Website.
+              Fertige Microsites mit Rechnern — zur Leadgenerierung, gezielten Bedarfsanalyse
+              oder Gesprächsvorbereitung in der Beratung. Mobil, individualisiert und überall
+              einsetzbar: QR-Code, Social Media, Website oder live im Kundengespräch.
             </p>
 
             <div className="hero-btns au d3">
@@ -607,6 +637,54 @@ export default function LandingHome() {
         </div>
       </section>
 
+      <section className="testimonials-section" aria-labelledby="testimonials-heading">
+        <div className="testimonials-inner">
+          <div className="testimonials-head fade-up">
+            <p className="testimonials-eyebrow">Aus der Praxis</p>
+            <h2 id="testimonials-heading" className="testimonials-h2">
+              Was Makler über FlowLeads sagen
+            </h2>
+            <p className="testimonials-sub">Von Maklern — für den Alltag im Vertrieb.</p>
+          </div>
+
+          <div className="testimonials-grid">
+            {TESTIMONIALS.map((t, i) => {
+              const av = TESTIMONIAL_AVATAR_COLORS[t.color] ?? TESTIMONIAL_AVATAR_COLORS.gray;
+              return (
+                <article
+                  key={t.name}
+                  className="testimonial-card fade-up"
+                  style={{ transitionDelay: `${i * 0.07}s` }}
+                >
+                  <div className="testimonial-stars" aria-label="5 von 5 Sternen">
+                    {Array.from({ length: 5 }).map((_, si) => (
+                      <svg key={si} width="13" height="13" viewBox="0 0 14 14" fill="#F59E0B" aria-hidden>
+                        <path d="M7 1l1.5 4h4l-3.3 2.4 1.3 4L7 9 3.5 11.4l1.3-4L1.5 5h4z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="testimonial-quote">{t.quote}</p>
+                  <div className="testimonial-divider" aria-hidden />
+                  <div className="testimonial-author">
+                    <div
+                      className="testimonial-avatar"
+                      style={{ background: av.bg, color: av.color }}
+                      aria-hidden
+                    >
+                      {t.initials}
+                    </div>
+                    <div>
+                      <div className="testimonial-name">{t.name}</div>
+                      <div className="testimonial-rolle">{t.rolle}</div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ── WARUM FLOWLEADS — Premium Card ──────────────────────────────── */}
       <section className="benefits-section s">
         <div className="benefits-premium-shell">
@@ -702,24 +780,59 @@ export default function LandingHome() {
         </div>
       </section>
 
-      {/* ── CTA FINAL ─────────────────────────────────────────────────────── */}
-      <section
-        ref={ctaFinalRef}
-        className={`cta-final${ctaFinalReveal ? " cta-final--reveal" : ""}`}
-        aria-labelledby="cta-final-heading"
-      >
-        <div className="cta-final-inner">
-          <div className="s-label cta-final-s-label">Acht Microsites</div>
-          <h2 id="cta-final-heading" className="cta-final-h2">
-            Starten Sie mit Ihrer ersten Microsite
-          </h2>
-          <p className="cta-final-sub">
-            Wählen Sie die passende Microsite und setzen Sie sie direkt ein.
-          </p>
-          <div className="cta-final-btn-wrap">
-            <a href="#tools" className="btn-cta">
-              Microsites ansehen
+      <section className="custom-order-section" aria-labelledby="custom-order-heading">
+        <div className="custom-order-inner">
+          <div className="custom-order-head fade-up">
+            <p className="custom-order-eyebrow">Individuelle Lösung</p>
+            <h2 id="custom-order-heading" className="custom-order-h2">
+              Ihre Microsite.<br />Ihr Thema. Ihr Stil.
+            </h2>
+            <p className="custom-order-sub">
+              Keines der fertigen Themen passt? Wir entwickeln eine Microsite
+              genau nach Ihren Anforderungen — Thema, Fragen und Design individuell.
+            </p>
+          </div>
+
+          <div className="custom-order-card fade-up">
+            {[
+              {
+                emoji: "🎯",
+                title: "Eigenes Thema",
+                sub: "Betriebliche Vorsorge, Gewerbeversicherung, Kfz — was auch immer Sie brauchen.",
+              },
+              {
+                emoji: "✏️",
+                title: "Eigene Fragen & Logik",
+                sub: "Wir passen den Wizard und die Berechnungslogik an Ihre Zielgruppe an.",
+              },
+              {
+                emoji: "🎨",
+                title: "Ihr Branding",
+                sub: "Farben, Logo, Tonalität — alles passend zu Ihrem Auftritt.",
+              },
+            ].map((row) => (
+              <div key={row.title} className="custom-order-row">
+                <div className="custom-order-row-icon" aria-hidden>{row.emoji}</div>
+                <div>
+                  <div className="custom-order-row-title">{row.title}</div>
+                  <div className="custom-order-row-sub">{row.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="custom-order-cta-wrap fade-up">
+            <a
+              href="mailto:hallo@flowleads.de?subject=Individuelle%20Microsite%20anfragen"
+              className="custom-order-cta"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                <path d="M1 3h12v8a1 1 0 01-1 1H2a1 1 0 01-1-1V3z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                <path d="M1 3l6 5 6-5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+              Individuelle Microsite anfragen
             </a>
+            <span className="custom-order-cta-hint">Wir melden uns innerhalb von 24 Stunden.</span>
           </div>
         </div>
       </section>

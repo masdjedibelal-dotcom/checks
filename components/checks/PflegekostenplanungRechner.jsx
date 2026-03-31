@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
 import { SelectionCard, SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -338,7 +340,7 @@ function KontaktForm({ fd, setFd, onSubmit, onBack, isDemo, makler, T }) {
           <div style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>Das ist eine Live-Vorschau — so sieht Ihr Kunde die Microsite.</div>
           <button type="button" style={{ ...T.btnPrim(false) }} onClick={() => window.parent.postMessage({ type: "openConfig", slug: "pflege-check" }, "*")}>Anpassen & kaufen</button>
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnSec} onClick={onBack}>Zurück</button>
         </div>
       </>
@@ -368,7 +370,7 @@ function KontaktForm({ fd, setFd, onSubmit, onBack, isDemo, makler, T }) {
           <CheckKontaktBeforeSubmitBlock maklerName={makler.name} consent={consent} onConsentChange={setConsent} />
         </div>
       </div>
-      <div style={T.footer}>
+      <div style={T.footer} data-checkkit-footer>
         <button type="button" style={T.btnPrim(!valid)} onClick={() => { if (valid) onSubmit(); }} disabled={!valid}>
           {valid ? "Vorsorge prüfen lassen" : "Bitte alle Angaben machen"}
         </button>
@@ -410,6 +412,7 @@ const WIZARD_STEPS = 5;
 
 export default function PflegekostenplanungRechner() {
   const MAKLER = useCheckConfig();
+  const { isReady } = MAKLER;
   const C = MAKLER.primaryColor;
   const T = useMemo(() => makePflegeT(C), [C]);
   const isDemo = isCheckDemoMode();
@@ -448,6 +451,8 @@ export default function PflegekostenplanungRechner() {
   const meta = PFLEGE_ORT_MODELL[p.pflegeOrt] || PFLEGE_ORT_MODELL.ambulant;
 
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
+
+  if (!isReady) return <CheckConfigLoadingShell />;
 
   const progPct = phase === 1 ? Math.round((scr / WIZARD_STEPS) * 88) : { 2: 88, 3: 100 }[phase] || 100;
 
@@ -512,8 +517,12 @@ export default function PflegekostenplanungRechner() {
     );
   }
 
+  const withStandalone = (el) => (
+    <StandaloneWrapper makler={MAKLER} checkLabel="Pflege-Check">{el}</StandaloneWrapper>
+  );
+
   if (danke) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }}>
         <Header phase={progPct} total={100} />
         <Danke
@@ -529,7 +538,7 @@ export default function PflegekostenplanungRechner() {
   }
 
   if (loading) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }}>
         <Header phase={progPct} total={100} />
         <CheckLoader type="pflege" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
@@ -538,7 +547,7 @@ export default function PflegekostenplanungRechner() {
   }
 
   if (phase === "bridge") {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={progPct} total={100} />
         <CheckKitStoryHero
@@ -572,7 +581,7 @@ export default function PflegekostenplanungRechner() {
           ))}
         </div>
         <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Ergebnis ansehen
           </button>
@@ -599,7 +608,7 @@ export default function PflegekostenplanungRechner() {
     const heroZahlFarbe =
       mtlLuecke <= 0 || mtlLuecke < 500 ? OK : mtlLuecke <= 1500 ? AMBER_STAT : WARN;
 
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={progPct} total={100} />
 
@@ -725,9 +734,6 @@ export default function PflegekostenplanungRechner() {
                   <p style={{ marginBottom: "10px" }}>
                     <strong>Formel Restlücke:</strong> max(0, regionaler Eigenanteil − monatliche Leistung aus angegebener privater Pflege-Vorsorge). Andere Einkünfte oder gesetzliche Zahlungen mindern diese Kennzahl nicht.
                   </p>
-                  <p style={{ marginBottom: "10px" }}>
-                    <strong>Pflegetagegeld (Orientierung):</strong> Bei monatlicher Restlücke von {fmt(R.mtlLuecke)} ergibt sich ein empfohlener Tagessatz von <strong>{R.empfTagegeld} €</strong> (auf volle 5 € gerundet, höchstens 200 €/Tag). Der Pflegegrad aus Ihrer Szenario-Wahl (Schritt 2) fließt nur in den erklärenden Text ein, nicht in diese Zahl.
-                  </p>
                   <p style={{ margin: 0, color: "#b8884a" }}>Keine Rechtsberatung. Orientierung u. a. § 43 SGB XI.</p>
                   <div style={{ marginTop: "14px", padding: "12px 14px", background: "#F6F8FE", border: "1px solid #DCE6FF", borderRadius: "14px", fontSize: "11px", color: "#315AA8", lineHeight: 1.6 }}>
                     {CHECK_LEGAL_DISCLAIMER_FOOTER}
@@ -738,7 +744,7 @@ export default function PflegekostenplanungRechner() {
           </div>
         </div>
 
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(3)}>
             Beratung anfordern
           </button>
@@ -751,7 +757,7 @@ export default function PflegekostenplanungRechner() {
   }
 
   if (phase === 3) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={progPct} total={100} />
         <div style={T.hero}>
@@ -816,7 +822,7 @@ export default function PflegekostenplanungRechner() {
     );
   }
 
-  return (
+  return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={progPct} total={100} />
 
@@ -827,7 +833,7 @@ export default function PflegekostenplanungRechner() {
             title="Würde und Vermögen schützen."
             text="Pflege ist keine Frage des Alters, sondern der Selbstbestimmung. Wir berechnen in 2 Minuten, wie hoch Ihr Eigenanteil wirklich ist und wie Sie Ihr Erspartes absichern."
           />
-          <div style={T.footer}>
+          <div style={T.footer} data-checkkit-footer>
             <button type="button" style={T.btnPrim(false)} onClick={() => setScr(2)}>
               Analyse starten
             </button>
@@ -867,7 +873,7 @@ export default function PflegekostenplanungRechner() {
             </div>
           </div>
           <div style={{ height: "120px" }} />
-          <div style={T.footer}>
+          <div style={T.footer} data-checkkit-footer>
             <button type="button" style={T.btnPrim(!p.pflegeSorge)} disabled={!p.pflegeSorge} onClick={() => setScr(3)}>
               Weiter
             </button>
@@ -905,7 +911,7 @@ export default function PflegekostenplanungRechner() {
             </select>
           </div>
           <div style={{ height: "120px" }} />
-          <div style={T.footer}>
+          <div style={T.footer} data-checkkit-footer>
             <button type="button" style={T.btnPrim(!p.region)} disabled={!p.region} onClick={() => setScr(4)}>
               Weiter
             </button>
@@ -921,7 +927,7 @@ export default function PflegekostenplanungRechner() {
         return (
           <>
             <CheckKitStoryHero emoji="🏥" title={s2.title} text={s2.text} />
-            <div style={T.footer}>
+            <div style={T.footer} data-checkkit-footer>
               <button type="button" style={T.btnPrim(false)} onClick={() => setScr(5)}>
                 Weiter
               </button>
@@ -968,7 +974,7 @@ export default function PflegekostenplanungRechner() {
             )}
           </div>
           <div style={{ height: "120px" }} />
-          <div style={T.footer}>
+          <div style={T.footer} data-checkkit-footer>
             <button type="button" style={T.btnPrim(false)} onClick={() => setLoading(true)}>
               Analyse starten
             </button>

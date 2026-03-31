@@ -129,6 +129,10 @@ type SelectionCardProps = {
   selected: boolean;
   accent: string;
   onClick: () => void;
+  /** Nach Tap zum Footer mit `data-checkkit-footer` scrollen (Weiter-Button sichtbar). @default true */
+  scrollToFooterAfterSelect?: boolean;
+  /** Nach `onClick`, vor optionalem Scroll */
+  onAfterSelect?: () => void;
 };
 
 type CheckRowProps = {
@@ -373,14 +377,29 @@ export function SelectionCard({
   accent,
   onClick,
   value,
+  scrollToFooterAfterSelect = true,
+  onAfterSelect,
 }: SelectionCardProps) {
   const markOnAccent = textOnAccent(accent);
+
+  const handleClick = () => {
+    onClick();
+    onAfterSelect?.();
+    if (!scrollToFooterAfterSelect || typeof window === "undefined") return;
+    window.setTimeout(() => {
+      document.querySelector("[data-checkkit-footer]")?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }, 80);
+  };
+
   return (
     <button
       type="button"
       aria-pressed={selected}
       aria-label={value ? `${label} (${value})` : label}
-      onClick={onClick}
+      onClick={handleClick}
       style={{
         width: "100%",
         minWidth: 0,

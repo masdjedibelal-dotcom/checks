@@ -10,6 +10,8 @@ export interface CheckConfig {
   primaryColor: string;
 }
 
+export type CheckConfigWithReady = CheckConfig & { isReady: boolean };
+
 const DEFAULT_CONFIG: CheckConfig = {
   name: "Ihre Agentur",
   firma: "Ihre Agentur",
@@ -25,14 +27,18 @@ const EMPTY_CONTACT: Pick<CheckConfig, "name" | "firma" | "email" | "telefon"> =
   telefon: "",
 };
 
-export function useCheckConfig(): CheckConfig {
+export function useCheckConfig(): CheckConfigWithReady {
   const [config, setConfig] = useState<CheckConfig>(DEFAULT_CONFIG);
+  const [isReady, setIsReady] = useState(false);
 
   useLayoutEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
-    if (!token) return;
+    if (!token) {
+      setIsReady(true);
+      return;
+    }
 
     setConfig((prev) => ({
       ...prev,
@@ -42,7 +48,10 @@ export function useCheckConfig(): CheckConfig {
     fetch(`/api/embed-config?token=${encodeURIComponent(token)}`)
       .then((r) => r.json())
       .then((data: Record<string, unknown>) => {
-        if (data.error || !data.name || typeof data.name !== "string") return;
+        if (data.error || !data.name || typeof data.name !== "string") {
+          setConfig(DEFAULT_CONFIG);
+          return;
+        }
 
         const accent =
           (typeof data.accent_color === "string" && data.accent_color.trim()) ||
@@ -60,8 +69,13 @@ export function useCheckConfig(): CheckConfig {
           primaryColor: accent,
         });
       })
-      .catch(() => {});
+      .catch(() => {
+        setConfig(DEFAULT_CONFIG);
+      })
+      .finally(() => {
+        setIsReady(true);
+      });
   }, []);
 
-  return config;
+  return { ...config, isReady };
 }

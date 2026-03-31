@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
 import { textOnAccent } from "@/lib/utils";
 import { checkStandardT } from "@/lib/checkStandardT";
 import { CheckHeader } from "@/components/checks/CheckHeader";
@@ -444,7 +446,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
           <div style={T.hint}>Wir schauen gemeinsam an, wo Ihr Schutz ausreicht — und wo Lücken bestehen.</div>
         </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(false)} onClick={goForward}>Check starten</button></div>
+        <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(false)} onClick={goForward}>Check starten</button></div>
       </>}
 
       {scr===2&&<>
@@ -465,7 +467,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
           </div>
         </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
       {scr===3&&<>
@@ -494,7 +496,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
           </div>
         </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
       {scr===4&&<>
@@ -506,7 +508,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
           <Opts k="familyStatus" opts={FAM_OPTS} profil={profil} set={set} C={C} T={T} />
         </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
       {scr===5&&<>
@@ -518,7 +520,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
           <Opts k="housingStatus" opts={HSG_OPTS} profil={profil} set={set} C={C} T={T} />
         </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>Weiter →</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
       {scr===6&&<>
@@ -531,7 +533,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
           <Opts k="netIncome" opts={INC_OPTS} cols={2} profil={profil} set={set} C={C} T={T} />
         </div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
+        <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!canNext || blockForward)} disabled={!canNext || blockForward} onClick={goForward}>{blockForward ? "Einen Moment …" : "Weiter →"}</button><button style={T.btnSec} onClick={back}>Zurück</button></div>
       </>}
 
       {scr===7&&<>
@@ -584,7 +586,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
         )}
         <div style={{padding:"0 24px",marginBottom:"8px"}}><div style={T.infoBlue}>Nicht sicher? Einfach weitergehen — im Ergebnis sehen Sie was fehlt.</div></div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(false)} onClick={onWeiter}>Mein Ergebnis ansehen{existing.length>0?` · ${existing.length} vorhanden`:""}</button>
           <button style={T.btnSec} onClick={back}>Zurück</button>
         </div>
@@ -969,7 +971,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
         </CheckBerechnungshinweis>
       </div>
 
-      <div style={T.footer}>
+      <div style={T.footer} data-checkkit-footer>
         {isDemo ? (
           <button style={T.btnPrim(false)} onClick={() => window.parent.postMessage({ type: "openConfig", slug: "bedarfscheck" }, "*")}>
             Anpassen & kaufen
@@ -1044,7 +1046,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
             Anpassen & kaufen
           </button>
         </div>
-        <div style={T.footer}><button type="button" style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
+        <div style={T.footer} data-checkkit-footer><button type="button" style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
       </>
     ) : (
     <>
@@ -1059,7 +1061,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
       <CheckKontaktBeforeSubmitBlock maklerName={makler.name} consent={consent} onConsentChange={setConsent} />
     </div>
     </div>
-    <div style={T.footer}><button style={T.btnPrim(!valid)} disabled={!valid} onClick={()=>valid&&onAbsenden(fd, leadHighlights)}>{valid?"Ergebnis gemeinsam durchgehen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
+    <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!valid)} disabled={!valid} onClick={()=>valid&&onAbsenden(fd, leadHighlights)}>{valid?"Ergebnis gemeinsam durchgehen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={onZurueck}>Zurück</button></div>
     </>
     )}
   </div>);}
@@ -1093,6 +1095,7 @@ function DankeScreen({ name, onReset, makler, C, T, firma }) {
 export default function Bedarfscheck(){
   const isDemo = isCheckDemoMode();
   const makler = useCheckConfig();
+  const { isReady } = makler;
   const C = makler.primaryColor;
   const T = useMemo(() => checkStandardT(C), [C]);
   const firma = makler.firma;
@@ -1118,6 +1121,13 @@ export default function Bedarfscheck(){
   };
   const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);};
   useCheckScrollToTop([phase, ak, danke, loading, storyScreen]);
+
+  if (!isReady) return <CheckConfigLoadingShell />;
+
+  const withStandalone = (el) => (
+    <StandaloneWrapper makler={makler} checkLabel="Bedarfscheck">{el}</StandaloneWrapper>
+  );
+
   const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setLoading(false);setStoryScreen(false);setProfil(emptyProfil());setExisting([]);setKontaktName("");setGewaehltePakete([...BEDARF_PAKET_DEFAULT_KEYS]);};
   const profilReady=
     profil.employmentStatus &&
@@ -1128,9 +1138,9 @@ export default function Bedarfscheck(){
     profil.familyStatus &&
     profil.housingStatus;
   const result=profilReady?buildPackageScoringResult(profil,existing):null;
-  if(danke)return <DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma}/>;
-  if(loading)return <div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={WIZARD_TOTAL} total={WIZARD_TOTAL} accentColor={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>;
-  if(storyScreen&&result)return <BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma}/>;
+  if(danke)return withStandalone(<DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma}/>);
+  if(loading)return withStandalone(<div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={WIZARD_TOTAL} total={WIZARD_TOTAL} accentColor={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>);
+  if(storyScreen&&result)return withStandalone(<BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma}/>);
   if(phase===4){
     const leadHighlights=result?[
       {label:"Schutzquote (Top 4)",value:`${result.schutzProzent}%`},
@@ -1138,8 +1148,8 @@ export default function Bedarfscheck(){
       {label:"Empf. BU-Rente (Orient.)",value:formatBedarfEuro(result.empfBU)},
       {label:"Abgedeckt in Top 4",value:`${result.abgedecktInTopVier} von ${result.topVierAnzahl}`},
     ]:[];
-    return <Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>;
+    return withStandalone(<Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>);
   }
-  if(phase===3&&result)return <Phase3 key={ak} isDemo={isDemo} result={result} gewaehltePakete={gewaehltePakete} onTogglePaket={togglePaket} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>;
-  return <Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} result={result}/>;
+  if(phase===3&&result)return withStandalone(<Phase3 key={ak} isDemo={isDemo} result={result} gewaehltePakete={gewaehltePakete} onTogglePaket={togglePaket} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>);
+  return withStandalone(<Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} result={result}/>);
 }

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
 import { SelectionCard, SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
@@ -686,6 +688,7 @@ function BoolRow({ label, hint, value, onChange, accent }) {
 
 export default function ImmoCheck() {
   const MAKLER = useCheckConfig();
+  const { isReady } = MAKLER;
   const C = MAKLER.primaryColor;
   const T = useMemo(() => makeImmoCheckT(C), [C]);
   const isDemo = isCheckDemoMode();
@@ -776,6 +779,8 @@ export default function ImmoCheck() {
 
   useCheckScrollToTop([phase, ak, danke, scr2, loading, pathIntroDone]);
 
+  if (!isReady) return <CheckConfigLoadingShell />;
+
   const Header = () => (
     <>
       <div style={T.header}>
@@ -828,8 +833,12 @@ export default function ImmoCheck() {
     </div>
   );
 
+  const withStandalone = (el) => (
+    <StandaloneWrapper makler={MAKLER} checkLabel="Immobilienabsicherung">{el}</StandaloneWrapper>
+  );
+
   if (danke) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }}>
         <Header />
         <div style={{ padding: "48px 24px", textAlign: "center" }} className="fade-in">
@@ -878,7 +887,7 @@ export default function ImmoCheck() {
   }
 
   if (loading) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak}>
         <Header />
         <ImmoTuvScanLoader
@@ -897,7 +906,7 @@ export default function ImmoCheck() {
   if (phase === 4) {
     const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
     const pathLabel = PATHS.find((p) => p.id === path);
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header />
         <div style={T.hero}>
@@ -917,7 +926,7 @@ export default function ImmoCheck() {
                 Anpassen & kaufen
               </button>
             </div>
-            <div style={T.footer}>
+            <div style={T.footer} data-checkkit-footer>
               <button type="button" style={T.btnSec} onClick={() => goTo(3)}>
                 Zurück
               </button>
@@ -953,7 +962,7 @@ export default function ImmoCheck() {
                 <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
               </div>
             </div>
-            <div style={T.footer}>
+            <div style={T.footer} data-checkkit-footer>
               <button
                 type="button"
                 style={T.btnPrim(!valid)}
@@ -997,7 +1006,7 @@ export default function ImmoCheck() {
 
   if (phase === 3) {
     const pathLabel = PATHS.find((p) => p.id === path);
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header />
         <div style={T.resultHeroWarm}>
@@ -1097,7 +1106,7 @@ export default function ImmoCheck() {
             {CHECK_LEGAL_DISCLAIMER_FOOTER}
           </div>
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(4)}>
             Gemeinsam vertiefen
           </button>
@@ -1110,7 +1119,7 @@ export default function ImmoCheck() {
   }
 
   if (phase === 2) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header />
         {scr2 === 1 ? (
@@ -1217,7 +1226,7 @@ export default function ImmoCheck() {
             </div>
           </>
         )}
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(!step2Complete)} disabled={!step2Complete} onClick={nextP2}>
             {scr2 === 1 ? "Weiter" : "Auswertung starten"}
           </button>
@@ -1230,7 +1239,7 @@ export default function ImmoCheck() {
   }
 
   if (phase === 1 && pathIntroDone && path) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header />
         <div style={T.hero}>
@@ -1241,7 +1250,7 @@ export default function ImmoCheck() {
         <div style={{ padding: "0 24px", marginBottom: "120px" }}>
           <p style={CHECKKIT2026.storyBody}>{PATH_INTRO_STORY[path]}</p>
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Weiter zum Risiko-Scanner
           </button>
@@ -1260,7 +1269,7 @@ export default function ImmoCheck() {
     );
   }
 
-  return (
+  return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header />
       <div style={T.hero}>
@@ -1284,7 +1293,7 @@ export default function ImmoCheck() {
           ))}
         </div>
       </div>
-      <div style={T.footer}>
+      <div style={T.footer} data-checkkit-footer>
         <button
           type="button"
           style={T.btnPrim(!path)}

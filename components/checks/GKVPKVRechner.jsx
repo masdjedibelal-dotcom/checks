@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import ResultPage from "@/components/checks/gkvpkv/ResultPage";
@@ -250,6 +252,7 @@ function Header({ phase, total, maklerFirma, C }) {
 }
 export default function GKVPKVRechner(){
   const MAKLER=useCheckConfig();
+  const { isReady } = MAKLER;
   const C=MAKLER.primaryColor;
   const T=useMemo(()=>makeGKVPKVT(C),[C]);
   const isDemo = isCheckDemoMode();
@@ -364,8 +367,14 @@ export default function GKVPKVRechner(){
     }
   }, [p.beruf]);
 
+  if (!isReady) return <CheckConfigLoadingShell />;
+
+  const withStandalone = (el) => (
+    <StandaloneWrapper makler={MAKLER} checkLabel="KV-Navigator">{el}</StandaloneWrapper>
+  );
+
   // Danke
-  if(danke)return(
+  if(danke)return withStandalone(
     <div style={{...T.page,"--accent":C}}>
       <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
       <div style={T.dankePadding} className="fade-in">
@@ -424,7 +433,7 @@ export default function GKVPKVRechner(){
   );
 
   if (loading) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak}>
         <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
         <CheckLoader type="gkvpkv" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
@@ -433,7 +442,7 @@ export default function GKVPKVRechner(){
   }
 
   if (phase === "bridge")
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
         <CheckKitStoryHero
@@ -471,7 +480,7 @@ export default function GKVPKVRechner(){
           ))}
         </div>
         <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Ergebnis ansehen
           </button>
@@ -485,7 +494,7 @@ export default function GKVPKVRechner(){
   // ── Phase 3: Kontakt ─────────────────────────────────────────────────────
   if(phase===3){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
-    return(
+    return withStandalone(
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
         <Header phase={100} total={100} maklerFirma={MAKLER.firma} C={C} />
         <div style={T.hero}>
@@ -515,7 +524,7 @@ export default function GKVPKVRechner(){
             <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
           </div>
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           {isDemo ? (
             <>
               <button
@@ -569,7 +578,7 @@ export default function GKVPKVRechner(){
       },
     ];
 
-    return (
+    return withStandalone(
       <ResultPage
         key={ak}
         R={R}
@@ -584,7 +593,7 @@ export default function GKVPKVRechner(){
   }
 
   // ── Phase 1: Wizard (Intro, Daten 2–4, System-Story, Familie) → Loader → Bridge-Phase ────
-  return (
+  return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={wizardProgPct} total={100} maklerFirma={MAKLER.firma} C={C} />
 
@@ -596,7 +605,7 @@ export default function GKVPKVRechner(){
             title="Das passende Gesundheitssystem."
             text="GKV oder PKV? Wir analysieren in 2 Minuten, welches System zu Ihrem Leben passt und wo Sie die beste medizinische Versorgung für Ihr Budget erhalten."
           />
-          <div style={T.footer}>
+          <div style={T.footer} data-checkkit-footer>
             <button type="button" style={T.btnPrim(false)} onClick={nextScr}>
               Analyse starten
             </button>
@@ -625,7 +634,7 @@ export default function GKVPKVRechner(){
           </div>
         </div>
         <div style={{ height: "120px" }} />
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={nextScr}>Weiter →</button>
           <button type="button" style={T.btnSec} onClick={backScr}>Zurück</button>
         </div>
@@ -672,7 +681,7 @@ export default function GKVPKVRechner(){
           })()}
         </div>
         <div style={{ height: "120px" }} />
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(false)} onClick={nextScr}>Weiter →</button>
           <button style={T.btnSec} onClick={backScr}>Zurück</button>
         </div>
@@ -684,7 +693,7 @@ export default function GKVPKVRechner(){
         return (
         <>
           <CheckKitStoryHero emoji="⚖️" title={s2.title} text={s2.text} />
-          <div style={T.footer}>
+          <div style={T.footer} data-checkkit-footer>
             <button type="button" style={T.btnPrim(false)} onClick={nextScr}>
               Weiter →
             </button>
@@ -726,7 +735,7 @@ export default function GKVPKVRechner(){
           )}
         </div>
         <div style={{ height: "120px" }} />
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(false)} onClick={nextScr}>Weiter →</button>
           <button style={T.btnSec} onClick={backScr}>Zurück</button>
         </div>
@@ -1003,7 +1012,7 @@ export default function GKVPKVRechner(){
               )}
             </div>
             <div style={{ height: "120px" }} />
-            <div style={T.footer}>
+            <div style={T.footer} data-checkkit-footer>
               <button type="button" style={T.btnPrim(famPrimaryDisabled)} disabled={famPrimaryDisabled} onClick={onFamPrimary}>
                 {famPrimaryLabel}
               </button>

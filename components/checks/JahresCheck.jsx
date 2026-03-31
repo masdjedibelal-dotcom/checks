@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
 import { SelectionCard, SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
@@ -446,6 +448,7 @@ function buildProdsFromBestandIds(ids) {
 }
 export default function JahresCheck(){
   const MAKLER=useCheckConfig();
+  const { isReady } = MAKLER;
   const C=MAKLER.primaryColor;
   const T=useMemo(()=>makeJahresCheckT(C),[C]);
   const isDemo = isCheckDemoMode();
@@ -542,6 +545,12 @@ export default function JahresCheck(){
   }, [scr]);
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
+  if (!isReady) return <CheckConfigLoadingShell />;
+
+  const withStandalone = (el) => (
+    <StandaloneWrapper makler={MAKLER} checkLabel="Lebenssituations-Check">{el}</StandaloneWrapper>
+  );
+
   function Header({ phase, total }) {
     const pct = total > 0 ? (phase / total) * 100 : 0;
     return (
@@ -603,7 +612,7 @@ export default function JahresCheck(){
     );
   }
 
-  if(danke)return(
+  if(danke)return withStandalone(
     <div style={T.page}><Header phase={100} total={100} />
     <div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in">
       <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
@@ -614,7 +623,7 @@ export default function JahresCheck(){
     </div></div>
   );
 
-  if(loading)return(
+  if(loading)return withStandalone(
     <div style={T.page} key={ak}>
       <Header phase={100} total={100} />
       <CheckLoader
@@ -646,7 +655,7 @@ export default function JahresCheck(){
       {label:"Anpassen prüfen",value:kpiJ(optimierungJ.length)},
       {label:"Ergänzen",value:kpiJ(ergaenzungJ.length)},
     ];
-    return(<div style={T.page} key={ak} className="fade-in">
+    return withStandalone(<div style={T.page} key={ak} className="fade-in">
       <Header phase={100} total={100} />
       <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir Sie erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div></div>
       {isDemo ? (
@@ -668,7 +677,7 @@ export default function JahresCheck(){
               Anpassen & kaufen
             </button>
           </div>
-          <div style={T.footer}><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+          <div style={T.footer} data-checkkit-footer><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
         </>
       ) : (
       <>
@@ -683,7 +692,7 @@ export default function JahresCheck(){
           <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
         </div>
       </div>
-      <div style={T.footer}><button style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"lebenssituations-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights:jahresHighlights})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Situation gemeinsam prüfen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"lebenssituations-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights:jahresHighlights})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Situation gemeinsam prüfen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
       </>
       )}
     </div>);
@@ -801,7 +810,7 @@ export default function JahresCheck(){
       </div>
     );
 
-    return (
+    return withStandalone(
       <div style={T.page} key={ak} className="fade-in">
         <Header phase={88} total={100} />
 
@@ -1033,7 +1042,7 @@ export default function JahresCheck(){
             </div>
           </div>
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(false)} onClick={() => goTo(4)}>Situation gemeinsam prüfen</button>
           <button style={T.btnSec} onClick={backFromResult}>Zurück</button>
         </div>
@@ -1055,7 +1064,7 @@ export default function JahresCheck(){
     cursor: d ? "default" : "pointer",
     lineHeight: 1,
   });
-  return (
+  return withStandalone(
     <div style={T.page} key={ak} className="fade-in">
       <Header phase={wizardProgPct} total={100} />
 
@@ -1111,7 +1120,7 @@ export default function JahresCheck(){
             </div>
           )}
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(false)} onClick={nextScr}>
             Weiter{selEventIds.length > 0 ? ` · ${selEventIds.length} ausgewählt` : ""}
           </button>
@@ -1221,7 +1230,7 @@ export default function JahresCheck(){
             </div>
           )}
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(!qualFormComplete)} disabled={!qualFormComplete} onClick={nextScr}>
             {qualFormComplete ? "Weiter zum Bestand" : "Bitte alle angezeigten Felder prüfen"}
           </button>
@@ -1282,7 +1291,7 @@ export default function JahresCheck(){
             </div>
           )}
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(false)} onClick={nextScr}>Analyse starten</button>
           <button style={T.btnSec} onClick={backScr}>Zurück</button>
         </div>

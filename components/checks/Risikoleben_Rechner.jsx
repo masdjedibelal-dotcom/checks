@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
@@ -75,30 +77,49 @@ const WARN_RL = "#c0392b";
 const BAR_KREDIT = "#2563eb";
 
 function RisikoHintCard({ children, icon = "💡", accent = "#2563eb" }) {
-  const a = accent;
   return (
     <div
       style={{
-        display: "flex",
-        gap: "12px",
-        alignItems: "flex-start",
-        padding: "16px 18px",
+        border: "1px solid rgba(17,24,39,0.08)",
         borderRadius: "16px",
-        background: `linear-gradient(135deg, ${a}0a 0%, ${a}14 100%)`,
-        border: `1px solid ${a}33`,
-        boxShadow: `0 4px 14px ${a}14`,
+        padding: "16px 18px",
+        background: "#fff",
+        boxShadow: "0 4px 16px rgba(17,24,39,0.06)",
+        display: "flex",
+        gap: "14px",
+        alignItems: "flex-start",
         minWidth: 0,
-        fontSize: "13px",
-        color: "#374151",
-        lineHeight: 1.55,
-        height: "100%",
-        boxSizing: "border-box",
       }}
     >
-      <span style={{ fontSize: "22px", lineHeight: 1, flexShrink: 0 }} aria-hidden>
+      <div
+        style={{
+          width: "40px",
+          height: "40px",
+          borderRadius: "11px",
+          background: `${accent}14`,
+          border: `1px solid ${accent}30`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "20px",
+          lineHeight: 1,
+          flexShrink: 0,
+        }}
+        aria-hidden
+      >
         {icon}
-      </span>
-      <div style={{ minWidth: 0 }}>{children}</div>
+      </div>
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          fontSize: "13px",
+          color: "#374151",
+          lineHeight: 1.6,
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -131,6 +152,7 @@ function berechne({ monatsBedarf, laufzeit, partnerEinkommen, witwenRente, sonst
 
 export default function RisikolebenRechner() {
   const MAKLER = useCheckConfig();
+  const { isReady } = MAKLER;
   const C = MAKLER.primaryColor;
   const isDemo = isCheckDemoMode();
   const [phase, setPhase] = useState(1);
@@ -172,6 +194,9 @@ export default function RisikolebenRechner() {
     if (scr > 1) setScr((s) => s - 1);
   };
   useCheckScrollToTop([phase, animKey, scr, loading, rlErgebnisAcc]);
+
+  if (!isReady) return <CheckConfigLoadingShell />;
+
   const set     = (k, v) => setP(x => ({ ...x, [k]: v }));
   const R       = berechne(p);
   const progPct = phase === 1 ? (scr / RL_WIZARD_STEPS) * 100 : { 2: 100, 3: 100, 4: 100 }[phase] || 0;
@@ -339,12 +364,16 @@ export default function RisikolebenRechner() {
         <div style={T.hero}>{eyebrow&&<div style={T.eyebrow}>{eyebrow}</div>}{title&&<h1 style={T.h1}>{title}</h1>}{lead&&<p style={T.lead}>{lead}</p>}</div>
         {children}
       </div>
-      {footer&&<div style={T.footer}>{footer}</div>}
+      {footer&&<div style={T.footer} data-checkkit-footer>{footer}</div>}
     </div>
   );
 
+  const withStandalone = (el) => (
+    <StandaloneWrapper makler={MAKLER} checkLabel="Familienabsicherung">{el}</StandaloneWrapper>
+  );
+
   if (loading) {
-    return (
+    return withStandalone(
       <div style={T.root}>
         <Header phase={progPct} total={100} />
         <CheckLoader type="risikoleben" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
@@ -353,7 +382,7 @@ export default function RisikolebenRechner() {
   }
 
   if (phase === "bridge")
-    return (
+    return withStandalone(
       <div style={T.root}>
         <Header phase={100} total={100} />
         <div key={animKey} className="fade-in" style={T.body}>
@@ -393,7 +422,7 @@ export default function RisikolebenRechner() {
           </div>
           <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnMain(false)} onClick={() => goTo(2)}>
             Ergebnis ansehen
           </button>
@@ -480,7 +509,7 @@ export default function RisikolebenRechner() {
       return null;
     })();
 
-    return (
+    return withStandalone(
       <div style={T.root}>
         <Header phase={progPct} total={100} />
         <div key={animKey} className="fade-in" style={T.body}>
@@ -696,7 +725,7 @@ export default function RisikolebenRechner() {
             </div>
           )}
         </div>
-        <div style={T.footer}>{wizFooter}</div>
+        <div style={T.footer} data-checkkit-footer>{wizFooter}</div>
       </div>
     );
   }
@@ -756,7 +785,7 @@ export default function RisikolebenRechner() {
       ...(p.vorhanden > 0 ? [{ l: "Empfohlene Versicherungssumme", v: fmtK(netto), c: gedeckt ? "#059669" : WARN_RL, bold: true }] : []),
     ];
 
-    return (
+    return withStandalone(
       <Shell eyebrow={undefined} title={undefined} lead={undefined}
         footer={
           <>
@@ -1074,7 +1103,7 @@ export default function RisikolebenRechner() {
 
   if (phase === 3) {
     const valid = formData.name.trim() && formData.email.trim() && kontaktConsent;
-    return (
+    return withStandalone(
       <Shell
         eyebrow="Fast geschafft"
         title={R.netto > 0 ? `Summe von ${fmtK(R.netto)} absichern.` : "Ihre Absicherung besprechen."}
@@ -1198,7 +1227,7 @@ export default function RisikolebenRechner() {
     );
   }
 
-  return (
+  return withStandalone(
     <Shell>
       <div style={{ padding: "48px 24px 0", textAlign: "center" }} className="fade-in">
         <div

@@ -72,7 +72,7 @@ export default function CheckKitKontaktForm({ fd, setFd, onSubmit, onBack, T }: 
           />
         </div>
       </div>
-      <div style={T.footer}>
+      <div style={T.footer} data-checkkit-footer>
         <button
           type="button"
           style={T.btnPrim(!valid)}

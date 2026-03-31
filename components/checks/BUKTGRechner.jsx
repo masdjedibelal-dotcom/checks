@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -573,7 +575,7 @@ function Header({ phase, total, makler, C }) {
 
 function Footer({ onNext, onBack, nextLabel = "Weiter →", disabled = false, T }) {
   return (
-    <div style={T.footer}>
+    <div style={T.footer} data-checkkit-footer>
       <button style={T.btnPrim(disabled)} onClick={onNext} disabled={disabled}>{nextLabel}</button>
       {onBack && <button style={T.btnSec} onClick={onBack}>Zurück</button>}
     </div>
@@ -605,7 +607,7 @@ function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
             Anpassen & kaufen
           </button>
         </div>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnSec} onClick={onBack}>Zurück</button>
         </div>
       </div>
@@ -639,7 +641,7 @@ function ContactForm({ onSubmit, onBack, summary, isDemo, makler, T }) {
           />
         </div>
       </div>
-      <div style={T.footer}>
+      <div style={T.footer} data-checkkit-footer>
         <button style={T.btnPrim(!valid)} onClick={() => valid && onSubmit(fd)} disabled={!valid}>
           {valid ? "Absicherung prüfen lassen" : "Bitte füllen Sie alle Pflichtfelder aus"}
         </button>
@@ -725,6 +727,7 @@ function DankeScreen({ name, onBack, makler, C, luecke, empfKTG, empfBU }) {
 // ─── HAUPTKOMPONENTE ──────────────────────────────────────────────────────────
 export default function BUKTGRechner() {
   const MAKLER = useCheckConfig();
+  const { isReady } = MAKLER;
   const C = MAKLER.primaryColor;
   const T = useMemo(() => makeBUKTGT(C), [C]);
   const [phase, setPhase] = useState(1);
@@ -792,6 +795,8 @@ export default function BUKTGRechner() {
 
   useCheckScrollToTop([wizStep, phase, ak, danke, loading]);
 
+  if (!isReady) return <CheckConfigLoadingShell />;
+
   const nextWiz = () => {
     if (wizStep < totalWizSteps) setWizStep((w) => w + 1);
   };
@@ -848,7 +853,11 @@ export default function BUKTGRechner() {
     return () => window.clearTimeout(t);
   }, [phase, ak]);
 
-  if (danke) return (
+  const withStandalone = (el) => (
+    <StandaloneWrapper makler={MAKLER} checkLabel="BU & Krankentagegeld">{el}</StandaloneWrapper>
+  );
+
+  if (danke) return withStandalone(
     <div style={{ ...T.page, "--accent": C }}>
       <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} C={C} />
       <DankeScreen
@@ -864,7 +873,7 @@ export default function BUKTGRechner() {
   );
 
   if (loading) {
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak}>
         <Header phase={totalWizSteps} total={totalWizSteps} makler={MAKLER} C={C} />
         <CheckLoader type="bu" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
@@ -874,7 +883,7 @@ export default function BUKTGRechner() {
 
   // ── Bridge (nach Loader, vor Result) ──────────────────────────────────────
   if (phase === "bridge")
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
         <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} C={C} />
         <CheckKitStoryHero
@@ -915,7 +924,7 @@ export default function BUKTGRechner() {
           ))}
         </div>
         <div style={{ height: CHECKKIT2026.footerSpacerPx }} />
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Ergebnis ansehen
           </button>
@@ -927,7 +936,7 @@ export default function BUKTGRechner() {
     );
 
   // ── Kontakt (nach Ergebnis) ─────────────────────────────────────────────────
-  if (phase === 3) return (
+  if (phase === 3) return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={4} total={TOTAL_PHASES} makler={MAKLER} C={C} />
       <div style={T.hero}>
@@ -1052,7 +1061,7 @@ export default function BUKTGRechner() {
 
     const toggleLegal = (id) => setLegalOpen((x) => (x === id ? null : id));
 
-    return (
+    return withStandalone(
       <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
         <Header phase={2} total={TOTAL_PHASES} makler={MAKLER} C={C} />
 
@@ -1357,7 +1366,7 @@ export default function BUKTGRechner() {
   }
 
   // ── Phase 1: Story + dynamischer Wizard ─────────────────────────────────────
-  return (
+  return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
       <Header phase={wizStep} total={totalWizSteps} makler={MAKLER} C={C} />
 

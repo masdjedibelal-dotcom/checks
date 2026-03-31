@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
+import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
 import { SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
@@ -181,6 +182,7 @@ function AbsicherungBlock({modul,T,RWG}){
 // ─── HAUPTKOMPONENTE ──────────────────────────────────────────────────────────
 export default function ImmobilienCheck(){
   const MAKLER=useCheckConfig();
+  const { isReady } = MAKLER;
   const C=MAKLER.primaryColor;
   const T=useMemo(()=>makeImmobilienT(C),[C]);
   const isDemo = isCheckDemoMode();
@@ -209,6 +211,8 @@ export default function ImmobilienCheck(){
   const totalSteps=1+scr2Total+1;
   const curStep=phase===1?1:phase===2?1+scr2:1+scr2Total+1;
   useCheckScrollToTop([phase, ak, danke, scr2, loading]);
+
+  if (!isReady) return <CheckConfigLoadingShell />;
 
   function Header({ phase, total }) {
     const pct = total > 0 ? (phase / total) * 100 : 0;
@@ -306,7 +310,7 @@ export default function ImmobilienCheck(){
               Anpassen & kaufen
             </button>
           </div>
-          <div style={T.footer}><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+          <div style={T.footer} data-checkkit-footer><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
         </>
       ) : (
       <>
@@ -321,7 +325,7 @@ export default function ImmobilienCheck(){
           <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
         </div>
       </div>
-      <div style={T.footer}><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"immobilien-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights:immoHighlights})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Ergebnis besprechen":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      <div style={T.footer} data-checkkit-footer><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"immobilien-check",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights:immoHighlights})}).catch(()=>{});}setDanke(true);}} disabled={!valid}>{valid?"Ergebnis besprechen":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
       </>
       )}
     </div>);
@@ -520,7 +524,7 @@ export default function ImmobilienCheck(){
         </CheckBerechnungshinweis>
         <div style={{...T.infoBox,marginTop:"10px"}}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>
       </div>
-      <div style={T.footer}>
+      <div style={T.footer} data-checkkit-footer>
         <button style={T.btnPrim(false)} onClick={()=>goTo(4)}>Ergebnis besprechen</button>
         <button style={T.btnSec} onClick={()=>goTo(2)}>Neuen Check starten</button>
       </div>
@@ -591,7 +595,7 @@ export default function ImmobilienCheck(){
         </div>
         <div style={T.section}>{s.content}</div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(false)} onClick={nextScr2}>{scr2<scr2Total?"Weiter":"Ergebnis anzeigen"}</button>
           <button style={T.btnSec} onClick={backScr2}>Zurück</button>
         </div>
@@ -647,7 +651,7 @@ export default function ImmobilienCheck(){
         </div>
         <div style={T.section}>{s.content}</div>
         <div style={{height:"120px"}}/>
-        <div style={T.footer}>
+        <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(false)} onClick={nextScr2}>{scr2<scr2Total?"Weiter":"Ergebnis anzeigen"}</button>
           <button style={T.btnSec} onClick={backScr2}>Zurück</button>
         </div>
@@ -738,7 +742,7 @@ export default function ImmobilienCheck(){
       </div>
       <div style={T.section}>{s.content}</div>
       <div style={{height:"120px"}}/>
-      <div style={T.footer}>
+      <div style={T.footer} data-checkkit-footer>
         <button style={T.btnPrim(false)} onClick={nextScr2}>{scr2<scr2Total?"Weiter":"Ergebnis anzeigen"}</button>
         <button style={T.btnSec} onClick={backScr2}>Zurück</button>
       </div>

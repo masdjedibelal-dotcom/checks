@@ -93,17 +93,17 @@ const pathContent = {
       border: "primary",
       bullets: [
         { kind: "ok", text: "Gesetzlich garantierte Basisversorgung." },
-        { kind: "ok", text: "Beitrag richtet sich nach Ihrem Einkommen." },
-        { kind: "ok", text: "Kinder & Partner oft beitragsfrei mitversichert." },
-        { kind: "ok", text: "Ihr Arbeitgeber beteiligt sich am GKV-Beitrag (Hälfte des AN-Anteils)." },
+        { kind: "ok", text: "Beitrag richtet sich nach Einkommen." },
+        { kind: "ok", text: "Kinder oft beitragsfrei mitversichert." },
+        { kind: "ok", text: "Arbeitgeber beteiligt sich am Beitrag." },
       ],
       beitrag: [
-        { kind: "ok", text: "Beitrag richtet sich nach Ihrem Einkommen." },
-        { kind: "ok", text: "Ihr Arbeitgeber beteiligt sich am GKV-Beitrag (Hälfte des AN-Anteils)." },
+        { kind: "ok", text: "Beitrag richtet sich nach Einkommen." },
+        { kind: "ok", text: "Arbeitgeber beteiligt sich am Beitrag." },
       ],
       leistung: [
         { kind: "ok", text: "Gesetzlich garantierte Basisversorgung." },
-        { kind: "ok", text: "Kinder & Partner oft beitragsfrei mitversichert." },
+        { kind: "ok", text: "Kinder oft beitragsfrei mitversichert." },
       ],
     },
     pkv: {
@@ -111,14 +111,14 @@ const pathContent = {
       badge: "Derzeit nicht möglich",
       border: "caution",
       bullets: [
-        { kind: "neg", text: "Wechsel aktuell gesetzlich ausgeschlossen." },
-        { kind: "hinweis", text: "Lösung: Private Zusatzbausteine (Zahn/Stationär) möglich." },
-        { kind: "hinweis", text: "Ziel: PKV-Leistungsniveau innerhalb der GKV erreichen." },
+        { kind: "neg", text: "Wechsel gesetzlich ausgeschlossen." },
+        { kind: "hinweis", text: "Zusatz für Zahn und Klinik möglich." },
+        { kind: "hinweis", text: "GKV-Leistung mit Zusatz stärken." },
       ],
-      beitrag: [{ kind: "neg", text: "Wechsel aktuell gesetzlich ausgeschlossen." }],
+      beitrag: [{ kind: "neg", text: "Wechsel gesetzlich ausgeschlossen." }],
       leistung: [
-        { kind: "hinweis", text: "Lösung: Private Zusatzbausteine (Zahn/Stationär) möglich." },
-        { kind: "hinweis", text: "Ziel: PKV-Leistungsniveau innerhalb der GKV erreichen." },
+        { kind: "hinweis", text: "Zusatz für Zahn und Klinik möglich." },
+        { kind: "hinweis", text: "GKV-Leistung mit Zusatz stärken." },
       ],
     },
   },
@@ -132,31 +132,31 @@ const pathContent = {
       badge: "Unwirtschaftlich",
       border: "muted",
       bullets: [
-        { kind: "neg", text: "Sie müssen den vollen Beitrag (ca. 15–20 %) meist allein tragen." },
-        { kind: "neg", text: "Keine direkte Beteiligung des Dienstherrn über den Beihilfe-Anspruch möglich." },
-        { kind: "neg", text: "Eingeschränkter Leistungskatalog der gesetzlichen Kassen." },
+        { kind: "neg", text: "Voller Beitrag meist ohne Beihilfe." },
+        { kind: "neg", text: "Kein Dienstherr am GKV-Beitrag." },
+        { kind: "neg", text: "Engerer Katalog als bei PKV." },
       ],
       beitrag: [
-        { kind: "neg", text: "Sie müssen den vollen Beitrag (ca. 15–20 %) meist allein tragen." },
-        { kind: "neg", text: "Keine direkte Beteiligung des Dienstherrn über den Beihilfe-Anspruch möglich." },
+        { kind: "neg", text: "Voller Beitrag meist ohne Beihilfe." },
+        { kind: "neg", text: "Kein Dienstherr am GKV-Beitrag." },
       ],
-      leistung: [{ kind: "neg", text: "Eingeschränkter Leistungskatalog der gesetzlichen Kassen." }],
+      leistung: [{ kind: "neg", text: "Engerer Katalog als bei PKV." }],
     },
     pkv: {
       tagline: "Empfehlung",
       badge: "Unsere Empfehlung",
       border: "primary",
       bullets: [
-        { kind: "ok", text: "Beihilfe-konform — deckt typischerweise nur die Restkosten (ca. 20–50 %)." },
-        { kind: "ok", text: "Sehr niedrige Monatsbeiträge dank Beihilfe-Anspruch." },
-        { kind: "ok", text: "Lebenslang vertraglich abgesichert: Chefarzt & Einbettzimmer (je nach Tarif)." },
-        { kind: "ok", text: "Kinder lassen sich in der Regel kostengünstig mit absichern (Beihilfe)." },
+        { kind: "ok", text: "Restkosten nach Beihilfe abgedeckt." },
+        { kind: "ok", text: "Niedrige Beiträge dank Beihilfe." },
+        { kind: "ok", text: "Chefarzt und Einbettzimmer tarifabhängig." },
+        { kind: "ok", text: "Kinder günstig mit Beihilfe absicherbar." },
       ],
-      beitrag: [{ kind: "ok", text: "Sehr niedrige Monatsbeiträge dank Beihilfe-Anspruch." }],
+      beitrag: [{ kind: "ok", text: "Niedrige Beiträge dank Beihilfe." }],
       leistung: [
-        { kind: "ok", text: "Beihilfe-konform — deckt typischerweise nur die Restkosten (ca. 20–50 %)." },
-        { kind: "ok", text: "Lebenslang vertraglich abgesichert: Chefarzt & Einbettzimmer (je nach Tarif)." },
-        { kind: "ok", text: "Kinder lassen sich in der Regel kostengünstig mit absichern (Beihilfe)." },
+        { kind: "ok", text: "Restkosten nach Beihilfe abgedeckt." },
+        { kind: "ok", text: "Chefarzt und Einbettzimmer tarifabhängig." },
+        { kind: "ok", text: "Kinder günstig mit Beihilfe absicherbar." },
       ],
     },
   },
@@ -170,14 +170,14 @@ const pathContent = {
       badge: "GKV-Höchstbeitrag",
       border: "muted",
       bullets: [
-        { kind: "neg", text: "Sie zahlen den Höchstbeitrag (ca. 1.050 € inkl. PV)." },
-        { kind: "neg", text: "Leistungen können durch den Gesetzgeber gekürzt werden." },
-        { kind: "neg", text: "Lange Wartezeiten bei Fachärzten sind häufig." },
+        { kind: "neg", text: "Höchstbeitrag fällig." },
+        { kind: "neg", text: "Leistungen gesetzlich änderbar." },
+        { kind: "neg", text: "Oft lange Facharzt-Wartezeiten." },
       ],
-      beitrag: [{ kind: "neg", text: "Sie zahlen den Höchstbeitrag (ca. 1.050 € inkl. PV)." }],
+      beitrag: [{ kind: "neg", text: "Höchstbeitrag fällig." }],
       leistung: [
-        { kind: "neg", text: "Leistungen können durch den Gesetzgeber gekürzt werden." },
-        { kind: "neg", text: "Lange Wartezeiten bei Fachärzten sind häufig." },
+        { kind: "neg", text: "Leistungen gesetzlich änderbar." },
+        { kind: "neg", text: "Oft lange Facharzt-Wartezeiten." },
       ],
     },
     pkv: {
@@ -185,18 +185,18 @@ const pathContent = {
       badge: "Unsere Empfehlung",
       border: "primary",
       bullets: [
-        { kind: "ok", text: "Beitragsvorteil: Oft deutlich günstiger als der GKV-Höchstbetrag." },
-        { kind: "ok", text: "Vertraglich garantierte Leistungen (keine gesetzlichen Kürzungen)." },
-        { kind: "ok", text: "Altersrückstellungen für stabilere Beiträge im Alter." },
-        { kind: "ok", text: "Freie Wahl von Ärzten und Kliniken je nach Tarif — oft kurze Wartezeiten." },
+        { kind: "ok", text: "Oft günstiger als GKV-Höchstbetrag." },
+        { kind: "ok", text: "Leistungen vertraglich garantiert." },
+        { kind: "ok", text: "Altersrückstellungen für stabilere Beiträge." },
+        { kind: "ok", text: "Freie Arzt- und Klinikwahl." },
       ],
       beitrag: [
-        { kind: "ok", text: "Beitragsvorteil: Oft deutlich günstiger als der GKV-Höchstbetrag." },
-        { kind: "ok", text: "Altersrückstellungen für stabilere Beiträge im Alter." },
+        { kind: "ok", text: "Oft günstiger als GKV-Höchstbetrag." },
+        { kind: "ok", text: "Altersrückstellungen für stabilere Beiträge." },
       ],
       leistung: [
-        { kind: "ok", text: "Vertraglich garantierte Leistungen (keine gesetzlichen Kürzungen)." },
-        { kind: "ok", text: "Freie Wahl von Ärzten und Kliniken je nach Tarif — oft kurze Wartezeiten." },
+        { kind: "ok", text: "Leistungen vertraglich garantiert." },
+        { kind: "ok", text: "Freie Arzt- und Klinikwahl." },
       ],
     },
   },
@@ -210,33 +210,33 @@ const pathContent = {
       badge: "Solidarisch",
       border: "compare",
       bullets: [
-        { kind: "ok", text: "Kinder sind beitragsfrei mitversichert (Ersparnis)." },
-        { kind: "ok", text: "Einkommensabhängiger Beitrag (flexibel bei Teilzeit)." },
-        { kind: "ok", text: "Ein Haushaltsbeitrag statt mehrerer Kinder-Tarife." },
+        { kind: "ok", text: "Kinder beitragsfrei mitversichert." },
+        { kind: "ok", text: "Beitrag vom Einkommen abhängig." },
+        { kind: "ok", text: "Ein Haushaltsbeitrag statt vieler Tarife." },
       ],
       beitrag: [
-        { kind: "ok", text: "Einkommensabhängiger Beitrag (flexibel bei Teilzeit)." },
-        { kind: "ok", text: "Ein Haushaltsbeitrag statt mehrerer Kinder-Tarife." },
+        { kind: "ok", text: "Beitrag vom Einkommen abhängig." },
+        { kind: "ok", text: "Ein Haushaltsbeitrag statt vieler Tarife." },
       ],
-      leistung: [{ kind: "ok", text: "Kinder sind beitragsfrei mitversichert (Ersparnis)." }],
+      leistung: [{ kind: "ok", text: "Kinder beitragsfrei mitversichert." }],
     },
     pkv: {
       tagline: "Leistungsstark",
       badge: "Leistungsstark",
       border: "compare",
       bullets: [
-        { kind: "ok", text: "Sehr gute medizinische Versorgung für die ganze Familie möglich." },
-        { kind: "ok", text: "Kostenfaktor: Separater Beitrag pro Kind (oft ca. 150 €)." },
-        { kind: "ok", text: "Bevorzugte Termine & moderne Leistungsoptionen je nach Tarif." },
-        { kind: "neutral", text: "Gesundheitsprüfung und Risikozuschläge pro Antragsteller möglich." },
+        { kind: "ok", text: "Hohe Versorgung für die Familie." },
+        { kind: "ok", text: "Eigenbeitrag pro Kind fällig." },
+        { kind: "ok", text: "Schnellere Termine je nach Tarif." },
+        { kind: "neutral", text: "Gesundheitsprüfung und Zuschläge möglich." },
       ],
       beitrag: [
-        { kind: "ok", text: "Kostenfaktor: Separater Beitrag pro Kind (oft ca. 150 €)." },
-        { kind: "neutral", text: "Gesundheitsprüfung und Risikozuschläge pro Antragsteller möglich." },
+        { kind: "ok", text: "Eigenbeitrag pro Kind fällig." },
+        { kind: "neutral", text: "Gesundheitsprüfung und Zuschläge möglich." },
       ],
       leistung: [
-        { kind: "ok", text: "Sehr gute medizinische Versorgung für die ganze Familie möglich." },
-        { kind: "ok", text: "Bevorzugte Termine & moderne Leistungsoptionen je nach Tarif." },
+        { kind: "ok", text: "Hohe Versorgung für die Familie." },
+        { kind: "ok", text: "Schnellere Termine je nach Tarif." },
       ],
     },
   },
@@ -250,18 +250,18 @@ const pathContent = {
       badge: "Wirtschaftlich sinnvoll",
       border: "primary",
       bullets: [
-        { kind: "ok", text: "Maximale Ersparnis: Alle Kinder kostenfrei mitversichert (sofern die Voraussetzungen erfüllt sind)." },
-        { kind: "ok", text: "Beitrag gedeckelt auf den Höchstbetrag — trotz vieler Personen im Haushalt." },
+        { kind: "ok", text: "Alle Kinder kostenfrei mitversichert." },
+        { kind: "ok", text: "Beitrag bis Höchstbetrag gedeckelt." },
         { kind: "ok", text: "Ideal für Einverdiener-Haushalte." },
-        { kind: "ok", text: "Leistungen gesetzlich definiert — Erweiterung über Zusatzversicherungen möglich." },
+        { kind: "ok", text: "Leistungen gesetzlich mit Zusatz erweiterbar." },
       ],
       beitrag: [
-        { kind: "ok", text: "Beitrag gedeckelt auf den Höchstbetrag — trotz vieler Personen im Haushalt." },
+        { kind: "ok", text: "Beitrag bis Höchstbetrag gedeckelt." },
         { kind: "ok", text: "Ideal für Einverdiener-Haushalte." },
       ],
       leistung: [
-        { kind: "ok", text: "Maximale Ersparnis: Alle Kinder kostenfrei mitversichert (sofern die Voraussetzungen erfüllt sind)." },
-        { kind: "ok", text: "Leistungen gesetzlich definiert — Erweiterung über Zusatzversicherungen möglich." },
+        { kind: "ok", text: "Alle Kinder kostenfrei mitversichert." },
+        { kind: "ok", text: "Leistungen gesetzlich mit Zusatz erweiterbar." },
       ],
     },
     pkv: {
@@ -269,15 +269,15 @@ const pathContent = {
       badge: "Kostenintensiv",
       border: "caution",
       bullets: [
-        { kind: "neg", text: "Hohe monatliche Fixkosten durch viele Einzelverträge." },
-        { kind: "neg", text: "Gesamtkosten oft deutlich über dem GKV-Niveau." },
-        { kind: "hinweis", text: "Empfehlung: GKV wählen und gezielt Zusatzversicherungen ergänzen." },
+        { kind: "neg", text: "Hohe Fixkosten vieler Einzelverträge." },
+        { kind: "neg", text: "Gesamtkosten oft über GKV-Niveau." },
+        { kind: "hinweis", text: "GKV plus Zusatz oft sinnvoller." },
       ],
       beitrag: [
-        { kind: "neg", text: "Hohe monatliche Fixkosten durch viele Einzelverträge." },
-        { kind: "neg", text: "Gesamtkosten oft deutlich über dem GKV-Niveau." },
+        { kind: "neg", text: "Hohe Fixkosten vieler Einzelverträge." },
+        { kind: "neg", text: "Gesamtkosten oft über GKV-Niveau." },
       ],
-      leistung: [{ kind: "hinweis", text: "Empfehlung: GKV wählen und gezielt Zusatzversicherungen ergänzen." }],
+      leistung: [{ kind: "hinweis", text: "GKV plus Zusatz oft sinnvoller." }],
     },
   },
 };
@@ -815,7 +815,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                   <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px", lineHeight: 1.35 }}>{row.sub}</div>
                   <div
                     style={{
-                      fontSize: "20px",
+                      fontSize: "24px",
                       fontWeight: "800",
                       marginTop: "8px",
                       letterSpacing: "-0.4px",
@@ -888,7 +888,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
                 marginBottom: "10px",
               }}
             >
-              Darum passt das zu Ihrer Situation
+              Ihr Situationsvergleich
             </div>
             <div style={T.card}>
               {FAKTOREN.filter((f) => {
@@ -1114,7 +1114,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
         </div>
       </div>
 
-      <div style={T.footer}>
+      <div style={T.footer} data-checkkit-footer>
         <button type="button" style={T.btnPrim(false)} onClick={() => goTo(3)}>
           Beratung anfordern
         </button>
