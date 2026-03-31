@@ -498,7 +498,7 @@ export default function JahresCheck(){
     }
     if (ph === 3) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
-      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t, firma: MAKLER.firma });
     }
   };
   const qualNeeded=useMemo(()=>needsQualificationScreen(selEventIds),[selEventIds]);
@@ -568,7 +568,7 @@ export default function JahresCheck(){
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
     if (!token) return;
-    void trackEvent({ event_type: "check_started", slug, token });
+    void trackEvent({ event_type: "check_started", slug, token, firma: MAKLER.firma });
   }, []);
 
   if (!isReady) return <CheckConfigLoadingShell />;
@@ -709,7 +709,7 @@ export default function JahresCheck(){
           <CheckKontaktBeforeSubmitBlock maklerName={MAKLER.name} consent={kontaktConsent} onConsentChange={setKontaktConsent} />
         </div>
       </div>
-      <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights:jahresHighlights})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token});}setDanke(true);}} disabled={!valid}>{valid?"Situation gemeinsam prüfen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
+      <div style={T.footer} data-checkkit-footer><button style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights:jahresHighlights})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token,firma:MAKLER.firma});}setDanke(true);}} disabled={!valid}>{valid?"Situation gemeinsam prüfen":"Bitte alle Angaben machen"}</button><button style={T.btnSec} onClick={()=>goTo(3)}>Zurück</button></div>
       </>
       )}
     </div>);

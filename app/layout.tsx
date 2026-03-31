@@ -11,9 +11,24 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FlowLeads — Fertige Microsites für Versicherungsmakler",
+  title: "FlowLeads — Digitale Microsites für Versicherungsmakler",
   description:
-    "Fertige Bedarfs-Microsites für Versicherungsmakler — auf der Website einbetten, per Link teilen oder als QR-Code drucken. Kunden berechnen ihre Versorgungslücke und fragen direkt an.",
+    "Fertige Microsites mit Rechnern zur Leadgenerierung, Bedarfsanalyse und Gesprächsvorbereitung. Einmal kaufen, dauerhaft nutzen.",
+  metadataBase: new URL("https://getflowleads.com"),
+  openGraph: {
+    title: "FlowLeads — Mehr Anfragen. Weniger Aufwand.",
+    description:
+      "Fertige Microsites für Versicherungsmakler — zur Leadgenerierung, Bedarfsanalyse oder live in der Beratung.",
+    url: "https://getflowleads.com",
+    siteName: "FlowLeads",
+    locale: "de_DE",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FlowLeads — Mehr Anfragen. Weniger Aufwand.",
+    description: "Fertige Microsites für Versicherungsmakler.",
+  },
 };
 
 export default function RootLayout({
@@ -31,8 +46,6 @@ export default function RootLayout({
       <head>
         <meta name="color-scheme" content="light" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/favicon.svg" />
       </head>
       <body
         className={`${dmSans.className} antialiased`}

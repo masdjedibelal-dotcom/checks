@@ -6,6 +6,7 @@ type TrackEventParams = {
     | "demo_opened";
   slug?: string;
   token?: string;
+  firma?: string;
   metadata?: Record<string, unknown>;
 };
 

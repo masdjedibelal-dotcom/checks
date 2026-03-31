@@ -295,7 +295,7 @@ export default function GKVPKVRechner(){
     }
     if (ph === 2) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
-      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t, firma: MAKLER.firma });
     }
   };
 
@@ -339,7 +339,7 @@ export default function GKVPKVRechner(){
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
     if (!token) return;
-    void trackEvent({ event_type: "check_started", slug, token });
+    void trackEvent({ event_type: "check_started", slug, token, firma: MAKLER.firma });
   }, []);
 
   const R = berechne(p);
@@ -546,7 +546,7 @@ export default function GKVPKVRechner(){
               <button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
             </>
           ) : (
-            <><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){const highlights=[{label:"Ergebnis",value:R.headline},{label:"Kontext",value:R.subline},{label:"GKV (Orient., Monat)",value:fmtKvGehaltEUR(R.gkvSchMonat)},{label:"PKV (Orient., Monat)",value:fmtKvGehaltEUR(R.pkvSchMonat)}];if(R.diff>0&&R.empfehlungKosten)highlights.push({label:"Modell-Ersparnis (Monat)",value:`${fmtKvGehaltEUR(R.diff)} (${R.empfehlungKosten})`});const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token});}setDanke(true);}} disabled={!valid}>{valid?"Individuelle Einschätzung erhalten":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
+            <><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){const highlights=[{label:"Ergebnis",value:R.headline},{label:"Kontext",value:R.subline},{label:"GKV (Orient., Monat)",value:fmtKvGehaltEUR(R.gkvSchMonat)},{label:"PKV (Orient., Monat)",value:fmtKvGehaltEUR(R.pkvSchMonat)}];if(R.diff>0&&R.empfehlungKosten)highlights.push({label:"Modell-Ersparnis (Monat)",value:`${fmtKvGehaltEUR(R.diff)} (${R.empfehlungKosten})`});const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token,firma:MAKLER.firma});}setDanke(true);}} disabled={!valid}>{valid?"Individuelle Einschätzung erhalten":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
           )}
         </div>
       </div>

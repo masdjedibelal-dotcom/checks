@@ -9,7 +9,7 @@ const supabase = createClient(
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { event_type, slug, token, metadata } = body;
+    const { event_type, slug, token, firma, metadata } = body;
 
     if (!event_type) {
       return NextResponse.json({ error: "event_type required" }, { status: 400 });
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
       event_type,
       slug: slug ?? null,
       token: token ?? null,
+      firma: firma ?? null,
       metadata: metadata ?? null,
     });
 

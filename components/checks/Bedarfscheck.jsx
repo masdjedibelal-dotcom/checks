@@ -1154,7 +1154,7 @@ export default function Bedarfscheck(){
     setPhase(ph);
     if (ph === 3) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
-      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t, firma: makler.firma });
     }
   };
   useCheckScrollToTop([phase, ak, danke, loading, storyScreen]);
@@ -1162,7 +1162,7 @@ export default function Bedarfscheck(){
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
     if (!token) return;
-    void trackEvent({ event_type: "check_started", slug, token });
+    void trackEvent({ event_type: "check_started", slug, token, firma: makler.firma });
   }, []);
 
   if (!isReady) return <CheckConfigLoadingShell />;
@@ -1191,7 +1191,7 @@ export default function Bedarfscheck(){
       {label:"Empf. BU-Rente (Orient.)",value:formatBedarfEuro(result.empfBU)},
       {label:"Abgedeckt in Top 4",value:`${result.abgedecktInTopVier} von ${result.topVierAnzahl}`},
     ]:[];
-    return withStandalone(<Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>);
+    return withStandalone(<Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token,firma:makler.firma});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>);
   }
   if(phase===3&&result)return withStandalone(<Phase3 key={ak} isDemo={isDemo} result={result} gewaehltePakete={gewaehltePakete} onTogglePaket={togglePaket} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>);
   return withStandalone(<Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} result={result}/>);

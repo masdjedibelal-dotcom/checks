@@ -414,7 +414,7 @@ export default function RentenRechner() {
     }
     if (ph === 2) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
-      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t, firma: MAKLER.firma });
     }
   };
   const nextScr = () => {
@@ -428,7 +428,7 @@ export default function RentenRechner() {
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
     if (!token) return;
-    void trackEvent({ event_type: "check_started", slug, token });
+    void trackEvent({ event_type: "check_started", slug, token, firma: MAKLER.firma });
   }, []);
 
   if (!isReady) return <CheckConfigLoadingShell />;
@@ -576,7 +576,7 @@ export default function RentenRechner() {
               const token = new URLSearchParams(window.location.search).get("token");
               if (token) {
                 const res = await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, slug, kundenName: fd.name, kundenEmail: fd.email, kundenTel: fd.tel || "", highlights: [{ label: "Monatliche Lücke", value: fmt(R.lueckeAdjusted) }, { label: "Deckungsgrad", value: `${R.deckung}%` }, { label: "Bis Rente", value: `${R.jahreBis} J.` }] }) }).catch(() => null);
-                if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token });
+                if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token, firma: MAKLER.firma });
               }
               setName(fd.name);
               setDanke(true);

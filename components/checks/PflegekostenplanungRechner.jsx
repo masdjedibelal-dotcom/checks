@@ -442,7 +442,7 @@ export default function PflegekostenplanungRechner() {
     }
     if (ph === 2) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
-      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t, firma: MAKLER.firma });
     }
   };
   const backScr = () => {
@@ -460,7 +460,7 @@ export default function PflegekostenplanungRechner() {
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
     if (!token) return;
-    void trackEvent({ event_type: "check_started", slug, token });
+    void trackEvent({ event_type: "check_started", slug, token, firma: MAKLER.firma });
   }, []);
 
   if (!isReady) return <CheckConfigLoadingShell />;
@@ -848,7 +848,7 @@ export default function PflegekostenplanungRechner() {
                   ],
                 }),
               }).catch(() => null);
-              if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token });
+              if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token, firma: MAKLER.firma });
             }
             setDanke(true);
           }}

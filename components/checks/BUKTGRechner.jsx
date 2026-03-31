@@ -816,7 +816,7 @@ export default function BUKTGRechner() {
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
     if (!token) return;
-    void trackEvent({ event_type: "check_started", slug, token });
+    void trackEvent({ event_type: "check_started", slug, token, firma: MAKLER.firma });
   }, []);
 
   const nextWiz = () => {
@@ -834,7 +834,7 @@ export default function BUKTGRechner() {
     }
     if (ph === 2) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
-      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t, firma: MAKLER.firma });
     }
   };
 
@@ -981,7 +981,7 @@ export default function BUKTGRechner() {
                 ],
               }),
             }).catch(() => null);
-            if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token });
+            if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token, firma: MAKLER.firma });
           }
           setName(fd.name);
           setDanke(true);

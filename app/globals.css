@@ -548,17 +548,17 @@ input[type="range"]::-webkit-slider-thumb {
   left: 0;
   right: 0;
   z-index: 200;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(31, 41, 55, 0.08);
-  padding: 10px 20px;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.10);
+  padding: 12px 24px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   transform: translateY(-100%);
   transition: transform 0.25s ease;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
 }
 
 .sticky-checks-nav--visible {
@@ -574,10 +574,10 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .sticky-checks-nav-mark {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: #0f172a;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #0F172A;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -585,27 +585,27 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .sticky-checks-nav-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  color: #111;
-  letter-spacing: -0.2px;
+  color: #111827;
+  letter-spacing: -0.3px;
 }
 
 .sticky-checks-nav-divider {
   width: 1px;
-  height: 18px;
-  background: #e5e7eb;
+  height: 20px;
+  background: #E5E7EB;
   flex-shrink: 0;
 }
 
 .sticky-checks-pills {
   display: flex;
-  gap: 6px;
+  gap: 7px;
   overflow-x: auto;
   flex: 1;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  padding-bottom: 2px;
+  padding: 2px 0;
 }
 
 .sticky-checks-pills::-webkit-scrollbar {
@@ -615,19 +615,19 @@ input[type="range"]::-webkit-slider-thumb {
 .sticky-checks-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border-radius: 999px;
-  border: 1px solid #e5e7eb;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #E5E7EB;
   background: #ffffff;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: #374151;
   white-space: nowrap;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: all 0.18s ease;
   font-family: inherit;
+  letter-spacing: -0.1px;
 }
 
 .sticky-checks-pill:hover {
@@ -637,16 +637,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .sticky-checks-pill-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #639922;
-  flex-shrink: 0;
-  transition: background 0.15s ease;
-}
-
-.sticky-checks-pill:hover .sticky-checks-pill-dot {
-  background: #9fe1cb;
+  display: none;
 }
 
 @media (max-width: 640px) {
@@ -654,7 +645,7 @@ input[type="range"]::-webkit-slider-thumb {
     display: none;
   }
   .sticky-checks-nav {
-    padding: 10px 14px;
+    padding: 10px 16px;
     gap: 10px;
   }
 }
