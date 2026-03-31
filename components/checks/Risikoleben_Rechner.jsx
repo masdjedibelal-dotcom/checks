@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { trackEvent } from "@/lib/trackEvent";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
@@ -12,6 +13,7 @@ import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
+import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 
 (() => {
   const s = document.createElement("style");
@@ -173,6 +175,7 @@ export default function RisikolebenRechner() {
   const [kontaktConsent, setKontaktConsent] = useState(false);
   const [scr, setScr] = useState(1);
   const [rlErgebnisAcc, setRlErgebnisAcc] = useState(null);
+  const slug = "risikoleben";
   const goTo = (ph) => {
     setAnimKey((k) => k + 1);
     setPhase(ph);
@@ -183,6 +186,10 @@ export default function RisikolebenRechner() {
       setLoading(false);
       setRlErgebnisAcc(null);
       setP((x) => ({ ...x, familienModus: "" }));
+    }
+    if (ph === 2) {
+      const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
     }
   };
   const nextScr = () => {
@@ -195,14 +202,21 @@ export default function RisikolebenRechner() {
   };
   useCheckScrollToTop([phase, animKey, scr, loading, rlErgebnisAcc]);
 
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
+    if (!token) return;
+    void trackEvent({ event_type: "check_started", slug, token });
+  }, []);
+
   if (!isReady) return <CheckConfigLoadingShell />;
 
   const set     = (k, v) => setP(x => ({ ...x, [k]: v }));
-  const R       = berechne(p);
-  const progPct = phase === 1 ? (scr / RL_WIZARD_STEPS) * 100 : { 2: 100, 3: 100, 4: 100 }[phase] || 0;
+  const R = berechne(p);
 
-  function Header({ phase: ph, total }) {
-    const pct = total > 0 ? (ph / total) * 100 : 0;
+  const RL_HEADER_STEPS = ["Familie", "Einkommen", "Ergebnis", "Kontakt"];
+  const rlHeaderStep = (ph) => (ph === 1 ? 0 : ph === 2 ? 1 : ph === 3 ? 2 : 3);
+
+  function Header({ currentStep = 0, showProgressBar = true }) {
     return (
       <>
         <div
@@ -247,17 +261,9 @@ export default function RisikolebenRechner() {
             {MAKLER.firma}
           </span>
         </div>
-        <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
-          <div
-            style={{
-              height: "100%",
-              width: `${pct}%`,
-              background: C,
-              borderRadius: "999px",
-              transition: "width 0.35s ease",
-            }}
-          />
-        </div>
+        {showProgressBar ? (
+          <CheckProgressBar steps={RL_HEADER_STEPS} currentStep={currentStep} accent={C} />
+        ) : null}
       </>
     );
   }
@@ -357,9 +363,9 @@ export default function RisikolebenRechner() {
     },
   };
 
-  const Shell = ({ eyebrow, title, lead, children, footer }) => (
+  const Shell = ({ eyebrow, title, lead, children, footer, headerStep = 0, hideHeaderProgress = false }) => (
     <div style={T.root}>
-      <Header phase={progPct} total={100} />
+      <Header currentStep={headerStep} showProgressBar={!hideHeaderProgress} />
       <div key={animKey} className="fade-in" style={T.body}>
         <div style={T.hero}>{eyebrow&&<div style={T.eyebrow}>{eyebrow}</div>}{title&&<h1 style={T.h1}>{title}</h1>}{lead&&<p style={T.lead}>{lead}</p>}</div>
         {children}
@@ -375,7 +381,7 @@ export default function RisikolebenRechner() {
   if (loading) {
     return withStandalone(
       <div style={T.root}>
-        <Header phase={progPct} total={100} />
+        <Header showProgressBar={false} />
         <CheckLoader type="risikoleben" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
     );
@@ -384,7 +390,7 @@ export default function RisikolebenRechner() {
   if (phase === "bridge")
     return withStandalone(
       <div style={T.root}>
-        <Header phase={100} total={100} />
+        <Header showProgressBar={false} />
         <div key={animKey} className="fade-in" style={T.body}>
           <CheckKitStoryHero
             hideFooterSpacer
@@ -511,7 +517,7 @@ export default function RisikolebenRechner() {
 
     return withStandalone(
       <div style={T.root}>
-        <Header phase={progPct} total={100} />
+        <Header currentStep={rlHeaderStep(1)} />
         <div key={animKey} className="fade-in" style={T.body}>
           {scr === 1 && (
             <CheckKitStoryHero
@@ -786,7 +792,11 @@ export default function RisikolebenRechner() {
     ];
 
     return withStandalone(
-      <Shell eyebrow={undefined} title={undefined} lead={undefined}
+      <Shell
+        headerStep={rlHeaderStep(2)}
+        eyebrow={undefined}
+        title={undefined}
+        lead={undefined}
         footer={
           <>
             <button type="button" style={T.btnMain(false)} onClick={() => goTo(3)}>Weiter →</button>
@@ -1105,6 +1115,7 @@ export default function RisikolebenRechner() {
     const valid = formData.name.trim() && formData.email.trim() && kontaktConsent;
     return withStandalone(
       <Shell
+        headerStep={rlHeaderStep(3)}
         eyebrow="Fast geschafft"
         title={R.netto > 0 ? `Summe von ${fmtK(R.netto)} absichern.` : "Ihre Absicherung besprechen."}
         lead="Wir melden uns innerhalb von 24 Stunden mit konkreten Tarifen für Ihre Situation."
@@ -1143,18 +1154,19 @@ export default function RisikolebenRechner() {
                     ];
                     if (p.vorhanden > 0) highlights.push({ label: "Bestehende Absicherung", value: fmtK(p.vorhanden) });
                     if (empfPraemie > 0) highlights.push({ label: "Schätz-Prämie", value: `ca. ${fmt(empfPraemie)}/Mon.` });
-                    await fetch("/api/lead", {
+                    const res = await fetch("/api/lead", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         token,
-                        slug: "risikoleben",
+                        slug,
                         kundenName: formData.name,
                         kundenEmail: formData.email,
                         kundenTel: formData.telefon || "",
                         highlights,
                       }),
-                    }).catch(() => {});
+                    }).catch(() => null);
+                    if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token });
                   }
                   goTo(4);
                 }}
@@ -1228,7 +1240,7 @@ export default function RisikolebenRechner() {
   }
 
   return withStandalone(
-    <Shell>
+    <Shell headerStep={RL_HEADER_STEPS.length}>
       <div style={{ padding: "48px 24px 0", textAlign: "center" }} className="fade-in">
         <div
           style={{

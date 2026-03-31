@@ -42,8 +42,8 @@ export default function AGBPage() {
 
       <Section title="§ 1 Geltungsbereich">
         <p>
-          Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen FlowLeads (Thomas Schreiber,
-          Seitzstraße 15, 80538 München) — nachfolgend „Anbieter“ — und den Käufern der bereitgestellten digitalen
+          Diese Allgemeinen Geschäftsbedingungen gelten für alle Verträge zwischen FlowLeads (Max Schreiber,
+          Seitzstraße 16, 80538 München) — nachfolgend „Anbieter“ — und den Käufern der bereitgestellten digitalen
           Microsites — nachfolgend „Kunde“.
         </p>
         <p style={{ marginTop: "8px" }}>

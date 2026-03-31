@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
+import { trackEvent } from "@/lib/trackEvent";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
@@ -11,6 +12,7 @@ import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
+import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 
 // ─── GLOBAL SETUP ────────────────────────────────────────────────────────────
 (() => {
@@ -512,8 +514,13 @@ function makeBUKTGT(C) {
 }
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
-function Header({ phase, total, makler, C }) {
-  const pct = total > 0 ? (phase / total) * 100 : 0;
+const BUKTG_HEADER_STEPS = ["Beruf", "Einkommen", "Ergebnis", "Kontakt"];
+
+function buktgHeaderStep(phase) {
+  return phase === 1 ? 0 : phase === 2 ? 1 : phase === 3 ? 2 : 3;
+}
+
+function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
   return (
     <>
       <div
@@ -558,17 +565,9 @@ function Header({ phase, total, makler, C }) {
           {makler.firma}
         </span>
       </div>
-      <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
-        <div
-          style={{
-            height: "100%",
-            width: `${pct}%`,
-            background: C,
-            borderRadius: "999px",
-            transition: "width 0.35s ease",
-          }}
-        />
-      </div>
+      {showProgressBar ? (
+        <CheckProgressBar steps={BUKTG_HEADER_STEPS} currentStep={currentStep} accent={C} />
+      ) : null}
     </>
   );
 }
@@ -793,9 +792,32 @@ export default function BUKTGRechner() {
     setWizStep((w) => Math.min(w, totalWizSteps));
   }, [totalWizSteps]);
 
+  const R = berechne({
+    ...p,
+    gkvKrankengeldJa: p.beruf === "selbst" && p.kv === "gkv" ? p.gkvKrankengeldJa : false,
+  });
+
+  const [phaseBarsReady, setPhaseBarsReady] = useState(false);
+  const [legalOpen, setLegalOpen] = useState(null);
+
+  useEffect(() => {
+    if (phase !== 2) {
+      setPhaseBarsReady(false);
+      return undefined;
+    }
+    setPhaseBarsReady(false);
+    const t = window.setTimeout(() => setPhaseBarsReady(true), 70);
+    return () => window.clearTimeout(t);
+  }, [phase, ak]);
+
   useCheckScrollToTop([wizStep, phase, ak, danke, loading]);
 
-  if (!isReady) return <CheckConfigLoadingShell />;
+  const slug = "einkommens-check";
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
+    if (!token) return;
+    void trackEvent({ event_type: "check_started", slug, token });
+  }, []);
 
   const nextWiz = () => {
     if (wizStep < totalWizSteps) setWizStep((w) => w + 1);
@@ -810,7 +832,13 @@ export default function BUKTGRechner() {
       setWizStep(1);
       setLoading(false);
     }
+    if (ph === 2) {
+      const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
+    }
   };
+
+  if (!isReady) return <CheckConfigLoadingShell />;
 
   const curFlow = wizardFlow[wizStep - 1];
   const sid = curFlow?.kind === "data" ? curFlow.sid : null;
@@ -834,32 +862,13 @@ export default function BUKTGRechner() {
     return null;
   })();
 
-  const R = berechne({
-    ...p,
-    gkvKrankengeldJa: p.beruf === "selbst" && p.kv === "gkv" ? p.gkvKrankengeldJa : false,
-  });
-  const TOTAL_PHASES = 3;
-
-  const [phaseBarsReady, setPhaseBarsReady] = useState(false);
-  const [legalOpen, setLegalOpen] = useState(null);
-
-  useEffect(() => {
-    if (phase !== 2) {
-      setPhaseBarsReady(false);
-      return undefined;
-    }
-    setPhaseBarsReady(false);
-    const t = window.setTimeout(() => setPhaseBarsReady(true), 70);
-    return () => window.clearTimeout(t);
-  }, [phase, ak]);
-
   const withStandalone = (el) => (
     <StandaloneWrapper makler={MAKLER} checkLabel="BU & Krankentagegeld">{el}</StandaloneWrapper>
   );
 
   if (danke) return withStandalone(
     <div style={{ ...T.page, "--accent": C }}>
-      <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} C={C} />
+      <Header makler={MAKLER} C={C} currentStep={BUKTG_HEADER_STEPS.length} showProgressBar={false} />
       <DankeScreen
         name={name}
         onBack={() => { setDanke(false); goTo(1); }}
@@ -875,7 +884,7 @@ export default function BUKTGRechner() {
   if (loading) {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak}>
-        <Header phase={totalWizSteps} total={totalWizSteps} makler={MAKLER} C={C} />
+        <Header makler={MAKLER} C={C} showProgressBar={false} />
         <CheckLoader type="bu" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
     );
@@ -885,7 +894,7 @@ export default function BUKTGRechner() {
   if (phase === "bridge")
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header phase={TOTAL_PHASES} total={TOTAL_PHASES} makler={MAKLER} C={C} />
+        <Header makler={MAKLER} C={C} showProgressBar={false} />
         <CheckKitStoryHero
           hideFooterSpacer
           emoji="🚀"
@@ -938,7 +947,7 @@ export default function BUKTGRechner() {
   // ── Kontakt (nach Ergebnis) ─────────────────────────────────────────────────
   if (phase === 3) return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={4} total={TOTAL_PHASES} makler={MAKLER} C={C} />
+      <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(3)} />
       <div style={T.hero}>
         <div style={T.label}>Fast geschafft</div>
         <div style={T.h1}>
@@ -957,12 +966,12 @@ export default function BUKTGRechner() {
         onSubmit={async (fd) => {
           const token = new URLSearchParams(window.location.search).get("token");
           if (token) {
-            await fetch("/api/lead", {
+            const res = await fetch("/api/lead", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 token,
-                slug: "einkommens-check",
+                slug,
                 kundenName: fd.name,
                 kundenEmail: fd.email,
                 kundenTel: fd.tel || "",
@@ -971,7 +980,8 @@ export default function BUKTGRechner() {
                   { label: R.isStudentModus ? "Ziel-Netto" : "Ihr Netto", value: fmt(R.netto) },
                 ],
               }),
-            }).catch(() => {});
+            }).catch(() => null);
+            if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token });
           }
           setName(fd.name);
           setDanke(true);
@@ -1063,7 +1073,7 @@ export default function BUKTGRechner() {
 
     return withStandalone(
       <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
-        <Header phase={2} total={TOTAL_PHASES} makler={MAKLER} C={C} />
+        <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(2)} />
 
         <div style={{ paddingBottom: "120px" }}>
           {/* Hero: große Zahl, darunter Pill */}
@@ -1368,7 +1378,7 @@ export default function BUKTGRechner() {
   // ── Phase 1: Story + dynamischer Wizard ─────────────────────────────────────
   return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={wizStep} total={totalWizSteps} makler={MAKLER} C={C} />
+      <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(1)} />
 
       {curFlow?.kind === "intro" && (
         <>

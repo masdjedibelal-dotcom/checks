@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { trackEvent } from "@/lib/trackEvent";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
@@ -12,6 +13,7 @@ import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 import { fmtK } from "@/lib/utils";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
+import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 
 (() => {
   const s = document.createElement("style");
@@ -142,8 +144,6 @@ function makeRentenT(C) {
   logoMk:  { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
   logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111", letterSpacing: "-0.1px" },
   badge:   { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
-  prog:    { height: "2px", background: "rgba(31,41,55,0.08)" },
-  progFil: (w) => ({ height: "100%", width: `${w}%`, background: C, transition: "width 0.4s ease" }),
   hero:    { padding: "32px 24px 16px" },
   eyebrow: { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
   h1:      { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
@@ -224,27 +224,6 @@ function makeRentenT(C) {
 };
 }
 
-function SmartHintCard({ children, icon = "💡" }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: "12px",
-        alignItems: "flex-start",
-        padding: "14px 16px",
-        borderRadius: "14px",
-        background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-        border: "1px solid #FCD34D",
-        height: "100%",
-        boxSizing: "border-box",
-      }}
-    >
-      <span style={{ flexShrink: 0, fontSize: "18px", lineHeight: 1.2 }} aria-hidden>{icon}</span>
-      <div style={{ fontSize: "13px", fontWeight: "500", color: "#92400E", lineHeight: 1.55 }}>{children}</div>
-    </div>
-  );
-}
-
 /** Nur Alter, Netto, Wunsch-Rentenalter — keine Berufs-/Familiendaten */
 function rentenStoryZeitEinkommenCopy(alter, nettoEinkommen, wunschRentenalter) {
   const nettoStr = `${Math.round(Number(nettoEinkommen)).toLocaleString("de-DE")} €`;
@@ -261,8 +240,13 @@ function rentenStoryZeitEinkommenCopy(alter, nettoEinkommen, wunschRentenalter) 
   };
 }
 
-function Header({ phase, total, makler, C }) {
-  const pct = total > 0 ? (phase / total) * 100 : 0;
+const RENTEN_HEADER_STEPS = ["Einkommen", "Situation", "Ergebnis", "Kontakt"];
+
+function rentenHeaderStep(phase) {
+  return phase === 1 ? 0 : phase === 2 ? 1 : phase === 3 ? 2 : 3;
+}
+
+function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
   return (
     <>
       <div
@@ -307,17 +291,9 @@ function Header({ phase, total, makler, C }) {
           {makler.firma}
         </span>
       </div>
-      <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
-        <div
-          style={{
-            height: "100%",
-            width: `${pct}%`,
-            background: C,
-            borderRadius: "999px",
-            transition: "width 0.35s ease",
-          }}
-        />
-      </div>
+      {showProgressBar ? (
+        <CheckProgressBar steps={RENTEN_HEADER_STEPS} currentStep={currentStep} accent={C} />
+      ) : null}
     </>
   );
 }
@@ -427,6 +403,7 @@ export default function RentenRechner() {
   const toggleStratAcc = (k) => setStratAccOpen((s) => ({ ...s, [k]: !s[k] }));
   /** Intro, Alter, Rentenalter, Netto, Zeit-&-Einkommens-Story, Ziel, Vorsorge, Inflation → Loader → Bridge → Ergebnis */
   const TOTAL_SCR = 8;
+  const slug = "vorsorge-check";
   const goTo   = (ph) => {
     setAk(k => k + 1);
     setPhase(ph);
@@ -434,6 +411,10 @@ export default function RentenRechner() {
       setScr(1);
       setLoading(false);
       setStratAccOpen({ hybrid: true, steuer: false, etf: false });
+    }
+    if (ph === 2) {
+      const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
     }
   };
   const nextScr = () => {
@@ -444,6 +425,12 @@ export default function RentenRechner() {
   };
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
+    if (!token) return;
+    void trackEvent({ event_type: "check_started", slug, token });
+  }, []);
+
   if (!isReady) return <CheckConfigLoadingShell />;
 
   const withStandalone = (el) => (
@@ -451,11 +438,10 @@ export default function RentenRechner() {
   );
 
   const R = berechne(p);
-  const TOTAL = 3;
 
   if (danke) return withStandalone(
     <div style={{ ...T.page, "--accent": C }}>
-      <Header phase={TOTAL} total={TOTAL} makler={MAKLER} C={C} />
+      <Header makler={MAKLER} C={C} currentStep={RENTEN_HEADER_STEPS.length} showProgressBar={false} />
       <DankeScreen
         name={name}
         onBack={() => { setDanke(false); goTo(1); }}
@@ -470,7 +456,7 @@ export default function RentenRechner() {
   if (loading) {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }}>
-        <Header phase={TOTAL_SCR} total={TOTAL_SCR} makler={MAKLER} C={C} />
+        <Header makler={MAKLER} C={C} showProgressBar={false} />
         <CheckLoader type="rente" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
     );
@@ -479,7 +465,7 @@ export default function RentenRechner() {
   if (phase === "bridge")
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header phase={TOTAL} total={TOTAL} makler={MAKLER} C={C} />
+        <Header makler={MAKLER} C={C} showProgressBar={false} />
         <CheckKitStoryHero
           hideFooterSpacer
           emoji="🎯"
@@ -527,7 +513,7 @@ export default function RentenRechner() {
     const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header phase={3} total={TOTAL} makler={MAKLER} C={C} />
+        <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(3)} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
           <div style={T.h1}>
@@ -589,7 +575,8 @@ export default function RentenRechner() {
               if (!valid) return;
               const token = new URLSearchParams(window.location.search).get("token");
               if (token) {
-                await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, slug: "vorsorge-check", kundenName: fd.name, kundenEmail: fd.email, kundenTel: fd.tel || "", highlights: [{ label: "Monatliche Lücke", value: fmt(R.lueckeAdjusted) }, { label: "Deckungsgrad", value: `${R.deckung}%` }, { label: "Bis Rente", value: `${R.jahreBis} J.` }] }) }).catch(() => {});
+                const res = await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, slug, kundenName: fd.name, kundenEmail: fd.email, kundenTel: fd.tel || "", highlights: [{ label: "Monatliche Lücke", value: fmt(R.lueckeAdjusted) }, { label: "Deckungsgrad", value: `${R.deckung}%` }, { label: "Bis Rente", value: `${R.jahreBis} J.` }] }) }).catch(() => null);
+                if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token });
               }
               setName(fd.name);
               setDanke(true);
@@ -620,7 +607,7 @@ export default function RentenRechner() {
 
     return withStandalone(
       <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
-        <Header phase={2} total={TOTAL} makler={MAKLER} C={C} />
+        <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(2)} />
 
         <div style={{ paddingBottom: "120px" }}>
           <div
@@ -1086,7 +1073,7 @@ export default function RentenRechner() {
   // Phase 1: Intro + Daten + Story (Alter/Netto/Rentenalter) + … + Inflation → Loader → Bridge → Phase 2
   return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={scr} total={TOTAL_SCR} makler={MAKLER} C={C} />
+      <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(1)} />
 
       {scr === 1 && (
         <>

@@ -169,7 +169,7 @@ export function buildOnboardingEmail(p: OnboardingEmailParams): { subject: strin
   </div>
 
   <div class="footer">
-    &copy; ${new Date().getFullYear()} FlowLeads &middot; Belal Masdjedi &middot; Seitzstraße 15, 80538 München<br/>
+    &copy; ${new Date().getFullYear()} FlowLeads &middot; Max Schreiber &middot; Seitzstraße 16, 80538 München<br/>
     <a href="${safeAppUrl}/impressum">Impressum</a> &middot;
     <a href="${safeAppUrl}/datenschutz">Datenschutz</a> &middot;
     <a href="${safeAppUrl}/agb">AGB</a>

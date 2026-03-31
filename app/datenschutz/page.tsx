@@ -43,8 +43,8 @@ export default function DatenschutzPage() {
       <p style={{ fontSize: "14px", color: "#9ca3af", marginBottom: "48px" }}>Stand: März 2026</p>
 
       <Section title="1. Verantwortlicher">
-        <p>Thomas Schreiber</p>
-        <p>Seitzstraße 15, 80538 München</p>
+        <p>Max Schreiber</p>
+        <p>Seitzstraße 16, 80538 München</p>
         <p>
           E-Mail:{" "}
           <a href={`mailto:${contactEmail}`} style={{ color: "#b8884a" }}>
@@ -104,7 +104,18 @@ export default function DatenschutzPage() {
         </p>
       </Section>
 
-      <Section title="7. Rechner / iFrame-Einbindung durch Makler">
+      <Section title="7. Nutzungsstatistiken">
+        <p>
+          Bei der Nutzung personalisierter Microsites (Direkt-Link oder QR-Code mit Lizenz-Token) werden anonymisierte
+          Nutzungsereignisse erfasst — konkret: ob ein Check gestartet, das Ergebnis aufgerufen oder eine Anfrage
+          abgeschickt wurde. Diese Daten werden in einer Datenbank bei Supabase, Inc. gespeichert und dienen
+          ausschließlich der Bereitstellung von Nutzungsstatistiken für den jeweiligen Makler. Es werden keine
+          personenbezogenen Daten der Endkunden gespeichert. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes
+          Interesse an der Qualitätssicherung).
+        </p>
+      </Section>
+
+      <Section title="8. Rechner / iFrame-Einbindung durch Makler">
         <p>
           Die von FlowLeads bereitgestellten Rechner werden von Dritten (Versicherungsmakler) per iFrame auf deren
           eigenen Websites eingebunden. Die Verarbeitung der dort von Endkunden eingegebenen Daten erfolgt ausschließlich
@@ -113,14 +124,14 @@ export default function DatenschutzPage() {
         </p>
       </Section>
 
-      <Section title="8. Cookies">
+      <Section title="9. Cookies">
         <p>
           Diese Website verwendet keine Tracking-Cookies oder Analyse-Tools. Technisch notwendige Cookies können durch den
           Hosting-Anbieter (Netlify) gesetzt werden.
         </p>
       </Section>
 
-      <Section title="9. Ihre Rechte">
+      <Section title="10. Ihre Rechte">
         <p>Sie haben folgende Rechte bezüglich Ihrer personenbezogenen Daten:</p>
         <ul
           style={{

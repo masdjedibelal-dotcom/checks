@@ -1,9 +1,9 @@
 export function publicAppUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_URL ||
-    "http://localhost:3000"
-  ).replace(/\/$/, "");
+  const raw =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.NEXT_PUBLIC_URL?.trim() ||
+    "https://getflowleads.com";
+  return raw.replace(/\/$/, "");
 }
 
 export function appHostname(): string | null {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
+import { trackEvent } from "@/lib/trackEvent";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
@@ -376,6 +377,8 @@ function WizardMicroMomentBanner({ text, C }) {
 // ─── Phase 1: Wizard (7 Screens) ─────────────────────────────────────────────
 const WIZARD_TOTAL = 7;
 
+const STEPS = ["Profil", "Bestand", "Ergebnis", "Kontakt"];
+
 function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
   const[scr,setScr]=useState(1);
   const[microTransition,setMicroTransition]=useState(null);
@@ -455,9 +458,11 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
   };
   const blockForward = microTransition !== null;
   const sectionLbl = { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" };
+  const phase = 1;
+  const step = phase === 1 ? 0 : phase === 3 ? 2 : phase === 4 ? 3 : 0;
   return(
     <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={scr} total={WIZARD_TOTAL} accentColor={C} />
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
 
       {scr===1&&<>
         <div style={T.hero}>
@@ -632,7 +637,7 @@ function BedarfStoryScreen({ profil, onContinue, C, T, firma }) {
 
   return (
     <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={9} accentColor={C} />
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={0} showProgressBar={false} accent={C} />
       <div style={{ ...CHECKKIT2026.storyRoot, background: "#ffffff" }}>
         <div style={{ ...CHECKKIT2026.storySection, background: "transparent" }}>
           <div style={CHECKKIT2026.storyContentWrap}>
@@ -661,6 +666,8 @@ function BedarfStoryScreen({ profil, onContinue, C, T, firma }) {
 
 // ── Phase 3: Ergebnis — 3 Pakete (Level-up, Anker-Reihenfolge) ────────────────
 function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, onTogglePaket }) {
+  const phase = 3;
+  const step = phase === 1 ? 0 : phase === 3 ? 2 : phase === 4 ? 3 : 0;
   const { basis, komfort, premium, alreadyCovered, showKinderHint, schutzProzent, topVierAnzahl, abgedecktInTopVier, empfBU, anzahlLuecken } = result;
 
   const alreadyHasBuOrEu = alreadyCovered.some(
@@ -720,7 +727,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
 
   return (
     <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={8} total={9} accentColor={C} />
+      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
 
       <div style={{ ...CHECKKIT2026.storySection, textAlign: "center", background: "#ffffff" }}>
         <div style={{ fontSize: "12px", fontWeight: "600", color: "#6B7280", letterSpacing: "0.04em", marginBottom: "10px" }}>
@@ -1012,8 +1019,10 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[consent,setConsent]=useState(false);
   const valid=fd.name.trim()&&fd.email.trim()&&consent;
+  const phase = 4;
+  const step = phase === 1 ? 0 : phase === 3 ? 2 : phase === 4 ? 3 : 0;
   return(<div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} accentColor={C} />
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
     <div style={T.hero}>
       <div style={T.eyebrow}>Fast geschafft</div>
       <div style={T.h1}>Wo können wir Sie erreichen?</div>
@@ -1089,7 +1098,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
 // Danke
 function DankeScreen({ name, onReset, makler, C, T, firma }) {
   return(<div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={9} total={9} accentColor={C} />
+    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={STEPS.length} accent={C} />
     <div style={T.dankeScreen}>
       <div style={T.dankeRing(C)}>
         <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -1139,8 +1148,22 @@ export default function Bedarfscheck(){
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
   };
-  const goTo=(ph)=>{setAk(k=>k+1);setPhase(ph);};
+  const slug = "bedarfscheck";
+  const goTo = (ph) => {
+    setAk((k) => k + 1);
+    setPhase(ph);
+    if (ph === 3) {
+      const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
+    }
+  };
   useCheckScrollToTop([phase, ak, danke, loading, storyScreen]);
+
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
+    if (!token) return;
+    void trackEvent({ event_type: "check_started", slug, token });
+  }, []);
 
   if (!isReady) return <CheckConfigLoadingShell />;
 
@@ -1159,7 +1182,7 @@ export default function Bedarfscheck(){
     profil.housingStatus;
   const result=profilReady?buildPackageScoringResult(profil,existing):null;
   if(danke)return withStandalone(<DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma}/>);
-  if(loading)return withStandalone(<div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" phase={WIZARD_TOTAL} total={WIZARD_TOTAL} accentColor={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>);
+  if(loading)return withStandalone(<div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={0} showProgressBar={false} accent={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>);
   if(storyScreen&&result)return withStandalone(<BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma}/>);
   if(phase===4){
     const leadHighlights=result?[
@@ -1168,7 +1191,7 @@ export default function Bedarfscheck(){
       {label:"Empf. BU-Rente (Orient.)",value:formatBedarfEuro(result.empfBU)},
       {label:"Abgedeckt in Top 4",value:`${result.abgedecktInTopVier} von ${result.topVierAnzahl}`},
     ]:[];
-    return withStandalone(<Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug:"bedarfscheck",kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>{});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>);
+    return withStandalone(<Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>);
   }
   if(phase===3&&result)return withStandalone(<Phase3 key={ak} isDemo={isDemo} result={result} gewaehltePakete={gewaehltePakete} onTogglePaket={togglePaket} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>);
   return withStandalone(<Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} result={result}/>);

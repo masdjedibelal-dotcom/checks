@@ -2,22 +2,23 @@
 
 import type { CheckT } from "@/lib/checkStandardT";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
+import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 
 type Props = {
   T: CheckT;
   firma: string;
   /** Wird nicht mehr im Header angezeigt (Eyebrow im Hero) */
   badge: string;
-  phase: number;
-  total: number;
-  fillPct?: number;
+  steps: readonly string[];
+  currentStep: number;
   /** Primärfarbe (MAKLER.primaryColor) */
-  accentColor: string;
+  accent: string;
+  /** Loader- und Bridge-Screens: nur Logo/Firma, keine Schritt-Leiste */
+  showProgressBar?: boolean;
 };
 
 export function CheckHeader(props: Props) {
-  const { firma, phase, total, fillPct, accentColor: C } = props;
-  const pct = fillPct != null ? fillPct : total > 0 ? (phase / total) * 100 : 0;
+  const { firma, steps, currentStep, accent, showProgressBar = true } = props;
   return (
     <>
       <div
@@ -41,7 +42,7 @@ export function CheckHeader(props: Props) {
             width: "44px",
             height: "44px",
             borderRadius: "50%",
-            background: C,
+            background: accent,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -62,17 +63,7 @@ export function CheckHeader(props: Props) {
           {firma}
         </span>
       </div>
-      <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
-        <div
-          style={{
-            height: "100%",
-            width: `${pct}%`,
-            background: C,
-            borderRadius: "999px",
-            transition: "width 0.35s ease",
-          }}
-        />
-      </div>
+      {showProgressBar ? <CheckProgressBar steps={steps} currentStep={currentStep} accent={accent} /> : null}
     </>
   );
 }

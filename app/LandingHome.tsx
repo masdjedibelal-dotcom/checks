@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { scrollCheckDocumentToTop } from "@/lib/checkScrollToTop";
+import { trackEvent } from "@/lib/trackEvent";
 import { KATALOG, type Template } from "@/lib/katalog";
 import {
   CHECK_FLOW_META,
@@ -369,6 +370,7 @@ function FactsSection() {
 
 export default function LandingHome() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [stickyNavVisible, setStickyNavVisible] = useState(false);
   const [demoT, setDemoT] = useState<Template | null>(null);
   const [buyT, setBuyT] = useState<Template | null>(null);
   const demoTRef = useRef<Template | null>(null);
@@ -413,6 +415,17 @@ export default function LandingHome() {
     return () => window.removeEventListener("message", handler);
   }, []);
 
+  useEffect(() => {
+    const nav = document.querySelector(".landing-nav");
+    if (!nav) return;
+    const observer = new IntersectionObserver(
+      ([e]) => setStickyNavVisible(!e?.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
+
   async function handleCheckout(form: KonfiguratorForm, template: Template) {
     try {
       const res = await fetch("/api/checkout", {
@@ -438,6 +451,50 @@ export default function LandingHome() {
 
   return (
     <div className="flow-leads-landing">
+
+      <div className={`sticky-checks-nav${stickyNavVisible ? " sticky-checks-nav--visible" : ""}`}>
+        <a
+          href="#"
+          className="sticky-checks-nav-logo"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        >
+          <div className="sticky-checks-nav-mark">
+            <svg width="14" height="14" viewBox="0 0 48 48" fill="none" aria-hidden>
+              <path d="M16 14H30V18H20V22H28V26H20V34H16V14Z" fill="white" />
+              <path d="M32 14H36V34H26V30H32V14Z" fill="white" />
+            </svg>
+          </div>
+          <span className="sticky-checks-nav-name">FlowLeads</span>
+        </a>
+
+        <div className="sticky-checks-nav-divider" aria-hidden />
+
+        <div className="sticky-checks-pills">
+          {CHECK_FLOW_META.map((c) => {
+            const tmpl = KATALOG.find((t) => t.slug === c.slug);
+            return (
+              <button
+                key={c.slug}
+                type="button"
+                className="sticky-checks-pill"
+                onClick={() => {
+                  if (!tmpl) return;
+                  setDemoT(tmpl);
+                  void trackEvent({ event_type: "demo_opened", slug: tmpl.slug });
+                }}
+                disabled={!tmpl}
+                aria-label={`Demo: ${tmpl?.name ?? c.name}`}
+              >
+                <span className="sticky-checks-pill-dot" aria-hidden />
+                {tmpl?.name ?? c.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* ── NAV ───────────────────────────────────────────────────────────── */}
       <nav className="landing-nav" aria-label="Hauptnavigation">
@@ -585,7 +642,11 @@ export default function LandingHome() {
                           type="button"
                           className="ck-demo"
                           disabled={!tmpl}
-                          onClick={() => tmpl && setDemoT(tmpl)}
+                          onClick={() => {
+                            if (!tmpl) return;
+                            setDemoT(tmpl);
+                            void trackEvent({ event_type: "demo_opened", slug: tmpl.slug });
+                          }}
                         >
                           Demo
                         </button>
@@ -823,7 +884,7 @@ export default function LandingHome() {
 
           <div className="custom-order-cta-wrap fade-up">
             <a
-              href="mailto:hallo@flowleads.de?subject=Individuelle%20Microsite%20anfragen"
+              href="mailto:hallo@getflowleads.com?subject=Individuelle%20Microsite%20anfragen"
               className="btn-cta custom-order-mail-cta"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>

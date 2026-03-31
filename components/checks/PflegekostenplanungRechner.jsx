@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { trackEvent } from "@/lib/trackEvent";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
@@ -11,6 +12,7 @@ import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
+import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 (() => {
   const s = document.createElement("style");
   s.textContent = `*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#ffffff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#e5e5e5;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #ffffff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}.pflege-acc-item{border-radius:12px;background:#F9FAFB;border:1px solid rgba(17,24,39,0.06);margin-bottom:8px;overflow:hidden;}.pflege-acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-align:left;font-size:13px;font-weight:600;color:#1F2937;background:transparent;cursor:pointer;border:none;font-family:inherit;}.pflege-acc-panel{padding:0 16px 14px;font-size:12px;color:#6B7280;line-height:1.65;border-top:1px solid rgba(17,24,39,0.06);}.pflege-problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:720px;margin:0 auto;}@media (max-width:640px){.pflege-problem-grid{grid-template-columns:1fr;}}`;
@@ -156,8 +158,6 @@ function makePflegeT(C) {
     logoMk: { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
     logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111", letterSpacing: "-0.1px" },
     badge: { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
-    prog: { height: "2px", background: "rgba(31,41,55,0.08)" },
-    progFil: (w) => ({ height: "100%", width: `${w}%`, background: C, transition: "width 0.4s ease" }),
     hero: { padding: "32px 24px 16px" },
     eyebrow: { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
     h1: { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
@@ -432,12 +432,17 @@ export default function PflegekostenplanungRechner() {
   const [scr, setScr] = useState(1);
   const [pflegeArchiv, setPflegeArchiv] = useState(null);
   const set = (k, v) => setP((x) => ({ ...x, [k]: v }));
+  const slug = "pflege-check";
   const goTo = (ph) => {
     setAk((k) => k + 1);
     setPhase(ph);
     if (ph === 1) {
       setScr(1);
       setLoading(false);
+    }
+    if (ph === 2) {
+      const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
     }
   };
   const backScr = () => {
@@ -452,12 +457,18 @@ export default function PflegekostenplanungRechner() {
 
   useCheckScrollToTop([phase, ak, danke, scr, loading]);
 
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
+    if (!token) return;
+    void trackEvent({ event_type: "check_started", slug, token });
+  }, []);
+
   if (!isReady) return <CheckConfigLoadingShell />;
 
-  const progPct = phase === 1 ? Math.round((scr / WIZARD_STEPS) * 88) : { 2: 88, 3: 100 }[phase] || 100;
+  const PFLEGE_HEADER_STEPS = ["Situation", "Szenario", "Ergebnis", "Kontakt"];
+  const pflegeHeaderStep = (ph) => (ph === 1 ? 0 : ph === 2 ? 1 : ph === 3 ? 2 : 3);
 
-  function Header({ phase, total }) {
-    const pct = total > 0 ? (phase / total) * 100 : 0;
+  function Header({ currentStep, showProgressBar = true }) {
     return (
       <>
         <div
@@ -502,17 +513,9 @@ export default function PflegekostenplanungRechner() {
             {MAKLER.firma}
           </span>
         </div>
-        <div style={{ height: "6px", background: "rgba(31,41,55,0.08)" }}>
-          <div
-            style={{
-              height: "100%",
-              width: `${pct}%`,
-              background: C,
-              borderRadius: "999px",
-              transition: "width 0.35s ease",
-            }}
-          />
-        </div>
+        {showProgressBar ? (
+          <CheckProgressBar steps={PFLEGE_HEADER_STEPS} currentStep={currentStep} accent={C} />
+        ) : null}
       </>
     );
   }
@@ -524,7 +527,7 @@ export default function PflegekostenplanungRechner() {
   if (danke) {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }}>
-        <Header phase={progPct} total={100} />
+        <Header showProgressBar={false} />
         <Danke
           name={fd.name}
           onBack={() => { setDanke(false); goTo(1); }}
@@ -540,7 +543,7 @@ export default function PflegekostenplanungRechner() {
   if (loading) {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }}>
-        <Header phase={progPct} total={100} />
+        <Header showProgressBar={false} />
         <CheckLoader type="pflege" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
     );
@@ -549,7 +552,7 @@ export default function PflegekostenplanungRechner() {
   if (phase === "bridge") {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header phase={progPct} total={100} />
+        <Header showProgressBar={false} />
         <CheckKitStoryHero
           hideFooterSpacer
           emoji="💸"
@@ -610,7 +613,7 @@ export default function PflegekostenplanungRechner() {
 
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header phase={progPct} total={100} />
+        <Header currentStep={pflegeHeaderStep(2)} />
 
         <div style={{ paddingBottom: "120px" }}>
           <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -793,7 +796,7 @@ export default function PflegekostenplanungRechner() {
   if (phase === 3) {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header phase={progPct} total={100} />
+        <Header currentStep={pflegeHeaderStep(3)} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
           <div style={T.h1}>
@@ -828,12 +831,12 @@ export default function PflegekostenplanungRechner() {
           onSubmit={async () => {
             const token = new URLSearchParams(window.location.search).get("token");
             if (token) {
-              await fetch("/api/lead", {
+              const res = await fetch("/api/lead", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   token,
-                  slug: "pflege-check",
+                  slug,
                   kundenName: fd.name,
                   kundenEmail: fd.email,
                   kundenTel: fd.tel || "",
@@ -844,7 +847,8 @@ export default function PflegekostenplanungRechner() {
                     { label: "Empf. Pflegetagegeld", value: `${R.empfTagegeld} €/Tag` },
                   ],
                 }),
-              }).catch(() => {});
+              }).catch(() => null);
+              if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token });
             }
             setDanke(true);
           }}
@@ -858,7 +862,7 @@ export default function PflegekostenplanungRechner() {
 
   return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header phase={progPct} total={100} />
+      <Header currentStep={pflegeHeaderStep(1)} />
 
       {scr === 1 && (
         <>

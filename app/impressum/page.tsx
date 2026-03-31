@@ -43,8 +43,8 @@ export default function ImpressumPage() {
       <p style={{ fontSize: "14px", color: "#9ca3af", marginBottom: "48px" }}>Angaben gemäß § 5 TMG</p>
 
       <Section title="Anbieter">
-        <p>Thomas Schreiber</p>
-        <p>Seitzstraße 15</p>
+        <p>Max Schreiber</p>
+        <p>Seitzstraße 16</p>
         <p>80538 München</p>
         <p>Deutschland</p>
       </Section>
@@ -59,7 +59,7 @@ export default function ImpressumPage() {
       </Section>
 
       <Section title="Verantwortlich für den Inhalt (§ 55 Abs. 2 RStV)">
-        <p>Thomas Schreiber, Seitzstraße 15, 80538 München</p>
+        <p>Max Schreiber, Seitzstraße 16, 80538 München</p>
       </Section>
 
       <Section title="Hinweis zur Tätigkeit">

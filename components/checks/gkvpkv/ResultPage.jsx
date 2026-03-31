@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import { fmt } from "@/lib/utils";
+import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 
 const JAEG_MONAT = 6450;
 /** Beitragsbemessungsgrenze KV/PV (Monat), Orientierung 2026 */
@@ -593,7 +594,17 @@ function CompareCard({ label, tagline, color, bg, beitrag, leistung, border, bad
   );
 }
 
-export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo, FAKTOREN }) {
+export default function ResultPage({
+  R,
+  p,
+  T,
+  accentColor: C,
+  maklerFirma,
+  goTo,
+  FAKTOREN,
+  progressSteps = ["Situation", "Einkommen", "Ergebnis", "Kontakt"],
+  progressCurrentStep = 1,
+}) {
   const [gkvArchiv, setGkvArchiv] = useState(null);
   const [kontextOpen, setKontextOpen] = useState(true);
   const resultPath = resolveGkvPkvResultPath(p);
@@ -642,9 +653,7 @@ export default function ResultPage({ R, p, T, accentColor: C, maklerFirma, goTo,
         </div>
         <span style={T.badge}>KV-Navigator</span>
       </div>
-      <div style={T.prog}>
-        <div style={T.progFil(100)} />
-      </div>
+      <CheckProgressBar steps={progressSteps} currentStep={progressCurrentStep} accent={C} />
 
       <div style={{ paddingBottom: "120px" }}>
         <div

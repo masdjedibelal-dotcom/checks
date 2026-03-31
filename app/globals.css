@@ -540,3 +540,132 @@ input[type="range"]::-webkit-slider-thumb {
   border-top-color: #111111;
   animation: check-config-spin 0.7s linear infinite;
 }
+
+/* Landing: Sticky Mini-Nav (erscheint wenn .landing-nav den Viewport verlässt) */
+.sticky-checks-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(31, 41, 55, 0.08);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: translateY(-100%);
+  transition: transform 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.sticky-checks-nav--visible {
+  transform: translateY(0);
+}
+
+.sticky-checks-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.sticky-checks-nav-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sticky-checks-nav-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -0.2px;
+}
+
+.sticky-checks-nav-divider {
+  width: 1px;
+  height: 18px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.sticky-checks-pills {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.sticky-checks-pills::-webkit-scrollbar {
+  display: none;
+}
+
+.sticky-checks-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  font-family: inherit;
+}
+
+.sticky-checks-pill:hover {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+.sticky-checks-pill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #639922;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.sticky-checks-pill:hover .sticky-checks-pill-dot {
+  background: #9fe1cb;
+}
+
+@media (max-width: 640px) {
+  .sticky-checks-nav-name {
+    display: none;
+  }
+  .sticky-checks-nav {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+}
+
+.flow-leads-landing .sticky-checks-pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.flow-leads-landing .sticky-checks-pill:disabled:hover {
+  background: #ffffff;
+  color: #374151;
+  border-color: #e5e7eb;
+}

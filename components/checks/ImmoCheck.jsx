@@ -13,12 +13,16 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
 import { CheckKitResultGrid } from "@/components/checks/CheckKitResultGrid";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
+import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
+import { trackEvent } from "@/lib/trackEvent";
 
 (() => {
   const s = document.createElement("style");
   s.textContent = `*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input{font-family:inherit;border:none;background:none;cursor:pointer;}input{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;
   document.head.appendChild(s);
 })();
+
+const IMMO_HEADER_STEPS = ["Situation", "Risiko", "Vorsorge", "Ergebnis", "Kontakt"];
 
 /** Traum-Realitäts-Check: Zwischen Weiche und Risiko-Scanner */
 const PATH_INTRO_STORY = {
@@ -517,13 +521,6 @@ function makeImmoCheckT(C) {
       letterSpacing: "0.3px",
       textTransform: "uppercase",
     },
-    prog: { height: "2px", background: "#f0f0f0" },
-    progFil: (w) => ({
-      height: "100%",
-      width: `${w}%`,
-      background: C,
-      transition: "width 0.4s ease",
-    }),
     hero: { padding: "32px 24px 16px" },
     eyebrow: {
       fontSize: "11px",
@@ -713,6 +710,7 @@ export default function ImmoCheck() {
   const [age, setAge] = useState(42);
   const [monatsrate, setMonatsrate] = useState(1450);
 
+  const slug = "immobilien-check";
   const goTo = (ph, scr2Init = 1) => {
     setAk((k) => k + 1);
     setPhase(ph);
@@ -720,6 +718,10 @@ export default function ImmoCheck() {
     if (ph === 1) {
       setLoading(false);
       setPathIntroDone(false);
+    }
+    if (ph === 3) {
+      const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
+      if (t) void trackEvent({ event_type: "check_completed", slug, token: t });
     }
   };
 
@@ -767,21 +769,28 @@ export default function ImmoCheck() {
     altersvorsorgeImmobilie !== null;
   const step2Complete = scr2 === 1 ? step2CompleteScr1 : step2CompleteScr2;
 
-  const totalSteps = 5;
-  const curStep =
-    phase === 1
-      ? pathIntroDone
-        ? 2
-        : 1
-      : phase === 2
-        ? 2 + scr2
-        : 5;
+  const immoHeaderStep =
+    phase === 4
+      ? 4
+      : phase === 3
+        ? 3
+        : phase === 2 && scr2 === 2
+          ? 2
+          : phase === 2
+            ? 1
+            : 0;
 
   useCheckScrollToTop([phase, ak, danke, scr2, loading, pathIntroDone]);
 
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
+    if (!token) return;
+    void trackEvent({ event_type: "check_started", slug, token });
+  }, []);
+
   if (!isReady) return <CheckConfigLoadingShell />;
 
-  const Header = () => (
+  const Header = ({ showProgressBar = true }) => (
     <>
       <div style={T.header}>
         <div style={T.logo}>
@@ -792,9 +801,9 @@ export default function ImmoCheck() {
         </div>
         <span style={T.badge}>Immobilienabsicherung</span>
       </div>
-      <div style={T.prog}>
-        <div style={T.progFil(Math.round((curStep / totalSteps) * 100))} />
-      </div>
+      {showProgressBar ? (
+        <CheckProgressBar steps={IMMO_HEADER_STEPS} currentStep={immoHeaderStep} accent={C} />
+      ) : null}
     </>
   );
 
@@ -840,7 +849,7 @@ export default function ImmoCheck() {
   if (danke) {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }}>
-        <Header />
+        <Header showProgressBar={false} />
         <div style={{ padding: "48px 24px", textAlign: "center" }} className="fade-in">
           <div
             style={{
@@ -889,7 +898,7 @@ export default function ImmoCheck() {
   if (loading) {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak}>
-        <Header />
+        <Header showProgressBar={false} />
         <ImmoTuvScanLoader
           accent={C}
           familyContext={haushaltAbgesichert === true}
@@ -971,12 +980,12 @@ export default function ImmoCheck() {
                   if (!valid) return;
                   const token = new URLSearchParams(window.location.search).get("token");
                   if (token) {
-                    await fetch("/api/lead", {
+                    const res = await fetch("/api/lead", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         token,
-                        slug: "immobilien-check",
+                        slug,
                         kundenName: fd.name,
                         kundenEmail: fd.email,
                         kundenTel: fd.tel || "",
@@ -987,7 +996,8 @@ export default function ImmoCheck() {
                           { label: "Anzahl Empfehlungen", value: String(totalEmpf) },
                         ],
                       }),
-                    }).catch(() => {});
+                    }).catch(() => null);
+                    if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token });
                   }
                   setDanke(true);
                 }}

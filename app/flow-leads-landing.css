@@ -80,7 +80,7 @@ html {
 .flow-leads-landing .landing-nav {
   position: sticky;
   top: 0;
-  z-index: 200;
+  z-index: 100;
   height: 60px;
   display: flex;
   align-items: center;
