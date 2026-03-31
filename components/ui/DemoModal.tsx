@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { TemplatePriceCore } from "@/components/ui/TemplatePriceCore";
 import type { Template } from "@/lib/katalog";
 
 export type DemoModalProps = {
@@ -89,11 +90,14 @@ export default function DemoModal({
           className="flex shrink-0 items-center justify-between gap-3 border-t border-[#f0f0f0] px-[18px] pt-3"
           style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}
         >
-          <div className="text-lg font-bold tracking-[-0.03em] text-[#111]">
-            {template.preis} €{" "}
-            <small className="text-[11px] font-normal text-[#bbb]">
-              einmalig
-            </small>
+          <div className="flex flex-wrap items-baseline gap-x-1 text-lg tracking-[-0.03em] text-[#111]">
+            <TemplatePriceCore template={template} strongClassName="font-bold" />
+            {template.badge !== "freemium" && (
+              <>
+                {" "}
+                <small className="text-[11px] font-normal text-[#bbb]">einmalig</small>
+              </>
+            )}
           </div>
           <button
             type="button"

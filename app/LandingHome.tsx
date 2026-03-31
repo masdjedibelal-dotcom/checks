@@ -627,11 +627,31 @@ export default function LandingHome() {
                     </div>
                     <div className="ck-card-foot">
                       <div className="ck-card-price-block">
-                        <span className="ck-card-price-original">{c.priceOriginal} € einmalig</span>
+                        {(tmpl?.preisOriginal ?? c.priceOriginal) != null && (
+                          <span className="ck-card-price-original">
+                            {tmpl?.preisOriginal ?? c.priceOriginal} € einmalig
+                          </span>
+                        )}
                         <span className="ck-card-price-current">
-                          {c.price} € <small>einmalig</small>
+                          {tmpl?.badge === "freemium" || (!tmpl && c.slug === "lebenssituations-check") ? (
+                            <>
+                              <strong>1 €</strong> <small>einmalig</small>
+                            </>
+                          ) : (
+                            <>
+                              {tmpl?.preis ?? c.price} € <small>einmalig</small>
+                            </>
+                          )}
                         </span>
-                        <span className="ck-card-price-badge">🚀 Launch-Preis</span>
+                        {(tmpl?.badge === "freemium" || (!tmpl && c.slug === "lebenssituations-check")) && (
+                          <span className="ck-card-price-badge ck-card-price-badge--freemium">
+                            🎁 Kostenlos starten
+                          </span>
+                        )}
+                        {(tmpl?.badge === "launch" ||
+                          (!tmpl && c.slug !== "lebenssituations-check" && c.priceOriginal != null)) && (
+                          <span className="ck-card-price-badge">🚀 Launch-Preis</span>
+                        )}
                       </div>
                       <div className="ck-card-btns">
                         <button

@@ -1048,7 +1048,71 @@ html {
   margin-top: 2px;
   width: fit-content;
 }
+.flow-leads-landing .ck-card-price-badge--freemium {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #3b6d11;
+  background: #eaf3de;
+  padding: 3px 8px;
+  border-radius: 99px;
+  margin-top: 2px;
+  width: fit-content;
+}
 .flow-leads-landing .ck-card-btns { display: flex; gap: 8px; }
+
+/* Konfigurator / Modals / Galerie (ohne .flow-leads-landing-Wrapper) */
+.ck-card-price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ck-card-price-original {
+  font-size: 12px;
+  color: #ef4444;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+.ck-card-price-current {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #0f172a;
+  line-height: 1;
+}
+.ck-card-price-current small {
+  font-size: 11px;
+  font-weight: 400;
+  color: #6b7280;
+}
+.ck-card-price-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #854f0b;
+  background: #faeeda;
+  padding: 3px 8px;
+  border-radius: 99px;
+  margin-top: 2px;
+  width: fit-content;
+}
+.ck-card-price-badge--freemium {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #3b6d11;
+  background: #eaf3de;
+  padding: 3px 8px;
+  border-radius: 99px;
+  margin-top: 2px;
+  width: fit-content;
+}
 .flow-leads-landing .ck-demo {
   font-size: 12px;
   font-weight: 600;

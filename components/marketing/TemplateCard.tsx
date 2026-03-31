@@ -1,5 +1,6 @@
 "use client";
 
+import { TemplatePriceCore } from "@/components/ui/TemplatePriceCore";
 import type { Template } from "@/lib/katalog";
 import PhoneMockPreview from "./PhoneMockPreview";
 
@@ -38,9 +39,14 @@ export default function TemplateCard({ template, onDemo, onBuy }: Props) {
       </div>
 
       <div className="flex items-center justify-between gap-2.5 px-[22px] pb-5 pt-3.5">
-        <div className="text-[17px] font-bold tracking-[-0.03em] text-[#111]">
-          {template.preis} €{" "}
-          <small className="text-[11px] font-normal text-[#bbb]">einmalig</small>
+        <div className="flex flex-wrap items-baseline gap-x-1 text-[17px] tracking-[-0.03em] text-[#111]">
+          <TemplatePriceCore template={template} strongClassName="font-bold" />
+          {template.badge !== "freemium" && (
+            <>
+              {" "}
+              <small className="text-[11px] font-normal text-[#bbb]">einmalig</small>
+            </>
+          )}
         </div>
         <div className="flex gap-2">
           <button

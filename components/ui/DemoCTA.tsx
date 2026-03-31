@@ -1,6 +1,7 @@
 'use client';
 
 import { useMakler } from '@/components/ui/MaklerContext';
+import { TemplatePriceCore } from '@/components/ui/TemplatePriceCore';
 import { KATALOG } from '@/lib/katalog';
 
 type Props = { slug: string };
@@ -56,7 +57,13 @@ export default function DemoCTA({ slug }: Props) {
             boxSizing: 'border-box',
           }}
         >
-          Template kaufen{template ? ` — ${template.preis} €` : ''}
+          Template kaufen
+          {template ? (
+            <>
+              {" — "}
+              <TemplatePriceCore template={template} />
+            </>
+          ) : null}
         </a>
         <div style={{ fontSize: '11px', color: '#aaa', textAlign: 'center', marginTop: '8px' }}>
           Einmalkauf · sofort per iFrame einbettbar · kein Abo

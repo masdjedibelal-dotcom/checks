@@ -1,5 +1,7 @@
 export type TemplateKategorie = "alle-kunden" | "luecken" | "finanzen";
 
+export type TemplateBadge = "freemium" | "launch";
+
 export type Template = {
   slug: string;
   icon: string;
@@ -7,7 +9,12 @@ export type Template = {
   desc: string;
   tags: string[];
   kategorie: TemplateKategorie;
+  /** Aktionspreis (Checkout) */
   preis: number;
+  /** Listenpreis (durchgestrichen in UI); bei Freemium weglassen */
+  preisOriginal?: number;
+  /** Preis-Badge in UI */
+  badge?: TemplateBadge;
   accentColor: string;
 };
 
@@ -19,7 +26,9 @@ export const KATALOG: Template[] = [
     desc: "Profil + Bestand → 3 personalisierte Pakete mit Begründung.",
     tags: ["Neukunden", "Vor dem Erstgespräch"],
     kategorie: "alle-kunden",
-    preis: 79,
+    preis: 39,
+    preisOriginal: 59,
+    badge: "launch",
     accentColor: "#c9a96e",
   },
   {
@@ -29,7 +38,8 @@ export const KATALOG: Template[] = [
     desc: "Lebensereignisse auswählen → konkreter Handlungsbedarf mit Bestandsabgleich.",
     tags: ["Bestandskunden", "Lebensereignisse"],
     kategorie: "alle-kunden",
-    preis: 79,
+    preis: 1,
+    badge: "freemium",
     accentColor: "#166534",
   },
   {
@@ -40,6 +50,8 @@ export const KATALOG: Template[] = [
     tags: ["Einkommensschutz", "BU & Krankentagegeld"],
     kategorie: "luecken",
     preis: 59,
+    preisOriginal: 99,
+    badge: "launch",
     accentColor: "#7c3aed",
   },
   {
@@ -49,7 +61,9 @@ export const KATALOG: Template[] = [
     desc: "JAEG-Prüfung, Beitragsvergleich, Familienlogik, konkrete Einordnung.",
     tags: ["Gehaltssprung", "PKV-Wechsel"],
     kategorie: "luecken",
-    preis: 49,
+    preis: 59,
+    preisOriginal: 99,
+    badge: "launch",
     accentColor: "#dc2626",
   },
   {
@@ -60,6 +74,8 @@ export const KATALOG: Template[] = [
     tags: ["Altersvorsorge", "Sparrate"],
     kategorie: "luecken",
     preis: 59,
+    preisOriginal: 99,
+    badge: "launch",
     accentColor: "#059669",
   },
   {
@@ -69,7 +85,9 @@ export const KATALOG: Template[] = [
     desc: "Versorgungslücke mit gesetzl. Witwen-/Waisenrente, empfohlene Summe.",
     tags: ["Familien mit Kindern"],
     kategorie: "luecken",
-    preis: 59,
+    preis: 49,
+    preisOriginal: 79,
+    badge: "launch",
     accentColor: "#be185d",
   },
   {
@@ -80,6 +98,8 @@ export const KATALOG: Template[] = [
     tags: ["Pflege", "Eigenanteil"],
     kategorie: "luecken",
     preis: 49,
+    preisOriginal: 79,
+    badge: "launch",
     accentColor: "#0369a1",
   },
   {
@@ -89,7 +109,9 @@ export const KATALOG: Template[] = [
     desc: "Weg, Risiko-Scanner & Vorsorge: Bank & Existenz, Objektschutz, Zukunft & Recht — Immobilienabsicherung.",
     tags: ["Immobilien", "Eigentümer", "Bau"],
     kategorie: "finanzen",
-    preis: 59,
+    preis: 49,
+    preisOriginal: 79,
+    badge: "launch",
     accentColor: "#b45309",
   },
 ];

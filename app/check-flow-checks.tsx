@@ -75,8 +75,8 @@ export const CHECK_FLOW_META = [
     hook: "Was sich für Sie verändert hat",
     erlebnis:
       "Der Nutzer erkennt, welche Themen durch seine aktuelle Lebenssituation relevant werden.",
-    price: 39,
-    priceOriginal: 59,
+    price: 1,
+    priceOriginal: undefined,
   },
   {
     slug: "immobilien-check" as const,
@@ -93,7 +93,7 @@ export const CHECK_FLOW_META = [
 
 export type CheckFlowSlug = (typeof CHECK_FLOW_META)[number]["slug"];
 
-/** Landing-Karten: `price` = Aktionspreis, `priceOriginal` = durchgestrichener Listenpreis */
+/** Landing-Karten: `price` = Aktionspreis, `priceOriginal` = durchgestrichener Listenpreis (optional z. B. Freemium) */
 export type CheckFlowMeta = {
   slug: CheckFlowSlug;
   catClass: string;
@@ -102,7 +102,7 @@ export type CheckFlowMeta = {
   hook: string;
   erlebnis: string;
   price: number;
-  priceOriginal: number;
+  priceOriginal?: number;
 };
 
 /** Minimales Phone-Chrome — nur Ergebnis-Screens, keine Fragen oder CTAs */

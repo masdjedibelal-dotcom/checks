@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MAKLER } from "@/lib/config";
-import type { Template } from "@/lib/katalog";
+import { KATALOG, type Template } from "@/lib/katalog";
 import { alpha, textOnAccent } from "@/lib/utils";
 
 export type KonfiguratorForm = {
@@ -80,6 +80,9 @@ export default function KonfiguratorOverlay({
   );
 
   if (!template) return null;
+
+  /** Immer Katalog-Preise (Launch/Freemium), falls das übergebene Objekt veraltet wäre */
+  const pricing = KATALOG.find((t) => t.slug === template.slug) ?? template;
 
   const c = form.akzentfarbe;
   const onAccent = textOnAccent(c);
@@ -292,14 +295,36 @@ export default function KonfiguratorOverlay({
           className="flex shrink-0 flex-col gap-2 border-t border-[#f0f0f0] bg-white px-[20px] pt-3 md:flex-row md:flex-wrap md:items-center md:justify-between md:px-[26px] md:py-3.5"
           style={{ paddingBottom: "max(14px, env(safe-area-inset-bottom, 14px))" }}
         >
-          <div className="flex items-baseline gap-2">
-            <div className="text-xl font-bold tracking-[-0.05em] text-[#111]">
-              {template.preis} €
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <div className="ck-card-price-block">
+              {pricing.preisOriginal != null && (
+                <span className="ck-card-price-original">
+                  {pricing.preisOriginal} € einmalig
+                </span>
+              )}
+              <span className="ck-card-price-current">
+                {pricing.badge === "freemium" ? (
+                  <>
+                    <strong>1 €</strong> <small>einmalig</small>
+                  </>
+                ) : (
+                  <>
+                    {pricing.preis} € <small>einmalig</small>
+                  </>
+                )}
+              </span>
+              {pricing.badge === "freemium" && (
+                <span className="ck-card-price-badge ck-card-price-badge--freemium">
+                  🎁 Kostenlos starten
+                </span>
+              )}
+              {pricing.badge === "launch" && (
+                <span className="ck-card-price-badge">🚀 Launch-Preis</span>
+              )}
             </div>
-            <div className="text-[11px] text-[#bbb]">einmalig</div>
             {(err.name || err.email || err.telefon) && (
               <span className="text-[11px] text-[#e53e3e]">
-                · Name, E-Mail &amp; Telefon nötig
+                Name, E-Mail &amp; Telefon nötig
               </span>
             )}
           </div>
