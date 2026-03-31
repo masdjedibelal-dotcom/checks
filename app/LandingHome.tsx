@@ -370,7 +370,7 @@ function FactsSection() {
 
 export default function LandingHome() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
-  const [stickyNavVisible, setStickyNavVisible] = useState(false);
+  const [navScrolled, setNavScrolled] = useState(false);
   const [demoT, setDemoT] = useState<Template | null>(null);
   const [buyT, setBuyT] = useState<Template | null>(null);
   const demoTRef = useRef<Template | null>(null);
@@ -416,14 +416,10 @@ export default function LandingHome() {
   }, []);
 
   useEffect(() => {
-    const nav = document.querySelector(".landing-nav");
-    if (!nav) return;
-    const observer = new IntersectionObserver(
-      ([e]) => setStickyNavVisible(!e?.isIntersecting),
-      { threshold: 0 }
-    );
-    observer.observe(nav);
-    return () => observer.disconnect();
+    const onScroll = () => setNavScrolled(window.scrollY > 80);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   async function handleCheckout(form: KonfiguratorForm, template: Template) {
@@ -452,80 +448,63 @@ export default function LandingHome() {
   return (
     <div className="flow-leads-landing">
 
-      <div className={`sticky-checks-nav${stickyNavVisible ? " sticky-checks-nav--visible" : ""}`}>
-        <a
-          href="#"
-          className="sticky-checks-nav-logo"
-          onClick={(e) => {
-            e.preventDefault();
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-        >
-          <div className="sticky-checks-nav-mark">
-            <svg width="14" height="14" viewBox="0 0 48 48" fill="none" aria-hidden>
-              <path d="M16 14H30V18H20V22H28V26H20V34H16V14Z" fill="white" />
-              <path d="M32 14H36V34H26V30H32V14Z" fill="white" />
-            </svg>
-          </div>
-          <span className="sticky-checks-nav-name">FlowLeads</span>
-        </a>
-
-        <div className="sticky-checks-nav-divider" aria-hidden />
-
-        <div className="sticky-checks-pills">
-          {CHECK_FLOW_META.map((c) => {
-            const tmpl = KATALOG.find((t) => t.slug === c.slug);
-            return (
-              <button
-                key={c.slug}
-                type="button"
-                className="sticky-checks-pill"
-                onClick={() => {
-                  if (!tmpl) return;
-                  setDemoT(tmpl);
-                  void trackEvent({ event_type: "demo_opened", slug: tmpl.slug });
-                }}
-                disabled={!tmpl}
-                aria-label={`Demo: ${tmpl?.name ?? c.name}`}
-              >
-                <span className="sticky-checks-pill-dot" aria-hidden />
-                {tmpl?.name ?? c.name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* ── NAV ───────────────────────────────────────────────────────────── */}
-      <nav className="landing-nav" aria-label="Hauptnavigation">
+      <nav
+        className={`landing-nav${navScrolled ? " landing-nav--scrolled" : ""}`}
+        aria-label="Hauptnavigation"
+      >
         <div className="logo">
           <div className="logo-mark">
-            <svg
-              width="28"
-              height="28"
-              viewBox="0 0 48 48"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden
-            >
+            <svg width="28" height="28" viewBox="0 0 48 48" fill="none" aria-hidden>
               <rect width="48" height="48" rx="12" fill="#0F172A" />
-              <path
-                d="M16 14H30V18H20V22H28V26H20V34H16V14Z"
-                fill="white"
-              />
+              <path d="M16 14H30V18H20V22H28V26H20V34H16V14Z" fill="white" />
               <path d="M32 14H36V34H26V30H32V14Z" fill="white" />
             </svg>
           </div>
           <span>FlowLeads</span>
         </div>
-        <div className="nav-links">
-          <a href="#how">Wie es funktioniert</a>
-          <a href="#tools">Microsites</a>
-          <a href="#faq">FAQ</a>
-        </div>
-        <div className="nav-right">
-          <a href="#tools" className="btn-cta">Microsites ansehen</a>
-        </div>
+
+        {!navScrolled && (
+          <>
+            <div className="nav-links">
+              <a href="#how">Wie es funktioniert</a>
+              <a href="#tools">Microsites</a>
+              <a href="#faq">FAQ</a>
+            </div>
+            <div className="nav-right">
+              <a href="#tools" className="btn-cta">
+                Microsites ansehen
+              </a>
+            </div>
+          </>
+        )}
+
+        {navScrolled && (
+          <>
+            <div className="nav-sticky-divider" aria-hidden />
+            <div className="nav-sticky-pills">
+              {CHECK_FLOW_META.map((c) => {
+                const tmpl = KATALOG.find((t) => t.slug === c.slug);
+                return (
+                  <button
+                    key={c.slug}
+                    type="button"
+                    className="nav-sticky-pill"
+                    onClick={() => {
+                      if (!tmpl) return;
+                      setDemoT(tmpl);
+                      void trackEvent({ event_type: "demo_opened", slug: tmpl.slug });
+                    }}
+                    disabled={!tmpl}
+                    aria-label={`Demo: ${tmpl?.name ?? c.name}`}
+                  >
+                    {tmpl?.name ?? c.name}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </nav>
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
@@ -539,14 +518,42 @@ export default function LandingHome() {
               {" "}
               <span className="hero-h1-line hero-h1-line--2">Weniger Aufwand.</span>
               {" "}
-              <span className="hero-h1-line hero-h1-line--3">Mehr Abschluss.</span>
+              <span className="hero-h1-line hero-h1-line--3">Mehr Erfolg.</span>
             </h1>
 
-            <p className="hero-sub au d2">
-              Fertige Microsites mit Rechnern — zur Leadgenerierung, gezielten Bedarfsanalyse
-              oder Gesprächsvorbereitung in der Beratung. Mobil, individualisiert und überall
-              einsetzbar: QR-Code, Social Media, Website oder live im Kundengespräch.
-            </p>
+            <div className="hero-sub-block au d2">
+              <p className="hero-lead">
+                Fertige Microsites mit Rechnern — zur Leadgenerierung, gezielten Bedarfsanalyse
+                oder Gesprächsvorbereitung in der Beratung.
+              </p>
+              <ul className="hero-benefits" aria-label="Vorteile auf einen Blick">
+                <li className="hero-benefit-item">
+                  <span className="hero-benefit-emoji" aria-hidden>
+                    📱
+                  </span>
+                  <span className="hero-benefit-text">
+                    <strong>Mobil</strong>
+                  </span>
+                </li>
+                <li className="hero-benefit-item">
+                  <span className="hero-benefit-emoji" aria-hidden>
+                    🎨
+                  </span>
+                  <span className="hero-benefit-text">
+                    <strong>Individualisiert</strong>
+                  </span>
+                </li>
+                <li className="hero-benefit-item">
+                  <span className="hero-benefit-emoji" aria-hidden>
+                    🌐
+                  </span>
+                  <span className="hero-benefit-text">
+                    <strong>Flexibel einsetzbar:</strong> QR-Code, Social Media, eigene Website oder
+                    in der Beratung
+                  </span>
+                </li>
+              </ul>
+            </div>
 
             <div className="hero-btns au d3">
               <a href="#tools" className="btn-hero-cta">
