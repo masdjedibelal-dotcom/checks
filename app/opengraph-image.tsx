@@ -23,13 +23,13 @@ export default function OgImage() {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div
             style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               width: 52,
               height: 52,
               borderRadius: 12,
               background: "#ffffff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
             }}
           >
             <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
@@ -46,6 +46,8 @@ export default function OgImage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div
             style={{
+              display: "flex",
+              alignItems: "center",
               fontSize: 13,
               fontWeight: 600,
               color: "#b8884a",
@@ -57,6 +59,8 @@ export default function OgImage() {
           </div>
           <div
             style={{
+              display: "flex",
+              flexDirection: "column",
               fontSize: 56,
               fontWeight: 800,
               color: "#ffffff",
@@ -69,6 +73,7 @@ export default function OgImage() {
           </div>
           <div
             style={{
+              display: "flex",
               fontSize: 20,
               color: "rgba(255,255,255,0.55)",
               lineHeight: 1.5,
@@ -87,6 +92,8 @@ export default function OgImage() {
               <div
                 key={t}
                 style={{
+                  display: "flex",
+                  alignItems: "center",
                   padding: "6px 14px",
                   borderRadius: 6,
                   border: "1px solid rgba(255,255,255,0.12)",
