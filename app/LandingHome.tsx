@@ -637,14 +637,14 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section className="testimonials-section" aria-labelledby="testimonials-heading">
-        <div className="testimonials-inner">
-          <div className="testimonials-head fade-up">
-            <p className="testimonials-eyebrow">Aus der Praxis</p>
-            <h2 id="testimonials-heading" className="testimonials-h2">
+      <section className="vertrieb-ec testimonials-band" aria-labelledby="testimonials-heading">
+        <div className="vertrieb-ec-inner">
+          <div className="vertrieb-ec-head fade-up">
+            <p className="vertrieb-ec-eyebrow">Aus der Praxis</p>
+            <h2 id="testimonials-heading" className="vertrieb-ec-h2">
               Was Makler über FlowLeads sagen
             </h2>
-            <p className="testimonials-sub">Von Maklern — für den Alltag im Vertrieb.</p>
+            <p className="vertrieb-ec-sub">Von Maklern — für den Alltag im Vertrieb.</p>
           </div>
 
           <div className="testimonials-grid">
@@ -658,7 +658,7 @@ export default function LandingHome() {
                 >
                   <div className="testimonial-stars" aria-label="5 von 5 Sternen">
                     {Array.from({ length: 5 }).map((_, si) => (
-                      <svg key={si} width="13" height="13" viewBox="0 0 14 14" fill="#F59E0B" aria-hidden>
+                      <svg key={si} width="13" height="13" viewBox="0 0 14 14" fill="currentColor" aria-hidden>
                         <path d="M7 1l1.5 4h4l-3.3 2.4 1.3 4L7 9 3.5 11.4l1.3-4L1.5 5h4z" />
                       </svg>
                     ))}
@@ -780,14 +780,14 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section className="custom-order-section" aria-labelledby="custom-order-heading">
-        <div className="custom-order-inner">
-          <div className="custom-order-head fade-up">
-            <p className="custom-order-eyebrow">Individuelle Lösung</p>
-            <h2 id="custom-order-heading" className="custom-order-h2">
+      <section className="faq-section custom-order-band" aria-labelledby="custom-order-heading">
+        <div className="inner custom-order-inner">
+          <div className="vertrieb-ec-head fade-up">
+            <p className="vertrieb-ec-eyebrow">Individuelle Lösung</p>
+            <h2 id="custom-order-heading" className="vertrieb-ec-h2">
               Ihre Microsite.<br />Ihr Thema. Ihr Stil.
             </h2>
-            <p className="custom-order-sub">
+            <p className="vertrieb-ec-sub">
               Keines der fertigen Themen passt? Wir entwickeln eine Microsite
               genau nach Ihren Anforderungen — Thema, Fragen und Design individuell.
             </p>
@@ -824,7 +824,7 @@ export default function LandingHome() {
           <div className="custom-order-cta-wrap fade-up">
             <a
               href="mailto:hallo@flowleads.de?subject=Individuelle%20Microsite%20anfragen"
-              className="custom-order-cta"
+              className="btn-cta custom-order-mail-cta"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
                 <path d="M1 3h12v8a1 1 0 01-1 1H2a1 1 0 01-1-1V3z" stroke="currentColor" strokeWidth="1.2" fill="none"/>
@@ -832,7 +832,7 @@ export default function LandingHome() {
               </svg>
               Individuelle Microsite anfragen
             </a>
-            <span className="custom-order-cta-hint">Wir melden uns innerhalb von 24 Stunden.</span>
+            <p className="checks-section-tagline custom-order-cta-hint">Wir melden uns innerhalb von 24 Stunden.</p>
           </div>
         </div>
       </section>

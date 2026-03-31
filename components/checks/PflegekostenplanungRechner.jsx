@@ -656,10 +656,19 @@ export default function PflegekostenplanungRechner() {
 
           <div style={T.section}>
             <div style={T.sectionLbl}>Empfohlene Produkte</div>
-            <div style={{ ...T.cardPrimary, overflow: "hidden" }}>
+            <div style={{ ...T.cardPrimary, overflow: "visible" }}>
               <div style={{ padding: "13px 16px", background: `color-mix(in srgb, ${C} 4%, white)` }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
-                  <div style={{ fontSize: "13px", fontWeight: "700", color: "#1F2937" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: "12px",
+                    width: "100%",
+                  }}
+                >
+                  <div style={{ flex: "1 1 160px", minWidth: 0, fontSize: "13px", fontWeight: "700", color: "#1F2937" }}>
                     Pflegetagegeld
                     <span
                       style={{
@@ -672,22 +681,47 @@ export default function PflegekostenplanungRechner() {
                         borderRadius: "999px",
                         textTransform: "uppercase",
                         letterSpacing: "0.3px",
+                        whiteSpace: "normal",
                       }}
                     >
                       Empfohlen
                     </span>
                   </div>
-                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px", minWidth: 0 }}>
-                    <div style={{ fontSize: "26px", fontWeight: "800", color: C, letterSpacing: "-0.6px", lineHeight: 1.1 }}>
+                  <div
+                    style={{
+                      flex: "0 1 auto",
+                      minWidth: 0,
+                      maxWidth: "100%",
+                      textAlign: "right",
+                      marginLeft: "auto",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "26px",
+                        fontWeight: "800",
+                        color: C,
+                        letterSpacing: "-0.6px",
+                        lineHeight: 1.1,
+                        wordBreak: "break-word",
+                      }}
+                    >
                       {R.empfTagegeld} €
                     </div>
-                    <div style={{ fontSize: "11px", fontWeight: "600", color: "#6B7280", marginTop: "4px" }}>empfohlener Tagessatz</div>
-                    <div style={{ fontSize: "12px", color: "#9CA3AF", marginTop: "6px", lineHeight: 1.35 }}>
-                      ca. {fmt(R.empfTagegeld * 30)} € pro Monat (30 Tage)
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        color: "#6B7280",
+                        marginTop: "4px",
+                        lineHeight: 1.35,
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      empfohlener Tagessatz
                     </div>
                   </div>
                 </div>
-                <div style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55 }}>Zahlt pro Pflegetag — unabhängig von den tatsächlichen Kosten.</div>
               </div>
             </div>
           </div>

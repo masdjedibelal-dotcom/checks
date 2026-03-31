@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
@@ -379,7 +379,27 @@ const WIZARD_TOTAL = 7;
 function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
   const[scr,setScr]=useState(1);
   const[microTransition,setMicroTransition]=useState(null);
+  const jobTypeSectionRef = useRef(null);
+  const prevEmploymentRef = useRef(profil.employmentStatus);
   useCheckScrollToTop([scr,microTransition]);
+
+  useEffect(() => {
+    if (scr !== 2) {
+      prevEmploymentRef.current = profil.employmentStatus;
+      return;
+    }
+    const prev = prevEmploymentRef.current;
+    const cur = profil.employmentStatus;
+    if (!cur || cur === prev) return;
+    prevEmploymentRef.current = cur;
+    const id = requestAnimationFrame(() => {
+      jobTypeSectionRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+        block: "start",
+      });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [scr, profil.employmentStatus]);
   const mark=textOnAccent(C);
   const canNext =
     scr === 1 || scr === WIZARD_TOTAL
@@ -461,7 +481,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
             <div style={sectionLbl}>Rechtlicher Status</div>
             <Opts k="employmentStatus" opts={EMP_OPTS} profil={profil} set={set} C={C} T={T} />
           </div>
-          <div style={T.section}>
+          <div ref={jobTypeSectionRef} style={{ ...T.section, scrollMarginTop: "72px" }}>
             <div style={sectionLbl}>Tätigkeitsart</div>
             <Opts k="jobType" opts={JOB_OPTS} cols={2} profil={profil} set={set} C={C} T={T} />
           </div>
