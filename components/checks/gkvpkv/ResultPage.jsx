@@ -602,7 +602,7 @@ export default function ResultPage({
   maklerFirma,
   goTo,
   FAKTOREN,
-  progressSteps = ["Situation", "Einkommen", "Ergebnis", "Kontakt"],
+  progressSteps = ["Über Sie", "Einkommen", "Ergebnis", "Kontakt"],
   progressCurrentStep = 1,
 }) {
   const [gkvArchiv, setGkvArchiv] = useState(null);

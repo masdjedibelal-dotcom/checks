@@ -192,10 +192,15 @@ function kvStoryStatusGehaltCopy(beruf, brutto) {
   }
 }
 
-const GKVPKV_HEADER_STEPS = ["Situation", "Einkommen", "Ergebnis", "Kontakt"];
+/** scr 1–3 → „Über Sie“, scr 4–6 (+ Familien-Substeps) → „Einkommen“ */
+const GKVPKV_HEADER_STEPS = ["Über Sie", "Einkommen", "Ergebnis", "Kontakt"];
 
-function gkvpkvHeaderStep(phase) {
-  return phase === 1 ? 0 : phase === 2 ? 1 : phase === 3 ? 2 : 3;
+function gkvpkvHeaderStep(phase, scr) {
+  if (phase === 2) return 2;
+  if (phase === 3) return 3;
+  if (phase === "bridge") return 2;
+  if (phase === 1) return (scr ?? 1) <= 3 ? 0 : 1;
+  return 3;
 }
 
 function Header({ maklerFirma, C, currentStep = 0, showProgressBar = true }) {
@@ -500,7 +505,7 @@ export default function GKVPKVRechner(){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
     return withStandalone(
       <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
-        <Header maklerFirma={MAKLER.firma} C={C} currentStep={gkvpkvHeaderStep(3)} />
+        <Header maklerFirma={MAKLER.firma} C={C} currentStep={gkvpkvHeaderStep(3, scr)} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
           <div style={T.h1}>{R.headline} — nächster Schritt.</div>
@@ -593,7 +598,7 @@ export default function GKVPKVRechner(){
         goTo={goTo}
         FAKTOREN={FAKTOREN}
         progressSteps={GKVPKV_HEADER_STEPS}
-        progressCurrentStep={gkvpkvHeaderStep(2)}
+        progressCurrentStep={gkvpkvHeaderStep(2, scr)}
       />
     );
   }
@@ -601,7 +606,7 @@ export default function GKVPKVRechner(){
   // ── Phase 1: Wizard (Intro, Daten 2–4, System-Story, Familie) → Loader → Bridge-Phase ────
   return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header maklerFirma={MAKLER.firma} C={C} currentStep={gkvpkvHeaderStep(1)} />
+      <Header maklerFirma={MAKLER.firma} C={C} currentStep={gkvpkvHeaderStep(1, scr)} />
 
       {/* Slide 1: Intro */}
       {scr === 1 && (

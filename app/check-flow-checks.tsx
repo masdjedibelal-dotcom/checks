@@ -9,7 +9,8 @@ export const CHECK_FLOW_META = [
     hook: "Wenn Ihr Einkommen wegfällt",
     erlebnis:
       "Der Nutzer sieht, wie stark sein Einkommen einbricht und wo die finanzielle Lücke entsteht.",
-    price: "59",
+    price: 59,
+    priceOriginal: 99,
   },
   {
     slug: "gkv-pkv" as const,
@@ -19,7 +20,8 @@ export const CHECK_FLOW_META = [
     hook: "Welche Krankenversicherung zu Ihnen passt",
     erlebnis:
       "Der Nutzer bekommt eine erste Einordnung und versteht, welche Richtung für seine Situation sinnvoll ist.",
-    price: "49",
+    price: 59,
+    priceOriginal: 99,
   },
   {
     slug: "vorsorge-check" as const,
@@ -29,7 +31,8 @@ export const CHECK_FLOW_META = [
     hook: "Wie viel Ihnen im Alter fehlen wird",
     erlebnis:
       "Der Nutzer sieht seine persönliche Rentenlücke und bekommt ein Gefühl für seine finanzielle Zukunft.",
-    price: "59",
+    price: 59,
+    priceOriginal: 99,
   },
   {
     slug: "risikoleben" as const,
@@ -39,7 +42,8 @@ export const CHECK_FLOW_META = [
     hook: "Wie Ihre Familie abgesichert ist",
     erlebnis:
       "Der Nutzer berechnet den finanziellen Bedarf und erkennt, welche Lücke im Ernstfall entsteht.",
-    price: "59",
+    price: 49,
+    priceOriginal: 79,
   },
   {
     slug: "pflege-check" as const,
@@ -49,7 +53,8 @@ export const CHECK_FLOW_META = [
     hook: "Welche Kosten im Pflegefall entstehen",
     erlebnis:
       "Der Nutzer sieht die monatlichen Eigenanteile und versteht die tatsächliche finanzielle Belastung.",
-    price: "59",
+    price: 49,
+    priceOriginal: 79,
   },
   {
     slug: "bedarfscheck" as const,
@@ -59,7 +64,8 @@ export const CHECK_FLOW_META = [
     hook: "Wie Sie sinnvoll abgesichert sind",
     erlebnis:
       "Der Nutzer bekommt eine klare Struktur aus Basis-, Rundum- und Premium-Absicherung.",
-    price: "79",
+    price: 39,
+    priceOriginal: 59,
   },
   {
     slug: "lebenssituations-check" as const,
@@ -69,7 +75,8 @@ export const CHECK_FLOW_META = [
     hook: "Was sich für Sie verändert hat",
     erlebnis:
       "Der Nutzer erkennt, welche Themen durch seine aktuelle Lebenssituation relevant werden.",
-    price: "79",
+    price: 39,
+    priceOriginal: 59,
   },
   {
     slug: "immobilien-check" as const,
@@ -79,11 +86,24 @@ export const CHECK_FLOW_META = [
     hook: "Risiko-Scanner für Finanzierung, Bau und Bestand",
     erlebnis:
       "Drei Säulen: Bank & Existenz, Objektschutz, Zukunft & Recht — inkl. RLV/BU, Pflege und Eigentümer-Rechtsschutz.",
-    price: "59",
+    price: 49,
+    priceOriginal: 79,
   },
 ] as const;
 
 export type CheckFlowSlug = (typeof CHECK_FLOW_META)[number]["slug"];
+
+/** Landing-Karten: `price` = Aktionspreis, `priceOriginal` = durchgestrichener Listenpreis */
+export type CheckFlowMeta = {
+  slug: CheckFlowSlug;
+  catClass: string;
+  cat: string;
+  name: string;
+  hook: string;
+  erlebnis: string;
+  price: number;
+  priceOriginal: number;
+};
 
 /** Minimales Phone-Chrome — nur Ergebnis-Screens, keine Fragen oder CTAs */
 function ResultPhoneShell({ accent, children }: { accent: string; children: ReactNode }): ReactNode {

@@ -409,6 +409,16 @@ function berechne({ pflegeOrt, region, vorsorgeMonat }) {
 }
 
 const WIZARD_STEPS = 5;
+/** scr 1–3: Situation; scr 4–5: Finanzen (Story + Ausgangslage) */
+const PFLEGE_HEADER_STEPS = ["Situation", "Finanzen", "Ergebnis", "Kontakt"];
+
+function pflegeHeaderStep(phase, scr) {
+  if (phase === 2) return 2;
+  if (phase === 3) return 3;
+  if (phase === "bridge") return 2;
+  if (phase === 1) return (scr ?? 1) <= 3 ? 0 : 1;
+  return 3;
+}
 
 export default function PflegekostenplanungRechner() {
   const MAKLER = useCheckConfig();
@@ -464,9 +474,6 @@ export default function PflegekostenplanungRechner() {
   }, []);
 
   if (!isReady) return <CheckConfigLoadingShell />;
-
-  const PFLEGE_HEADER_STEPS = ["Situation", "Szenario", "Ergebnis", "Kontakt"];
-  const pflegeHeaderStep = (ph) => (ph === 1 ? 0 : ph === 2 ? 1 : ph === 3 ? 2 : 3);
 
   function Header({ currentStep, showProgressBar = true }) {
     return (
@@ -613,7 +620,7 @@ export default function PflegekostenplanungRechner() {
 
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header currentStep={pflegeHeaderStep(2)} />
+        <Header currentStep={pflegeHeaderStep(2, scr)} />
 
         <div style={{ paddingBottom: "120px" }}>
           <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -796,7 +803,7 @@ export default function PflegekostenplanungRechner() {
   if (phase === 3) {
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header currentStep={pflegeHeaderStep(3)} />
+        <Header currentStep={pflegeHeaderStep(3, scr)} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
           <div style={T.h1}>
@@ -862,7 +869,7 @@ export default function PflegekostenplanungRechner() {
 
   return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header currentStep={pflegeHeaderStep(1)} />
+      <Header currentStep={pflegeHeaderStep(1, scr)} />
 
       {scr === 1 && (
         <>

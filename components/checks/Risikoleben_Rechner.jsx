@@ -42,6 +42,15 @@ const fmt  = (n) => Math.round(Math.abs(n)).toLocaleString("de-DE") + " €";
 const fmtK = (n) => n>=10000 ? Math.round(n/1000)+".000 €" : fmt(n);
 /** Intro + Familie + Kredit + Bedarfs-Story + 2 Datenschritte (ohne Bridge im Wizard) */
 const RL_WIZARD_STEPS = 6;
+/** scr 1–3: Familie/Intro; scr 4–6: Bedarf & Einnahmen */
+const RL_HEADER_STEPS = ["Familie", "Bedarf", "Ergebnis", "Kontakt"];
+
+function rlHeaderStep(phase, scr) {
+  if (phase === 2) return 2;
+  if (phase === 3) return 3;
+  if (phase === 1) return (scr ?? 1) <= 3 ? 0 : 1;
+  return 3;
+}
 /** Priorität: Restschuld → Kinder → Paar (ohne Kinder) — keine Bestattung/ErbSt */
 function risikoStoryBedarfCopy(restschuld, familienModus) {
   const rs = Number(restschuld) || 0;
@@ -212,9 +221,6 @@ export default function RisikolebenRechner() {
 
   const set     = (k, v) => setP(x => ({ ...x, [k]: v }));
   const R = berechne(p);
-
-  const RL_HEADER_STEPS = ["Familie", "Einkommen", "Ergebnis", "Kontakt"];
-  const rlHeaderStep = (ph) => (ph === 1 ? 0 : ph === 2 ? 1 : ph === 3 ? 2 : 3);
 
   function Header({ currentStep = 0, showProgressBar = true }) {
     return (
@@ -517,7 +523,7 @@ export default function RisikolebenRechner() {
 
     return withStandalone(
       <div style={T.root}>
-        <Header currentStep={rlHeaderStep(1)} />
+        <Header currentStep={rlHeaderStep(1, scr)} />
         <div key={animKey} className="fade-in" style={T.body}>
           {scr === 1 && (
             <CheckKitStoryHero
@@ -793,7 +799,7 @@ export default function RisikolebenRechner() {
 
     return withStandalone(
       <Shell
-        headerStep={rlHeaderStep(2)}
+        headerStep={rlHeaderStep(2, scr)}
         eyebrow={undefined}
         title={undefined}
         lead={undefined}
@@ -1115,7 +1121,7 @@ export default function RisikolebenRechner() {
     const valid = formData.name.trim() && formData.email.trim() && kontaktConsent;
     return withStandalone(
       <Shell
-        headerStep={rlHeaderStep(3)}
+        headerStep={rlHeaderStep(3, scr)}
         eyebrow="Fast geschafft"
         title={R.netto > 0 ? `Summe von ${fmtK(R.netto)} absichern.` : "Ihre Absicherung besprechen."}
         lead="Wir melden uns innerhalb von 24 Stunden mit konkreten Tarifen für Ihre Situation."

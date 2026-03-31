@@ -9,15 +9,15 @@ import { publicAppUrl } from "@/lib/licenseUtils";
  * Slug-Mapping: bedarfscheck=Versicherungs-Check · lebenssituations-check · einkommens-check ·
  * gkv-pkv=KV-Navigator · vorsorge-check · risikoleben · pflege-check · immobilien-check (=Immobilienabsicherung)
  */
-const DEFAULT_STRIPE_PRICE_IDS: Record<string, string> = {
-  bedarfscheck: "price_1TDlFRCWQbLUwqOtPni0DcmM",
-  "lebenssituations-check": "price_1TDlFqCWQbLUwqOt5AirEA3x",
-  "einkommens-check": "price_1TDlG6CWQbLUwqOtLDMljOen",
-  "gkv-pkv": "price_1TDlGMCWQbLUwqOtrCOzgPzm",
-  "vorsorge-check": "price_1TDlGbCWQbLUwqOtiy2e6TkD",
-  risikoleben: "price_1TDlGqCWQbLUwqOtwhkLZNc3",
-  "pflege-check": "price_1TDlH4CWQbLUwqOtmW6laQsr",
-  "immobilien-check": "price_1TDlHICWQbLUwqOtFct53MTA",
+const DEFAULT_PRICE_IDS: Record<string, string> = {
+  bedarfscheck: "price_1TDnJgCt4XUykFlknxSn5QPg",
+  "lebenssituations-check": "price_1TDnJeCt4XUykFlkCPToAJGp",
+  "einkommens-check": "price_1TDnJdCt4XUykFlkd7x5gphp",
+  "gkv-pkv": "price_1TDnJcCt4XUykFlkMmYAtytr",
+  "vorsorge-check": "price_1TDnJdCt4XUykFlkQq0xDsAJ",
+  risikoleben: "price_1TDnJeCt4XUykFlkJRRTmwhd",
+  "pflege-check": "price_1TDnJcCt4XUykFlkxlK54OvI",
+  "immobilien-check": "price_1TDnJeCt4XUykFlkXO26Rjf7",
 };
 
 function parseStripePriceOverrides(): Record<string, string> {
@@ -38,7 +38,7 @@ function parseStripePriceOverrides(): Record<string, string> {
 }
 
 function resolvedStripePriceIds(): Record<string, string> {
-  return { ...DEFAULT_STRIPE_PRICE_IDS, ...parseStripePriceOverrides() };
+  return { ...DEFAULT_PRICE_IDS, ...parseStripePriceOverrides() };
 }
 
 export async function POST(req: NextRequest) {

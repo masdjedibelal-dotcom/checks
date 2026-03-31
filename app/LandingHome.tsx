@@ -526,32 +526,18 @@ export default function LandingHome() {
                 Fertige Microsites mit Rechnern — zur Leadgenerierung, gezielten Bedarfsanalyse
                 oder Gesprächsvorbereitung in der Beratung.
               </p>
-              <ul className="hero-benefits" aria-label="Vorteile auf einen Blick">
-                <li className="hero-benefit-item">
-                  <span className="hero-benefit-emoji" aria-hidden>
-                    📱
+              <div className="hero-benefit-chips" aria-label="Vorteile auf einen Blick">
+                {[
+                  { emoji: "📱", label: "Mobil" },
+                  { emoji: "🎨", label: "Individuell" },
+                  { emoji: "🌐", label: "Flexibel" },
+                ].map(({ emoji, label }) => (
+                  <span key={`${emoji}-${label}`} className="hero-benefit-chip">
+                    <span aria-hidden>{emoji}</span>
+                    {label}
                   </span>
-                  <span className="hero-benefit-text">
-                    <strong>Mobil</strong>
-                  </span>
-                </li>
-                <li className="hero-benefit-item">
-                  <span className="hero-benefit-emoji" aria-hidden>
-                    🎨
-                  </span>
-                  <span className="hero-benefit-text">
-                    <strong>Individualisiert</strong>
-                  </span>
-                </li>
-                <li className="hero-benefit-item">
-                  <span className="hero-benefit-emoji" aria-hidden>
-                    🌐
-                  </span>
-                  <span className="hero-benefit-text">
-                    <strong>Flexibel einsetzbar:</strong>
-                  </span>
-                </li>
-              </ul>
+                ))}
+              </div>
             </div>
 
             <div className="hero-btns au d3">
@@ -640,8 +626,12 @@ export default function LandingHome() {
                       <p className="ck-card-erlebnis">{c.erlebnis}</p>
                     </div>
                     <div className="ck-card-foot">
-                      <div className="ck-card-price">
-                        {c.price} € <small>einmalig</small>
+                      <div className="ck-card-price-block">
+                        <span className="ck-card-price-original">{c.priceOriginal} € einmalig</span>
+                        <span className="ck-card-price-current">
+                          {c.price} € <small>einmalig</small>
+                        </span>
+                        <span className="ck-card-price-badge">🚀 Launch-Preis</span>
                       </div>
                       <div className="ck-card-btns">
                         <button

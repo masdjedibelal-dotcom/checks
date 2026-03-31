@@ -219,12 +219,10 @@ export async function POST(req: NextRequest) {
 <div class="card">
 
   <div class="hd">
-    <div style="width:28px;height:28px;background:#1a1a1a;border-radius:7px;border:1px solid #333;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-        <rect x="1" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a"/>
-        <rect x="9.5" y="1" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4"/>
-        <rect x="1" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a" opacity="0.4"/>
-        <rect x="9.5" y="9.5" width="5.5" height="5.5" rx=".8" fill="#b8884a"/>
+    <div style="width:28px;height:28px;background:#0F172A;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="14" height="14" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 14H30V18H20V22H28V26H20V34H16V14Z" fill="white" />
+        <path d="M32 14H36V34H26V30H32V14Z" fill="white" />
       </svg>
     </div>
     <span class="hd-name">FlowLeads</span>

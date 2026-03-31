@@ -240,10 +240,15 @@ function rentenStoryZeitEinkommenCopy(alter, nettoEinkommen, wunschRentenalter) 
   };
 }
 
-const RENTEN_HEADER_STEPS = ["Einkommen", "Situation", "Ergebnis", "Kontakt"];
+/** scr 1–4 → „Über Sie“, scr 5–8 → „Ziele“ */
+const RENTEN_HEADER_STEPS = ["Über Sie", "Ziele", "Ergebnis", "Kontakt"];
 
-function rentenHeaderStep(phase) {
-  return phase === 1 ? 0 : phase === 2 ? 1 : phase === 3 ? 2 : 3;
+function rentenHeaderStep(phase, scr) {
+  if (phase === 2) return 2;
+  if (phase === 3) return 3;
+  if (phase === "bridge") return 2;
+  if (phase === 1) return (scr ?? 1) <= 4 ? 0 : 1;
+  return 3;
 }
 
 function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
@@ -513,7 +518,7 @@ export default function RentenRechner() {
     const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
     return withStandalone(
       <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-        <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(3)} />
+        <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(3, scr)} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
           <div style={T.h1}>
@@ -607,7 +612,7 @@ export default function RentenRechner() {
 
     return withStandalone(
       <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
-        <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(2)} />
+        <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(2, scr)} />
 
         <div style={{ paddingBottom: "120px" }}>
           <div
@@ -1073,7 +1078,7 @@ export default function RentenRechner() {
   // Phase 1: Intro + Daten + Story (Alter/Netto/Rentenalter) + … + Inflation → Loader → Bridge → Phase 2
   return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(1)} />
+      <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(1, scr)} />
 
       {scr === 1 && (
         <>

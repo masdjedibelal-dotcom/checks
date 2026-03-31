@@ -377,7 +377,7 @@ function WizardMicroMomentBanner({ text, C }) {
 // ─── Phase 1: Wizard (7 Screens) ─────────────────────────────────────────────
 const WIZARD_TOTAL = 7;
 
-const STEPS = ["Profil", "Bestand", "Ergebnis", "Kontakt"];
+const STEPS = ["Über Sie", "Bestand", "Ergebnis", "Kontakt"];
 
 function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
   const[scr,setScr]=useState(1);
@@ -458,8 +458,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
   };
   const blockForward = microTransition !== null;
   const sectionLbl = { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" };
-  const phase = 1;
-  const step = phase === 1 ? 0 : phase === 3 ? 2 : phase === 4 ? 3 : 0;
+  const step = scr <= 6 ? 0 : 1;
   return(
     <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
       <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />

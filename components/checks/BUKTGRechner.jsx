@@ -514,10 +514,15 @@ function makeBUKTGT(C) {
 }
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
-const BUKTG_HEADER_STEPS = ["Beruf", "Einkommen", "Ergebnis", "Kontakt"];
+/** wizStep 1–4: Intro, Beruf, ggf. Staats-Story, KV — wizStep 5+: Einkommen & Absicherung */
+const BUKTG_HEADER_STEPS = ["Beruf", "Absicherung", "Ergebnis", "Kontakt"];
 
-function buktgHeaderStep(phase) {
-  return phase === 1 ? 0 : phase === 2 ? 1 : phase === 3 ? 2 : 3;
+function buktgHeaderStep(phase, wizStep) {
+  if (phase === 2) return 2;
+  if (phase === 3) return 3;
+  if (phase === "bridge") return 2;
+  if (phase === 1) return (wizStep ?? 1) <= 4 ? 0 : 1;
+  return 3;
 }
 
 function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
@@ -947,7 +952,7 @@ export default function BUKTGRechner() {
   // ── Kontakt (nach Ergebnis) ─────────────────────────────────────────────────
   if (phase === 3) return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(3)} />
+      <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(3, wizStep)} />
       <div style={T.hero}>
         <div style={T.label}>Fast geschafft</div>
         <div style={T.h1}>
@@ -1073,7 +1078,7 @@ export default function BUKTGRechner() {
 
     return withStandalone(
       <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
-        <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(2)} />
+        <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(2, wizStep)} />
 
         <div style={{ paddingBottom: "120px" }}>
           {/* Hero: große Zahl, darunter Pill */}
@@ -1378,7 +1383,7 @@ export default function BUKTGRechner() {
   // ── Phase 1: Story + dynamischer Wizard ─────────────────────────────────────
   return withStandalone(
     <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
-      <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(1)} />
+      <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(1, wizStep)} />
 
       {curFlow?.kind === "intro" && (
         <>

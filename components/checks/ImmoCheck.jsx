@@ -22,7 +22,7 @@ import { trackEvent } from "@/lib/trackEvent";
   document.head.appendChild(s);
 })();
 
-const IMMO_HEADER_STEPS = ["Situation", "Risiko", "Vorsorge", "Ergebnis", "Kontakt"];
+const IMMO_HEADER_STEPS = ["Situation", "Eckpunkte", "Familie", "Ergebnis", "Kontakt"];
 
 /** Traum-Realitäts-Check: Zwischen Weiche und Risiko-Scanner */
 const PATH_INTRO_STORY = {
