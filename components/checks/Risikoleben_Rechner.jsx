@@ -135,16 +135,46 @@ function RisikoHintCard({ children, icon = "💡", accent = "#2563eb" }) {
   );
 }
 
-// ─── BERECHNUNG (vereinfacht) ─────────────────────────────────────────────────
-function berechne({ monatsBedarf, laufzeit, partnerEinkommen, witwenRente, sonstiges, kredite, vorhanden }) {
-  const einnahmen = partnerEinkommen + witwenRente + sonstiges;
-  const luecke = Math.max(0, monatsBedarf - einnahmen);
-  const bedarfKapital = luecke * 12 * laufzeit;
-  const gesamt = bedarfKapital + kredite;
-  const netto = Math.max(0, gesamt - vorhanden);
+function rlHatKinder(familienModus) {
+  return (
+    familienModus === "paar_mit_kinder" ||
+    familienModus === "alleinerziehend" ||
+    familienModus === "single_mit_kinder"
+  );
+}
+
+// ─── BERECHNUNG: Witwen-/Waisenrente aus Familienmodus + Kinderanzahl, Versorgungsdauer vereinfacht ──
+function berechne(p) {
+  const hatKinder = rlHatKinder(p.familienModus);
+  /**
+   * GRV-Näherung: fachlich wäre GRV_ANTEIL = eigenes Netto × 0,45 — hier bewusst monatsBedarf × 0,45,
+   * damit keine zusätzliche Wizard-Frage nötig ist. Familienbedarf ≠ Versicherten-Netto; der Makler kann im Gespräch korrigieren.
+   */
+  const nettoMonatlich = Math.max(0, p.monatsBedarf);
+  const GRV_ANTEIL = nettoMonatlich * 0.45;
+  const witwenrente = hatKinder ? GRV_ANTEIL * 0.55 : 0;
+  const kinderZahl = hatKinder ? Math.min(Math.max(1, p.kinderAnzahl || 1), 3) : 0;
+  const waisenrente = hatKinder ? kinderZahl * (GRV_ANTEIL * 0.1) : 0;
+  const staatlicheLeistungen = witwenrente + waisenrente;
+  const einnahmen = p.partnerEinkommen + staatlicheLeistungen + p.sonstiges;
+  const monatlLuecke = Math.max(
+    0,
+    p.monatsBedarf - p.partnerEinkommen - staatlicheLeistungen - p.sonstiges
+  );
+  const versorgungsjahre = hatKinder ? 20 : 10;
+  const kapitalEinkommen = monatlLuecke * 12 * versorgungsjahre;
+  const restschuld = p.kredite;
+  const bestehendVS = p.vorhanden;
+  const rohEmpfehlung = kapitalEinkommen + restschuld - bestehendVS;
+  let empfohleneVS = Math.max(0, Math.round(rohEmpfehlung / 10000) * 10000);
+  if (rohEmpfehlung > 0 && empfohleneVS === 0) empfohleneVS = 10000;
+  const gesamt = kapitalEinkommen + restschuld;
+  const netto = empfohleneVS;
   const gesamtBedarf = gesamt;
-  const kapBedarf = bedarfKapital;
-  const deckung = gesamt > 0 ? Math.min(100, Math.round((vorhanden / gesamt) * 100)) : 100;
+  const kapBedarf = kapitalEinkommen;
+  const luecke = monatlLuecke;
+  const bedarfKapital = kapitalEinkommen;
+  const deckung = gesamt > 0 ? Math.min(100, Math.round((bestehendVS / gesamt) * 100)) : 100;
   /** Faustformel Ø ~2‰ VS/Jahr, vereinfacht gesamtBedarf×0,002/12, auf 5 € gerundet */
   const empfPraemie =
     luecke > 0 ? Math.max(10, Math.round((gesamtBedarf * 0.002 / 12) / 5) * 5) : 0;
@@ -158,6 +188,14 @@ function berechne({ monatsBedarf, laufzeit, partnerEinkommen, witwenRente, sonst
     kapBedarf,
     deckung,
     empfPraemie,
+    versorgungsjahre,
+    kapitalEinkommen,
+    staatlicheLeistungen,
+    witwenrente,
+    waisenrente,
+    empfohleneVS,
+    hatKinder,
+    kinderZahl,
   };
 }
 
@@ -172,9 +210,8 @@ export default function RisikolebenRechner() {
   const [p, setP] = useState({
     familienModus: "",
     monatsBedarf: 2500,
-    laufzeit: 20,
+    kinderAnzahl: 1,
     partnerEinkommen: 1200,
-    witwenRente: 700,
     sonstiges: 0,
     kredite: 0,
     vorhanden: 0,
@@ -406,7 +443,7 @@ export default function RisikolebenRechner() {
           />
           <div style={{ padding: "0 24px 8px", ...CHECKKIT2026.storyContentWrap }}>
             {[
-              `Kapitalbedarf: ${fmtK(R.gesamt)} über ${p.laufzeit} Jahre ermittelt.`,
+              `Kapitalbedarf: ${fmtK(R.gesamt)} über ${R.versorgungsjahre} Jahre ermittelt.`,
               R.luecke > 0
                 ? `Monatliche Lücke: ${fmt(R.luecke)}/Mon. berücksichtigt.`
                 : "Laufende Einnahmen vollständig berücksichtigt.",
@@ -450,12 +487,12 @@ export default function RisikolebenRechner() {
     const dataTitle =
       scr === 2 ? "Wie ist Ihre familiäre Situation?" :
       scr === 3 ? "Kredite und Restschuld" :
-      scr === 5 ? "Bedarf und Absicherungsdauer" :
+      scr === 5 ? "Bedarf der Familie" :
       scr === 6 ? "Welche Einnahmen bestehen bereits?" : "";
     const dataLead =
       scr === 2 ? "Darauf stützen wir den nächsten Schritt — Ihre Absicherung soll zur Lebensrealität passen." :
       scr === 3 ? "Bitte geben Sie an, ob Darlehen bestehen. Die Restschuld tragen Sie nur ein, wenn Sie „Ja“ wählen." :
-      scr === 5 ? "Monatlicher Bedarf der Familie und Zeitraum der Absicherung." :
+      scr === 5 ? "Monatlicher Bedarf der Familie — die Versorgungsdauer leiten wir aus Ihrer Situation ab." :
       scr === 6 ? "Alle Felder sind optional — 0, wenn nicht vorhanden." : "";
 
     const wizFooter = (() => {
@@ -654,17 +691,19 @@ export default function RisikolebenRechner() {
                       </div>
                     ))}
                   </div>
-                  <SliderCard
-                    label="Absicherungszeitraum"
-                    value={p.laufzeit}
-                    min={5}
-                    max={30}
-                    step={1}
-                    unit="Jahre"
-                    display={`${p.laufzeit} Jahre`}
-                    accent={C}
-                    onChange={(v) => set("laufzeit", v)}
-                  />
+                  {rlHatKinder(p.familienModus) ? (
+                    <SliderCard
+                      label="Anzahl Kinder (für Waisenrente-Schätzung, max. 3)"
+                      value={p.kinderAnzahl}
+                      min={1}
+                      max={3}
+                      step={1}
+                      unit=""
+                      display={`${p.kinderAnzahl} ${p.kinderAnzahl === 1 ? "Kind" : "Kinder"}`}
+                      accent={C}
+                      onChange={(v) => set("kinderAnzahl", v)}
+                    />
+                  ) : null}
                   <div
                     style={{
                       marginTop: "12px",
@@ -677,7 +716,9 @@ export default function RisikolebenRechner() {
                       lineHeight: 1.55,
                     }}
                   >
-                    Empfehlung: Absicherung bis das jüngste Kind selbstständig ist oder bis zur Rente — mindestens 15–20 Jahre.
+                    {rlHatKinder(p.familienModus)
+                      ? "Mit Kindern: Wir rechnen mit großer Witwenrente und Waisenrente (Schätzung) sowie 20 Jahren Versorgungsdauer."
+                      : "Ohne Kinder: Kleine Witwenrente (24 Monate) fließt nicht als langfristige Absicherung ein — 10 Jahre Orientierung für die Kapitalisierung."}
                   </div>
                 </>
               )}
@@ -696,18 +737,15 @@ export default function RisikolebenRechner() {
                     accent={C}
                     onChange={(v) => set("partnerEinkommen", v)}
                   />
-                  <SliderCard
-                    label="Witwen-/Waisenrente (gesetzlich, ca.)"
-                    value={p.witwenRente}
-                    min={0}
-                    max={2000}
-                    step={50}
-                    unit="€/Mon."
-                    display={p.witwenRente === 0 ? "Nicht vorhanden / unbekannt" : undefined}
-                    hint="Ca. 55 % der gesetzlichen Rentenanwartschaft — 0, wenn unbekannt"
-                    accent={C}
-                    onChange={(v) => set("witwenRente", v)}
-                  />
+                  <div style={{ ...T.infoBox, marginBottom: "14px" }}>
+                    <strong style={{ color: "#315AA8" }}>Witwen- und Waisenrente</strong>
+                    <span style={{ display: "block", marginTop: "6px" }}>
+                      Diese Beträge schätzen wir automatisch aus Ihrem Familienmodus und dem monatlichen Familienbedarf. Dafür nutzen
+                      wir eine vereinfachte Rentengröße (ca. 45 % dieses Betrags): präziser wäre Ihr eigenes Nettoeinkommen — das
+                      fragen wir hier nicht extra ab. Weicht Ihr Einkommen stark vom Bedarf ab, ist das ein erster Orientierungswert;
+                      Ihr Makler kann die Schätzung im Beratungsgespräch anpassen.
+                    </span>
+                  </div>
                   <SliderCard
                     label="Sonstige Einnahmen (monatlich)"
                     value={p.sonstiges}
@@ -744,7 +782,21 @@ export default function RisikolebenRechner() {
 
   // ── Phase 2: Ergebnis (kompakt wie Renten/Pflege: Hero + Balken + Einordnung + Accordion) ──
   if (phase === 2) {
-    const { einnahmen, luecke, bedarfKapital, gesamt, netto, gesamtBedarf, kapBedarf, empfPraemie } = R;
+    const {
+      einnahmen,
+      luecke,
+      gesamt,
+      netto,
+      gesamtBedarf,
+      kapBedarf,
+      empfPraemie,
+      versorgungsjahre,
+      kapitalEinkommen,
+      staatlicheLeistungen,
+      witwenrente,
+      waisenrente,
+      empfohleneVS,
+    } = R;
     const gedeckt = netto <= 0;
     const hatLuecke = netto > 0 || luecke > 0;
 
@@ -779,7 +831,12 @@ export default function RisikolebenRechner() {
     const breakdownRows = [
       { l: "Monatsbedarf Familie", v: fmt(p.monatsBedarf) + "/Mon.", c: "#1F2937", bold: false },
       { l: "Partnereinkommen (netto)", v: "− " + fmt(p.partnerEinkommen) + "/Mon.", c: "#059669", bold: false },
-      { l: "Witwen-/Waisenrente (ca.)", v: "− " + fmt(p.witwenRente) + "/Mon.", c: "#059669", bold: false },
+      {
+        l: "Staatliche Leistungen (geschätzt)",
+        v: "− " + fmt(staatlicheLeistungen) + "/Mon.",
+        c: "#059669",
+        bold: false,
+      },
       ...(p.sonstiges > 0
         ? [{ l: "Sonstige Einnahmen", v: "− " + fmt(p.sonstiges) + "/Mon.", c: "#059669", bold: false }]
         : []),
@@ -790,11 +847,26 @@ export default function RisikolebenRechner() {
         bold: false,
         border: false,
       },
-      { l: "Monatliche Lücke", v: fmt(luecke) + "/Mon.", c: luecke > 0 ? WARN_RL : "#059669", bold: true, border: true },
-      ...(p.kredite > 0 ? [{ l: "+ Kredite / Darlehen", v: "+ " + fmtK(p.kredite), c: "#1F2937", bold: false }] : []),
-      { l: "Gesamtbedarf", v: fmtK(gesamt), c: C, bold: true, border: true },
-      ...(p.vorhanden > 0 ? [{ l: "− Bestehende Absicherung", v: "− " + fmtK(p.vorhanden), c: "#059669", bold: false }] : []),
-      ...(p.vorhanden > 0 ? [{ l: "Empfohlene Versicherungssumme", v: fmtK(netto), c: gedeckt ? "#059669" : WARN_RL, bold: true }] : []),
+      {
+        l: "Einkommenslücke / Monat",
+        v: fmt(luecke) + "/Mon.",
+        c: luecke > 0 ? WARN_RL : "#059669",
+        bold: true,
+        border: true,
+      },
+      { l: "Versorgungsdauer", v: `${versorgungsjahre} Jahre`, c: "#374151", bold: false },
+      { l: "Kapitalbedarf Einkommen", v: fmtK(kapitalEinkommen), c: "#1F2937", bold: false },
+      { l: "Kredite & Restschuld", v: p.kredite > 0 ? "+ " + fmtK(p.kredite) : "0 €", c: "#1F2937", bold: false },
+      ...(p.vorhanden > 0
+        ? [{ l: "Bereits abgesichert", v: "− " + fmtK(p.vorhanden), c: "#059669", bold: false }]
+        : []),
+      {
+        l: "Empfohlene Versicherungssumme",
+        v: fmtK(empfohleneVS),
+        c: gedeckt ? "#059669" : C,
+        bold: true,
+        border: true,
+      },
     ];
 
     return withStandalone(
@@ -821,7 +893,7 @@ export default function RisikolebenRechner() {
           </div>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px", marginTop: "6px" }}>{pillRl}</div>
           <div style={{ ...T.resultSub, textAlign: "center", marginTop: "4px", maxWidth: "36ch" }}>
-            {p.laufzeit} Jahre Laufzeit · vereinfachte Berechnung
+            {versorgungsjahre} Jahre Versorgungsdauer · vereinfachte Berechnung
           </div>
         </div>
 
@@ -857,14 +929,18 @@ export default function RisikolebenRechner() {
             <div style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: "8px" }}>
               Berücksichtigte Einnahmen (monatlich)
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
                 <span>Partnereinkommen (netto)</span>
                 <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(p.partnerEinkommen)}/Mon.</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-                <span>Witwen-/Waisenrente (ca.)</span>
-                <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(p.witwenRente)}/Mon.</span>
+                <span>Witwenrente (geschätzt)</span>
+                <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(witwenrente)}/Mon.</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+                <span>Waisenrente (geschätzt)</span>
+                <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(waisenrente)}/Mon.</span>
               </div>
               {p.sonstiges > 0 ? (
                 <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
@@ -920,7 +996,7 @@ export default function RisikolebenRechner() {
                 <div>
                   <div style={{ fontSize: "36px", fontWeight: "700", color: C, letterSpacing: "-0.8px", lineHeight: 1 }}>{fmtK(gesamtBedarf)}</div>
                   <div style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "4px" }}>
-                    Versicherungssumme · {p.laufzeit} Jahre Laufzeit
+                    Bruttosumme vor Abzug bestehender VS · {versorgungsjahre} Jahre Versorgungsdauer
                   </div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
@@ -1032,7 +1108,7 @@ export default function RisikolebenRechner() {
                   <RisikoHintCard icon="📊" accent={C}>
                     <strong style={{ fontWeight: 700 }}>Monatliche Versorgungslücke</strong>
                     <span style={{ display: "block", marginTop: "8px" }}>
-                      {fmt(luecke)} pro Monat — über {p.laufzeit} Jahre entspricht das rund {fmtK(bedarfKapital)} Kapitalbedarf (ohne Kredit).
+                      {fmt(luecke)} pro Monat — über {versorgungsjahre} Jahre entspricht das rund {fmtK(kapitalEinkommen)} Kapitalbedarf fürs Einkommen (ohne Kredit).
                     </span>
                   </RisikoHintCard>
                   <RisikoHintCard icon={p.kredite > 0 ? "🏦" : "🛡️"} accent={p.kredite > 0 ? BAR_KREDIT : C}>
@@ -1064,11 +1140,13 @@ export default function RisikolebenRechner() {
                   ))}
                 </div>
                 <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
-                  Miete, Kredit und Lebenshaltung laufen weiter. Ohne Ihr Einkommen bleibt eine Lücke von {fmt(luecke)} monatlich — kapitalisiert über {p.laufzeit} Jahre: {fmtK(luecke * 12 * p.laufzeit)}.
+                  Miete, Kredit und Lebenshaltung laufen weiter. Ohne Ihr Einkommen bleibt eine Lücke von {fmt(luecke)} monatlich — kapitalisiert über {versorgungsjahre} Jahre: {fmtK(kapitalEinkommen)}.
                   {p.kredite > 0 && <> Zusätzlich einmalig {fmtK(p.kredite)} für Darlehen.</>}
                 </p>
                 <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
-                  <strong style={{ color: "#374151" }}>Gesetzliche Witwen-/Waisenrente</strong> (orientierend ca. 55 % der Anwartschaft; Kinderzuschläge möglich; Anrechnung Partnereinkommen ab ca. 1.038 €/Mon.).
+                  <strong style={{ color: "#374151" }}>Staatliche Leistungen im Modell:</strong> Witwenrente {fmt(witwenrente)}/Mon., Waisenrente {fmt(waisenrente)}/Mon. — Summe {fmt(staatlicheLeistungen)}/Mon. Die zugrunde liegende GRV-Schätzung
+                  verwendet den monatlichen Familienbedarf × 0,45 statt Ihres persönlichen Nettoeinkommens (bewusste Vereinfachung ohne
+                  zusätzliche Eingabe).
                 </p>
                 {p.vorhanden > 0 && (
                   <p style={{ marginBottom: "10px", fontSize: "12px", color: "#15803D", lineHeight: 1.55 }}>
@@ -1076,11 +1154,11 @@ export default function RisikolebenRechner() {
                   </p>
                 )}
                 <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.55 }}>
-                  <strong style={{ color: "#374151" }}>Einnahmen im Modell:</strong> Partnereinkommen {fmt(p.partnerEinkommen)}/Mon., Witwen-/Waisenrente {fmt(p.witwenRente)}/Mon.
+                  <strong style={{ color: "#374151" }}>Einnahmen im Modell:</strong> Partnereinkommen {fmt(p.partnerEinkommen)}/Mon., staatliche Leistungen {fmt(staatlicheLeistungen)}/Mon.
                   {p.sonstiges > 0 ? <>, sonstige Einnahmen {fmt(p.sonstiges)}/Mon.</> : null} — Summe {fmt(einnahmen)}/Mon.
                 </p>
                 <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
-                  <strong style={{ color: "#374151" }}>Nächste Schritte:</strong> Richtwert Versicherungssumme {fmtK(netto > 0 ? netto : gesamt)} — Laufzeit {p.laufzeit} Jahre prüfen; bestehende Policen mit der Situation abgleichen.
+                  <strong style={{ color: "#374151" }}>Nächste Schritte:</strong> Empfohlene Versicherungssumme (auf 10.000 € gerundet) {fmtK(empfohleneVS)} — Versorgungsdauer {versorgungsjahre} Jahre im Modell; bestehende Policen mit der Situation abgleichen.
                 </p>
                 <div style={{ ...T.warnCard, marginBottom: "14px", padding: "14px 16px" }}>
                   <div style={T.warnCardTitle}>Was oft unterschätzt wird</div>
@@ -1090,8 +1168,17 @@ export default function RisikolebenRechner() {
                 </div>
                 <CheckBerechnungshinweis>
                   <>
-                    Gesamtbedarf = monatliche Lücke × 12 × Laufzeit + Kredite − bestehende Absicherung. Lücke = Familienbedarf − Einnahmen (Partner + Witwen-/Waisenrente + Sonstiges).{" "}
-                    <span style={{ color: "#b8884a" }}>Grundlage: §46–48 SGB VI. Keine Rechtsberatung.</span>
+                    Wir berechnen Ihre Einkommenslücke aus dem Unterschied zwischen dem, was Ihre Familie monatlich braucht, und
+                    dem, was durch staatliche Leistungen (Witwen- und Waisenrente) sowie Partnergehalt bereits gedeckt ist.
+                    Mit Kindern: große Witwenrente (55 % einer grob geschätzten GRV-Rente) plus 10 % Waisenrente pro Kind
+                    (max. drei) — dauerhaft. Ohne Kinder: kleine Witwenrente läuft nach 24 Monaten aus — daher nicht als
+                    langfristige Absicherung einkalkuliert. Dazu kommen bestehende Kredite, die abgesichert werden sollten.
+                    <span style={{ display: "block", marginTop: "10px" }}>
+                      Für die Rentenschätzung nutzen wir den Familienbedarf (× 0,45) statt eines separaten Feldes „Ihr Netto“ —
+                      das ist bewusst einfach gehalten und gut genug für die erste Orientierung, wenn Bedarf und Einkommen nicht weit
+                      auseinanderliegen. Weicht Ihr Einkommen stark ab, kann Ihr Makler die Annahmen im Gespräch präzisieren.
+                    </span>
+                    Alle Werte sind Richtwerte — sprechen Sie mit Ihrem Makler für ein konkretes Angebot.
                   </>
                 </CheckBerechnungshinweis>
                 <div
@@ -1151,11 +1238,11 @@ export default function RisikolebenRechner() {
                   if (!valid) return;
                   const token = new URLSearchParams(window.location.search).get("token");
                   if (token) {
-                    const { luecke, netto, gesamt, empfPraemie } = R;
+                    const { luecke, netto, gesamt, empfPraemie, versorgungsjahre } = R;
                     const summe = netto > 0 ? netto : gesamt;
                     const highlights = [
                       { label: "Empfohlene Vers.-Summe", value: fmtK(summe) },
-                      { label: "Laufzeit", value: `${p.laufzeit} Jahre` },
+                      { label: "Versorgungsdauer", value: `${versorgungsjahre} Jahre` },
                       { label: "Monatliche Lücke", value: `${fmt(luecke)}/Mon.` },
                     ];
                     if (p.vorhanden > 0) highlights.push({ label: "Bestehende Absicherung", value: fmtK(p.vorhanden) });
@@ -1194,8 +1281,8 @@ export default function RisikolebenRechner() {
                   <div style={{ fontSize: "18px", fontWeight: "700", color: WARN_RL, letterSpacing: "-0.5px" }}>{fmtK(R.netto > 0 ? R.netto : R.gesamt)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Laufzeit</div>
-                  <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{p.laufzeit} Jahre</div>
+                  <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Versorgungsdauer</div>
+                  <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{R.versorgungsjahre} Jahre</div>
                 </div>
               </div>
             </div>
@@ -1290,9 +1377,9 @@ export default function RisikolebenRechner() {
             borderRadius: "12px",
             padding: "12px 14px",
           }}>
-            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Laufzeit</div>
+            <div style={{ fontSize: "11px", color: "#999", marginBottom: "3px" }}>Versorgungsdauer</div>
             <div style={{ fontSize: "16px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
-              {p.laufzeit} Jahre
+              {R.versorgungsjahre} Jahre
             </div>
           </div>
         </div>

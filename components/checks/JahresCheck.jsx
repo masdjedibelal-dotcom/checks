@@ -400,7 +400,7 @@ sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"
 /** Extern optional: sessionStorage.setItem(JAHRES_BESTAND_PREFILL_KEY, JSON.stringify(["bu","kv",…])) */
 export const JAHRES_BESTAND_PREFILL_KEY = "checkkit_jahrescheck_bestand_prefill";
 
-const JAHRES_HEADER_STEPS = ["Anlass", "Details", "Bestand", "Ergebnis", "Kontakt"];
+const JAHRES_HEADER_STEPS = ["Anlass", "Details", "Absicherung", "Ergebnis", "Kontakt"];
 
 function jahresCheckHeaderStep(phase, scr) {
   if (phase === 4) return 4;
@@ -413,8 +413,7 @@ function jahresCheckHeaderStep(phase, scr) {
 const PRODUKT_GROUPS = [
   {
     id: "einkommen",
-    title: "Einkommen & Vorsorge",
-    emoji: "💰",
+    title: "Einkommen & Zukunft",
     items: [
       { id: "bu", name: "Berufsunfähigkeit (BU)", icon: "💼", matrixNames: ["Berufsunfähigkeitsversicherung", "Erwerbsunfähigkeitsversicherung"] },
       { id: "altersvorsorge", name: "Altersvorsorge (Rente / ETF)", icon: "🌱", matrixNames: ["Altersvorsorge / private Rentenversicherung", "Riester-Rente", "Rürup-Rente"] },
@@ -425,7 +424,6 @@ const PRODUKT_GROUPS = [
   {
     id: "haftung",
     title: "Haftung & Recht",
-    emoji: "⚖️",
     items: [
       { id: "haftpflicht", name: "Privathaftpflicht (PH)", icon: "🛡️", matrixNames: ["Privathaftpflicht"] },
       { id: "rechtsschutz", name: "Rechtsschutz (RS)", icon: "📜", matrixNames: ["Rechtsschutzversicherung"] },
@@ -434,8 +432,7 @@ const PRODUKT_GROUPS = [
   },
   {
     id: "wohnen",
-    title: "Eigentum & Wohnen",
-    emoji: "🏠",
+    title: "Wohnen & Eigentum",
     items: [
       { id: "hausrat", name: "Hausratversicherung (HR)", icon: "🛋️", matrixNames: ["Hausratversicherung"] },
       { id: "wohngebaeude", name: "Wohngebäudeversicherung (WG)", icon: "🏡", matrixNames: ["Wohngebäudeversicherung"] },
@@ -443,8 +440,7 @@ const PRODUKT_GROUPS = [
   },
   {
     id: "gesundheit",
-    title: "Gesundheit",
-    emoji: "🏥",
+    title: "Gesundheit & Pflege",
     items: [
       { id: "kv", name: "Private Krankenversicherung (PKV)", icon: "⚕️", matrixNames: ["Private Krankenversicherung (PKV)"] },
       { id: "zahn_stationaer", name: "Zahnzusatz / Stationär (KH-Zusatz)", icon: "🦷", matrixNames: ["Krankenhauszusatzversicherung", "Zahnzusatzversicherung"] },
@@ -1039,8 +1035,8 @@ export default function JahresCheck(){
           <div style={T.hinweisCardWrap}>
             <CheckBerechnungshinweis>
               <>
-                Die Empfehlungen basieren auf einer <strong>Ereignis-Matrix</strong>: definierte Prüfpunkte pro Anlass, sortiert nach Dringlichkeit. Bei mehreren gewählten Ereignissen gilt pro Cluster eine <strong>Trigger-Hierarchie</strong> (z. B. Selbstständigkeit vor Jobwechsel vor Berufsstart; Immobilie vor Miet-Umzug; Nachwuchs vor Hochzeit vor großer Anschaffung), damit dieselbe Empfehlung nicht mehrfach erscheint.{" "}
-                <span style={{ color: "#b8884a" }}>Grundlage: Anlassbezogene Beratungsempfehlungen. Keine individuelle Rechtsberatung.</span>
+                Wir gleichen Ihre Lebensereignisse mit typischen Absicherungsthemen ab und zeigen Ihnen, wo
+                Handlungsbedarf besteht. Das Ergebnis ist ein Gesprächsleitfaden — kein Ersatz für individuelle Beratung.
               </>
             </CheckBerechnungshinweis>
             <div
@@ -1249,18 +1245,18 @@ export default function JahresCheck(){
         </div>
         <div style={T.footer} data-checkkit-footer>
           <button style={T.btnPrim(!qualFormComplete)} disabled={!qualFormComplete} onClick={nextScr}>
-            {qualFormComplete ? "Weiter zum Bestand" : "Bitte alle angezeigten Felder prüfen"}
+            {qualFormComplete ? "Weiter zur Absicherung" : "Bitte alle angezeigten Felder prüfen"}
           </button>
           <button style={T.btnSec} onClick={backScr}>Zurück</button>
         </div>
       </>}
 
-      {/* Screen 3: Bestand — gruppierte Mehrfachauswahl (Cross-Check mit S1 + S2) */}
+      {/* Screen 3: Absicherung — Checkbox-Listen (Cross-Check mit S1 + S2) */}
       {scr === 3 && <>
         <div style={T.hero}>
-          <div style={T.eyebrow}>Lebenssituations-Check · {qualNeeded ? "Schritt 3" : "Schritt 2"}</div>
-          <div style={T.h1}>Ihr aktueller Schutz</div>
-          <div style={T.body}>Gehen Sie in Gedanken Ordner oder Apps durch — alles antippen, das Sie bereits abgesichert haben.</div>
+          <div style={{ ...T.eyebrow, color: C }}>Bestehende Absicherung</div>
+          <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
+          <div style={{ ...T.body, marginTop: "8px" }}>Antippen zum Auswählen</div>
         </div>
         <div style={{ padding: "0 20px", marginBottom: "16px" }}>
           {PRODUKT_GROUPS.map((group, gi) => (
@@ -1269,7 +1265,7 @@ export default function JahresCheck(){
                 style={{
                   fontSize: "11px",
                   fontWeight: "600",
-                  color: "#9CA3AF",
+                  color: C,
                   letterSpacing: "0.06em",
                   textTransform: "uppercase",
                   marginTop: gi === 0 ? 0 : 22,
@@ -1277,21 +1273,63 @@ export default function JahresCheck(){
                   padding: "0 4px",
                 }}
               >
-                {group.title} {group.emoji}
+                {group.title}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {group.items.map((prod) => {
+              <div
+                style={{
+                  border: "1px solid rgba(17,24,39,0.06)",
+                  borderRadius: "18px",
+                  overflow: "hidden",
+                  background: "#FFFFFF",
+                  boxShadow: "0 2px 10px rgba(17,24,39,0.04)",
+                }}
+              >
+                {group.items.map((prod, pi) => {
                   const sel = selProdukte.includes(prod.id);
+                  const isLast = pi === group.items.length - 1;
                   return (
-                    <SelectionCard
+                    <div
                       key={prod.id}
-                      value={prod.id}
-                      label={prod.name}
-                      icon={<span style={{ fontSize: "22px", lineHeight: 1 }}>{prod.icon}</span>}
-                      selected={sel}
-                      accent={C}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={sel}
+                      aria-label={`${prod.name}, ${sel ? "ausgewählt" : "nicht ausgewählt"}. Antippen zum Umschalten.`}
                       onClick={() => toggleProdukt(prod.id)}
-                    />
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleProdukt(prod.id);
+                        }
+                      }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "14px",
+                        padding: "14px 18px",
+                        borderBottom: isLast ? "none" : "1px solid #f5f5f5",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span style={{ fontSize: "14px", fontWeight: "500", color: "#1F2937", flex: 1, textAlign: "left" }}>
+                        {prod.name}
+                      </span>
+                      {sel ? (
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                          <rect width="18" height="18" rx="4" fill={C} />
+                          <path
+                            d="M4 9l3.5 3.5 6.5-7"
+                            stroke="#fff"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+                          <rect x="0.5" y="0.5" width="17" height="17" rx="3.5" stroke="rgba(0,0,0,0.15)" fill="none" />
+                        </svg>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -1299,11 +1337,8 @@ export default function JahresCheck(){
           ))}
         </div>
         <div style={{ padding: "0 20px", marginBottom: "120px" }}>
-          <div style={T.infoBox}>
-            Ohne Auswahl gehen wir von „noch nicht gemeldet“ aus — dann zeigen wir eher <strong>Lücken</strong> (🔴). Mit Treffern sehen Sie eher <strong>Anpassungen</strong> (🟡) zu Ihrem Anlass.
-          </div>
           {selProdukte.length > 0 && (
-            <div style={{ marginTop: "10px", fontSize: "12px", color: C, fontWeight: "500", textAlign: "center" }}>
+            <div style={{ fontSize: "12px", color: C, fontWeight: "500", textAlign: "center" }}>
               {selProdukte.length} Baustein{selProdukte.length !== 1 ? "e" : ""} als vorhanden markiert
             </div>
           )}

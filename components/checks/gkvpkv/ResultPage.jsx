@@ -789,8 +789,21 @@ export default function ResultPage({
           )}
 
           <div style={{ ...T.resultSub, marginTop: "12px", maxWidth: "36ch", marginLeft: "auto", marginRight: "auto" }}>
-            {PATH_LABEL_SIE[resultPath]} · {R.subline} · vereinfachte Auswertung, keine Rechtsberatung
+            {PATH_LABEL_SIE[resultPath]} · {R.subline}
           </div>
+          <p
+            style={{
+              fontSize: "12px",
+              color: "#6B7280",
+              lineHeight: 1.55,
+              maxWidth: "38ch",
+              margin: "10px auto 0",
+              textAlign: "center",
+            }}
+          >
+            Diese Einschätzung basiert auf Ihren Angaben. PKV-Beiträge variieren je nach Anbieter und Gesundheitszustand —
+            sprechen Sie mit Ihrem Makler für ein konkretes Angebot.
+          </p>
         </div>
 
         <div style={T.section}>
@@ -1112,10 +1125,9 @@ export default function ResultPage({
                     </div>
                   </div>
                 )}
-                <p style={{ marginTop: "10px", marginBottom: 0, color: "#b8884a", fontSize: "12px" }}>
-                  Orientierungswerte — keine Rechtsberatung. PKV-Beiträge sind Schätzwerte nach Alter.
-                  Für konkrete Tarife empfehlen wir ein persönliches Gespräch. Grundlage u. a. § 241 SGB V,
-                  § 257 SGB V, § 9 SGB V.
+                <p style={{ marginTop: "10px", marginBottom: 0, color: "#6B7280", fontSize: "12px", lineHeight: 1.55 }}>
+                  Diese Einschätzung basiert auf Ihren Angaben. PKV-Beiträge variieren je nach Anbieter und
+                  Gesundheitszustand — sprechen Sie mit Ihrem Makler für ein konkretes Angebot.
                 </p>
               </div>
             )}

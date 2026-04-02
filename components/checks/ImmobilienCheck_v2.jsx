@@ -514,12 +514,10 @@ export default function ImmobilienCheck(){
       <AbsicherungBlock modul={modul} T={T} RWG={RWG}/>
 
       <div style={{...T.section,marginBottom:"120px"}}>
-        <div style={T.infoBox}>Orientierungs-Check — Näherungswerte. Für verbindliche Angebote empfehlen wir ein persönliches Gespräch.</div>
         <CheckBerechnungshinweis>
           <>
-            <strong>Monatsrate</strong> = Darlehen × (Zinssatz + Tilgung) / 12 (Annuitätendarlehen). Restschuld nach n Jahren: exakte Annuitätenformel.
-            <strong>Immobilienwert</strong>: Ø 2%/Jahr Wertsteigerung (historischer DE-Mittelwert, keine Garantie). Nebenkosten: 10% des Kaufpreises (Grunderwerbsteuer, Notar, ggf. Makler).
-            <strong>Break-even</strong>: Jahr in dem Nettokaufkosten {"<"} kumulative Mietkosten.
+            Wir berechnen eine Näherung für monatliche Rate, Restschuld und Wertentwicklung auf Basis Ihrer Angaben. Alle
+            Werte sind Richtwerte — für verbindliche Zahlen sprechen Sie mit Ihrem Makler.
           </>
         </CheckBerechnungshinweis>
         <div style={{...T.infoBox,marginTop:"10px"}}>{CHECK_LEGAL_DISCLAIMER_FOOTER}</div>

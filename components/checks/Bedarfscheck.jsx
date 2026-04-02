@@ -19,7 +19,7 @@ import { CHECKKIT2026 } from "@/lib/checkKitStandard2026";
 
 const formatBedarfEuro = (n) => `${Math.round(Number(n)).toLocaleString("de-DE")} €`;
 
-const BEDARF_PAKET_DEFAULT_KEYS = ["basis", "komfort", "premium"];
+const BEDARF_PAKET_DEFAULT_KEYS = ["komfort"];
 const BEDARF_PAKET_LABELS = { basis: "Basis", komfort: "Komfort", premium: "Premium" };
 
 // ─── SCORING_MAPPING + Paket-Engine ───────────────────────────────────────────
@@ -683,11 +683,6 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
       tagline: "Das Existenzielle",
       badge: null,
       items: basis,
-      wrapStyle: {
-        ...CHECKKIT2026.resultColumnStack,
-        background: "#ffffff",
-        minHeight: 0,
-      },
     },
     {
       key: "komfort",
@@ -697,14 +692,6 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
       tagline: "",
       badge: "Empfehlung",
       items: komfort,
-      wrapStyle: {
-        ...CHECKKIT2026.resultColumnStack,
-        background: "#ffffff",
-        border: "2px solid #F59E0B",
-        boxShadow: "0 8px 28px rgba(245, 158, 11, 0.12)",
-        position: "relative",
-        minHeight: 0,
-      },
     },
     {
       key: "premium",
@@ -714,13 +701,6 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
       tagline: "Maximaler Schutz",
       badge: null,
       items: premium,
-      wrapStyle: {
-        ...CHECKKIT2026.resultColumnStack,
-        background: "#ffffff",
-        border: `1px solid ${C}40`,
-        boxShadow: "0 4px 20px rgba(17,24,39,0.07)",
-        minHeight: 0,
-      },
     },
   ];
 
@@ -869,32 +849,44 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
             lineHeight: 1.45,
           }}
         >
-          Für die Beratung auswählen — tippe ein oder mehrere Pakete an.
+          Für die Beratung ein Paket auswählen — antippen zum Wechseln.
         </div>
         <CheckKitResultGrid>
           {columns.map((col) => {
             const paketAn = gewaehltePakete.includes(col.key);
-            const stack = { ...CHECKKIT2026.resultColumnStack, ...col.wrapStyle };
-            const wrapStyle = paketAn
-              ? {
-                  ...stack,
-                  border: `2px solid ${C}`,
-                  boxShadow: `0 0 0 1px ${C}29, ${stack.boxShadow || "0 2px 10px rgba(17,24,39,0.06)"}`,
-                }
-              : stack;
+            const baseStyle = {
+              ...CHECKKIT2026.resultColumnStack,
+              background: "#ffffff",
+              minHeight: 0,
+              ...(col.badge ? { position: "relative" } : {}),
+            };
+            const selectedStyle = {
+              border: `2px solid ${C}`,
+              boxShadow: `0 0 0 1px ${C}29, 0 4px 12px rgba(0,0,0,0.08)`,
+            };
+            const komfortUnselectedStyle =
+              col.key === "komfort" && !gewaehltePakete.includes("komfort")
+                ? {
+                    border: "2px solid #F59E0B",
+                    boxShadow: "0 0 0 1px #F59E0B29",
+                  }
+                : {};
+            const finalWrapStyle = {
+              ...baseStyle,
+              ...(paketAn ? selectedStyle : komfortUnselectedStyle),
+            };
             return (
               <button
                 key={col.key}
                 type="button"
                 aria-pressed={paketAn}
-                aria-label={`Paket ${col.title}, ${paketAn ? "ausgewählt" : "nicht ausgewählt"}. Antippen zum Umschalten.`}
+                aria-label={`Paket ${col.title}, ${paketAn ? "ausgewählt" : "nicht ausgewählt"}. Antippen zum Auswählen.`}
                 onClick={() => onTogglePaket(col.key)}
                 style={{
-                  ...wrapStyle,
+                  ...finalWrapStyle,
                   width: "100%",
                   margin: 0,
                   textAlign: "left",
-                  position: col.badge ? "relative" : undefined,
                 }}
               >
                 {col.badge ? (
@@ -927,6 +919,32 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
                     borderBottom: "1px solid rgba(17,24,39,0.08)",
                   }}
                 >
+                  {paketAn ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "20px",
+                        height: "20px",
+                        borderRadius: "50%",
+                        background: C,
+                        marginBottom: "6px",
+                        flexShrink: 0,
+                      }}
+                      aria-hidden
+                    >
+                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                        <path
+                          d="M1 4l3 3 5-6"
+                          stroke="#ffffff"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  ) : null}
                   <div style={{ fontSize: "18px", lineHeight: 1.2, marginBottom: "4px" }} aria-hidden>
                     {col.emoji}
                   </div>
@@ -987,14 +1005,21 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
       <div style={{ padding: "0 24px", marginBottom: "120px" }}>
         <CheckBerechnungshinweis t={T}>
           <>
-            Vereinfachte Priorisierung per <strong>Score-Modell</strong> (Basiswerte + Anpassung nach Alter, Beruf und
-            Familie). Bereits gewählte Produkte fließen nicht in die Pakete. <strong>Kein Ersatz</strong> für individuelle
-            Beratung.
-            <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid rgba(17,24,39,0.06)", fontSize: "11px", color: "#9CA3AF", lineHeight: 1.55 }}>
-              {CHECK_LEGAL_DISCLAIMER_FOOTER}
-            </div>
+            Wir bewerten Ihre Situation anhand von Alter, Beruf und familiärer Lage und ordnen die wichtigsten
+            Absicherungsthemen nach Priorität. Das Ergebnis gibt Ihnen einen ersten Überblick — kein Ersatz für ein
+            persönliches Gespräch.
           </>
         </CheckBerechnungshinweis>
+        <div
+          style={{
+            marginTop: "10px",
+            fontSize: "11px",
+            color: "#9CA3AF",
+            lineHeight: 1.55,
+          }}
+        >
+          {CHECK_LEGAL_DISCLAIMER_FOOTER}
+        </div>
       </div>
 
       <div style={T.footer} data-checkkit-footer>
@@ -1004,7 +1029,9 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
           </button>
         ) : (
           <button style={T.btnPrim(gewaehltePakete.length === 0)} disabled={gewaehltePakete.length === 0} onClick={onCTA}>
-            {gewaehltePakete.length === 0 ? "Mind. ein Paket wählen" : "Absicherung gemeinsam durchgehen"}
+            {gewaehltePakete.length === 0
+              ? "Paket wählen"
+              : `${BEDARF_PAKET_LABELS[gewaehltePakete[0]] ?? "Paket"}-Paket besprechen`}
           </button>
         )}
         <button style={T.btnSec} onClick={onReset}>Neue Einschätzung starten</button>
@@ -1143,9 +1170,7 @@ export default function Bedarfscheck(){
   const set=(k,v)=>setProfil(x=>({...x,[k]:v}));
   const toggle=(id)=>setExisting(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const togglePaket = (key) => {
-    setGewaehltePakete((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
+    setGewaehltePakete([key]);
   };
   const slug = "bedarfscheck";
   const goTo = (ph) => {

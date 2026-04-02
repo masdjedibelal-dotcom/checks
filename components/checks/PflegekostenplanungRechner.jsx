@@ -737,53 +737,33 @@ export default function PflegekostenplanungRechner() {
           </div>
 
           <div style={{ ...T.section, marginBottom: "16px" }}>
-            <div style={T.sectionLbl}>SGB XI, Modellannahmen &amp; Rechtliches</div>
             <div className="pflege-acc-item">
               <button type="button" className="pflege-acc-btn" onClick={() => setPflegeArchiv((x) => (x === "legal" ? null : "legal"))} aria-expanded={pflegeArchiv === "legal"}>
-                <span>Details &amp; rechtliche Hinweise</span>
+                <span>Wie berechnen wir das?</span>
                 <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{pflegeArchiv === "legal" ? "▲" : "▼"}</span>
               </button>
               {pflegeArchiv === "legal" && (
                 <div className="pflege-acc-panel" style={{ paddingTop: "12px" }}>
-                  <div style={{ ...T.einordnungHintCard, marginBottom: "14px" }}>
-                    <span style={T.einordnungHintEmoji} aria-hidden>
-                      🏥
-                    </span>
-                    <div style={T.einordnungHintText}>
-                      Die gesetzliche Pflegeversicherung deckt nur einen Teil — den Rest tragen Sie oder Ihre Familie selbst.
-                    </div>
-                  </div>
-                  {p.pflegeOrt === "stationär" && (
-                    <div
-                      style={{
-                        padding: "14px 16px",
-                        borderRadius: "12px",
-                        background: "#FDF8F0",
-                        border: "1px solid #EDD9BB",
-                        color: "#94622D",
-                        fontSize: "12px",
-                        lineHeight: 1.65,
-                        marginBottom: "14px",
-                      }}
-                    >
-                      <div style={{ fontSize: "10px", fontWeight: "700", color: "#94622D", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "6px" }}>
-                        §43c SGB XI — Leistungszuschlag
-                      </div>
-                      Ab dem <strong>13. Monat</strong> im Heim sinkt Ihr Eigenanteil schrittweise: Monate 13–24: −25 % · Monate 25–36: −50 % · ab Monat 37: −75 % des einrichtungseinheitlichen Eigenanteils (EEE).
-                    </div>
-                  )}
-                  <p style={{ marginBottom: "10px" }}>
-                    Diese Berechnung nutzt ein Bundesland-Mapping typischer monatlicher Eigenanteile (stationäre Pflege, Orientierungswerte). Ambulant wird daraus proportional geschätzt. Tatsächliche Kosten variieren je nach Einrichtung, Vertrag und individuellem Budget.
+                  <p style={{ margin: 0, fontSize: "13px", color: "#374151", lineHeight: 1.65 }}>
+                    Wir berechnen Ihren monatlichen Eigenanteil auf Basis aktueller Pflegesätze und gesetzlicher Leistungen
+                    (SGB XI). Die Werte sind Richtwerte — regionale Unterschiede können abweichen.
                   </p>
-                  <p style={{ marginBottom: "10px" }}>
-                    <strong>Formel Restlücke:</strong> max(0, regionaler Eigenanteil − monatliche Leistung aus angegebener privater Pflege-Vorsorge). Andere Einkünfte oder gesetzliche Zahlungen mindern diese Kennzahl nicht.
-                  </p>
-                  <p style={{ margin: 0, color: "#b8884a" }}>Keine Rechtsberatung. Orientierung u. a. § 43 SGB XI.</p>
-                  <div style={{ marginTop: "14px", padding: "12px 14px", background: "#F6F8FE", border: "1px solid #DCE6FF", borderRadius: "14px", fontSize: "11px", color: "#315AA8", lineHeight: 1.6 }}>
-                    {CHECK_LEGAL_DISCLAIMER_FOOTER}
-                  </div>
                 </div>
               )}
+            </div>
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "12px 14px",
+                background: "#F6F8FE",
+                border: "1px solid #DCE6FF",
+                borderRadius: "14px",
+                fontSize: "11px",
+                color: "#315AA8",
+                lineHeight: 1.6,
+              }}
+            >
+              {CHECK_LEGAL_DISCLAIMER_FOOTER}
             </div>
           </div>
         </div>

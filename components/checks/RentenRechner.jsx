@@ -1019,7 +1019,7 @@ export default function RentenRechner() {
                 onClick={() => setRentenArchiv((x) => (x === "calc" ? null : "calc"))}
                 aria-expanded={rentenArchiv === "calc"}
               >
-                <span>Methodik, Inflation &amp; Steuer</span>
+                <span>Wie berechnen wir das?</span>
                 <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rentenArchiv === "calc" ? "▲" : "▼"}</span>
               </button>
               {rentenArchiv === "calc" && (
@@ -1051,21 +1051,19 @@ export default function RentenRechner() {
               )}
             </div>
 
-            <div className="renten-acc-item">
-              <button
-                type="button"
-                className="renten-acc-btn"
-                onClick={() => setRentenArchiv((x) => (x === "legal" ? null : "legal"))}
-                aria-expanded={rentenArchiv === "legal"}
-              >
-                <span>Rechtliche Hinweise</span>
-                <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rentenArchiv === "legal" ? "▲" : "▼"}</span>
-              </button>
-              {rentenArchiv === "legal" && (
-                <div className="renten-acc-panel" style={{ paddingTop: "12px" }}>
-                  {CHECK_LEGAL_DISCLAIMER_FOOTER}
-                </div>
-              )}
+            <div
+              style={{
+                marginTop: "14px",
+                padding: "12px 14px",
+                fontSize: "11px",
+                color: "#868686",
+                lineHeight: 1.6,
+                background: "#F7F6F3",
+                borderRadius: "12px",
+                border: "1px solid #E5E7EB",
+              }}
+            >
+              {CHECK_LEGAL_DISCLAIMER_FOOTER}
             </div>
           </div>
         </div>

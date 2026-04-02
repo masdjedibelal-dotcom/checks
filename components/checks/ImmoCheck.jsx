@@ -1097,8 +1097,9 @@ export default function ImmoCheck() {
         <div style={{ padding: "0 24px", marginBottom: "120px" }}>
           <CheckBerechnungshinweis>
             <>
-              Priorisierung nach Dringlichkeit: Bei Finanzierung Risikoleben und eine starke BU (Ratenabsicherung); in der Bauphase die Bauherrenhaftpflicht; bei PV/Wallbox der Photovoltaik-Schutz; bei Erbe, Altersvorsorge-Immobilie oder höherem Alter die Pflege-Vorsorge; bei Bau oder Bestand der Eigentümer-Rechtsschutz unter <strong>Zukunft &amp; Recht</strong>. Keine individuelle Rechtsberatung.{" "}
-              <span style={{ color: "#b8884a" }}>Orientierung für Ihr Gespräch mit dem Makler.</span>
+              Wir ordnen Risiken und Empfehlungen nach Dringlichkeit — von Finanzierung und Absicherung über Objektschutz
+              bis zu Vorsorge- und Rechtsthemen, passend zu Ihrer Situation. Die Übersicht dient der Orientierung für Ihr
+              Gespräch mit dem Makler.
             </>
           </CheckBerechnungshinweis>
           <div

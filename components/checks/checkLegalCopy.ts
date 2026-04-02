@@ -1,7 +1,7 @@
 /** Rechtstexte Szenario 1 (FlowLeads = Microsite-Anbieter). Vor Livegang juristisch prüfen. */
 
 export const CHECK_LEGAL_DISCLAIMER_FOOTER =
-  "Die Ergebnisse basieren auf Ihren Angaben und dienen der ersten Orientierung. Sie stellen keine individuelle Beratung dar und ersetzen kein persönliches Gespräch.";
+  "Die Ergebnisse basieren auf Ihren Angaben und dienen der Orientierung — kein Ersatz für ein persönliches Gespräch.";
 
 /** Direkt über den Formularfeldern */
 export const CHECK_LEAD_NOTICE =

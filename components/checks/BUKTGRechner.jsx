@@ -1356,21 +1356,25 @@ export default function BUKTGRechner() {
               </button>
               {legalOpen === "calc" && (
                 <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
-                  Vereinfachte Einordnung auf Basis Ihrer Angaben — Angestellte/Beamte/Auszubildende: (1) Lohnfortzahlung bzw. 100 % Netto in den ersten Wochen, (2) Krankengeldphase ab Woche 7 (GKV: 70 % des relevanten Bruttos bis BBG Krankengeld, orientierend 4.068 €/Mon. 2026, abzüglich Sozialabzug durch die Kasse ca. 12,2–12,5 %; zzgl. privates KTG falls angegeben), (3) langfristig staatliche EMR (bzw. Ruhegehalt bei Beamten) plus private BU/DU. Selbstständige GKV: im Chart ohne Phase 1 — Start mit Krankengeldphase (Tag 43 bzw. Tarif); Krankengeld nur bei gewähltem Anspruch, Bemessung bis BBG; sonst Phase 2 = 0 €. Netto = Brutto bzw. Gewinn bzw. Bezüge × 0,72 (Schätzwert). Auszubildende: nur GKV im Modell; Phasen 1–2 wie Angestellte; EMR in Phase 3 im Modell 0 € außer Szenario „Unfall“. Student/Schüler: Ziel-Netto; keine Lohnfortzahlung/KG/EMR aus Erwerbstätigkeit, Phase 3 = private BU (0 € staatlich). Beamte: Bezüge in Phase 1–2; Phase 3 Ruhegehalt pauschal 35 % Netto, außer Widerruf/Probe ohne Dienstunfall (0 €). PKV Angestellte: Gesamtbeitrag inkl. AG-Zuschuss; nach 6 Wochen entfällt der Zuschuss — im Szenario mit angenommen. PKV sonst: KTG abzüglich PKV-Eigenanteil ab Woche 7. · Grundlage §47 SGB V. EMR szenariobasiert (Psyche 0 €, Herz 34 % Netto, sonst 17 % Netto) · vereinfacht, §43 SGB VI.
-                  <span style={{ color: "#666" }}> Keine Rechtsberatung.</span>
+                  Wir zeigen Ihnen, wie sich Ihr Einkommen bei längerer Krankheit oder Berufsunfähigkeit entwickelt: was der
+                  Staat leistet, was wegfällt und welche Lücke bleibt. Grundlage sind vereinfachte gesetzliche Regelwerte —
+                  kein Ersatz für individuelle Beratung.
                 </div>
               )}
             </div>
-            <div className="buktg-acc-item">
-              <button type="button" className="buktg-acc-btn" onClick={() => toggleLegal("legal")} aria-expanded={legalOpen === "legal"}>
-                <span>Haftungsausschluss</span>
-                <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{legalOpen === "legal" ? "▲" : "▼"}</span>
-              </button>
-              {legalOpen === "legal" && (
-                <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
-                  {CHECK_LEGAL_DISCLAIMER_FOOTER}
-                </div>
-              )}
+            <div
+              style={{
+                marginTop: "14px",
+                padding: "12px 14px",
+                fontSize: "11px",
+                color: "#868686",
+                lineHeight: 1.6,
+                background: "#F7F6F3",
+                borderRadius: "12px",
+                border: "1px solid #E5E7EB",
+              }}
+            >
+              {CHECK_LEGAL_DISCLAIMER_FOOTER}
             </div>
           </div>
         </div>
