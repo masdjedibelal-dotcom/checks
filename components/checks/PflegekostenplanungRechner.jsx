@@ -533,7 +533,7 @@ export default function PflegekostenplanungRechner() {
 
   if (danke) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }}>
+      <div className="check-root" style={{ ...T.page, "--accent": C }}>
         <Header showProgressBar={false} />
         <Danke
           name={fd.name}
@@ -549,7 +549,7 @@ export default function PflegekostenplanungRechner() {
 
   if (loading) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }}>
+      <div className="check-root" style={{ ...T.page, "--accent": C }}>
         <Header showProgressBar={false} />
         <CheckLoader type="pflege" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
@@ -558,7 +558,7 @@ export default function PflegekostenplanungRechner() {
 
   if (phase === "bridge") {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header showProgressBar={false} />
         <CheckKitStoryHero
           hideFooterSpacer
@@ -619,13 +619,13 @@ export default function PflegekostenplanungRechner() {
       mtlLuecke <= 0 || mtlLuecke < 500 ? OK : mtlLuecke <= 1500 ? AMBER_STAT : WARN;
 
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header currentStep={pflegeHeaderStep(2, scr)} />
 
         <div style={{ paddingBottom: "120px" }}>
           <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px", display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Ihre Pflegekosten-Analyse</div>
-            <div style={{ ...T.resultNumber, fontSize: "52px", textAlign: "center", color: heroZahlFarbe }}>{fmt(mtlLuecke)}</div>
+            <div className="check-result-hero-value" style={{ ...T.resultNumber, fontSize: "52px", textAlign: "center", color: heroZahlFarbe }}>{fmt(mtlLuecke)}</div>
             <div style={{ ...T.resultUnit, marginBottom: "14px" }}>monatlicher Restbedarf</div>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>{pillPflege}</div>
             <div style={{ ...T.resultSub, marginTop: "4px", maxWidth: "44ch" }}>
@@ -782,7 +782,7 @@ export default function PflegekostenplanungRechner() {
 
   if (phase === 3) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header currentStep={pflegeHeaderStep(3, scr)} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
@@ -848,7 +848,7 @@ export default function PflegekostenplanungRechner() {
   }
 
   return withStandalone(
-    <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
       <Header currentStep={pflegeHeaderStep(1, scr)} />
 
       {scr === 1 && (
@@ -876,7 +876,7 @@ export default function PflegekostenplanungRechner() {
             </div>
           </div>
           <div style={T.section}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {PFLEGE_SORGE_OPTIONEN.map((opt) => (
                 <SelectionCard
                   key={opt.id}

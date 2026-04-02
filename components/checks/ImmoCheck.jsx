@@ -792,7 +792,7 @@ export default function ImmoCheck() {
 
   const Header = ({ showProgressBar = true }) => (
     <>
-      <div style={T.header}>
+      <div className="check-header check-sticky-header" style={T.header}>
         <div style={T.logo}>
           <div style={T.logoMk}>
             <MaklerFirmaAvatarInitials firma={MAKLER.firma} />
@@ -848,7 +848,7 @@ export default function ImmoCheck() {
 
   if (danke) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }}>
+      <div className="check-root" style={{ ...T.page, "--accent": C }}>
         <Header showProgressBar={false} />
         <div style={{ padding: "48px 24px", textAlign: "center" }} className="fade-in">
           <div
@@ -897,7 +897,7 @@ export default function ImmoCheck() {
 
   if (loading) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak}>
+      <div className="check-root" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header showProgressBar={false} />
         <ImmoTuvScanLoader
           accent={C}
@@ -916,7 +916,7 @@ export default function ImmoCheck() {
     const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
     const pathLabel = PATHS.find((p) => p.id === path);
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header />
         <div style={T.hero}>
           <div style={T.eyebrow}>Kontakt</div>
@@ -1017,7 +1017,7 @@ export default function ImmoCheck() {
   if (phase === 3) {
     const pathLabel = PATHS.find((p) => p.id === path);
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header />
         <div style={T.resultHeroWarm}>
           <div
@@ -1131,7 +1131,7 @@ export default function ImmoCheck() {
 
   if (phase === 2) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header />
         {scr2 === 1 ? (
           <>
@@ -1251,7 +1251,7 @@ export default function ImmoCheck() {
 
   if (phase === 1 && pathIntroDone && path) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header />
         <div style={T.hero}>
           <div style={T.eyebrow}>Traum-Realitäts-Check</div>
@@ -1281,7 +1281,7 @@ export default function ImmoCheck() {
   }
 
   return withStandalone(
-    <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
       <Header />
       <div style={T.hero}>
         <div style={T.eyebrow}>Immobilienabsicherung</div>
@@ -1289,7 +1289,7 @@ export default function ImmoCheck() {
         <div style={T.body}>Wählen Sie Ihre Situation — wir passen Risiko-Scanner und Empfehlungen an.</div>
       </div>
       <div style={{ padding: "0 20px", marginBottom: "120px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {PATHS.map((p) => (
             <SelectionCard
               key={p.id}

@@ -7,6 +7,7 @@ type CheckProgressBarProps = {
 export function CheckProgressBar({ steps, currentStep, accent }: CheckProgressBarProps) {
   return (
     <div
+      className="check-progress-bar-wrap"
       style={{
         display: "flex",
         alignItems: "flex-start",

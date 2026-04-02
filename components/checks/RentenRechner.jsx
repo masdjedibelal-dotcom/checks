@@ -255,6 +255,7 @@ function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
   return (
     <>
       <div
+        className="check-header check-sticky-header"
         style={{
           background: "rgba(255,255,255,0.9)",
           backdropFilter: "blur(10px)",
@@ -445,7 +446,7 @@ export default function RentenRechner() {
   const R = berechne(p);
 
   if (danke) return withStandalone(
-    <div style={{ ...T.page, "--accent": C }}>
+    <div className="check-root" style={{ ...T.page, "--accent": C }}>
       <Header makler={MAKLER} C={C} currentStep={RENTEN_HEADER_STEPS.length} showProgressBar={false} />
       <DankeScreen
         name={name}
@@ -460,7 +461,7 @@ export default function RentenRechner() {
 
   if (loading) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }}>
+      <div className="check-root" style={{ ...T.page, "--accent": C }}>
         <Header makler={MAKLER} C={C} showProgressBar={false} />
         <CheckLoader type="rente" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
@@ -469,7 +470,7 @@ export default function RentenRechner() {
 
   if (phase === "bridge")
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header makler={MAKLER} C={C} showProgressBar={false} />
         <CheckKitStoryHero
           hideFooterSpacer
@@ -517,7 +518,7 @@ export default function RentenRechner() {
   if (phase === 3) {
     const valid = fd.name.trim() && fd.email.trim() && kontaktConsent;
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(3, scr)} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
@@ -611,7 +612,7 @@ export default function RentenRechner() {
     const gutAufgestellt = lh <= 0 || R.deckung >= 90;
 
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak}>
         <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(2, scr)} />
 
         <div style={{ paddingBottom: "120px" }}>
@@ -627,7 +628,7 @@ export default function RentenRechner() {
             }}
           >
             <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Ihre Vorsorgesituation</div>
-            <div style={{ ...T.resultNumber(lh > 0), fontSize: "52px", textAlign: "center" }}>{lh > 0 ? fmt(lh) : fmt(0)}</div>
+            <div className="check-result-hero-value" style={{ ...T.resultNumber(lh > 0), fontSize: "52px", textAlign: "center" }}>{lh > 0 ? fmt(lh) : fmt(0)}</div>
             <div style={{ ...T.resultUnit, marginBottom: "14px" }}>mtl. Lücke heute</div>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>{statusPill}</div>
           </div>
@@ -1075,7 +1076,7 @@ export default function RentenRechner() {
 
   // Phase 1: Intro + Daten + Story (Alter/Netto/Rentenalter) + … + Inflation → Loader → Bridge → Phase 2
   return withStandalone(
-    <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
       <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(1, scr)} />
 
       {scr === 1 && (
@@ -1177,7 +1178,7 @@ export default function RentenRechner() {
             <div style={T.body}>Als Anteil Ihres heutigen Nettoeinkommens. Der übliche Anspruch liegt bei 70 %.</div>
           </div>
           <div style={T.section}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {[
                 { v: 60, l: "60 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.6)}/Monat · Basisversorgung` },
                 { v: 70, l: "70 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.7)}/Monat · Typisches Ziel ★`, star: true },
@@ -1304,7 +1305,7 @@ export default function RentenRechner() {
             <div style={T.body}>Mit Inflation wirkt Ihre Lücke höher — dafür näher an der künftigen Kaufkraft.</div>
           </div>
           <div style={T.section}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {[
                 { v: false, l: "Nein — einfach und direkt", d: "Die Lücke wird in heutigen Euro berechnet (Standard)", emoji: "🎯" },
                 { v: true, l: "Ja — realistischer", d: "Die Lücke wird um ca. 20 % Inflationsaufschlag erhöht", emoji: "📈" },

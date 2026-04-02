@@ -529,6 +529,7 @@ function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
   return (
     <>
       <div
+        className="check-header check-sticky-header"
         style={{
           background: "rgba(255,255,255,0.9)",
           backdropFilter: "blur(10px)",
@@ -872,7 +873,7 @@ export default function BUKTGRechner() {
   );
 
   if (danke) return withStandalone(
-    <div style={{ ...T.page, "--accent": C }}>
+    <div className="check-root" style={{ ...T.page, "--accent": C }}>
       <Header makler={MAKLER} C={C} currentStep={BUKTG_HEADER_STEPS.length} showProgressBar={false} />
       <DankeScreen
         name={name}
@@ -888,7 +889,7 @@ export default function BUKTGRechner() {
 
   if (loading) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak}>
+      <div className="check-root" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header makler={MAKLER} C={C} showProgressBar={false} />
         <CheckLoader type="bu" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
@@ -898,7 +899,7 @@ export default function BUKTGRechner() {
   // ── Bridge (nach Loader, vor Result) ──────────────────────────────────────
   if (phase === "bridge")
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header makler={MAKLER} C={C} showProgressBar={false} />
         <CheckKitStoryHero
           hideFooterSpacer
@@ -951,7 +952,7 @@ export default function BUKTGRechner() {
 
   // ── Kontakt (nach Ergebnis) ─────────────────────────────────────────────────
   if (phase === 3) return withStandalone(
-    <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
       <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(3, wizStep)} />
       <div style={T.hero}>
         <div style={T.label}>Fast geschafft</div>
@@ -1077,7 +1078,7 @@ export default function BUKTGRechner() {
     const toggleLegal = (id) => setLegalOpen((x) => (x === id ? null : id));
 
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak}>
         <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(2, wizStep)} />
 
         <div style={{ paddingBottom: "120px" }}>
@@ -1085,6 +1086,7 @@ export default function BUKTGRechner() {
           <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "28px", background: "#ffffff" }}>
             <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Ihre Absicherung im Überblick</div>
             <div
+              className="check-result-hero-value"
               style={{
                 ...T.resultNumber(R.luecke > 0),
                 fontSize: "48px",
@@ -1386,7 +1388,7 @@ export default function BUKTGRechner() {
 
   // ── Phase 1: Story + dynamischer Wizard ─────────────────────────────────────
   return withStandalone(
-    <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
       <Header makler={MAKLER} C={C} currentStep={buktgHeaderStep(1, wizStep)} />
 
       {curFlow?.kind === "intro" && (

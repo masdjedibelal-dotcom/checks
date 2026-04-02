@@ -541,3 +541,82 @@ input[type="range"]::-webkit-slider-thumb {
   animation: check-config-spin 0.7s linear infinite;
 }
 
+/* ─── CheckKit: zentrale Max-Breiten (Microsite / Embed) ─────────────────── */
+.check-root,
+.check-shell,
+.check-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.check-progress-bar-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+[data-checkkit-footer] {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.check-footer-outer {
+  width: 100%;
+  background: var(--footer-bg, #ffffff);
+  border-top: 1px solid rgba(31, 41, 55, 0.08);
+  box-sizing: border-box;
+}
+
+.check-input-wrap,
+.check-slider-wrap {
+  max-width: 420px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.check-selection-grid,
+.check-options-grid {
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.check-result-hero-value {
+  font-size: clamp(36px, 8vw, 52px) !important;
+}
+
+.check-result-grid-3col,
+.checkkit-result-grid-3 {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.checkkit-result-grid-3.check-paket-grid {
+  max-width: 600px;
+}
+
+.check-paket-grid:not(.checkkit-result-grid-3) {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.check-header,
+.check-sticky-header {
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+

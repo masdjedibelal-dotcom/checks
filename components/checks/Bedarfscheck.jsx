@@ -460,7 +460,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
   const sectionLbl = { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "10px" };
   const step = scr <= 6 ? 0 : 1;
   return(
-    <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
       <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
 
       {scr===1&&<>
@@ -635,7 +635,7 @@ function BedarfStoryScreen({ profil, onContinue, C, T, firma }) {
   }
 
   return (
-    <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
       <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={0} showProgressBar={false} accent={C} />
       <div style={{ ...CHECKKIT2026.storyRoot, background: "#ffffff" }}>
         <div style={{ ...CHECKKIT2026.storySection, background: "transparent" }}>
@@ -705,7 +705,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
   ];
 
   return (
-    <div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
       <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
 
       <div style={{ ...CHECKKIT2026.storySection, textAlign: "center", background: "#ffffff" }}>
@@ -851,7 +851,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
         >
           Für die Beratung ein Paket auswählen — antippen zum Wechseln.
         </div>
-        <CheckKitResultGrid>
+        <CheckKitResultGrid className="check-paket-grid">
           {columns.map((col) => {
             const paketAn = gewaehltePakete.includes(col.key);
             const baseStyle = {
@@ -1047,7 +1047,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
   const valid=fd.name.trim()&&fd.email.trim()&&consent;
   const phase = 4;
   const step = phase === 1 ? 0 : phase === 3 ? 2 : phase === 4 ? 3 : 0;
-  return(<div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+  return(<div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
     <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
     <div style={T.hero}>
       <div style={T.eyebrow}>Fast geschafft</div>
@@ -1123,7 +1123,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
 
 // Danke
 function DankeScreen({ name, onReset, makler, C, T, firma }) {
-  return(<div style={{ ...T.page, ...T.fadeIn }} className="fade-in">
+  return(<div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
     <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={STEPS.length} accent={C} />
     <div style={T.dankeScreen}>
       <div style={T.dankeRing(C)}>
@@ -1206,7 +1206,7 @@ export default function Bedarfscheck(){
     profil.housingStatus;
   const result=profilReady?buildPackageScoringResult(profil,existing):null;
   if(danke)return withStandalone(<DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma}/>);
-  if(loading)return withStandalone(<div style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={0} showProgressBar={false} accent={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>);
+  if(loading)return withStandalone(<div className="check-root" style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={0} showProgressBar={false} accent={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>);
   if(storyScreen&&result)return withStandalone(<BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma}/>);
   if(phase===4){
     const leadHighlights=result?[

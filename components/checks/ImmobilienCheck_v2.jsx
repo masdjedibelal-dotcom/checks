@@ -219,6 +219,7 @@ export default function ImmobilienCheck(){
     return (
       <>
         <div
+          className="check-header check-sticky-header"
           style={{
             background: "rgba(255,255,255,0.9)",
             backdropFilter: "blur(10px)",
@@ -276,9 +277,9 @@ export default function ImmobilienCheck(){
   }
 
   // Danke
-  if(danke)return(<div style={T.page}><Header phase={totalSteps} total={totalSteps} /><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
+  if(danke)return(<div className="check-root" style={T.page}><Header phase={totalSteps} total={totalSteps} /><div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in"><div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div><div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Danke, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div><div style={{fontSize:"14px",color:"#666",lineHeight:1.65,marginBottom:"32px"}}>Wir schauen uns dein Ergebnis an und melden uns innerhalb von 24 Stunden mit konkreten nächsten Schritten.</div><div style={{border:"1px solid #e8e8e8",borderRadius:"10px",overflow:"hidden",textAlign:"left"}}><div style={{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"}}><div style={{fontSize:"11px",fontWeight:"600",color:"#aaa",textTransform:"uppercase",letterSpacing:"0.5px",marginBottom:"3px"}}>Dein Berater</div><div style={{fontSize:"14px",fontWeight:"600",color:"#111"}}>{MAKLER.name}</div><div style={{fontSize:"12px",color:"#888",marginTop:"1px"}}>{MAKLER.firma}</div></div><div style={{padding:"12px 16px",display:"flex",flexDirection:"column",gap:"8px"}}><a href={`tel:${MAKLER.telefon}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.telefon}</a><a href={`mailto:${MAKLER.email}`} style={{fontSize:"13px",color:C,fontWeight:"500"}}>{MAKLER.email}</a></div></div><button onClick={()=>{setDanke(false);goTo(1);}} style={{marginTop:"20px",fontSize:"13px",color:"#aaa",cursor:"pointer"}}>Neue Berechnung starten</button></div></div>);
 
-  if(loading)return(<div style={T.page} key={ak}><Header phase={totalSteps} total={totalSteps} /><CheckLoader type="immobilie" checkmarkColor={C} onComplete={()=>{setLoading(false);goTo(3);}}/></div>);
+  if(loading)return(<div className="check-root" style={T.page} key={ak}><Header phase={totalSteps} total={totalSteps} /><CheckLoader type="immobilie" checkmarkColor={C} onComplete={()=>{setLoading(false);goTo(3);}}/></div>);
 
   // ── Phase 4: Kontakt ─────────────────────────────────────────────────────
   if(phase===4){
@@ -289,7 +290,7 @@ export default function ImmobilienCheck(){
       if(modul==="wg"){const RWG=berechneWG(wg);return[{label:"Modul",value:"Wohngebäude"},{label:"Empfohlene VS",value:fmtK(RWG.empfohleneVS)},{label:"Deckung",value:`${RWG.deckung}%`}];}
       return[];
     })();
-    return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
+    return(<div className="check-root fade-in" style={T.page} key={ak}><Header phase={curStep} total={totalSteps} />
       <div style={T.hero}><div style={T.eyebrow}>Letzter Schritt</div><div style={T.h1}>Ergebnis besprechen</div><div style={T.body}>Wir gehen dein Ergebnis gemeinsam durch — konkret, ohne Druck.</div></div>
       {isDemo ? (
         <>
@@ -337,13 +338,13 @@ export default function ImmobilienCheck(){
     const RA=modul==="anschluss"?berechneAnschluss(anschluss):null;
     const RWG=modul==="wg"?berechneWG(wg):null;
 
-    return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
+    return(<div className="check-root fade-in" style={T.page} key={ak}><Header phase={curStep} total={totalSteps} />
 
       {/* MODUL: Mieten vs. Kaufen */}
       {modul==="mk"&&RMK&&(<>
         <div style={T.resultHero}>
           <div style={T.resultEyebrow}>Kaufen vs. Mieten · Ihre Situation</div>
-          <div style={T.resultNumber(RMK.diffMonatl>0, RMK.diffMonatl<=0?"#059669":undefined)}>
+          <div className="check-result-hero-value" style={T.resultNumber(RMK.diffMonatl>0, RMK.diffMonatl<=0?"#059669":undefined)}>
             {(RMK.diffMonatl>0?"+":"")+fmt(Math.abs(RMK.diffMonatl))}
           </div>
           <div style={T.resultUnit}>
@@ -426,7 +427,7 @@ export default function ImmobilienCheck(){
       {modul==="anschluss"&&RA&&(<>
         <div style={T.resultHero}>
           <div style={T.resultEyebrow}>Anschlussfinanzierung · Ihre neue Rate</div>
-          <div style={T.resultNumber(RA.diffMonatl>0)}>{fmt(RA.neuRate)}</div>
+          <div className="check-result-hero-value" style={T.resultNumber(RA.diffMonatl>0)}>{fmt(RA.neuRate)}</div>
           <div style={T.resultUnit}>neue monatliche Rate</div>
           {RA.diffMonatl>0
             ? <div style={T.statusWarn}>+{fmt(RA.diffMonatl)}/Monat mehr als bisher</div>
@@ -473,7 +474,7 @@ export default function ImmobilienCheck(){
       {modul==="wg"&&RWG&&(<>
         <div style={T.resultHero}>
           <div style={T.resultEyebrow}>Wohngebäude · Ihr Versicherungsschutz</div>
-          <div style={T.resultNumber(RWG.unterversichert, !RWG.unterversichert&&wg.elementar?"#059669":undefined)}>
+          <div className="check-result-hero-value" style={T.resultNumber(RWG.unterversichert, !RWG.unterversichert&&wg.elementar?"#059669":undefined)}>
             {RWG.unterversichert?fmtK(RWG.deckungsluecke):fmtK(RWG.empfohleneVS)}
           </div>
           <div style={T.resultUnit}>
@@ -581,7 +582,7 @@ export default function ImmobilienCheck(){
         },
       ];
       const s=screens[scr2-1];
-      return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
+      return(<div className="check-root fade-in" style={T.page} key={ak}><Header phase={curStep} total={totalSteps} />
         <div style={T.hero}>
           <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -637,7 +638,7 @@ export default function ImmobilienCheck(){
         },
       ];
       const s=screens[scr2-1];
-      return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
+      return(<div className="check-root fade-in" style={T.page} key={ak}><Header phase={curStep} total={totalSteps} />
         <div style={T.hero}>
           <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
             <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -728,7 +729,7 @@ export default function ImmobilienCheck(){
       },
     ];
     const s=screens[scr2-1];
-    return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
+    return(<div className="check-root fade-in" style={T.page} key={ak}><Header phase={curStep} total={totalSteps} />
       <div style={T.hero}>
         <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
           <div style={{fontSize:"10px",fontWeight:"700",color:C,letterSpacing:"0.8px",textTransform:"uppercase"}}>{s.eyebrow}</div>
@@ -775,7 +776,7 @@ export default function ImmobilienCheck(){
     },
   ];
 
-  return(<div style={T.page} key={ak} className="fade-in"><Header phase={curStep} total={totalSteps} />
+  return(<div className="check-root fade-in" style={T.page} key={ak}><Header phase={curStep} total={totalSteps} />
     <div style={{padding:"36px 24px 20px"}}>
       <div style={{fontSize:"11px",fontWeight:"700",color:"#9CA3AF",letterSpacing:"0.8px",textTransform:"uppercase",marginBottom:"8px"}}>Immobilien-Check</div>
       <div style={{fontSize:"24px",color:"#111",lineHeight:1.2,marginBottom:"6px",...CHECKKIT_HERO_TITLE_TYPO}}>Was möchten Sie prüfen?</div>

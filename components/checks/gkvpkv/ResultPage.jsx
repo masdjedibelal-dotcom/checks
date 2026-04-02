@@ -638,8 +638,8 @@ export default function ResultPage({
   const bbgFmt = `${BBG_KV_MONAT.toLocaleString("de-DE")} €`;
 
   return (
-    <div style={{ ...T.page, "--accent": C, "--primary": C }} className="fade-in">
-      <div style={T.header}>
+    <div className="check-root fade-in" style={{ ...T.page, "--accent": C, "--primary": C }}>
+      <div className="check-header check-sticky-header" style={T.header}>
         <div style={T.logo}>
           <div style={T.logoMk}>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>

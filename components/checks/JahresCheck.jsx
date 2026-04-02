@@ -577,6 +577,7 @@ export default function JahresCheck(){
     return (
       <>
         <div
+          className="check-header check-sticky-header"
           style={{
             background: "rgba(255,255,255,0.9)",
             backdropFilter: "blur(10px)",
@@ -626,7 +627,7 @@ export default function JahresCheck(){
   }
 
   if(danke)return withStandalone(
-    <div style={T.page}><Header currentStep={JAHRES_HEADER_STEPS.length} showProgressBar={false} />
+    <div className="check-root" style={T.page}><Header currentStep={JAHRES_HEADER_STEPS.length} showProgressBar={false} />
     <div style={{padding:"48px 24px",textAlign:"center"}} className="fade-in">
       <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
       <div style={{fontSize:"20px",fontWeight:"700",color:"#111",marginBottom:"8px"}}>{fd.name?`Vielen Dank, ${fd.name.split(" ")[0]}.`:"Anfrage gesendet."}</div>
@@ -637,7 +638,7 @@ export default function JahresCheck(){
   );
 
   if(loading)return withStandalone(
-    <div style={T.page} key={ak}>
+    <div className="check-root" style={T.page} key={ak}>
       <Header showProgressBar={false} />
       <CheckLoader
         type="jahrescheck"
@@ -668,7 +669,7 @@ export default function JahresCheck(){
       {label:"Anpassen prüfen",value:kpiJ(optimierungJ.length)},
       {label:"Ergänzen",value:kpiJ(ergaenzungJ.length)},
     ];
-    return withStandalone(<div style={T.page} key={ak} className="fade-in">
+    return withStandalone(<div className="check-root fade-in" style={T.page} key={ak}>
       <Header currentStep={jahresCheckHeaderStep(4, scr)} />
       <div style={T.hero}><div style={T.eyebrow}>Fast geschafft</div><div style={T.h1}>Wo können wir Sie erreichen?</div><div style={T.body}>Wir melden uns innerhalb von 24 Stunden mit Ihrem Ergebnis.</div></div>
       {isDemo ? (
@@ -824,13 +825,13 @@ export default function JahresCheck(){
     );
 
     return withStandalone(
-      <div style={T.page} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={T.page} key={ak}>
         <Header currentStep={jahresCheckHeaderStep(3, scr)} />
 
         {/* Hero — H1, Zahl, Chips */}
         <div style={T.resultHeroWarm}>
           <div style={T.resultH1}>Ihr persönlicher Check-up-Bericht</div>
-          <div style={T.resultNumber(totalCount > 0 ? C : "#059669")}>{totalCount === 0 ? "✓" : totalCount}</div>
+          <div className="check-result-hero-value" style={T.resultNumber(totalCount > 0 ? C : "#059669")}>{totalCount === 0 ? "✓" : totalCount}</div>
           <div style={T.resultLead}>
             {totalCount === 0
               ? "Keine Handlungsempfehlungen aus Ihren Angaben abgeleitet — Sie können dennoch freiwillig prüfen."
@@ -1078,7 +1079,7 @@ export default function JahresCheck(){
     lineHeight: 1,
   });
   return withStandalone(
-    <div style={T.page} key={ak} className="fade-in">
+    <div className="check-root fade-in" style={T.page} key={ak}>
       <Header currentStep={jahresCheckHeaderStep(1, scr)} />
 
       {/* Screen 1: Was hat sich verändert? */}
@@ -1105,7 +1106,7 @@ export default function JahresCheck(){
               >
                 {group.title}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {group.items.map((ev) => {
                   const sel = selEventIds.includes(ev.id);
                   return (

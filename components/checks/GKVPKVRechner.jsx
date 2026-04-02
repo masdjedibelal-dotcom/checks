@@ -207,6 +207,7 @@ function Header({ maklerFirma, C, currentStep = 0, showProgressBar = true }) {
   return (
     <>
       <div
+        className="check-header check-sticky-header"
         style={{
           background: "rgba(255,255,255,0.9)",
           backdropFilter: "blur(10px)",
@@ -384,7 +385,7 @@ export default function GKVPKVRechner(){
 
   // Danke
   if(danke)return withStandalone(
-    <div style={{...T.page,"--accent":C}}>
+    <div className="check-root" style={{...T.page,"--accent":C}}>
       <Header maklerFirma={MAKLER.firma} C={C} currentStep={GKVPKV_HEADER_STEPS.length} showProgressBar={false} />
       <div style={T.dankePadding} className="fade-in">
         <div style={{width:"48px",height:"48px",borderRadius:"50%",border:`1.5px solid ${C}`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 20px"}}><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke={C} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
@@ -443,7 +444,7 @@ export default function GKVPKVRechner(){
 
   if (loading) {
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak}>
+      <div className="check-root" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header maklerFirma={MAKLER.firma} C={C} showProgressBar={false} />
         <CheckLoader type="gkvpkv" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
@@ -452,7 +453,7 @@ export default function GKVPKVRechner(){
 
   if (phase === "bridge")
     return withStandalone(
-      <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header maklerFirma={MAKLER.firma} C={C} showProgressBar={false} />
         <CheckKitStoryHero
           hideFooterSpacer
@@ -504,7 +505,7 @@ export default function GKVPKVRechner(){
   if(phase===3){
     const valid=fd.name.trim()&&fd.email.trim()&&kontaktConsent;
     return withStandalone(
-      <div style={{...T.page,"--accent":C}} key={ak} className="fade-in">
+      <div className="check-root fade-in" style={{...T.page,"--accent":C}} key={ak}>
         <Header maklerFirma={MAKLER.firma} C={C} currentStep={gkvpkvHeaderStep(3, scr)} />
         <div style={T.hero}>
           <div style={T.eyebrow}>Fast geschafft</div>
@@ -605,7 +606,7 @@ export default function GKVPKVRechner(){
 
   // ── Phase 1: Wizard (Intro, Daten 2–4, System-Story, Familie) → Loader → Bridge-Phase ────
   return withStandalone(
-    <div style={{ ...T.page, "--accent": C }} key={ak} className="fade-in">
+    <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
       <Header maklerFirma={MAKLER.firma} C={C} currentStep={gkvpkvHeaderStep(1, scr)} />
 
       {/* Slide 1: Intro */}
@@ -632,7 +633,7 @@ export default function GKVPKVRechner(){
           <div style={T.body}>Davon hängt ab, ob Sie als Arbeitnehmer in die PKV wechseln dürfen.</div>
         </div>
         <div style={T.section}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[
               { v: "angestellt", l: "Angestellt",    d: "Pflichtversichert bis zur Einkommensgrenze (6.450 €/Mon.)", emoji: "💼" },
               { v: "selbst",     l: "Selbstständig", d: "Freie Wahl zwischen GKV und PKV",                          emoji: "🧑‍💻" },

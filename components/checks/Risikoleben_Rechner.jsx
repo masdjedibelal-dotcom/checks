@@ -263,6 +263,7 @@ export default function RisikolebenRechner() {
     return (
       <>
         <div
+          className="check-header check-sticky-header"
           style={{
             background: "rgba(255,255,255,0.9)",
             backdropFilter: "blur(10px)",
@@ -407,7 +408,7 @@ export default function RisikolebenRechner() {
   };
 
   const Shell = ({ eyebrow, title, lead, children, footer, headerStep = 0, hideHeaderProgress = false }) => (
-    <div style={T.root}>
+    <div className="check-root" style={T.root}>
       <Header currentStep={headerStep} showProgressBar={!hideHeaderProgress} />
       <div key={animKey} className="fade-in" style={T.body}>
         <div style={T.hero}>{eyebrow&&<div style={T.eyebrow}>{eyebrow}</div>}{title&&<h1 style={T.h1}>{title}</h1>}{lead&&<p style={T.lead}>{lead}</p>}</div>
@@ -423,7 +424,7 @@ export default function RisikolebenRechner() {
 
   if (loading) {
     return withStandalone(
-      <div style={T.root}>
+      <div className="check-root" style={T.root}>
         <Header showProgressBar={false} />
         <CheckLoader type="risikoleben" checkmarkColor={C} onComplete={() => { setLoading(false); goTo("bridge"); }} />
       </div>
@@ -432,7 +433,7 @@ export default function RisikolebenRechner() {
 
   if (phase === "bridge")
     return withStandalone(
-      <div style={T.root}>
+      <div className="check-root" style={T.root}>
         <Header showProgressBar={false} />
         <div key={animKey} className="fade-in" style={T.body}>
           <CheckKitStoryHero
@@ -559,7 +560,7 @@ export default function RisikolebenRechner() {
     })();
 
     return withStandalone(
-      <div style={T.root}>
+      <div className="check-root" style={T.root}>
         <Header currentStep={rlHeaderStep(1, scr)} />
         <div key={animKey} className="fade-in" style={T.body}>
           {scr === 1 && (
@@ -588,7 +589,7 @@ export default function RisikolebenRechner() {
           {((scr >= 2 && scr <= 3) || scr === 5 || scr === 6) && (
             <div style={{ padding: "0 24px 8px" }}>
               {scr === 2 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   {[
                     { id: "paar_ohne_kinder", label: "Paar ohne Kinder", desc: "Partnerschaft, keine minderjährigen Kinder im Haushalt." },
                     { id: "paar_mit_kinder", label: "Paar mit Kindern", desc: "Partnerschaft mit Kindern — Bildung und Versorgung im Fokus." },
@@ -613,7 +614,10 @@ export default function RisikolebenRechner() {
                   <div style={{ fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "10px" }}>
                     Haben Sie laufende Kredite oder Immobilien-Darlehen?
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: hatKredit === true ? "8px" : "12px" }}>
+                  <div
+                    className="check-selection-grid check-options-grid"
+                    style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: hatKredit === true ? "8px" : "12px" }}
+                  >
                     <SelectionCard
                       value="ja"
                       label="Ja"
@@ -885,7 +889,10 @@ export default function RisikolebenRechner() {
 
         <div style={{ ...T.resultHero, paddingTop: "36px", paddingBottom: "24px", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={T.resultEyebrow}>Ihre Risikoleben-Analyse</div>
-          <div style={{ ...T.resultNumber(!gedeckt), textAlign: "center", width: "100%" }}>
+          <div
+            className="check-result-hero-value"
+            style={{ ...T.resultNumber(!gedeckt), textAlign: "center", width: "100%" }}
+          >
             {gedeckt ? "Gedeckt" : fmtK(netto)}
           </div>
           <div style={{ ...T.resultUnit, textAlign: "center" }}>

@@ -149,6 +149,7 @@ type CheckRowProps = {
 export function InputCard({ children, focused, accent }: InputCardProps) {
   return (
     <div
+      className="check-input-wrap check-slider-wrap"
       style={{
         padding: "18px 20px",
         borderRadius: "18px",

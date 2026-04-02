@@ -18,7 +18,7 @@ export function CheckKitResultGrid({ children, className = "", style }: Props) {
     ensureCheckKitResultGridStyles();
   }, []);
 
-  const cn = [CHECKKIT_RESULT_GRID_CLASS, className].filter(Boolean).join(" ");
+  const cn = [CHECKKIT_RESULT_GRID_CLASS, "check-result-grid-3col", className].filter(Boolean).join(" ");
 
   return (
     <div className={cn} style={style}>
