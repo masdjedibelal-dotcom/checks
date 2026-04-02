@@ -29,6 +29,9 @@ export const metadata: Metadata = {
     title: "FlowLeads — Mehr Anfragen. Weniger Aufwand.",
     description: "Fertige Microsites für Versicherungsmakler.",
   },
+  verification: {
+    google: "J2h3DZAsWDWdDJ3Tkj-sRovZ99z8jF-kw4DYzWe1eC0",
+  },
 };
 
 export default function RootLayout({
