@@ -441,44 +441,27 @@ export default function RisikolebenRechner() {
 
   if (phase === "bridge")
     return withStandalone(
-      <div className="check-root" style={T.root}>
+      <div className="check-root" style={{ ...T.root, display: "flex", flexDirection: "column", minHeight: "100svh" }}>
         <Header showProgressBar={false} />
-        <div key={animKey} className="fade-in" style={T.body}>
+        <div
+          key={animKey}
+          className="fade-in"
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            minHeight: 0,
+            paddingBottom: 0,
+          }}
+        >
           <CheckKitStoryHero
+            compact
             hideFooterSpacer
             emoji="🎯"
             title="Ihre Sicherheits-Zahl steht."
             text="Wir haben Ihren Absicherungsbedarf vollständig berechnet."
           />
-          <div style={{ padding: "0 24px 8px", ...CHECKKIT2026.storyContentWrap }}>
-            {[
-              `Kapitalbedarf: ${fmtK(R.gesamt)} über ${R.versorgungsjahre} Jahre ermittelt.`,
-              R.luecke > 0
-                ? `Monatliche Lücke: ${fmt(R.luecke)}/Mon. berücksichtigt.`
-                : "Laufende Einnahmen vollständig berücksichtigt.",
-              p.kredite > 0
-                ? `Restschuld von ${fmtK(p.kredite)} eingerechnet.`
-                : "Optimale Absicherungsstrategie berechnet.",
-            ].map((line) => (
-              <div
-                key={line}
-                style={{
-                  ...CHECKKIT2026.storyBody,
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "14px",
-                  marginBottom: 16,
-                  textAlign: "left",
-                }}
-              >
-                <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
-                  ✅
-                </span>
-                <span>{line}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
         </div>
         <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnMain(false)} onClick={() => goTo(2)}>

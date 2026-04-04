@@ -42,7 +42,7 @@ const EVENT_GROUPS = [
     items: [
       { id: "immobilie", matrixKey: "immobilie", icon: "🏠", label: "Immobilienkauf / Hausbau", sub: "Kauf, Bau oder große Sanierung." },
       { id: "umzug_miete", matrixKey: "umzug", icon: "📦", label: "Umzug (Miete)", sub: "Neue Wohnung, neue Hausrat-Werte." },
-      { id: "investition", matrixKey: "investition", icon: "⚡", label: "Große Anschaffung", sub: "PV-Anlage, E-Auto oder Haustier." },
+      { id: "investition", matrixKey: "investition", icon: "⚡", label: "Große Anschaffung", sub: "PV-Anlage, Haustier oder andere große Anschaffung." },
     ],
   },
   {
@@ -130,7 +130,6 @@ const MATRIX={
     b:[
       {p:"Hausratversicherung",h:true,tVorhanden:"Neue Adresse und ca. {housingSize} m² Wohnfläche melden — Versicherungssumme orientierend ca. {hausratSummeOrientierung} € prüfen und Unterversicherungsverzicht-Klausel abstimmen.",tNeu:"Hausratversicherung abschließen — schützt Ihr Hab und Gut am neuen Ort."},
       {p:"Wohngebäudeversicherung",h:true,tVorhanden:"Auf neues Objekt umschreiben — Elementarschutz prüfen.",tNeu:"Wohngebäudeversicherung ist Pflicht bei Immobilienbesitz.",condition:{housingStatus:"eigentuemer"}},
-      {p:"Kfz-Versicherung",h:false,tVorhanden:"Neue Adresse melden — Regionalklasse kann sich ändern und die Prämie beeinflussen.",tNeu:"Kfz-Versicherung für Ihr Fahrzeug abschließen."},
     ],
     n:[
       {p:"Rechtsschutzversicherung",h:false,tNeu:"Mietrechtliche Streitigkeiten sind häufig — Rechtsschutz schützt Sie."},
@@ -156,14 +155,6 @@ const MATRIX={
     n:[
       {p:"Pflegezusatzversicherung",h:false,tNeu:"Eine frühzeitige Absicherung im Pflegefall kann langfristig sinnvoll sein."},
       {p:"Altersvorsorge / private Rentenversicherung",h:false,tNeu:"Mit einem Kind steigt die Bedeutung einer stabilen Altersvorsorge."},
-    ]
-  },
-  kfz:{
-    b:[
-      {p:"Kfz-Versicherung",h:true,tVorhanden:"Neues Fahrzeug anmelden, Kasko-Stufe und SF-Klasse prüfen.",tNeu:"Kfz-Versicherung für das neue Fahrzeug abschließen."},
-    ],
-    n:[
-      {p:"E-Bike / Fahrrad",h:true,tNeu:"E-Bikes sind nicht automatisch über Hausrat versichert — separate Police prüfen."},
     ]
   },
   jobwechsel:{
@@ -229,9 +220,8 @@ const MATRIX={
   },
   investition:{
     b:[
-      {p:"Privathaftpflicht",h:true,tVorhanden:"Neue Risiken prüfen — z. B. Hund, E-Auto oder höhere Schadenssummen bei wertvoller Anschaffung.",tNeu:"Privathaftpflicht erweitern oder abschließen — greift u. a. bei Schäden durch Haustier oder Fahrzeug."},
+      {p:"Privathaftpflicht",h:true,tVorhanden:"Neue Risiken prüfen — z. B. Hund oder höhere Schadenssummen bei wertvoller Anschaffung.",tNeu:"Privathaftpflicht erweitern oder abschließen — greift u. a. bei Schäden durch Haustier."},
       {p:"Hausratversicherung",h:true,tVorhanden:"Anschaffungen melden — bei ca. {housingSize} m² Versicherungssumme orientierend ca. {hausratSummeOrientierung} € und Unterversicherungsverzicht mit der Versicherung abstimmen.",tNeu:"Hausrat an neue Werte anpassen — PV-Komponenten und teure Geräte abdecken."},
-      {p:"Kfz-Versicherung",h:true,tVorhanden:"Neues Fahrzeug anmelden, Kasko-Stufe und SF-Klasse prüfen.",tNeu:"Kfz-Versicherung für das neue Fahrzeug abschließen."},
     ],
     n:[
       {p:"E-Bike / Fahrrad",h:true,tNeu:"E-Bikes und teure Räder sind oft nicht vollständig über den Standard-Hausrat abgedeckt — Zusatzbaustein prüfen."},
@@ -348,7 +338,6 @@ const JAHRES_RESULT_PRODUCT_PRIO = [
   "Unfallversicherung",
   "Hausratversicherung",
   "Wohngebäudeversicherung",
-  "Kfz-Versicherung",
   "Rechtsschutzversicherung",
   "E-Bike / Fahrrad",
   "Sparen & Investieren",
@@ -380,7 +369,7 @@ function jahresResultProductIcon(p) {
   if (/Pflege/i.test(s)) return "🏥";
   if (/Hausrat/i.test(s)) return "🛋️";
   if (/Wohngebäude/i.test(s)) return "🏡";
-  if (/Kfz|Fahrrad|E-Bike/i.test(s)) return "🚗";
+  if (/Fahrrad|E-Bike/i.test(s)) return "🚲";
   if (/Vorsorgevollmacht|Patientenverfügung/i.test(s)) return "📄";
   return "📌";
 }

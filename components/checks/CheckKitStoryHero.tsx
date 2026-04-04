@@ -14,6 +14,8 @@ type Props = {
   fillViewport?: boolean;
   /** Kein 120px-Spacer (z. B. wenn danach noch Blöcke vor dem Footer kommen) */
   hideFooterSpacer?: boolean;
+  /** Bridge/Kurz-Screens: Story-Wrapper nicht auf volle Viewport-Höhe zwingen (weniger Leerraum, kein Scroll) */
+  compact?: boolean;
 };
 
 /**
@@ -29,7 +31,12 @@ export function CheckKitStoryHero({
   children,
   fillViewport,
   hideFooterSpacer,
+  compact,
 }: Props) {
+  const storyRootStyle = compact
+    ? { ...CHECKKIT2026.storyRoot, minHeight: "auto" as const }
+    : CHECKKIT2026.storyRoot;
+
   const block = (
     <>
       <div style={CHECKKIT2026.storySection}>
@@ -54,7 +61,7 @@ export function CheckKitStoryHero({
 
   if (fillViewport) {
     return (
-      <div style={CHECKKIT2026.storyRoot}>
+      <div style={storyRootStyle}>
         <div
           style={{
             minHeight: CHECKKIT2026.storyScreenMinHeight,
@@ -70,5 +77,5 @@ export function CheckKitStoryHero({
     );
   }
 
-  return <div style={CHECKKIT2026.storyRoot}>{block}</div>;
+  return <div style={storyRootStyle}>{block}</div>;
 }

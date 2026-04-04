@@ -12,7 +12,7 @@ import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCop
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
-import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 (() => {
@@ -564,39 +564,29 @@ export default function PflegekostenplanungRechner() {
 
   if (phase === "bridge") {
     return withStandalone(
-      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
+      <div
+        className="check-root fade-in"
+        style={{ ...T.page, "--accent": C, display: "flex", flexDirection: "column", minHeight: "100svh" }}
+        key={ak}
+      >
         <Header showProgressBar={false} />
-        <CheckKitStoryHero
-          hideFooterSpacer
-          emoji="💸"
-          title="Ihre Pflegekosten-Analyse ist bereit."
-          text="Wir haben Ihren regionalen Eigenanteil und Ihre Vorsorgesituation vollständig berechnet."
-        />
-        <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
-          {[
-            `Eigenanteil in ${p.region && p.region !== "__bund__" ? p.region : "Ihrer Region"}: ca. ${fmt(R.eigenEff)}/Mon. ermittelt.`,
-            R.vorsorgeEff > 0
-              ? `Bestehende Vorsorge: ${fmt(R.vorsorgeEff)}/Mon. angerechnet.`
-              : "Monatliche Restlücke ohne bestehende Vorsorge berechnet.",
-            `Pflegetagegeld-Empfehlung: ${R.empfTagegeld} €/Tag erstellt.`,
-          ].map((line) => (
-            <div
-              key={line}
-              style={{
-                ...CHECKKIT2026.storyBody,
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "12px",
-                marginBottom: 14,
-                textAlign: "left",
-              }}
-            >
-              <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>✅</span>
-              <span>{line}</span>
-            </div>
-          ))}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            minHeight: 0,
+          }}
+        >
+          <CheckKitStoryHero
+            compact
+            hideFooterSpacer
+            emoji="💸"
+            title="Ihre Pflegekosten-Analyse ist bereit."
+            text="Wir haben Ihren regionalen Eigenanteil und Ihre Vorsorgesituation vollständig berechnet."
+          />
         </div>
-        <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
         <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Ergebnis ansehen

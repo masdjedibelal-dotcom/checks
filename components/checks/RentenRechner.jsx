@@ -480,39 +480,29 @@ export default function RentenRechner() {
 
   if (phase === "bridge")
     return withStandalone(
-      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
+      <div
+        className="check-root fade-in"
+        style={{ ...T.page, "--accent": C, display: "flex", flexDirection: "column", minHeight: "100svh" }}
+        key={ak}
+      >
         <Header makler={MAKLER} C={C} showProgressBar={false} />
-        <CheckKitStoryHero
-          hideFooterSpacer
-          emoji="🎯"
-          title="Ihre Analyse ist bereit."
-          text="Wir haben Ihre Vorsorgesituation vollständig berechnet."
-        />
-        <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
-          {[
-            `Monatliche Lücke: ${fmt(R.lueckeHeute > 0 ? R.lueckeHeute : 0)} ermittelt.`,
-            `Deckungsgrad: ${R.deckung} % Ihrer Zielrente analysiert.`,
-            `Strategieempfehlung für ${R.jahreBis} Jahre Ansparphase erstellt.`,
-          ].map((line) => (
-            <div
-              key={line}
-              style={{
-                ...CHECKKIT2026.storyBody,
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "12px",
-                marginBottom: 14,
-                textAlign: "left",
-              }}
-            >
-              <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
-                ✅
-              </span>
-              <span>{line}</span>
-            </div>
-          ))}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            minHeight: 0,
+          }}
+        >
+          <CheckKitStoryHero
+            compact
+            hideFooterSpacer
+            emoji="🎯"
+            title="Ihre Analyse ist bereit."
+            text="Wir haben Ihre Vorsorgesituation vollständig berechnet."
+          />
         </div>
-        <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
         <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Ergebnis ansehen

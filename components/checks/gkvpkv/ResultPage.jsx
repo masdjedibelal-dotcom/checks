@@ -6,17 +6,25 @@
 "use client";
 
 import { useState } from "react";
-import { fmt } from "@/lib/utils";
 import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
+import { CheckHeaderPhoneButton } from "@/components/checks/CheckHeaderPhoneButton";
+import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
+import { useMakler } from "@/components/ui/MaklerContext";
 
 const JAEG_MONAT = 6450;
+
+/** Monatsbeträge: ganze Euro, mit „ca.“ */
+function fmtCaEuro(n) {
+  const v = Math.round(Math.abs(Number(n) || 0));
+  return `ca. ${v.toLocaleString("de-DE")} €`;
+}
 
 /**
  * @typedef {'pflicht'|'beamte'|'pkv_fokus'|'individuell'|'gkv_familie'} GkvPkvResultPath
  */
 
 function formatIncomeLimitEur() {
-  return `${JAEG_MONAT.toLocaleString("de-DE")} €`;
+  return `ca. ${JAEG_MONAT.toLocaleString("de-DE")} €`;
 }
 
 /** @param {object} p */
@@ -67,14 +75,39 @@ export function resolveGkvPkvResultPath(p) {
 
 const GKV_COLOR = "#059669";
 
-/** Kurzbezeichnung für die Hero-Zeile „Einordnung · …“ */
-const PATH_LABEL_SIE = {
-  pflicht: "GKV-Pflicht",
-  beamte: "Beamte",
-  pkv_fokus: "PKV-Fokus",
-  individuell: "Familien-Check",
-  gkv_familie: "Großfamilie",
-};
+/**
+ * Headline + Fließtext wie im Hero ohne Ersparnis-Zahl — für die Zeile unter dem Zahlen-Hero
+ * (ersetzt „Pfad · R.subline“).
+ */
+function gkvPkvHeroTextWithoutSavings({ beruf, dreiPlusKinder, kinderN, heroGkvFokus, heroPkvFokus, copy }) {
+  if (beruf === "beamter") {
+    return {
+      title: "PKV passt zu Ihrer Situation",
+      body: "Als Beamte/r übernimmt Ihr Dienstherr 50–70 % der Kosten — die PKV deckt den Rest günstig ab.",
+    };
+  }
+  if (heroGkvFokus) {
+    return {
+      title: dreiPlusKinder ? "GKV ist für Sie günstiger" : "GKV passt besser zu Ihnen",
+      body: dreiPlusKinder
+        ? `Mit ${kinderN} Kindern überwiegt tendenziell die GKV — ein Haushaltsbeitrag statt mehrerer PKV-Einzelverträge.`
+        : "Auf Basis Ihrer Situation spricht tendenziell mehr für die GKV — vor allem bei Beitragslogik und Mitversicherung.",
+    };
+  }
+  if (heroPkvFokus) {
+    return {
+      title: kinderN > 0 ? "Kommt auf Ihre Familie an" : "Tendenz: PKV lohnt sich",
+      body:
+        kinderN > 0
+          ? `Mit ${kinderN} Kind${kinderN === 1 ? "" : "ern"} lohnt ein genauer Vergleich — GKV-Familienversicherung vs. mehrere PKV-Verträge.`
+          : "Tendenziell ist die PKV für Ihre Situation wirtschaftlich attraktiver — konkrete Tarife klären sich im persönlichen Gespräch.",
+    };
+  }
+  return {
+    title: `Tendenz: ${copy.heroH1}`,
+    body: copy.heroSubline,
+  };
+}
 
 /**
  * Inhalte je Pfad: kurze H1, Subline, Duell-Karten (Bullets: ok = Vorteil/Check, neg|hinweis = dezenter Punkt).
@@ -297,57 +330,6 @@ function resolvePathCopy(path, p) {
   };
 }
 
-function IconBeitrag({ color }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" />
-      <path d="M12 7v10M9.5 10h5M9.5 14h5" stroke={color} strokeWidth="1.35" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconLeistung({ color }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M12 4v4M12 14v6" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M8.5 9.5c0-2 1.5-3.5 3.5-3.5s3.5 1.5 3.5 3.5v2.5a3.5 3.5 0 0 1-7 0V9.5z" stroke={color} strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-/** PKV-Spanne nach Alter, Kinderzahl und Beruf (Orientierung). */
-function getPkvRange(alter, kinderAnzahl, beruf) {
-  const a = Math.max(0, Math.round(Number(alter) || 0));
-  const k = Math.max(0, Math.min(3, Math.round(Number(kinderAnzahl) || 0)));
-  const isBeamter = beruf === "beamter";
-
-  if (isBeamter) {
-    const base = { min: 200, max: 300 };
-    return {
-      min: base.min + k * 80,
-      max: base.max + k * 120,
-    };
-  }
-
-  let base = { min: 300, max: 450 };
-  if (a >= 30 && a < 40) base = { min: 400, max: 550 };
-  if (a >= 40 && a < 50) base = { min: 500, max: 650 };
-  if (a >= 50 && a < 60) base = { min: 600, max: 800 };
-  if (a >= 60) base = { min: 550, max: 750 };
-
-  return {
-    min: base.min + k * 150,
-    max: base.max + k * 200,
-  };
-}
-
-function kinderAnzahlForRange(p) {
-  if (p.familiensituation !== "partner_kinder") return 0;
-  const k = p.kinderImHaushalt;
-  if (k === 1 || k === 2 || k === 3) return k;
-  return 0;
-}
-
 /** PKV-Kartenzeile: Alter (Orientierung). */
 function pkvAlterFaktorText(alter) {
   const a = Number(alter) || 0;
@@ -379,44 +361,14 @@ function FaktorFooter({ rows }) {
   );
 }
 
-function bulletLeadKind(rowKind) {
-  if (rowKind === "ok") return "ok";
-  if (rowKind === "neg") return "neg";
-  return "dot";
-}
-
-function BulletLead({ kind, accent }) {
-  if (kind === "ok") {
-    return (
-      <svg width="15" height="15" viewBox="0 0 15 15" aria-hidden style={{ flexShrink: 0, marginTop: "3px" }}>
-        <circle cx="7.5" cy="7.5" r="7.5" fill={accent} />
-        <path d="M4.2 7.6 6.4 9.8 10.8 5.4" stroke="#fff" strokeWidth="1.65" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (kind === "neg") {
-    return (
-      <svg width="15" height="15" viewBox="0 0 15 15" aria-hidden style={{ flexShrink: 0, marginTop: "3px" }}>
-        <circle cx="7.5" cy="7.5" r="7.5" fill="#FEE2E2" />
-        <path d="M5 5l5 5M10 5l-5 5" stroke="#C0392B" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <span
-      style={{
-        width: "6px",
-        height: "6px",
-        borderRadius: "50%",
-        background: "#D1D5DB",
-        marginTop: "7px",
-        flexShrink: 0,
-        display: "inline-block",
-      }}
-      aria-hidden
-    />
-  );
-}
+const COMPARE_SECTION_LBL = {
+  fontSize: "10px",
+  fontWeight: "700",
+  letterSpacing: "0.06em",
+  textTransform: "uppercase",
+  color: "#6B7280",
+  marginBottom: "8px",
+};
 
 /** @param {'primary'|'muted'|'compare'|'caution'} border */
 function cardBorderStyle(border) {
@@ -459,7 +411,7 @@ function badgeStyle(tone) {
   return { background: "#f0f0f0", color: "#666", border: "1px solid #e8e8e8" };
 }
 
-function CompareCard({ label, tagline, color, bg, beitrag, leistung, border, badge, bulletAccent, footer, T }) {
+function CompareCard({ label, tagline, color, bg, beitrag, leistung, border, badge, footer, T }) {
   const b = cardBorderStyle(border);
   const badgeT =
     border === "primary" ? "primary" : border === "compare" ? "compare" : border === "caution" ? "caution" : "muted";
@@ -468,7 +420,9 @@ function CompareCard({ label, tagline, color, bg, beitrag, leistung, border, bad
   const renderRows = (rows) =>
     rows.map((row, i) => (
       <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: i < rows.length - 1 ? "8px" : 0 }}>
-        <BulletLead kind={bulletLeadKind(row.kind)} accent={bulletAccent} />
+        <span style={{ flexShrink: 0, marginTop: "0.32em", color: "#9CA3AF", fontSize: "12px", lineHeight: 1 }} aria-hidden>
+          •
+        </span>
         <span style={{ ...T.compareMuted, overflowWrap: "break-word", wordBreak: "break-word" }}>{row.text}</span>
       </div>
     ));
@@ -510,19 +464,13 @@ function CompareCard({ label, tagline, color, bg, beitrag, leistung, border, bad
       <div style={{ fontSize: "11px", fontWeight: "600", color: "#888", marginBottom: "14px", paddingRight: badge ? "78px" : 0 }}>{tagline}</div>
       {beitrag?.length ? (
         <div style={{ marginBottom: leistung?.length ? "14px" : 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
-            <IconBeitrag color={color} />
-            <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase", color: "#6B7280" }}>Beitrag</span>
-          </div>
+          <div style={COMPARE_SECTION_LBL}>💶 Beitrag</div>
           {renderRows(beitrag)}
         </div>
       ) : null}
       {leistung?.length ? (
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
-            <IconLeistung color={color} />
-            <span style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase", color: "#6B7280" }}>Leistung</span>
-          </div>
+          <div style={COMPARE_SECTION_LBL}>🏥 Leistung</div>
           {renderRows(leistung)}
         </div>
       ) : null}
@@ -531,24 +479,47 @@ function CompareCard({ label, tagline, color, bg, beitrag, leistung, border, bad
   );
 }
 
+const GKVPKV_CHECK_TITLE = "KV-Navigator";
+
+const headerBadgeStyle = {
+  fontSize: "11px",
+  fontWeight: "500",
+  color: "#888",
+  letterSpacing: "0.3px",
+  textTransform: "uppercase",
+  textAlign: "right",
+  lineHeight: 1.35,
+  maxWidth: "min(140px, 38vw)",
+};
+
 export default function ResultPage({
   R,
   p,
   T,
   accentColor: C,
   maklerFirma,
+  maklerTelefon = "",
+  checkTitle = GKVPKV_CHECK_TITLE,
   goTo,
   progressSteps = ["Über Sie", "Einkommen", "Ergebnis", "Kontakt"],
   progressCurrentStep = 1,
 }) {
+  const { embedInIframe } = useMakler();
   const [gkvArchiv, setGkvArchiv] = useState(null);
   const resultPath = resolveGkvPkvResultPath(p);
   const copy = resolvePathCopy(resultPath, p);
 
   const PKV_COLOR = C;
-  const ersparnisMonatlich = Math.max(0, R.gkvSchMonat - R.pkvSchMonat);
-  const pkvRange = getPkvRange(p.alter, kinderAnzahlForRange(p), p.beruf);
-  const pkvRangeLabel = `${pkvRange.min.toLocaleString("de-DE")} – ${pkvRange.max.toLocaleString("de-DE")} €`;
+  /** Größte modellierte Monatsersparnis vs. GKV, wenn PKV an der Untergrenze der KPI-Spanne liegt */
+  const ersparnisMonatlich = Math.max(0, Math.round(R.gkvSchMonat) - R.pkvSchMonatMin);
+  const pkvRangeLabel = `ca. ${R.pkvSchMonatMin.toLocaleString("de-DE")} – ${R.pkvSchMonatMax.toLocaleString("de-DE")} €`;
+
+  const gkvKpiSubline =
+    p.beruf === "angestellt"
+      ? "Orientierung: AN-Anteil (Ø)"
+      : p.beruf === "selbst"
+        ? "Orientierung: voller Beitrag (Ø)"
+        : "GKV 2026 (Ø)";
 
   const gkvFaktorRows = [];
   if (R.hatKinder) gkvFaktorRows.push(["👨‍👩‍👧 Kinder", "Beitragsfrei mitversichert"]);
@@ -556,7 +527,7 @@ export default function ResultPage({
   gkvFaktorRows.push(["🏥 Gesundheit", "Keine Gesundheitsprüfung — Aufnahme garantiert"]);
 
   const pkvFaktorRows = [];
-  if (R.hatKinder) pkvFaktorRows.push(["👨‍👩‍👧 Kinder", "Eigener Tarif je Kind (~150–200 €)"]);
+  if (R.hatKinder) pkvFaktorRows.push(["👨‍👩‍👧 Kinder", "Eigener Tarif je Kind (ca. 150–200 €)"]);
   pkvFaktorRows.push(["📅 Alter", pkvAlterFaktorText(R.alter)]);
   pkvFaktorRows.push(["💰 Einkommen", "Beitrag unabhängig vom Einkommen"]);
   pkvFaktorRows.push(["🏥 Gesundheit", "Gesundheitsprüfung bei Aufnahme — Aufschlag möglich"]);
@@ -573,23 +544,101 @@ export default function ResultPage({
 
   const showSavingsHero = !(R.unterGrenze && p.beruf === "angestellt") && ersparnisMonatlich > 0;
 
+  const savingsContextHero = showSavingsHero
+    ? gkvPkvHeroTextWithoutSavings({
+        beruf: p.beruf,
+        dreiPlusKinder,
+        kinderN,
+        heroGkvFokus,
+        heroPkvFokus,
+        copy,
+      })
+    : null;
+
   return (
     <div className="check-root fade-in" style={{ ...T.page, "--accent": C, "--primary": C }}>
-      <div className="check-header check-sticky-header" style={T.header}>
-        <div style={T.logo}>
-          <div style={T.logoMk}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-              <rect x="1" y="1" width="5" height="5" rx="1" fill="white" />
-              <rect x="8" y="1" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-              <rect x="1" y="8" width="5" height="5" rx="1" fill="white" opacity="0.6" />
-              <rect x="8" y="8" width="5" height="5" rx="1" fill="white" />
-            </svg>
+      {!embedInIframe ? (
+        <>
+          <div
+            className="check-header check-sticky-header"
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 100,
+              background: "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              borderBottom: "1px solid rgba(31,41,55,0.06)",
+              padding: "16px 20px 12px",
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto 1fr",
+                alignItems: "center",
+                columnGap: "8px",
+              }}
+            >
+              <div aria-hidden style={{ minWidth: 0 }} />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "6px",
+                  minWidth: 0,
+                  gridColumn: 2,
+                }}
+              >
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "50%",
+                    background: C,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+                  }}
+                >
+                  <MaklerFirmaAvatarInitials firma={maklerFirma} />
+                </div>
+                <span
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: "700",
+                    color: "#1F2937",
+                    letterSpacing: "-0.1px",
+                    textAlign: "center",
+                    maxWidth: "min(200px, 52vw)",
+                    overflowWrap: "break-word",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {maklerFirma}
+                </span>
+              </div>
+              <div
+                style={{
+                  justifySelf: "end",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  justifyContent: "center",
+                  paddingRight: "44px",
+                  minWidth: 0,
+                }}
+              >
+                <span style={headerBadgeStyle}>{checkTitle}</span>
+              </div>
+            </div>
+            <CheckHeaderPhoneButton telefon={maklerTelefon} primaryColor={C} />
           </div>
-          <span style={T.logoTxt}>{maklerFirma}</span>
-        </div>
-        <span style={T.badge}>KV-Navigator</span>
-      </div>
-      <CheckProgressBar steps={progressSteps} currentStep={progressCurrentStep} accent={C} />
+          <CheckProgressBar steps={progressSteps} currentStep={progressCurrentStep} accent={C} />
+        </>
+      ) : null}
 
       <div style={{ paddingBottom: "120px" }}>
         <div
@@ -652,11 +701,8 @@ export default function ResultPage({
                   margin: "0 0 4px",
                 }}
               >
-                {fmt(ersparnisMonatlich)}
+                {fmtCaEuro(ersparnisMonatlich)}
                 <span style={{ fontSize: "16px", fontWeight: "400", color: "#6B7280" }}> /Monat</span>
-              </p>
-              <p style={{ fontSize: "13px", color: "#6B7280", margin: "8px auto 0", maxWidth: "38ch", lineHeight: 1.55 }}>
-                {copy.heroSubline}
               </p>
             </div>
           ) : p.beruf === "beamter" ? (
@@ -757,9 +803,32 @@ export default function ResultPage({
             </>
           )}
 
-          <div style={{ ...T.resultSub, marginTop: "12px", maxWidth: "36ch", marginLeft: "auto", marginRight: "auto" }}>
-            {PATH_LABEL_SIE[resultPath]} · {R.subline}
-          </div>
+          {showSavingsHero && savingsContextHero ? (
+            <div
+              style={{
+                ...T.resultSub,
+                marginTop: "12px",
+                maxWidth: "38ch",
+                marginLeft: "auto",
+                marginRight: "auto",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "15px",
+                  fontWeight: "700",
+                  color: "#111827",
+                  lineHeight: 1.25,
+                  marginBottom: "8px",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {savingsContextHero.title}
+              </div>
+              <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.55 }}>{savingsContextHero.body}</div>
+            </div>
+          ) : null}
           <p
             style={{
               fontSize: "12px",
@@ -798,7 +867,7 @@ export default function ResultPage({
                 }}
               >
                 <div style={{ fontSize: "13px", fontWeight: "700", color: "#111827" }}>GKV</div>
-                <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px", lineHeight: 1.35 }}>GKV 2026 (Ø)</div>
+                <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px", lineHeight: 1.35 }}>{gkvKpiSubline}</div>
                 <div
                   style={{
                     fontSize: "24px",
@@ -808,7 +877,7 @@ export default function ResultPage({
                     color: GKV_COLOR,
                   }}
                 >
-                  {fmt(R.gkvSchMonat)}
+                  {fmtCaEuro(R.gkvSchMonat)}
                 </div>
                 <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "2px" }}>/ Mon.</div>
               </div>
@@ -851,7 +920,7 @@ export default function ResultPage({
                 lineHeight: 1.45,
               }}
             >
-              GKV: 14,6% + Ø-Zusatzbeitrag 2,9% (2026) · PKV: Orientierungswerte 2026 — Tarif abhängig von Gesundheit &amp; Leistungsumfang
+              GKV: 14,6% + Ø-Zusatzbeitrag 2,9% (2026) · PKV: Orientierungswerte 2026 — Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt · Arbeitgeber zahlt bis zu ~50% max. ~508 € Zuschuss 2026
             </div>
           </div>
 
@@ -872,7 +941,6 @@ export default function ResultPage({
               leistung={copy.gkv.leistung}
               border={copy.gkv.border}
               badge={copy.gkv.badge}
-              bulletAccent={GKV_COLOR}
               footer={<FaktorFooter rows={gkvFaktorRows} />}
               T={T}
             />
@@ -885,7 +953,6 @@ export default function ResultPage({
               leistung={copy.pkv.leistung}
               border={copy.pkv.border}
               badge={copy.pkv.badge}
-              bulletAccent={PKV_COLOR}
               footer={<FaktorFooter rows={pkvFaktorRows} />}
               T={T}
             />
@@ -906,7 +973,8 @@ export default function ResultPage({
 darunter ist PKV für Angestellte nicht möglich.
 GKV-Beitrag: 14,6 % + Ø 2,9 % Zusatzbeitrag.
 PKV-Beiträge: individuell nach Alter, Gesundheit
-und gewähltem Tarif. Alle Werte sind Richtwerte.`}
+und gewähltem Tarif. Alle Werte sind Richtwerte.
+PKV-Orientierungsspannen: Standardtarife, ohne Krankentagegeld.`}
                 </p>
               </div>
             )}

@@ -13,12 +13,21 @@ import ResultPage from "@/components/checks/gkvpkv/ResultPage";
 import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
-import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { getPkvRange, kinderAnzahlForGkvPkvRange } from "@/lib/gkvpkvPkvRange";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#ffffff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}.gkvpkv-smart-block{animation:fadeIn 0.42s ease both;}button:active{opacity:0.75;}input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;border-radius:1px;background:#f0f0f0;cursor:pointer;}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);}a{text-decoration:none;}@media (max-width:540px){.gkvpkv-stack-sm{grid-template-columns:1fr !important;}}.gkvpkv-acc-item{border-radius:12px;background:#F9FAFB;border:1px solid rgba(17,24,39,0.06);margin-bottom:8px;overflow:hidden;}.gkvpkv-acc-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;text-align:left;font-size:13px;font-weight:600;color:#1F2937;background:transparent;cursor:pointer;border:none;font-family:inherit;}.gkvpkv-acc-panel{padding:0 16px 14px;font-size:12px;color:#6B7280;line-height:1.65;border-top:1px solid rgba(17,24,39,0.06);}`;document.head.appendChild(s);})();
 // JAEG 2026: 77.400 € / Jahr = 6.450 € / Monat
 const JAEG_MONAT = 6450;
-const BBG_KV    = 5812.5;
+/** Beitragsbemessungsgrenze KV 2026 (Monat), Orientierung */
+const BBG_KV = 5812.5;
+/**
+ * GKV 2026 (Orientierung): KV-Satz 14,6 % + Ø-Zusatzbeitrag 2,9 % ≈ 17,5 % vom Brutto (bis BBG).
+ * Angestellte: KPI = typischer Arbeitnehmeranteil (Hälfte) ≈ 8,75 %.
+ * Selbstständige: voller Beitrag ≈ 17,5 % (AN+AG-Anteil zusammen).
+ */
+const GKV_GESAMT_SATZ = 0.175;
+const GKV_AN_SATZ = 0.0875;
 
 function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderImHaushalt }) {
   const unterGrenze = beruf === "angestellt" && brutto < JAEG_MONAT;
@@ -27,8 +36,8 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
   const hatPartner = familiensituation === "partner_kinder";
   const partnerInGKV = hatKinder && partnerKV === "gkv";
 
-  // GKV AN-Anteil (8,75 % bis BBG) — nur für Orientierung im Kontext
-  const gkvANAnteil = Math.round(Math.min(brutto, BBG_KV) * 0.0875);
+  // GKV AN-Anteil (≈ Hälfte von 14,6 %+Zusatz bis BBG) — Orientierung / Kontext
+  const gkvANAnteil = Math.round(Math.min(brutto, BBG_KV) * GKV_AN_SATZ);
   const agAnteil = beruf === "angestellt" ? gkvANAnteil : 0;
 
   // Empfehlung — nur strukturell, kein Tarifvergleich
@@ -52,45 +61,52 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
       beruf === "selbst" ? "Freie Wahl — keine Pflichtversicherung" : "Einkommensgrenze überschritten";
   }
 
-  /** Grobe Monatsbeiträge (Orientierung) für Ersparnis-Box */
+  /** Monatsbetrag GKV für KPI / Vergleich (Orientierung, bis BBG gekappt) */
   const brCapped = Math.min(Number(brutto) || 0, BBG_KV);
   let gkvSchMonat;
   if (beruf === "beamter") {
     gkvSchMonat = Math.round(brCapped * 0.19);
   } else if (beruf === "angestellt") {
-    gkvSchMonat = Math.round(brCapped * 0.146);
+    gkvSchMonat = Math.round(brCapped * GKV_AN_SATZ);
   } else {
-    gkvSchMonat = Math.round(Math.min(Number(brutto) || 0, BBG_KV) * 0.146);
+    gkvSchMonat = Math.round(Math.min(Number(brutto) || 0, BBG_KV) * GKV_GESAMT_SATZ);
   }
 
-  let kinderZahl = 0;
-  if (hatKinder) {
-    const k = kinderImHaushalt;
-    kinderZahl = k === 3 ? 3 : k === 2 ? 2 : k === 1 ? 1 : 2;
-  }
-  let pkvSchMonat = 300 + Math.round(Math.max(18, Number(alter) || 0) * 8);
-  if (beruf === "beamter") pkvSchMonat = Math.round(pkvSchMonat * 0.32);
-  if (hatKinder) pkvSchMonat += kinderZahl * 155;
-  pkvSchMonat = Math.max(120, pkvSchMonat);
+  const kinderNRange = kinderAnzahlForGkvPkvRange({
+    familiensituation,
+    kinderImHaushalt,
+  });
+  const pkvSpanne = getPkvRange(alter, kinderNRange, beruf);
+  const pkvSchMonatMin = Math.round(pkvSpanne.min);
+  const pkvSchMonatMax = Math.round(pkvSpanne.max);
 
   let diff = 0;
   /** Für UI: bei welchem System liegt die modellierte Ersparnis */
   let empfehlungKosten = null;
   if (!unterGrenze) {
-    if (empfehlung === "pkv") {
+    const setPkvWin = () => {
       empfehlungKosten = "PKV";
-      diff = Math.max(0, gkvSchMonat - pkvSchMonat);
-    } else if (empfehlung === "gkv") {
+      /** Größte modellierte Ersparnis vs. GKV, wenn PKV an der Untergrenze der Spanne liegt */
+      diff = Math.max(0, gkvSchMonat - pkvSchMonatMin);
+    };
+    const setGkvWin = () => {
       empfehlungKosten = "GKV";
-      diff = Math.max(0, pkvSchMonat - gkvSchMonat);
+      /** Vorteil GKV vs. günstigstes PKV-Szenario in der Spanne */
+      diff = Math.max(0, pkvSchMonatMin - gkvSchMonat);
+    };
+
+    if (empfehlung === "pkv") {
+      setPkvWin();
+    } else if (empfehlung === "gkv") {
+      setGkvWin();
+    } else if (pkvSchMonatMax <= gkvSchMonat) {
+      setPkvWin();
+    } else if (pkvSchMonatMin >= gkvSchMonat) {
+      setGkvWin();
     } else {
-      if (pkvSchMonat <= gkvSchMonat) {
-        empfehlungKosten = "PKV";
-        diff = Math.max(0, gkvSchMonat - pkvSchMonat);
-      } else {
-        empfehlungKosten = "GKV";
-        diff = Math.max(0, pkvSchMonat - gkvSchMonat);
-      }
+      const mid = Math.round((pkvSchMonatMin + pkvSchMonatMax) / 2);
+      if (mid <= gkvSchMonat) setPkvWin();
+      else setGkvWin();
     }
   }
 
@@ -107,7 +123,8 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
     alter,
     brutto,
     gkvSchMonat,
-    pkvSchMonat,
+    pkvSchMonatMin,
+    pkvSchMonatMax,
     diff,
     empfehlungKosten,
   };
@@ -164,7 +181,14 @@ infoGridIconWrap:{width:"42px",height:"42px",borderRadius:"11px",background:"#f0
 const KV_FLOW_STEPS = 8;
 
 function fmtKvGehaltEUR(n) {
-  return `${Math.round(Number(n)).toLocaleString("de-DE")} €`;
+  const v = Math.round(Math.abs(Number(n) || 0));
+  return `ca. ${v.toLocaleString("de-DE")} €`;
+}
+
+function fmtKvGehaltEURRange(min, max) {
+  const a = Math.round(Math.abs(Number(min) || 0));
+  const b = Math.round(Math.abs(Number(max) || 0));
+  return `ca. ${a.toLocaleString("de-DE")} – ${b.toLocaleString("de-DE")} €`;
 }
 
 /** Slide 2: nur `beruf` (Status) & `brutto` (Gehalt) — p.beruf = angestellt | selbst | beamter */
@@ -196,6 +220,18 @@ function kvStoryStatusGehaltCopy(beruf, brutto) {
 
 /** scr 1–3 → „Über Sie“, scr 4–6 (+ Familien-Substeps) → „Einkommen“ */
 const GKVPKV_HEADER_STEPS = ["Über Sie", "Einkommen", "Ergebnis", "Kontakt"];
+const GKVPKV_CHECK_TITLE = "KV-Navigator";
+
+const gkvpkvHeaderBadgeStyle = {
+  fontSize: "11px",
+  fontWeight: "500",
+  color: "#888",
+  letterSpacing: "0.3px",
+  textTransform: "uppercase",
+  textAlign: "right",
+  lineHeight: 1.35,
+  maxWidth: "min(140px, 38vw)",
+};
 
 function gkvpkvHeaderStep(phase, scr) {
   if (phase === 2) return 2;
@@ -213,45 +249,78 @@ function Header({ maklerFirma, maklerTelefon, C, currentStep = 0, showProgressBa
       <div
         className="check-header check-sticky-header"
         style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
           background: "rgba(255,255,255,0.9)",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
           borderBottom: "1px solid rgba(31,41,55,0.06)",
           padding: "16px 20px 12px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "6px",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
         }}
       >
         <div
           style={{
-            width: "44px",
-            height: "44px",
-            borderRadius: "50%",
-            background: C,
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
             alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+            columnGap: "8px",
           }}
         >
-          <MaklerFirmaAvatarInitials firma={maklerFirma} />
+          <div aria-hidden style={{ minWidth: 0 }} />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "6px",
+              minWidth: 0,
+              gridColumn: 2,
+            }}
+          >
+            <div
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "50%",
+                background: C,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+              }}
+            >
+              <MaklerFirmaAvatarInitials firma={maklerFirma} />
+            </div>
+            <span
+              style={{
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#1F2937",
+                letterSpacing: "-0.1px",
+                textAlign: "center",
+                maxWidth: "min(200px, 52vw)",
+                overflowWrap: "break-word",
+                wordBreak: "break-word",
+              }}
+            >
+              {maklerFirma}
+            </span>
+          </div>
+          <div
+            style={{
+              justifySelf: "end",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              justifyContent: "center",
+              paddingRight: "44px",
+              minWidth: 0,
+            }}
+          >
+            <span style={gkvpkvHeaderBadgeStyle}>{GKVPKV_CHECK_TITLE}</span>
+          </div>
         </div>
-        <span
-          style={{
-            fontSize: "13px",
-            fontWeight: "700",
-            color: "#1F2937",
-            letterSpacing: "-0.1px",
-            textAlign: "center",
-          }}
-        >
-          {maklerFirma}
-        </span>
         <CheckHeaderPhoneButton telefon={maklerTelefon} primaryColor={C} />
       </div>
       {showProgressBar ? (
@@ -458,43 +527,35 @@ export default function GKVPKVRechner(){
 
   if (phase === "bridge")
     return withStandalone(
-      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
+      <div
+        className="check-root fade-in"
+        style={{
+          ...T.page,
+          "--accent": C,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100svh",
+        }}
+        key={ak}
+      >
         <Header maklerFirma={MAKLER.firma} maklerTelefon={MAKLER.telefon} C={C} showProgressBar={false} />
-        <CheckKitStoryHero
-          hideFooterSpacer
-          emoji="🔍"
-          title="System-Analyse bereit."
-          text="Wir haben Ihre Angaben ausgewertet."
-        />
-        <div style={{ padding: "8px 24px 0", ...CHECKKIT2026.storyContentWrap }}>
-          {[
-            R.unterGrenze
-              ? "GKV-Pflicht bestätigt — PKV derzeit nicht möglich."
-              : `Versicherungspflichtgrenze: ${p.brutto >= JAEG_MONAT ? "überschritten" : "nicht erreicht"}.`,
-            `Beitragsvergleich: GKV ca. ${Math.round(R.gkvSchMonat).toLocaleString("de-DE")} € vs. PKV ca. ${Math.round(R.pkvSchMonat).toLocaleString("de-DE")} € / Monat.`,
-            p.familiensituation === "partner_kinder"
-              ? `Familienversicherung mit ${p.kinderImHaushalt === 3 ? "3+" : p.kinderImHaushalt} Kind${p.kinderImHaushalt === 1 ? "" : "ern"} berücksichtigt.`
-              : "Persönliche Situation analysiert.",
-          ].map((line) => (
-            <div
-              key={line}
-              style={{
-                ...CHECKKIT2026.storyBody,
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "12px",
-                marginBottom: 14,
-                textAlign: "left",
-              }}
-            >
-              <span style={{ fontSize: 18, lineHeight: 1.2, flexShrink: 0 }} aria-hidden>
-                ✅
-              </span>
-              <span>{line}</span>
-            </div>
-          ))}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            minHeight: 0,
+          }}
+        >
+          <CheckKitStoryHero
+            compact
+            hideFooterSpacer
+            emoji="🔍"
+            title="System-Analyse bereit."
+            text="Wir haben Ihre Angaben ausgewertet."
+          />
         </div>
-        <div style={{ height: CHECKKIT2026.footerSpacerPx }} aria-hidden />
         <div style={T.footer} data-checkkit-footer>
           <button type="button" style={T.btnPrim(false)} onClick={() => goTo(2)}>
             Ergebnis ansehen
@@ -557,7 +618,7 @@ export default function GKVPKVRechner(){
               <button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button>
             </>
           ) : (
-            <><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){const highlights=[{label:"Ergebnis",value:R.headline},{label:"Kontext",value:R.subline},{label:"GKV (Orient., Monat)",value:fmtKvGehaltEUR(R.gkvSchMonat)},{label:"PKV (Orient., Monat)",value:fmtKvGehaltEUR(R.pkvSchMonat)}];if(R.diff>0&&R.empfehlungKosten)highlights.push({label:"Modell-Ersparnis (Monat)",value:`${fmtKvGehaltEUR(R.diff)} (${R.empfehlungKosten})`});const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token,firma:MAKLER.firma});}setDanke(true);}} disabled={!valid}>{valid?"Individuelle Einschätzung erhalten":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
+            <><button type="button" style={T.btnPrim(!valid)} onClick={async ()=>{if(!valid)return;const token=new URLSearchParams(window.location.search).get("token");if(token){const highlights=[{label:"Ergebnis",value:R.headline},{label:"Kontext",value:R.subline},{label:"GKV (Orient., Monat)",value:fmtKvGehaltEUR(R.gkvSchMonat)},{label:"PKV (Orient., Monat)",value:fmtKvGehaltEURRange(R.pkvSchMonatMin, R.pkvSchMonatMax)}];if(R.diff>0&&R.empfehlungKosten)highlights.push({label:"Modell-Ersparnis (Monat)",value:`${fmtKvGehaltEUR(R.diff)} (${R.empfehlungKosten})`});const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",highlights})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token,firma:MAKLER.firma});}setDanke(true);}} disabled={!valid}>{valid?"Individuelle Einschätzung erhalten":"Bitte alle Angaben machen"}</button><button type="button" style={T.btnSec} onClick={()=>goTo(2)}>Zurück</button></>
           )}
         </div>
       </div>
@@ -574,6 +635,7 @@ export default function GKVPKVRechner(){
         T={T}
         accentColor={C}
         maklerFirma={MAKLER.firma}
+        maklerTelefon={MAKLER.telefon}
         goTo={goTo}
         progressSteps={GKVPKV_HEADER_STEPS}
         progressCurrentStep={gkvpkvHeaderStep(2, scr)}
@@ -612,7 +674,7 @@ export default function GKVPKVRechner(){
         <div style={T.section}>
           <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[
-              { v: "angestellt", l: "Angestellt",    d: "Pflichtversichert bis zur Einkommensgrenze (6.450 €/Mon.)", emoji: "💼" },
+              { v: "angestellt", l: "Angestellt",    d: "Pflichtversichert bis zur Einkommensgrenze (ca. 6.450 €/Mon.)", emoji: "💼" },
               { v: "selbst",     l: "Selbstständig", d: "Freie Wahl zwischen GKV und PKV",                          emoji: "🧑‍💻" },
               { v: "beamter",    l: "Beamter",       d: "Beihilfe vom Dienstherrn — PKV fast immer sinnvoller",     emoji: "🏛️" },
             ].map(({ v, l, d, emoji }) => (
@@ -654,7 +716,7 @@ export default function GKVPKVRechner(){
                 <div style={T.infoHintText}>
                   {jaegOk
                     ? "Sie liegen über der Versicherungspflichtgrenze. Damit steht Ihnen der Weg in die PKV grundsätzlich offen."
-                    : "Sie liegen aktuell unter der Versicherungspflichtgrenze (JAEG 2026). Ein Wechsel in die PKV ist gesetzlich erst ab 6.450 € mtl. möglich."}
+                    : "Sie liegen aktuell unter der Versicherungspflichtgrenze (JAEG 2026). Ein Wechsel in die PKV ist gesetzlich erst ab ca. 6.450 € mtl. möglich."}
                 </div>
               </div>
             );
