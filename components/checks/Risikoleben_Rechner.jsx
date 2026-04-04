@@ -269,7 +269,7 @@ export default function RisikolebenRechner() {
   const backScr = () => {
     if (scr > 1) setScr((s) => s - 1);
   };
-  useCheckScrollToTop([phase, animKey, scr, loading, rlAccRechendetails, rlAccMethode]);
+  useCheckScrollToTop([phase, animKey, scr, loading]);
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? undefined;

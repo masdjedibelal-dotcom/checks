@@ -23,8 +23,7 @@ const JAEG_MONAT = 6450;
 const BBG_KV = 5812.5;
 /**
  * GKV 2026 (Orientierung): KV-Satz 14,6 % + Ø-Zusatzbeitrag 2,9 % ≈ 17,5 % vom Brutto (bis BBG).
- * Angestellte: KPI = typischer Arbeitnehmeranteil (Hälfte) ≈ 8,75 %.
- * Selbstständige: voller Beitrag ≈ 17,5 % (AN+AG-Anteil zusammen).
+ * KPI-Karten: voller Gesamtbeitrag (Vergleich mit PKV-Gesamtkosten). Bei Angestellten trägt der AG typisch die Hälfte — Fußnote in der Ergebnis-UI.
  */
 const GKV_GESAMT_SATZ = 0.175;
 const GKV_AN_SATZ = 0.0875;
@@ -68,7 +67,7 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
   if (beruf === "beamter") {
     gkvSchMonat = Math.round(brCapped * 0.19);
   } else if (beruf === "angestellt") {
-    gkvSchMonat = Math.round(brCapped * GKV_AN_SATZ);
+    gkvSchMonat = Math.round(brCapped * GKV_GESAMT_SATZ);
   } else {
     gkvSchMonat = Math.round(brCapped * GKV_GESAMT_SATZ);
   }

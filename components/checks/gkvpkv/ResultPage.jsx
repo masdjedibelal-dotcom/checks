@@ -513,7 +513,9 @@ export default function ResultPage({
       ? "Orientierung: voller Beitrag (Ø)"
       : p.beruf === "beamter"
         ? "GKV 2026 (Ø)"
-        : "Orientierung (Ø)";
+        : p.beruf === "angestellt"
+          ? "Gesamtbeitrag KV (Ø) — AG-Anteil siehe Fußnote"
+          : "Orientierung (Ø)";
   const pkvKpiSubline =
     p.beruf === "angestellt" ? "Orientierungs-Spanne (ohne AG-Zuschuss)" : "Orientierungs-Spanne";
 
@@ -521,12 +523,12 @@ export default function ResultPage({
   const pkvKeineOption = R.unterGrenze && p.beruf === "angestellt";
 
   const kpiMetodikFootnote = pkvKeineOption
-    ? "GKV: Monatsbetrag ohne Arbeitgeberzuschuss (bei Angestellten nur der persönliche KV-Anteil, Ø bis BBG). KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 % (2026). PKV: für Angestellte unter der Versicherungspflichtgrenze derzeit nicht wählbar — kein Beitragsvergleich."
+    ? "GKV: angezeigter Betrag = voller KV-Gesamtbeitrag (Orientierung, Ø bis BBG; KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 %, 2026). Bei Angestellten übernimmt der Arbeitgeber in der Regel die Hälfte des Gesamtbeitrags — Ihre typische Eigenbelastung liegt daher bei etwa der Hälfte der angezeigten Summe. PKV: für Angestellte unter der Versicherungspflichtgrenze derzeit nicht wählbar — kein Beitragsvergleich."
     : p.beruf === "selbst"
       ? "GKV: voller KV-Beitrag als Selbstzahler (Orientierung, Ø bis BBG). KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 % (2026). PKV: Orientierungswerte — Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt."
       : p.beruf === "beamter"
         ? "GKV: KV-Beitrag (Orientierung, Ø bis BBG). KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 % (2026). PKV: Orientierungswerte für den typischen Restkosten-Tarif — Beihilfe: der Dienstherr übernimmt in der Regel 50–70 % der anrechenbaren Aufwendungen (nicht vergleichbar mit dem Arbeitgeberzuschuss zur PKV bei Angestellten). Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt."
-        : "GKV: Monatsbetrag ohne Arbeitgeberzuschuss (bei Angestellten nur der persönliche KV-Anteil, Ø bis BBG). KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 % (2026). PKV: Spanne ohne Arbeitgeberzuschuss — Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt · PKV-AG-Zuschuss 2026 bis max. ~508 € hier nicht eingerechnet";
+        : "GKV: angezeigter Betrag = voller KV-Gesamtbeitrag (Orientierung, Ø bis BBG; KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 %, 2026). Bei Angestellten übernimmt der Arbeitgeber in der Regel die Hälfte des Gesamtbeitrags — Ihre typische Eigenbelastung liegt daher bei etwa der Hälfte der angezeigten Summe. PKV: Spanne ohne Arbeitgeberzuschuss — Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt · PKV-AG-Zuschuss 2026 bis max. ~508 € hier nicht eingerechnet";
 
   const gkvFaktorRows = [];
   if (R.hatKinder) gkvFaktorRows.push(["👨‍👩‍👧 Kinder", "Beitragsfrei mitversichert"]);
