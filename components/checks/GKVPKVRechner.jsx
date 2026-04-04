@@ -30,14 +30,15 @@ const GKV_GESAMT_SATZ = 0.175;
 const GKV_AN_SATZ = 0.0875;
 
 function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderImHaushalt }) {
-  const unterGrenze = beruf === "angestellt" && brutto < JAEG_MONAT;
+  const bruttoNum = Math.max(0, Number(brutto) || 0);
+  const unterGrenze = beruf === "angestellt" && bruttoNum < JAEG_MONAT;
   const hatKinder = familiensituation === "partner_kinder";
   /** Nur bei Kindern im Haushalt (Familien-Kontext im Ergebnis). */
   const hatPartner = familiensituation === "partner_kinder";
   const partnerInGKV = hatKinder && partnerKV === "gkv";
 
   // GKV AN-Anteil (≈ Hälfte von 14,6 %+Zusatz bis BBG) — Orientierung / Kontext
-  const gkvANAnteil = Math.round(Math.min(brutto, BBG_KV) * GKV_AN_SATZ);
+  const gkvANAnteil = Math.round(Math.min(bruttoNum, BBG_KV) * GKV_AN_SATZ);
   const agAnteil = beruf === "angestellt" ? gkvANAnteil : 0;
 
   // Empfehlung — nur strukturell, kein Tarifvergleich
@@ -61,15 +62,15 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
       beruf === "selbst" ? "Freie Wahl — keine Pflichtversicherung" : "Einkommensgrenze überschritten";
   }
 
-  /** Monatsbetrag GKV für KPI / Vergleich (Orientierung, bis BBG gekappt) */
-  const brCapped = Math.min(Number(brutto) || 0, BBG_KV);
+  /** Monatsbetrag GKV für KPI / Vergleich (Orientierung, bis BBG gekappt) — Ergebnis ganze Euro */
+  const brCapped = Math.min(bruttoNum, BBG_KV);
   let gkvSchMonat;
   if (beruf === "beamter") {
     gkvSchMonat = Math.round(brCapped * 0.19);
   } else if (beruf === "angestellt") {
     gkvSchMonat = Math.round(brCapped * GKV_AN_SATZ);
   } else {
-    gkvSchMonat = Math.round(Math.min(Number(brutto) || 0, BBG_KV) * GKV_GESAMT_SATZ);
+    gkvSchMonat = Math.round(brCapped * GKV_GESAMT_SATZ);
   }
 
   const kinderNRange = kinderAnzahlForGkvPkvRange({
@@ -87,12 +88,12 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
     const setPkvWin = () => {
       empfehlungKosten = "PKV";
       /** Größte modellierte Ersparnis vs. GKV, wenn PKV an der Untergrenze der Spanne liegt */
-      diff = Math.max(0, gkvSchMonat - pkvSchMonatMin);
+      diff = Math.round(Math.max(0, gkvSchMonat - pkvSchMonatMin));
     };
     const setGkvWin = () => {
       empfehlungKosten = "GKV";
       /** Vorteil GKV vs. günstigstes PKV-Szenario in der Spanne */
-      diff = Math.max(0, pkvSchMonatMin - gkvSchMonat);
+      diff = Math.round(Math.max(0, pkvSchMonatMin - gkvSchMonat));
     };
 
     if (empfehlung === "pkv") {
@@ -115,17 +116,17 @@ function berechne({ brutto, beruf, alter, familiensituation, partnerKV, kinderIm
     hatKinder,
     hatPartner,
     partnerInGKV,
-    gkvANAnteil,
-    agAnteil,
+    gkvANAnteil: Math.round(gkvANAnteil),
+    agAnteil: beruf === "angestellt" ? Math.round(gkvANAnteil) : 0,
     empfehlung,
     headline,
     subline,
     alter,
     brutto,
-    gkvSchMonat,
+    gkvSchMonat: Math.round(gkvSchMonat),
     pkvSchMonatMin,
     pkvSchMonatMax,
-    diff,
+    diff: Math.round(diff),
     empfehlungKosten,
   };
 }

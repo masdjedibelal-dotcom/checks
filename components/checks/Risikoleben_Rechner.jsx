@@ -53,14 +53,34 @@ function rlHeaderStep(phase, scr) {
   if (phase === 1) return (scr ?? 1) <= 3 ? 0 : 1;
   return 3;
 }
-/** Priorität: Restschuld → Kinder → Paar (ohne Kinder) — keine Bestattung/ErbSt */
-function risikoStoryBedarfCopy(restschuld, familienModus) {
-  const rs = Number(restschuld) || 0;
-  const kinder =
+function rlHatKinder(familienModus) {
+  return (
+    familienModus === "verheiratet_mit_kinder" ||
     familienModus === "paar_mit_kinder" ||
     familienModus === "alleinerziehend" ||
-    familienModus === "single_mit_kinder";
-  const familiePaar = familienModus === "paar_ohne_kinder" || familienModus === "paar_mit_kinder";
+    familienModus === "single_mit_kinder"
+  );
+}
+
+/** Nur Ehegatten haben Anspruch auf Witwenrente der GRV (Modell: große WR nur mit Kindern). */
+function rlVerheiratet(familienModus) {
+  return familienModus === "verheiratet_ohne_kinder" || familienModus === "verheiratet_mit_kinder";
+}
+
+function rlPaarOderVerheiratet(familienModus) {
+  return (
+    familienModus === "paar_ohne_kinder" ||
+    familienModus === "paar_mit_kinder" ||
+    familienModus === "verheiratet_ohne_kinder" ||
+    familienModus === "verheiratet_mit_kinder"
+  );
+}
+
+/** Priorität: Restschuld → Kinder → Paar/Ehe (ohne Kinder) — keine Bestattung/ErbSt */
+function risikoStoryBedarfCopy(restschuld, familienModus) {
+  const rs = Number(restschuld) || 0;
+  const kinder = rlHatKinder(familienModus);
+  const familiePaar = rlPaarOderVerheiratet(familienModus);
   if (rs > 0) {
     const rsStr = `${Math.round(rs).toLocaleString("de-DE")} €`;
     return {
@@ -137,24 +157,20 @@ function RisikoHintCard({ children, icon = "💡", accent = "#2563eb" }) {
   );
 }
 
-function rlHatKinder(familienModus) {
-  return (
-    familienModus === "paar_mit_kinder" ||
-    familienModus === "alleinerziehend" ||
-    familienModus === "single_mit_kinder"
-  );
-}
-
 // ─── BERECHNUNG: Witwen-/Waisenrente aus Familienmodus + Kinderanzahl, Versorgungsdauer vereinfacht ──
 function berechne(p) {
   const hatKinder = rlHatKinder(p.familienModus);
+  const verheiratet = rlVerheiratet(p.familienModus);
   /**
    * GRV-Näherung: fachlich wäre GRV_ANTEIL = eigenes Netto × 0,45 — hier bewusst monatsBedarf × 0,45,
    * damit keine zusätzliche Wizard-Frage nötig ist. Familienbedarf ≠ Versicherten-Netto; der Makler kann im Gespräch korrigieren.
+   *
+   * Witwenrente (groß, vereinfacht 55 %): nur bei verheirateten Paaren mit Kindern. Unverheiratete Partner und Alleinerziehende: 0.
+   * Kleine Witwenrente (ohne Kinder / kurz) wird nicht eingerechnet.
    */
   const nettoMonatlich = Math.max(0, p.monatsBedarf);
   const GRV_ANTEIL = nettoMonatlich * 0.45;
-  const witwenrente = hatKinder ? GRV_ANTEIL * 0.55 : 0;
+  const witwenrente = verheiratet && hatKinder ? GRV_ANTEIL * 0.55 : 0;
   const kinderZahl = hatKinder ? Math.min(Math.max(1, p.kinderAnzahl || 1), 3) : 0;
   const waisenrente = hatKinder ? kinderZahl * (GRV_ANTEIL * 0.1) : 0;
   const staatlicheLeistungen = witwenrente + waisenrente;
@@ -225,7 +241,8 @@ export default function RisikolebenRechner() {
   const [formData, setFormData] = useState({ name: "", email: "", telefon: "" });
   const [kontaktConsent, setKontaktConsent] = useState(false);
   const [scr, setScr] = useState(1);
-  const [rlErgebnisAcc, setRlErgebnisAcc] = useState(null);
+  const [rlAccRechendetails, setRlAccRechendetails] = useState(false);
+  const [rlAccMethode, setRlAccMethode] = useState(false);
   const slug = "risikoleben";
   const goTo = (ph) => {
     setAnimKey((k) => k + 1);
@@ -235,7 +252,8 @@ export default function RisikolebenRechner() {
       setHatKredit(null);
       setKontaktConsent(false);
       setLoading(false);
-      setRlErgebnisAcc(null);
+      setRlAccRechendetails(false);
+      setRlAccMethode(false);
       setP((x) => ({ ...x, familienModus: "" }));
     }
     if (ph === 2) {
@@ -251,12 +269,16 @@ export default function RisikolebenRechner() {
   const backScr = () => {
     if (scr > 1) setScr((s) => s - 1);
   };
-  useCheckScrollToTop([phase, animKey, scr, loading, rlErgebnisAcc]);
+  useCheckScrollToTop([phase, animKey, scr, loading, rlAccRechendetails, rlAccMethode]);
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? undefined;
     if (!token) return;
     void trackEvent({ event_type: "check_started", slug, token, firma: MAKLER.firma });
+  }, []);
+
+  useEffect(() => {
+    setP((x) => (x.familienModus === "alleinstehend" ? { ...x, familienModus: "ledig" } : x));
   }, []);
 
   if (!isReady) return <CheckConfigLoadingShell />;
@@ -482,10 +504,15 @@ export default function RisikolebenRechner() {
       scr === 5 ? "Bedarf der Familie" :
       scr === 6 ? "Welche Einnahmen bestehen bereits?" : "";
     const dataLead =
-      scr === 2 ? "Darauf stützen wir den nächsten Schritt — Ihre Absicherung soll zur Lebensrealität passen." :
-      scr === 3 ? "Bitte geben Sie an, ob Darlehen bestehen. Die Restschuld tragen Sie nur ein, wenn Sie „Ja“ wählen." :
-      scr === 5 ? "Monatlicher Bedarf der Familie — die Versorgungsdauer leiten wir aus Ihrer Situation ab." :
-      scr === 6 ? "Alle Felder sind optional — 0, wenn nicht vorhanden." : "";
+      scr === 2
+        ? "Witwenrente gibt es nur bei Ehe — bitte unterscheiden Sie zwischen verheiratet und nichtehelicher Partnerschaft."
+        : scr === 3
+          ? "Bitte geben Sie an, ob Darlehen bestehen. Die Restschuld tragen Sie nur ein, wenn Sie „Ja“ wählen."
+          : scr === 5
+            ? "Monatlicher Bedarf der Familie — die Versorgungsdauer leiten wir aus Ihrer Situation ab."
+            : scr === 6
+              ? "Alle Felder sind optional — 0, wenn nicht vorhanden."
+              : "";
 
     const wizFooter = (() => {
       if (scr === 1) {
@@ -582,10 +609,36 @@ export default function RisikolebenRechner() {
               {scr === 2 && (
                 <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   {[
-                    { id: "paar_ohne_kinder", label: "Paar ohne Kinder", desc: "Partnerschaft, keine minderjährigen Kinder im Haushalt." },
-                    { id: "paar_mit_kinder", label: "Paar mit Kindern", desc: "Partnerschaft mit Kindern — Bildung und Versorgung im Fokus." },
-                    { id: "alleinerziehend", label: "Alleinerziehend", desc: "Sie tragen die Hauptverantwortung für die Kinder." },
-                    { id: "single_mit_kinder", label: "Single mit Kindern", desc: "Allein mit Kindern im Haushalt." },
+                    {
+                      id: "verheiratet_ohne_kinder",
+                      label: "Verheiratet ohne Kinder",
+                      desc: "Ehepaar ohne minderjährige Kinder — Witwenrente im Modell nicht dauerhaft berücksichtigt.",
+                    },
+                    {
+                      id: "verheiratet_mit_kinder",
+                      label: "Verheiratet mit Kindern",
+                      desc: "Ehe und Kinder — große Witwenrente und Waisenrente (Schätzung) können einfließen.",
+                    },
+                    {
+                      id: "paar_ohne_kinder",
+                      label: "Partnerschaft ohne Kinder",
+                      desc: "Nicht verheiratet, gemeinsamer Haushalt — keine Witwenrente der GRV gegenüber dem Partner.",
+                    },
+                    {
+                      id: "paar_mit_kinder",
+                      label: "Partnerschaft mit Kindern",
+                      desc: "Nicht verheiratet mit Kindern — Waisenrente möglich, keine Witwenrente für den Partner im Modell.",
+                    },
+                    {
+                      id: "alleinerziehend",
+                      label: "Alleinerziehend",
+                      desc: "Allein mit Kindern (entspricht früher „Single mit Kindern“) — Waisenrente, keine Witwenrente.",
+                    },
+                    {
+                      id: "ledig",
+                      label: "Ledig",
+                      desc: "Unverheiratet, ohne Partner und ohne Kinder im Haushalt.",
+                    },
                   ].map(({ id, label, desc }) => (
                     <SelectionCard
                       key={id}
@@ -597,6 +650,16 @@ export default function RisikolebenRechner() {
                       onClick={() => set("familienModus", id)}
                     />
                   ))}
+                  {p.familienModus === "ledig" && (
+                    <div className="fade-in" style={{ marginTop: "4px" }}>
+                      <RisikoHintCard icon="🏠" accent={C}>
+                        <strong style={{ display: "block", color: "#111827", marginBottom: "6px" }}>
+                          Warum Risikoleben auch ohne eigene Familie?
+                        </strong>
+                        Besonders bei Immobilien- oder anderen Krediten können im Erbfall Restschulden auf gesetzliche Erben übergehen — etwa Eltern oder Geschwister. Eine Risikolebensversicherung kann dazu beitragen, diese finanzielle Last abzufangen.
+                      </RisikoHintCard>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -712,8 +775,10 @@ export default function RisikolebenRechner() {
                     }}
                   >
                     {rlHatKinder(p.familienModus)
-                      ? "Mit Kindern: Wir rechnen mit großer Witwenrente und Waisenrente (Schätzung) sowie 20 Jahren Versorgungsdauer."
-                      : "Ohne Kinder: Kleine Witwenrente (24 Monate) fließt nicht als langfristige Absicherung ein — 10 Jahre Orientierung für die Kapitalisierung."}
+                      ? rlVerheiratet(p.familienModus)
+                        ? "Mit Kindern und Ehe: Wir rechnen mit großer Witwenrente und Waisenrente (Schätzung) sowie 20 Jahren Versorgungsdauer."
+                        : "Mit Kindern ohne Ehe: Witwenrente für den Partner entfällt im Modell — nur Waisenrente (Schätzung), 20 Jahre Versorgungsdauer."
+                      : "Ohne Kinder: Dauerhafte Witwenrente fließt nicht ein (kurzfristige kleine Witwenrente bei Verstorbenem mit Ehepartner nicht als Langfrist-Größe) — 10 Jahre Orientierung für die Kapitalisierung."}
                   </div>
                 </>
               )}
@@ -735,10 +800,10 @@ export default function RisikolebenRechner() {
                   <div style={{ ...T.infoBox, marginBottom: "14px" }}>
                     <strong style={{ color: "#315AA8" }}>Witwen- und Waisenrente</strong>
                     <span style={{ display: "block", marginTop: "6px" }}>
-                      Diese Beträge schätzen wir automatisch aus Ihrem Familienmodus und dem monatlichen Familienbedarf. Dafür nutzen
-                      wir eine vereinfachte Rentengröße (ca. 45 % dieses Betrags): präziser wäre Ihr eigenes Nettoeinkommen — das
-                      fragen wir hier nicht extra ab. Weicht Ihr Einkommen stark vom Bedarf ab, ist das ein erster Orientierungswert;
-                      Ihr Makler kann die Schätzung im Beratungsgespräch anpassen.
+                      Witwenrente der GRV setzen wir nur bei <strong>verheirateten</strong> Nutzern mit Kindern an (große Witwenrente,
+                      Schätzung). Unverheiratete Partnerschaft und Alleinerziehende erhalten im Modell <strong>keine</strong> Witwenrente;
+                      bei Kindern nur Waisenrente. Die Rentengröße leiten wir aus dem Familienbedarf ab (ca. 45 % — vereinfacht, kein
+                      separates Netto-Feld). Ihr Makler kann im Gespräch nachschärfen.
                     </span>
                   </div>
                   <SliderCard
@@ -775,7 +840,7 @@ export default function RisikolebenRechner() {
     );
   }
 
-  // ── Phase 2: Ergebnis (Hero + KPI + Einnahmen + Accordion) ──
+  // ── Phase 2: Ergebnis (Hero + KPI + Rechenweg + Accordion Rechendetails + Cards + Accordion Methode) ──
   if (phase === 2) {
     const {
       einnahmen,
@@ -888,56 +953,25 @@ export default function RisikolebenRechner() {
               <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatl. Lücke</div>
             </div>
           </div>
-          <div
-            style={{
-              marginTop: "12px",
-              padding: "12px 14px",
-              borderRadius: "12px",
-              background: "#F9FAFB",
-              border: "1px solid rgba(17,24,39,0.06)",
-              fontSize: "12px",
-              color: "#6B7280",
-              lineHeight: 1.55,
-            }}
-          >
-            <div style={{ fontSize: "10px", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: "8px" }}>
-              Berücksichtigte Einnahmen (monatlich)
-            </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-                <span>Partnereinkommen (netto)</span>
-                <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(p.partnerEinkommen)}/Mon.</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-                <span>Witwenrente (geschätzt)</span>
-                <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(witwenrente)}/Mon.</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-                <span>Waisenrente (geschätzt)</span>
-                <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(waisenrente)}/Mon.</span>
-              </div>
-              {p.sonstiges > 0 ? (
-                <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-                  <span>Sonstige Einnahmen</span>
-                  <span style={{ fontWeight: "600", color: "#1F2937", flexShrink: 0 }}>{fmt(p.sonstiges)}/Mon.</span>
+          <div style={{ marginTop: "4px" }}>
+            <div style={{ fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "10px" }}>Rechenweg</div>
+            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(17,24,39,0.08)" }}>
+              {breakdownRows.map((row, i, arr) => (
+                <div
+                  key={i}
+                  style={{
+                    padding: row.border ? "14px 16px" : "10px 16px",
+                    borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    background: row.border ? "#FAFAF8" : "#fff",
+                  }}
+                >
+                  <div style={{ fontSize: "12px", color: "#6B7280", fontWeight: row.bold ? "600" : "400" }}>{row.l}</div>
+                  <div style={{ fontSize: row.bold ? "15px" : "13px", fontWeight: "700", color: row.c, letterSpacing: "-0.3px", marginLeft: "12px", flexShrink: 0 }}>{row.v}</div>
                 </div>
-              ) : null}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                  flexWrap: "wrap",
-                  marginTop: "4px",
-                  paddingTop: "8px",
-                  borderTop: "1px solid rgba(17,24,39,0.06)",
-                  fontWeight: "600",
-                  color: "#374151",
-                }}
-              >
-                <span>Summe</span>
-                <span style={{ flexShrink: 0 }}>{fmt(einnahmen)}/Mon.</span>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -948,64 +982,22 @@ export default function RisikolebenRechner() {
             <button
               type="button"
               className="rl-acc-btn"
-              onClick={() => setRlErgebnisAcc((x) => (x === "details" ? null : "details"))}
-              aria-expanded={rlErgebnisAcc === "details"}
+              onClick={() => setRlAccRechendetails((x) => !x)}
+              aria-expanded={rlAccRechendetails}
             >
-              <span>Bedarfsrechnung &amp; Details</span>
-              <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rlErgebnisAcc === "details" ? "▲" : "▼"}</span>
+              <span>Rechendetails</span>
+              <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rlAccRechendetails ? "▲" : "▼"}</span>
             </button>
-            {rlErgebnisAcc === "details" && (
+            {rlAccRechendetails && (
               <div className="rl-acc-panel" style={{ paddingTop: "12px" }}>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
-                    gap: "10px",
-                    marginBottom: "16px",
-                  }}
-                >
-                  <RisikoHintCard icon="📊" accent={C}>
-                    <strong style={{ fontWeight: 700 }}>Monatliche Versorgungslücke</strong>
-                    <span style={{ display: "block", marginTop: "8px" }}>
-                      {fmt(luecke)} pro Monat — über {versorgungsjahre} Jahre entspricht das rund {fmtK(kapitalEinkommen)} Kapitalbedarf fürs Einkommen (ohne Kredit).
-                    </span>
-                  </RisikoHintCard>
-                  <RisikoHintCard icon={p.kredite > 0 ? "🏦" : "🛡️"} accent={p.kredite > 0 ? BAR_KREDIT : C}>
-                    <strong style={{ fontWeight: 700 }}>{p.kredite > 0 ? "Restschuld & Strategie" : "Konstant vs. fallend"}</strong>
-                    <span style={{ display: "block", marginTop: "8px" }}>
-                      {p.kredite > 0
-                        ? `Einmalig ${fmtK(p.kredite)} tilgen — häufig sinnvoll: fallende Summe parallel zur Restschuld; für Lebensstandard zusätzlich konstante Absicherung prüfen.`
-                        : "Konstante Summe schützt den Lebensstandard über die Laufzeit. Fallende Summe ist günstiger, wenn der Schwerpunkt auf der Kredittilgung liegt."}
-                    </span>
-                  </RisikoHintCard>
-                </div>
-                <div style={{ fontSize: "12px", fontWeight: "600", color: "#374151", marginBottom: "10px" }}>Rechenweg</div>
-                <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(17,24,39,0.08)", marginBottom: "16px" }}>
-                  {breakdownRows.map((row, i, arr) => (
-                    <div
-                      key={i}
-                      style={{
-                        padding: row.border ? "14px 16px" : "10px 16px",
-                        borderBottom: i < arr.length - 1 ? "1px solid rgba(17,24,39,0.04)" : "none",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        background: row.border ? "#FAFAF8" : "#fff",
-                      }}
-                    >
-                      <div style={{ fontSize: "12px", color: "#6B7280", fontWeight: row.bold ? "600" : "400" }}>{row.l}</div>
-                      <div style={{ fontSize: row.bold ? "15px" : "13px", fontWeight: "700", color: row.c, letterSpacing: "-0.3px", marginLeft: "12px", flexShrink: 0 }}>{row.v}</div>
-                    </div>
-                  ))}
-                </div>
                 <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
                   Miete, Kredit und Lebenshaltung laufen weiter. Ohne Ihr Einkommen bleibt eine Lücke von {fmt(luecke)} monatlich — kapitalisiert über {versorgungsjahre} Jahre: {fmtK(kapitalEinkommen)}.
                   {p.kredite > 0 && <> Zusätzlich einmalig {fmtK(p.kredite)} für Darlehen.</>}
                 </p>
                 <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
-                  <strong style={{ color: "#374151" }}>Staatliche Leistungen im Modell:</strong> Witwenrente {fmt(witwenrente)}/Mon., Waisenrente {fmt(waisenrente)}/Mon. — Summe {fmt(staatlicheLeistungen)}/Mon. Die zugrunde liegende GRV-Schätzung
-                  verwendet den monatlichen Familienbedarf × 0,45 statt Ihres persönlichen Nettoeinkommens (bewusste Vereinfachung ohne
-                  zusätzliche Eingabe).
+                  <strong style={{ color: "#374151" }}>Staatliche Leistungen im Modell:</strong> Witwenrente {fmt(witwenrente)}/Mon. (nur bei
+                  Ehe und Kindern), Waisenrente {fmt(waisenrente)}/Mon. — Summe {fmt(staatlicheLeistungen)}/Mon. GRV-Schätzung aus
+                  Familienbedarf × 0,45 (vereinfacht).
                 </p>
                 {p.vorhanden > 0 && (
                   <p style={{ marginBottom: "10px", fontSize: "12px", color: "#15803D", lineHeight: 1.55 }}>
@@ -1016,22 +1008,57 @@ export default function RisikolebenRechner() {
                   <strong style={{ color: "#374151" }}>Einnahmen im Modell:</strong> Partnereinkommen {fmt(p.partnerEinkommen)}/Mon., staatliche Leistungen {fmt(staatlicheLeistungen)}/Mon.
                   {p.sonstiges > 0 ? <>, sonstige Einnahmen {fmt(p.sonstiges)}/Mon.</> : null} — Summe {fmt(einnahmen)}/Mon.
                 </p>
-                <p style={{ marginBottom: "10px", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
+                <p style={{ marginBottom: "0", fontSize: "12px", color: "#6B7280", lineHeight: 1.65 }}>
                   <strong style={{ color: "#374151" }}>Nächste Schritte:</strong> Empfohlene Versicherungssumme (auf 10.000 € gerundet) {fmtK(empfohleneVS)} — Versorgungsdauer {versorgungsjahre} Jahre im Modell; bestehende Policen mit der Situation abgleichen.
                 </p>
-                <div style={{ ...T.warnCard, marginBottom: "14px", padding: "14px 16px" }}>
-                  <div style={T.warnCardTitle}>Was oft unterschätzt wird</div>
-                  <div style={{ fontSize: "12px", color: "#7B2A2A", lineHeight: 1.6, marginTop: "6px" }}>
-                    Der überlebende Partner muss oft beruflich kürzertreten — die Modellrechnung geht von laufenden Familienkosten aus.
-                  </div>
-                </div>
+              </div>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
+              gap: "10px",
+              marginTop: "14px",
+            }}
+          >
+            <RisikoHintCard icon="📊" accent={C}>
+              <strong style={{ fontWeight: 700 }}>Monatliche Versorgungslücke</strong>
+              <span style={{ display: "block", marginTop: "8px" }}>
+                {fmt(luecke)} pro Monat — über {versorgungsjahre} Jahre entspricht das rund {fmtK(kapitalEinkommen)} Kapitalbedarf fürs Einkommen (ohne Kredit).
+              </span>
+            </RisikoHintCard>
+            <RisikoHintCard icon={p.kredite > 0 ? "🏦" : "🛡️"} accent={p.kredite > 0 ? BAR_KREDIT : C}>
+              <strong style={{ fontWeight: 700 }}>{p.kredite > 0 ? "Restschuld & Strategie" : "Konstant vs. fallend"}</strong>
+              <span style={{ display: "block", marginTop: "8px" }}>
+                {p.kredite > 0
+                  ? `Einmalig ${fmtK(p.kredite)} tilgen — häufig sinnvoll: fallende Summe parallel zur Restschuld; für Lebensstandard zusätzlich konstante Absicherung prüfen.`
+                  : "Konstante Summe schützt den Lebensstandard über die Laufzeit. Fallende Summe ist günstiger, wenn der Schwerpunkt auf der Kredittilgung liegt."}
+              </span>
+            </RisikoHintCard>
+          </div>
+
+          <div className="rl-acc-item" style={{ marginTop: "14px" }}>
+            <button
+              type="button"
+              className="rl-acc-btn"
+              onClick={() => setRlAccMethode((x) => !x)}
+              aria-expanded={rlAccMethode}
+            >
+              <span>Wie berechnen wir das?</span>
+              <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rlAccMethode ? "▲" : "▼"}</span>
+            </button>
+            {rlAccMethode && (
+              <div className="rl-acc-panel" style={{ paddingTop: "12px" }}>
                 <CheckBerechnungshinweis>
                   <>
                     Wir berechnen Ihre Einkommenslücke aus dem Unterschied zwischen dem, was Ihre Familie monatlich braucht, und
-                    dem, was durch staatliche Leistungen (Witwen- und Waisenrente) sowie Partnergehalt bereits gedeckt ist.
-                    Mit Kindern: große Witwenrente (55 % einer grob geschätzten GRV-Rente) plus 10 % Waisenrente pro Kind
-                    (max. drei) — dauerhaft. Ohne Kinder: kleine Witwenrente läuft nach 24 Monaten aus — daher nicht als
-                    langfristige Absicherung einkalkuliert. Dazu kommen bestehende Kredite, die abgesichert werden sollten.
+                    dem, was durch staatliche Leistungen sowie Partnergehalt bereits gedeckt ist. <strong>Witwenrente</strong> der GRV
+                    wird nur angenommen, wenn Sie <strong>verheiratet</strong> sind und <strong>Kinder</strong> im Haushalt haben (große
+                    Witwenrente, vereinfacht 55 % einer geschätzten GRV-Rente). Unverheiratete Lebensgemeinschaft: keine Witwenrente im
+                    Modell. <strong>Waisenrente</strong> bei allen Modellen mit Kindern (10 % pro Kind, max. drei). Ohne Kinder keine
+                    dauerhafte Witwenrente in der Langfrist-Betrachtung. Bestehende Kredite werden addiert.
                     <span style={{ display: "block", marginTop: "10px" }}>
                       Für die Rentenschätzung nutzen wir den Familienbedarf (× 0,45) statt eines separaten Feldes „Ihr Netto“ —
                       das ist bewusst einfach gehalten und gut genug für die erste Orientierung, wenn Bedarf und Einkommen nicht weit

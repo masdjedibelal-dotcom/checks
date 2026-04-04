@@ -609,8 +609,6 @@ export default function RentenRechner() {
         <div style={T.statusInfo(C)}>Moderate Lücke — Nachsteuern lohnt sich</div>
       );
 
-    const gutAufgestellt = lh <= 0 || R.deckung >= 90;
-
     const stratEmpfohlenBadge = {
       fontSize: "10px",
       fontWeight: "700",
@@ -789,66 +787,6 @@ export default function RentenRechner() {
               <button
                 type="button"
                 className="renten-acc-btn"
-                onClick={() => setRentenArchiv((x) => (x === "kapital" ? null : "kapital"))}
-                aria-expanded={rentenArchiv === "kapital"}
-              >
-                <span>Kapitalbedarf (Orientierung)</span>
-                <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rentenArchiv === "kapital" ? "▲" : "▼"}</span>
-              </button>
-              {rentenArchiv === "kapital" && (
-                <div className="renten-acc-panel" style={{ paddingTop: "12px" }}>
-                  <p style={{ marginBottom: "10px", fontSize: "12px" }}>
-                    Grobe Summe ohne Abzinsung: monatliche Lücke heute × 12 × statistische Rentenphase (20 bzw. 24 Jahre).
-                  </p>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "8px" }}>
-                    <div style={{ background: "rgba(31,41,55,0.04)", borderRadius: "10px", padding: "10px 12px" }}>
-                      <div style={{ fontSize: "10px", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>Mann (20 J.)</div>
-                      <div style={{ fontSize: "18px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.4px" }}>{fmt(R.lueckeHeute * 12 * 20)}</div>
-                    </div>
-                    <div style={{ background: "rgba(31,41,55,0.04)", borderRadius: "10px", padding: "10px 12px" }}>
-                      <div style={{ fontSize: "10px", color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>Frau (24 J.)</div>
-                      <div style={{ fontSize: "18px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.4px" }}>{fmt(R.lueckeHeute * 12 * 24)}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {!gutAufgestellt && R.mehrKosten > 10 && (
-              <div className="renten-acc-item">
-                <button
-                  type="button"
-                  className="renten-acc-btn"
-                  onClick={() => setRentenArchiv((x) => (x === "warten" ? null : "warten"))}
-                  aria-expanded={rentenArchiv === "warten"}
-                >
-                  <span>Was 5 Jahre Warten kosten</span>
-                  <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{rentenArchiv === "warten" ? "▲" : "▼"}</span>
-                </button>
-                {rentenArchiv === "warten" && (
-                  <div className="renten-acc-panel" style={{ paddingTop: "12px" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "10px" }}>
-                      <div style={{ background: "rgba(31,41,55,0.04)", borderRadius: "10px", padding: "10px 12px", textAlign: "center" }}>
-                        <div style={{ fontSize: "16px", fontWeight: "700", color: "#166534", letterSpacing: "-0.3px" }}>{fmt(R.rateA)}</div>
-                        <div style={{ fontSize: "10px", color: "#6B7280", marginTop: "3px" }}>Heute starten</div>
-                      </div>
-                      <div style={{ background: "rgba(31,41,55,0.04)", borderRadius: "10px", padding: "10px 12px", textAlign: "center" }}>
-                        <div style={{ fontSize: "16px", fontWeight: "700", color: "#B45309", letterSpacing: "-0.3px" }}>{fmt(R.rateA5)}</div>
-                        <div style={{ fontSize: "10px", color: "#6B7280", marginTop: "3px" }}>In 5 Jahren</div>
-                      </div>
-                    </div>
-                    <p style={{ fontSize: "12px" }}>
-                      Warten kostet <strong style={{ color: "#78350F" }}>{fmt(R.mehrKosten)}/Monat mehr</strong> — bei gleicher Zielrente.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="renten-acc-item">
-              <button
-                type="button"
-                className="renten-acc-btn"
                 onClick={() => setRentenArchiv((x) => (x === "calc" ? null : "calc"))}
                 aria-expanded={rentenArchiv === "calc"}
               >
@@ -1012,12 +950,12 @@ export default function RentenRechner() {
           <div style={T.section}>
             <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {[
-                { v: 60, l: "60 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.6)}/Monat · Basisversorgung` },
-                { v: 70, l: "70 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.7)}/Monat · Typisches Ziel ★`, star: true },
-                { v: 80, l: "80 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.8)}/Monat · Guter Lebensstandard` },
-                { v: 90, l: "90 % Ihres Einkommens", d: `= ca. ${fmt(p.netto * 0.9)}/Monat · Voller Lebensstandard` },
-              ].map(({ v, l, d }) => (
-                <SelectionCard key={v} value={String(v)} label={l} description={d} selected={p.zielProzent === v} accent={C} onClick={() => set("zielProzent", v)} />
+                { v: 60, l: "60 % Ihres Nettoeinkommens" },
+                { v: 70, l: "70 % Ihres Nettoeinkommens · typisches Ziel" },
+                { v: 80, l: "80 % Ihres Nettoeinkommens" },
+                { v: 90, l: "90 % Ihres Nettoeinkommens" },
+              ].map(({ v, l }) => (
+                <SelectionCard key={v} value={String(v)} label={l} selected={p.zielProzent === v} accent={C} onClick={() => set("zielProzent", v)} />
               ))}
             </div>
             <div
@@ -1050,6 +988,41 @@ export default function RentenRechner() {
             <div style={T.body}>Alle Felder sind optional — 0 €, wenn nichts vorhanden ist. Den genauen Betrag der gesetzlichen Rente entnehmen Sie Ihrem Rentenbescheid.</div>
           </div>
           <div style={T.section}>
+            <div
+              style={{
+                marginBottom: "16px",
+                padding: "12px 14px",
+                background: R.deckung >= 90
+                  ? "rgba(21,128,61,0.06)"
+                  : R.deckung >= 60
+                    ? `color-mix(in srgb, ${C} 6%, white)`
+                    : "rgba(192,57,43,0.06)",
+                border: `1px solid ${R.deckung >= 90 ? "#BBF7D0" : R.deckung >= 60 ? `${C}30` : "#F2D4D0"}`,
+                borderRadius: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+              }}
+            >
+              <div>
+                <div style={{ fontSize: "11px", color: "#6B7280", marginBottom: "2px" }}>Aktuell gedeckt</div>
+                <div style={{ fontSize: "11px", color: "#9CA3AF", lineHeight: 1.4 }}>
+                  {fmt(R.vorhanden)}/Mon. von {fmt(R.zielRentenNetto)}/Mon. Zielrente
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: "22px",
+                  fontWeight: "700",
+                  color: R.deckung >= 90 ? "#15803D" : R.deckung >= 60 ? C : "#C0392B",
+                  letterSpacing: "-0.5px",
+                  flexShrink: 0,
+                }}
+              >
+                {R.deckung} %
+              </div>
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <SliderCard
                 label="Gesetzliche Rente (laut Bescheid)"
@@ -1087,41 +1060,6 @@ export default function RentenRechner() {
                 onChange={(v) => set("privat", v)}
                 hint="Private Rentenversicherung, Fondssparplan u. Ä."
               />
-            </div>
-            <div
-              style={{
-                marginTop: "16px",
-                padding: "12px 14px",
-                background: R.deckung >= 90
-                  ? "rgba(21,128,61,0.06)"
-                  : R.deckung >= 60
-                    ? `color-mix(in srgb, ${C} 6%, white)`
-                    : "rgba(192,57,43,0.06)",
-                border: `1px solid ${R.deckung >= 90 ? "#BBF7D0" : R.deckung >= 60 ? `${C}30` : "#F2D4D0"}`,
-                borderRadius: "12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "12px",
-              }}
-            >
-              <div>
-                <div style={{ fontSize: "11px", color: "#6B7280", marginBottom: "2px" }}>Aktuell gedeckt</div>
-                <div style={{ fontSize: "11px", color: "#9CA3AF", lineHeight: 1.4 }}>
-                  {fmt(R.vorhanden)}/Mon. von {fmt(R.zielRentenNetto)}/Mon. Zielrente
-                </div>
-              </div>
-              <div
-                style={{
-                  fontSize: "22px",
-                  fontWeight: "700",
-                  color: R.deckung >= 90 ? "#15803D" : R.deckung >= 60 ? C : "#C0392B",
-                  letterSpacing: "-0.5px",
-                  flexShrink: 0,
-                }}
-              >
-                {R.deckung} %
-              </div>
             </div>
           </div>
           <div style={{ height: "120px" }} />

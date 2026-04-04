@@ -132,14 +132,19 @@ function applyScoringRules(profile) {
 
   if (profile.age > 45) {
     out.PFLEGE.base += 300;
-    out.AV.base += 200;
   }
 
   if (profile.age < 35) {
     out.PFLEGE.base = 0;
   }
+
+  // Altersvorsorge: ab 40/50 im Ranking zurückstufen — kürzerer Ansparhorizont, Fokus eher auf andere Sparten.
   if (profile.age > 62) {
     out.AV.base = 0;
+  } else if (profile.age >= 50) {
+    out.AV.base = Math.round(out.AV.base * 0.5);
+  } else if (profile.age >= 40) {
+    out.AV.base = Math.round(out.AV.base * 0.72);
   }
   if (profile.healthStatus === "pkv") {
     out.ZAHN.base = 0;

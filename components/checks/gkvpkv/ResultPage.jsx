@@ -118,7 +118,6 @@ const pathContent = {
     heroH1: "GKV-Pflicht",
     heroSubline:
       "Unter der gesetzlichen Pflichtgrenze für Angestellte bleiben Sie in der GKV — ein Wechsel in die PKV ist derzeit ausgeschlossen. Mit Zusatzbausteinen werten Sie Ihre Versorgung dennoch auf.",
-    tableIntro: "GKV ist Pflicht — PKV derzeit nicht möglich",
     gkv: {
       tagline: "Empfehlung",
       badge: "Unsere Empfehlung",
@@ -158,7 +157,6 @@ const pathContent = {
     heroH1: "PKV naheliegend",
     heroSubline:
       "Als Beamte/r prägt Ihr Beihilfe-Anspruch die Kosten — die private Krankenversicherung ist auf die typischen Restkosten zugeschnitten und oft sehr günstig.",
-    tableIntro: "Beihilfe macht PKV attraktiv",
     gkv: {
       tagline: "Unwirtschaftlich",
       badge: "Unwirtschaftlich",
@@ -196,7 +194,6 @@ const pathContent = {
     heroH1: "PKV naheliegend",
     heroSubline:
       "Sie sind nicht GKV-pflichtig bzw. oberhalb der Pflichtgrenze — hier zählen Beitragshöhe, Leistungsumfang und langfristige Stabilität im direkten Vergleich.",
-    tableIntro: "Freie Wahl — PKV tendenziell günstiger",
     gkv: {
       tagline: "Teuer",
       badge: "GKV-Höchstbeitrag",
@@ -236,7 +233,6 @@ const pathContent = {
     heroH1: "Individueller Familien-Check",
     heroSubline:
       "Mit {childrenCount} stehen Familienmitversicherung (GKV) und mehrere PKV-Tarife zur Wahl — hier lohnt ein klarer Kosten- und Leistungsabgleich.",
-    tableIntro: "Familiencheck — GKV vs. PKV-Einzeltarife",
     gkv: {
       tagline: "Solidarisch",
       badge: "Solidarisch",
@@ -276,7 +272,6 @@ const pathContent = {
     heroH1: "GKV-Wirtschaftlich",
     heroSubline:
       "Mit drei oder mehr Kindern ist die Familienversicherung in der GKV meist der stärkste Hebel — ein Haushaltsbeitrag statt vieler PKV-Einzelverträge.",
-    tableIntro: "Ab 3 Kindern meist GKV wirtschaftlicher",
     gkv: {
       tagline: "Wirtschaftlich",
       badge: "Wirtschaftlich sinnvoll",
@@ -324,7 +319,6 @@ function resolvePathCopy(path, p) {
   return {
     heroH1: tpl(raw.heroH1, v),
     heroSubline: tpl(raw.heroSubline, v),
-    tableIntro: tpl(raw.tableIntro, v),
     gkv: raw.gkv,
     pkv: raw.pkv,
   };
@@ -515,11 +509,24 @@ export default function ResultPage({
   const pkvRangeLabel = `ca. ${R.pkvSchMonatMin.toLocaleString("de-DE")} – ${R.pkvSchMonatMax.toLocaleString("de-DE")} €`;
 
   const gkvKpiSubline =
-    p.beruf === "angestellt"
-      ? "Orientierung: AN-Anteil (Ø)"
-      : p.beruf === "selbst"
-        ? "Orientierung: voller Beitrag (Ø)"
-        : "GKV 2026 (Ø)";
+    p.beruf === "selbst"
+      ? "Orientierung: voller Beitrag (Ø)"
+      : p.beruf === "beamter"
+        ? "GKV 2026 (Ø)"
+        : "Orientierung (Ø)";
+  const pkvKpiSubline =
+    p.beruf === "angestellt" ? "Orientierungs-Spanne (ohne AG-Zuschuss)" : "Orientierungs-Spanne";
+
+  /** Angestellte unter JAEG: PKV gesetzlich nicht wählbar — kein PKV-Beitrag in den KPI-Karten */
+  const pkvKeineOption = R.unterGrenze && p.beruf === "angestellt";
+
+  const kpiMetodikFootnote = pkvKeineOption
+    ? "GKV: Monatsbetrag ohne Arbeitgeberzuschuss (bei Angestellten nur der persönliche KV-Anteil, Ø bis BBG). KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 % (2026). PKV: für Angestellte unter der Versicherungspflichtgrenze derzeit nicht wählbar — kein Beitragsvergleich."
+    : p.beruf === "selbst"
+      ? "GKV: voller KV-Beitrag als Selbstzahler (Orientierung, Ø bis BBG). KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 % (2026). PKV: Orientierungswerte — Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt."
+      : p.beruf === "beamter"
+        ? "GKV: KV-Beitrag (Orientierung, Ø bis BBG). KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 % (2026). PKV: Orientierungswerte für den typischen Restkosten-Tarif — Beihilfe: der Dienstherr übernimmt in der Regel 50–70 % der anrechenbaren Aufwendungen (nicht vergleichbar mit dem Arbeitgeberzuschuss zur PKV bei Angestellten). Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt."
+        : "GKV: Monatsbetrag ohne Arbeitgeberzuschuss (bei Angestellten nur der persönliche KV-Anteil, Ø bis BBG). KV-Satzbasis 14,6 %+Ø-Zusatzbeitrag 2,9 % (2026). PKV: Spanne ohne Arbeitgeberzuschuss — Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt · PKV-AG-Zuschuss 2026 bis max. ~508 € hier nicht eingerechnet";
 
   const gkvFaktorRows = [];
   if (R.hatKinder) gkvFaktorRows.push(["👨‍👩‍👧 Kinder", "Beitragsfrei mitversichert"]);
@@ -829,24 +836,10 @@ export default function ResultPage({
               <div style={{ fontSize: "13px", color: "#6B7280", lineHeight: 1.55 }}>{savingsContextHero.body}</div>
             </div>
           ) : null}
-          <p
-            style={{
-              fontSize: "12px",
-              color: "#6B7280",
-              lineHeight: 1.55,
-              maxWidth: "38ch",
-              margin: "10px auto 0",
-              textAlign: "center",
-            }}
-          >
-            Diese Einschätzung basiert auf Ihren Angaben. PKV-Beiträge variieren je nach Anbieter und Gesundheitszustand —
-            sprechen Sie mit Ihrem Makler für ein konkretes Angebot.
-          </p>
         </div>
 
         <div style={T.section}>
-          <div style={T.sectionLbl}>Systemvergleich</div>
-          <div style={{ ...T.tableIntro, marginBottom: "14px" }}>{copy.tableIntro}</div>
+          <div style={{ ...T.sectionLbl, marginBottom: "14px" }}>Systemvergleich</div>
 
           {/* Beitragsvergleich — Monatsbeträge (Orientierung) */}
           <div style={{ marginBottom: "14px" }}>
@@ -890,23 +883,44 @@ export default function ResultPage({
                 }}
               >
                 <div style={{ fontSize: "13px", fontWeight: "700", color: "#111827" }}>PKV</div>
-                <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px", lineHeight: 1.35 }}>Orientierungs-Spanne</div>
-                <div
-                  style={{
-                    fontSize: "22px",
-                    fontWeight: "800",
-                    marginTop: "8px",
-                    letterSpacing: "-0.4px",
-                    color: PKV_COLOR,
-                    lineHeight: 1.15,
-                  }}
-                >
-                  {pkvRangeLabel}
-                </div>
-                <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "4px" }}>/ Mon.</div>
-                <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "6px", lineHeight: 1.35 }}>
-                  Richtwert nach Alter &amp; Familiensituation
-                </div>
+                {pkvKeineOption ? (
+                  <>
+                    <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px", lineHeight: 1.35 }}>
+                      Derzeit keine Option
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "15px",
+                        fontWeight: "600",
+                        marginTop: "10px",
+                        lineHeight: 1.35,
+                        color: "#6B7280",
+                      }}
+                    >
+                      Unter der Versicherungspflichtgrenze nicht wählbar
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px", lineHeight: 1.35 }}>{pkvKpiSubline}</div>
+                    <div
+                      style={{
+                        fontSize: "22px",
+                        fontWeight: "800",
+                        marginTop: "8px",
+                        letterSpacing: "-0.4px",
+                        color: PKV_COLOR,
+                        lineHeight: 1.15,
+                      }}
+                    >
+                      {pkvRangeLabel}
+                    </div>
+                    <div style={{ fontSize: "10px", color: "#9CA3AF", marginTop: "4px" }}>/ Mon.</div>
+                    <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "6px", lineHeight: 1.35 }}>
+                      Richtwert nach Alter &amp; Familiensituation
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div
@@ -920,7 +934,7 @@ export default function ResultPage({
                 lineHeight: 1.45,
               }}
             >
-              GKV: 14,6% + Ø-Zusatzbeitrag 2,9% (2026) · PKV: Orientierungswerte 2026 — Tarif abhängig von Gesundheit &amp; Leistungsumfang · Pflegepflichtversicherung nicht berücksichtigt · Arbeitgeber zahlt bis zu ~50% max. ~508 € Zuschuss 2026
+              {kpiMetodikFootnote}
             </div>
           </div>
 
