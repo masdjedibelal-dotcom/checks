@@ -4,7 +4,9 @@ import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { CheckHeaderPhoneButton } from "@/components/checks/CheckHeaderPhoneButton";
 import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
+import { useMakler } from "@/components/ui/MaklerContext";
 import { SelectionCard, SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -158,7 +160,7 @@ function makePflegeT(C) {
     logoMk: { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
     logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111", letterSpacing: "-0.1px" },
     badge: { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
-    hero: { padding: "32px 24px 16px" },
+    hero: { padding: "32px 24px 16px", textAlign: "center" },
     eyebrow: { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
     h1: { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
     body: { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
@@ -185,7 +187,7 @@ function makePflegeT(C) {
     rowLast: { padding: "14px 16px" },
     fldLbl: { fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "6px", display: "block" },
     fldHint: { fontSize: "11px", color: "#aaa", marginTop: "6px" },
-    footer: { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(31,41,55,0.06)", boxShadow: "0 -6px 20px rgba(17,24,39,0.05)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
+    footer: { position: "sticky", bottom: 0, background: "#ffffff", borderTop: "1px solid rgba(31,41,55,0.06)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
     btnPrim: (d) => ({
       width: "100%",
       padding: "13px 20px",
@@ -476,9 +478,12 @@ export default function PflegekostenplanungRechner() {
   if (!isReady) return <CheckConfigLoadingShell />;
 
   function Header({ currentStep, showProgressBar = true }) {
+    const { embedInIframe } = useMakler();
+    if (embedInIframe) return null;
     return (
       <>
         <div
+          className="check-header check-sticky-header"
           style={{
             background: "rgba(255,255,255,0.9)",
             backdropFilter: "blur(10px)",
@@ -519,6 +524,7 @@ export default function PflegekostenplanungRechner() {
           >
             {MAKLER.firma}
           </span>
+          <CheckHeaderPhoneButton telefon={MAKLER.telefon} primaryColor={C} />
         </div>
         {showProgressBar ? (
           <CheckProgressBar steps={PFLEGE_HEADER_STEPS} currentStep={currentStep} accent={C} />
@@ -528,7 +534,7 @@ export default function PflegekostenplanungRechner() {
   }
 
   const withStandalone = (el) => (
-    <StandaloneWrapper makler={MAKLER} checkLabel="Pflege-Check">{el}</StandaloneWrapper>
+    <StandaloneWrapper makler={MAKLER}>{el}</StandaloneWrapper>
   );
 
   if (danke) {
@@ -868,7 +874,7 @@ export default function PflegekostenplanungRechner() {
 
       {scr === 2 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Schritt 2 von {WIZARD_STEPS}</div>
             <div style={T.h1}>Was macht Ihnen am meisten Kopfschmerzen?</div>
             <div style={T.body}>
@@ -911,7 +917,7 @@ export default function PflegekostenplanungRechner() {
 
       {scr === 3 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Schritt 3 von {WIZARD_STEPS}</div>
             <div style={T.h1}>In welcher Region leben Sie?</div>
             <div style={T.body}>Eigenanteile und Heimkosten unterscheiden sich je nach Bundesland — wählen Sie Ihr Bundesland.</div>
@@ -966,7 +972,7 @@ export default function PflegekostenplanungRechner() {
 
       {scr === 5 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Schritt 5 von {WIZARD_STEPS}</div>
             <div style={T.h1}>Ihre finanzielle Ausgangslage</div>
             <div style={T.body}>

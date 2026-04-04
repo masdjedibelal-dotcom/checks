@@ -4,14 +4,15 @@ import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { CheckHeaderPhoneButton } from "@/components/checks/CheckHeaderPhoneButton";
 import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
+import { useMakler } from "@/components/ui/MaklerContext";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
-import { fmtK } from "@/lib/utils";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 
@@ -42,27 +43,36 @@ const S1 = "#0369a1", S2 = "#7c3aed", S3 = "#059669", WARN = "#c0392b";
 /** Hellrot: Rest der Zielrente bis 100 % = Lücke */
 const GAP_BAR = "#FEE2E2";
 
-/** Grobe Steuer-Orientierung für Strategie-Karte „Steuerfokus“ (keine Steuerberatung) */
-const RENTEN_STEUER_ABZUG_SATZ = 0.32;
+/** Grauer Info-Block unter Strategie-Karten */
+const STRATEGIE_INFO_BLOCK = {
+  marginTop: "12px",
+  padding: "10px 12px",
+  borderRadius: "10px",
+  background: "rgba(0,0,0,0.04)",
+  fontSize: "12px",
+  color: "#6B7280",
+  lineHeight: 1.6,
+};
 
 function berechne({ alter, rentenAlter, netto, zielProzent, gesRente, bav, privat, inflation }) {
   const jahreBis  = Math.max(1, rentenAlter - alter);
   const lebenserw = 87;
   const renteDauer = Math.max(1, lebenserw - rentenAlter);
-  const zielHeute  = Math.round(netto * (zielProzent / 100));
+  /** Zielrente aus %-Anteil des heutigen Nettos — ohne Inflationsaufschlag */
+  const zielBasis = Math.round(netto * (zielProzent / 100));
+  /** Planungs-Zielrente netto: bei gewählter Inflation +20 % auf die Zielbasis (vereinfacht) */
+  const zielRentenNetto = inflation ? Math.round(zielBasis * 1.2) : zielBasis;
 
   // Gesetzliche Rente: wenn 0 angegeben → ~45 % des Nettos schätzen
   const gesRenteEff = gesRente > 0 ? gesRente : Math.round(netto * 0.45);
   const vorhanden   = gesRenteEff + bav + privat;
-  const luecke      = Math.max(0, zielHeute - vorhanden);
-  // Inflationsoption: einfacher +20%-Aufschlag
-  const lueckeAdjusted = inflation ? Math.round(luecke * 1.2) : luecke;
-  const deckung    = zielHeute > 0 ? Math.min(100, Math.round((vorhanden / zielHeute) * 100)) : 100;
+  const luecke      = Math.max(0, zielRentenNetto - vorhanden);
+  const deckung    = zielRentenNetto > 0 ? Math.min(100, Math.round((vorhanden / zielRentenNetto) * 100)) : 100;
 
   const schichten = [
-    { label: "Gesetzliche Rente",    sub: "Schicht 1 · GRV",   farbe: S1, betrag: gesRenteEff, anteil: zielHeute > 0 ? Math.min(100, Math.round((gesRenteEff / zielHeute) * 100)) : 0 },
-    { label: "Betrieblich / Riester", sub: "Schicht 2 · bAV",  farbe: S2, betrag: bav,        anteil: zielHeute > 0 ? Math.min(100, Math.round((bav / zielHeute) * 100)) : 0 },
-    { label: "Private Vorsorge",      sub: "Schicht 3 · privat", farbe: S3, betrag: privat,   anteil: zielHeute > 0 ? Math.min(100, Math.round((privat / zielHeute) * 100)) : 0 },
+    { label: "Gesetzliche Rente",    sub: "Schicht 1 · GRV",   farbe: S1, betrag: gesRenteEff, anteil: zielRentenNetto > 0 ? Math.min(100, Math.round((gesRenteEff / zielRentenNetto) * 100)) : 0 },
+    { label: "Betrieblich / Riester", sub: "Schicht 2 · bAV",  farbe: S2, betrag: bav,        anteil: zielRentenNetto > 0 ? Math.min(100, Math.round((bav / zielRentenNetto) * 100)) : 0 },
+    { label: "Private Vorsorge",      sub: "Schicht 3 · privat", farbe: S3, betrag: privat,   anteil: zielRentenNetto > 0 ? Math.min(100, Math.round((privat / zielRentenNetto) * 100)) : 0 },
   ];
 
   /** Horizontale Balken-Segmente: S1–S3 als Anteil der Zielrente, Rest bis 100 % = Lücke (#FEE2E2) */
@@ -70,10 +80,10 @@ function berechne({ alter, rentenAlter, netto, zielProzent, gesRente, bav, priva
   let p2 = 0;
   let p3 = 0;
   let pGap = 0;
-  if (zielHeute > 0) {
-    p1 = (gesRenteEff / zielHeute) * 100;
-    p2 = (bav / zielHeute) * 100;
-    p3 = (privat / zielHeute) * 100;
+  if (zielRentenNetto > 0) {
+    p1 = (gesRenteEff / zielRentenNetto) * 100;
+    p2 = (bav / zielRentenNetto) * 100;
+    p3 = (privat / zielRentenNetto) * 100;
     const sum = p1 + p2 + p3;
     if (sum > 100) {
       const k = 100 / sum;
@@ -94,45 +104,48 @@ function berechne({ alter, rentenAlter, netto, zielProzent, gesRente, bav, priva
   const rateA5 = kapOrientWarte > 0 ? Math.round(kapOrientWarte / monNach5J) : 0;
   const mehrKosten = Math.max(0, rateA5 - rateA);
 
-  /** Brutto-Rate (Orientierung) wie Wartekosten-Heute; Netto nach Steuerförderung */
-  const rateSteuerBrutto = kapOrientWarte > 0 ? rateA : luecke > 0 ? Math.max(50, Math.round(luecke * 0.35)) : 0;
-  const stVorteil = Math.round(rateSteuerBrutto * 12 * RENTEN_STEUER_ABZUG_SATZ);
-  const nettoA = Math.round(rateSteuerBrutto * (1 - RENTEN_STEUER_ABZUG_SATZ));
-
-  /** Kapitalziel (Orientierung): Lücke × 12 × 20 J. — wie Kapitalbedarf-Karte */
+  /** Kapitalziel (Orientierung): Lücke × 12 × 20 / 24 J. */
   const kapitalBedarf = Math.round(Math.max(0, luecke) * 12 * 20);
-  /** Grobe Jahre, die ein dem „privat“-Einkommen zugeordneter Depot-Richtwert die Lücke decken würde */
-  let depotLeer = 0;
-  if (luecke > 0) {
-    const depotSchaetz = privat * 12 * 20;
-    depotLeer = Math.round(depotSchaetz / (luecke * 12));
-    depotLeer = Math.max(0, Math.min(99, depotLeer));
-  }
+  const kapitalbedarfFrau = Math.round(Math.max(0, luecke) * 12 * 24);
 
-  /** Hybrid (50/50): gleiche Gesamtsparrate wie Kapitalaufbau — aufgeteilt Rente vs. Fonds */
-  const rateC = rateA;
+  const sparrateMonatlich = rateA;
+  const sparrateHeute = rateA;
+  const sparrateIn5Jahren = rateA5;
+  const wartekosten = mehrKosten;
+  const monatlLuecke = luecke;
+
+  let strategieEmpfohlen = "fonds";
+  if (alter < 45) strategieEmpfohlen = "fonds";
+  else if (alter >= 55) strategieEmpfohlen = "rente";
+  else if (luecke > 500) strategieEmpfohlen = "kombination";
+  else strategieEmpfohlen = "fonds";
 
   return {
     jahreBis,
     renteDauer,
-    zielHeute,
+    zielBasis,
+    zielRentenNetto,
     vorhanden,
     luecke,
-    /** Monatliche Lücke in heutiger Kaufkraft (ohne Inflations-Aufschlag) — entspricht dem Gap-Balken */
+    /** Monatliche Lücke = Zielrente netto (ggf. mit Inflation) − vorhandene Leistungen — entspricht Hero & Gap-Balken */
     lueckeHeute: luecke,
-    lueckeAdjusted,
     deckung,
     schichten,
     gesRenteEff,
     barStack: { p1, p2, p3, pGap },
+    alter,
+    monatlLuecke,
+    strategieEmpfohlen,
+    sparrateMonatlich,
+    kapitalbedarfMann: kapitalBedarf,
+    kapitalbedarfFrau,
+    sparrateHeute,
+    sparrateIn5Jahren,
+    wartekosten,
     rateA,
     rateA5,
     mehrKosten,
-    stVorteil,
-    nettoA,
     kapitalBedarf,
-    depotLeer,
-    rateC,
   };
 }
 
@@ -144,7 +157,7 @@ function makeRentenT(C) {
   logoMk:  { width: "28px", height: "28px", borderRadius: "6px", background: C, display: "flex", alignItems: "center", justifyContent: "center" },
   logoTxt: { fontSize: "13px", fontWeight: "600", color: "#111", letterSpacing: "-0.1px" },
   badge:   { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
-  hero:    { padding: "32px 24px 16px" },
+  hero:    { padding: "32px 24px 16px", textAlign: "center" },
   eyebrow: { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
   h1:      { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
   body:    { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
@@ -172,7 +185,7 @@ function makeRentenT(C) {
   fldLbl:  { fontSize: "12px", fontWeight: "600", color: "#444", marginBottom: "0", display: "block" },
   fldHint: { fontSize: "11px", color: "#aaa", marginTop: "6px" },
   optBtn:  (a,c) => ({ padding: "9px 14px", borderRadius: "6px", border: `1px solid ${a?(c||C):"#e8e8e8"}`, background: a?(c||C):"#fff", fontSize: "13px", fontWeight: a?"600":"400", color: a?"#fff":"#444", transition: "all 0.15s", cursor: "pointer" }),
-  footer:  { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(31,41,55,0.06)", boxShadow: "0 -6px 20px rgba(17,24,39,0.05)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
+  footer:  { position: "sticky", bottom: 0, background: "#ffffff", borderTop: "1px solid rgba(31,41,55,0.06)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
   btnPrim: (d) => ({
     width: "100%",
     padding: "13px 20px",
@@ -252,6 +265,8 @@ function rentenHeaderStep(phase, scr) {
 }
 
 function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
+  const { embedInIframe } = useMakler();
+  if (embedInIframe) return null;
   return (
     <>
       <div
@@ -296,6 +311,7 @@ function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
         >
           {makler.firma}
         </span>
+        <CheckHeaderPhoneButton telefon={makler.telefon} primaryColor={C} />
       </div>
       {showProgressBar ? (
         <CheckProgressBar steps={RENTEN_HEADER_STEPS} currentStep={currentStep} accent={C} />
@@ -396,17 +412,12 @@ export default function RentenRechner() {
     bav:         0,
     privat:      0,
     inflation:   false,
-    /** Nur für Ergebnis-Strategie „Steuerfokus“ (Selbst vs. sonst); kein eigener Wizard-Schritt */
-    beruf:       "angestellt",
   });
   const set = (k, v) => setP(x => ({ ...x, [k]: v }));
 
   const [scr, setScr] = useState(1);
   const [loading, setLoading] = useState(false);
   const [rentenArchiv, setRentenArchiv] = useState(null);
-  /** Strategie-Karten: Details-Accordion — nur Hybrid standardmäßig aufgeklappt */
-  const [stratAccOpen, setStratAccOpen] = useState({ hybrid: true, steuer: false, etf: false });
-  const toggleStratAcc = (k) => setStratAccOpen((s) => ({ ...s, [k]: !s[k] }));
   /** Intro, Alter, Rentenalter, Netto, Zeit-&-Einkommens-Story, Ziel, Vorsorge, Inflation → Loader → Bridge → Ergebnis */
   const TOTAL_SCR = 8;
   const slug = "vorsorge-check";
@@ -416,7 +427,6 @@ export default function RentenRechner() {
     if (ph === 1) {
       setScr(1);
       setLoading(false);
-      setStratAccOpen({ hybrid: true, steuer: false, etf: false });
     }
     if (ph === 2) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
@@ -440,7 +450,7 @@ export default function RentenRechner() {
   if (!isReady) return <CheckConfigLoadingShell />;
 
   const withStandalone = (el) => (
-    <StandaloneWrapper makler={MAKLER} checkLabel="Vorsorge-Check">{el}</StandaloneWrapper>
+    <StandaloneWrapper makler={MAKLER}>{el}</StandaloneWrapper>
   );
 
   const R = berechne(p);
@@ -533,9 +543,9 @@ export default function RentenRechner() {
         </div>
         <div style={T.section}>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
-            <div style={T.kpiKontaktLuecke}>
-              <div style={{ fontSize: "18px", fontWeight: "700", color: WARN, letterSpacing: "-0.5px" }}>{fmt(R.lueckeAdjusted)}</div>
-              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatliche Lücke</div>
+            <div style={T.kpiKontaktEu}>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{fmt(R.zielRentenNetto)}</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Zielrente Netto</div>
             </div>
             <div style={T.kpiKontaktEu}>
               <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{R.deckung}%</div>
@@ -581,7 +591,7 @@ export default function RentenRechner() {
               if (!valid) return;
               const token = new URLSearchParams(window.location.search).get("token");
               if (token) {
-                const res = await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, slug, kundenName: fd.name, kundenEmail: fd.email, kundenTel: fd.tel || "", highlights: [{ label: "Monatliche Lücke", value: fmt(R.lueckeAdjusted) }, { label: "Deckungsgrad", value: `${R.deckung}%` }, { label: "Bis Rente", value: `${R.jahreBis} J.` }] }) }).catch(() => null);
+                const res = await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, slug, kundenName: fd.name, kundenEmail: fd.email, kundenTel: fd.tel || "", highlights: [{ label: "Zielrente Netto", value: fmt(R.zielRentenNetto) }, { label: "Monatliche Lücke", value: fmt(R.lueckeHeute) }, { label: "Deckungsgrad", value: `${R.deckung}%` }, { label: "Bis Rente", value: `${R.jahreBis} J.` }] }) }).catch(() => null);
                 if (res?.ok) void trackEvent({ event_type: "lead_submitted", slug, token, firma: MAKLER.firma });
               }
               setName(fd.name);
@@ -611,6 +621,20 @@ export default function RentenRechner() {
 
     const gutAufgestellt = lh <= 0 || R.deckung >= 90;
 
+    const stratEmpfohlenBadge = {
+      fontSize: "10px",
+      fontWeight: "700",
+      textTransform: "uppercase",
+      letterSpacing: "0.06em",
+      color: C,
+      background: `color-mix(in srgb, ${C} 12%, white)`,
+      border: `1px solid ${C}35`,
+      borderRadius: "999px",
+      padding: "3px 8px",
+      flexShrink: 0,
+    };
+    const sparrateRenteVersicherung = Math.round(R.sparrateMonatlich * 1.15);
+
     return withStandalone(
       <div className="check-root fade-in" style={{ ...T.page, "--accent": C, background: "#ffffff" }} key={ak}>
         <Header makler={MAKLER} C={C} currentStep={rentenHeaderStep(2, scr)} />
@@ -629,15 +653,17 @@ export default function RentenRechner() {
           >
             <div style={{ ...T.resultEyebrow, marginBottom: "10px" }}>Ihre Vorsorgesituation</div>
             <div className="check-result-hero-value" style={{ ...T.resultNumber(lh > 0), fontSize: "52px", textAlign: "center" }}>{lh > 0 ? fmt(lh) : fmt(0)}</div>
-            <div style={{ ...T.resultUnit, marginBottom: "14px" }}>mtl. Lücke heute</div>
+            <div style={{ ...T.resultUnit, marginBottom: "14px" }}>
+              {p.inflation ? "mtl. Rentenlücke (Zielrente inkl. Inflationsaufschlag)" : "mtl. Lücke heute"}
+            </div>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: "8px" }}>{statusPill}</div>
           </div>
 
           <div style={T.section}>
             <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-              <div style={T.kpiKontaktLuecke}>
-                <div style={{ fontSize: "18px", fontWeight: "700", color: WARN, letterSpacing: "-0.5px" }}>{fmt(R.lueckeAdjusted)}</div>
-                <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatliche Lücke</div>
+              <div style={T.kpiKontaktEu}>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{fmt(R.zielRentenNetto)}</div>
+                <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Zielrente Netto</div>
               </div>
               <div style={T.kpiKontaktEu}>
                 <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.5px" }}>{R.deckung}%</div>
@@ -656,7 +682,7 @@ export default function RentenRechner() {
               <div style={{ padding: "18px 20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "14px", gap: "12px" }}>
                   <span style={{ fontSize: "13px", color: "#6B7280" }}>100 % = Ihre Zielrente ({p.zielProzent} % Ihres heutigen Nettos)</span>
-                  <span style={{ fontSize: "15px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.3px", flexShrink: 0 }}>{fmt(R.zielHeute)}/Mon.</span>
+                  <span style={{ fontSize: "15px", fontWeight: "700", color: "#1F2937", letterSpacing: "-0.3px", flexShrink: 0 }}>{fmt(R.zielRentenNetto)}/Mon.</span>
                 </div>
                 <div style={T.stackedBarOuter} aria-hidden>
                   {R.barStack.p1 > 0 && <div style={T.stackedBarSeg(R.barStack.p1, S1)} />}
@@ -678,274 +704,90 @@ export default function RentenRechner() {
 
           <div style={T.section}>
             <div style={T.sectionLbl}>Strategien</div>
-            <div style={{ ...T.compareGrid, alignItems: "stretch" }}>
-              <div style={T.compareCard} id="hybrid">
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "8px", flexWrap: "wrap" }}>
-                  <div style={T.compareCardTitle}>Hybrid — Rente &amp; Fonds</div>
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: "700",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                      color: C,
-                      background: `color-mix(in srgb, ${C} 12%, white)`,
-                      border: `1px solid ${C}35`,
-                      borderRadius: "999px",
-                      padding: "3px 8px",
-                    }}
-                  >
-                    Empfohlen
-                  </span>
-                </div>
-                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.45, margin: 0 }}>
-                  Rente + Fonds kombiniert — Förderung und Rendite ausgewogen.
-                </p>
-                <div style={{ marginTop: "10px", borderRadius: "12px", border: "1px solid rgba(17,24,39,0.08)", overflow: "hidden", background: "#FAFAFA" }}>
-                  <button
-                    type="button"
-                    aria-expanded={stratAccOpen.hybrid}
-                    onClick={() => toggleStratAcc("hybrid")}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "11px 14px",
-                      textAlign: "left",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      background: "#F3F4F6",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    <span>Pro, Contra &amp; Einordnung</span>
-                    <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{stratAccOpen.hybrid ? "▲" : "▼"}</span>
-                  </button>
-                  {stratAccOpen.hybrid ? (
-                    <div style={{ padding: "12px 14px 14px", borderTop: "1px solid rgba(17,24,39,0.06)", display: "flex", flexDirection: "column", gap: "10px" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                        <div style={{ padding: "10px", background: "#F0FDF4", borderRadius: "8px", fontSize: "11px", color: "#166534", lineHeight: 1.45 }}>
-                          <strong>Pro</strong>
-                          <div style={{ marginTop: "4px" }}>Diversifikation über garantierte und renditeorientierte Bausteine; oft gute Mischung für lange Laufzeiten</div>
-                        </div>
-                        <div style={{ padding: "10px", background: "#FFF7F7", borderRadius: "8px", fontSize: "11px", color: "#991B1B", lineHeight: 1.45 }}>
-                          <strong>Contra</strong>
-                          <div style={{ marginTop: "4px" }}>Zwei Welten zu betreuen; weder volle Steuerlogik noch reine ETF-Einfachheit</div>
-                        </div>
-                      </div>
-                      {R.lueckeHeute > 0 && R.rateC > 0 ? (
-                        <div
-                          style={{
-                            padding: "8px 10px",
-                            background: `color-mix(in srgb, ${C} 6%, white)`,
-                            borderRadius: "10px",
-                            border: `1px solid ${C}30`,
-                            fontSize: "12px",
-                            color: C,
-                            fontWeight: "600",
-                          }}
-                        >
-                          {fmt(R.rateC / 2)}/Mon. Rente
-                          &nbsp;+&nbsp;{fmt(R.rateC / 2)}/Mon. Fonds
-                        </div>
-                      ) : null}
-                      <div style={{ paddingTop: "10px", borderTop: "1px solid rgba(17,24,39,0.06)" }}>
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            fontWeight: "700",
-                            color: "#6B7280",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.04em",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          Für wen
-                        </div>
-                        <div style={{ fontSize: "12px", color: "#4B5563", lineHeight: 1.5 }}>
-                          Die meisten Vorsorge-Suchenden mit mittlerem Risiko — wenn weder „nur Rente“ noch „nur Depot“ zum Bauchgefühl passt.
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <div style={T.compareCard} id="steuer">
-                <div style={T.compareCardTitle}>Steuerfokus (Rürup / bAV)</div>
-                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.45, margin: 0 }}>
-                  Steuerlich gefördert — Nettorate oft geringer als die Sparrate.
-                </p>
-                <div style={{ marginTop: "10px", borderRadius: "12px", border: "1px solid rgba(17,24,39,0.08)", overflow: "hidden", background: "#FAFAFA" }}>
-                  <button
-                    type="button"
-                    aria-expanded={stratAccOpen.steuer}
-                    onClick={() => toggleStratAcc("steuer")}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "11px 14px",
-                      textAlign: "left",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      background: "#F3F4F6",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    <span>Pro, Contra &amp; Einordnung</span>
-                    <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{stratAccOpen.steuer ? "▲" : "▼"}</span>
-                  </button>
-                  {stratAccOpen.steuer ? (
-                    <div style={{ padding: "12px 14px 14px", borderTop: "1px solid rgba(17,24,39,0.06)", display: "flex", flexDirection: "column", gap: "10px" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                        <div style={{ padding: "10px", background: "#F0FDF4", borderRadius: "8px", fontSize: "11px", color: "#166534", lineHeight: 1.45 }}>
-                          <strong>Pro</strong>
-                          <div style={{ marginTop: "4px" }}>Abzugsfähige Beiträge, oft attraktiv bei hohem Grenzsteuersatz</div>
-                        </div>
-                        <div style={{ padding: "10px", background: "#FFF7F7", borderRadius: "8px", fontSize: "11px", color: "#991B1B", lineHeight: 1.45 }}>
-                          <strong>Contra</strong>
-                          <div style={{ marginTop: "4px" }}>Auszahlung später in der Regel steuerpflichtig; Kapital oft langfristig gebunden</div>
-                        </div>
-                      </div>
-                      {R.lueckeHeute > 0 && R.nettoA > 0 ? (
-                        p.beruf === "selbst" ? (
-                          <div
-                            style={{
-                              padding: "8px 10px",
-                              background: "#F6FCF7",
-                              borderRadius: "10px",
-                              border: "1px solid #CBE9D4",
-                              fontSize: "12px",
-                              color: "#237446",
-                              fontWeight: "600",
-                            }}
-                          >
-                            Steuerersparnis ca. {fmt(R.stVorteil)}/Jahr → Nettorate nur {fmt(R.nettoA)}/Mon.
+            <div style={{ ...T.compareGrid, alignItems: "stretch", display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={T.compareCard} id="fonds">
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px", marginBottom: "8px" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", minWidth: 0 }}>
+                          <span style={{ fontSize: "22px", lineHeight: 1 }} aria-hidden>📈</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                              <div style={{ ...T.compareCardTitle, marginBottom: 0 }}>Flexibel &amp; renditestark</div>
+                              {R.strategieEmpfohlen === "fonds" ? <span style={stratEmpfohlenBadge}>Empfohlen</span> : null}
+                            </div>
+                            <div style={{ fontSize: "11px", fontWeight: "600", color: "#6B7280", marginTop: "6px" }}>Für alle mit langfristigem Horizont</div>
                           </div>
-                        ) : (
-                          <div
-                            style={{
-                              padding: "8px 10px",
-                              background: "#F6FCF7",
-                              borderRadius: "10px",
-                              border: "1px solid #CBE9D4",
-                              fontSize: "12px",
-                              color: "#237446",
-                              fontWeight: "600",
-                            }}
-                          >
-                            Mit Steuerförderung: ca. {fmt(R.nettoA)}/Mon. netto
-                          </div>
-                        )
-                      ) : null}
-                      <div style={{ paddingTop: "10px", borderTop: "1px solid rgba(17,24,39,0.06)" }}>
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            fontWeight: "700",
-                            color: "#6B7280",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.04em",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          Für wen
-                        </div>
-                        <div style={{ fontSize: "12px", color: "#4B5563", lineHeight: 1.5 }}>
-                          Selbstständige, Freiberufler und Gutverdiener — wenn die monatliche Beitragszahlung zur Liquidität passt.
                         </div>
                       </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <div style={T.compareCard} id="etf">
-                <div style={T.compareCardTitle}>ETF &amp; Fonds (Aktienquote)</div>
-                <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.45, margin: 0 }}>
-                  Breit gestreut, flexibel — mit Kursschwankungen unterwegs.
-                </p>
-                <div style={{ marginTop: "10px", borderRadius: "12px", border: "1px solid rgba(17,24,39,0.08)", overflow: "hidden", background: "#FAFAFA" }}>
-                  <button
-                    type="button"
-                    aria-expanded={stratAccOpen.etf}
-                    onClick={() => toggleStratAcc("etf")}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "11px 14px",
-                      textAlign: "left",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      color: "#374151",
-                      background: "#F3F4F6",
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    <span>Pro, Contra &amp; Einordnung</span>
-                    <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{stratAccOpen.etf ? "▲" : "▼"}</span>
-                  </button>
-                  {stratAccOpen.etf ? (
-                    <div style={{ padding: "12px 14px 14px", borderTop: "1px solid rgba(17,24,39,0.06)", display: "flex", flexDirection: "column", gap: "10px" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                        <div style={{ padding: "10px", background: "#F0FDF4", borderRadius: "8px", fontSize: "11px", color: "#166534", lineHeight: 1.45 }}>
-                          <strong>Pro</strong>
-                          <div style={{ marginTop: "4px" }}>Oft geringe Kosten, weltweite Streuung, flexibel verfügbar je nach Vertrag</div>
-                        </div>
-                        <div style={{ padding: "10px", background: "#FFF7F7", borderRadius: "8px", fontSize: "11px", color: "#991B1B", lineHeight: 1.45 }}>
-                          <strong>Contra</strong>
-                          <div style={{ marginTop: "4px" }}>Kursschwankungen; Rendite unsicher — nicht als alleinige Absicherung der Lücke gedacht</div>
-                        </div>
+                      <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, margin: 0 }}>
+                        Kapitalaufbau über ETFs oder Investmentfonds — flexibel, renditestark, keine Bindung an einen Versicherer.
+                      </p>
+                      <div style={{ marginTop: "12px", fontSize: "13px", fontWeight: "600", color: "#374151" }}>
+                        Orientierungs-Sparrate: {fmt(R.sparrateMonatlich)}/Mon.
                       </div>
                       {R.lueckeHeute > 0 ? (
-                        <div
-                          style={{
-                            padding: "8px 10px",
-                            background: "#F6F8FE",
-                            borderRadius: "10px",
-                            border: "1px solid #DCE6FF",
-                            fontSize: "12px",
-                            color: "#315AA8",
-                          }}
-                        >
-                          Kapitalziel: <strong>{fmtK(R.kapitalBedarf)}</strong>
-                          &nbsp;· Depot reicht ca.{" "}
-                          <strong>{R.depotLeer} Jahre</strong>
+                        <div style={STRATEGIE_INFO_BLOCK}>
+                          <span style={{ fontWeight: "600", color: "#4B5563" }}>💡 Benötigtes Kapital</span>
+                          <div style={{ marginTop: "6px" }}>
+                            Mann (20 J.): {fmt(R.kapitalbedarfMann)}
+                            <br />
+                            Frau (24 J.): {fmt(R.kapitalbedarfFrau)}
+                          </div>
                         </div>
                       ) : null}
-                      <div style={{ paddingTop: "10px", borderTop: "1px solid rgba(17,24,39,0.06)" }}>
-                        <div
-                          style={{
-                            fontSize: "11px",
-                            fontWeight: "700",
-                            color: "#6B7280",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.04em",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          Für wen
-                        </div>
-                        <div style={{ fontSize: "12px", color: "#4B5563", lineHeight: 1.5 }}>
-                          Anleger mit langem Horizont und Risikotoleranz — gut kombinierbar mit Absicherung und steuerlich geförderten Produkten.
+              </div>
+
+              <div style={T.compareCard} id="rentenversicherung">
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px", marginBottom: "8px" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", minWidth: 0 }}>
+                          <span style={{ fontSize: "22px", lineHeight: 1 }} aria-hidden>🛡️</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                              <div style={{ ...T.compareCardTitle, marginBottom: 0 }}>Sicher &amp; planbar</div>
+                              {R.strategieEmpfohlen === "rente" ? <span style={stratEmpfohlenBadge}>Empfohlen</span> : null}
+                            </div>
+                            <div style={{ fontSize: "11px", fontWeight: "600", color: "#6B7280", marginTop: "6px" }}>Für alle die Planbarkeit über Rendite stellen</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ) : null}
-                </div>
+                      <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, margin: 0 }}>
+                        Garantierte lebenslange Rente ab Renteneintritt — unabhängig davon wie alt Sie werden.
+                      </p>
+                      <div style={{ marginTop: "12px", fontSize: "13px", fontWeight: "600", color: "#374151" }}>
+                        Orientierungs-Sparrate: {fmt(sparrateRenteVersicherung)}/Mon.
+                      </div>
+                      {R.wartekosten > 0 && R.lueckeHeute > 0 ? (
+                        <div style={STRATEGIE_INFO_BLOCK}>
+                          <span style={{ fontWeight: "600", color: "#4B5563" }}>💡 Was 5 Jahre Warten kosten</span>
+                          <div style={{ marginTop: "6px" }}>
+                            Heute: {fmt(R.sparrateHeute)}/Mon.
+                            <br />
+                            In 5 Jahren: {fmt(R.sparrateIn5Jahren)}/Mon.
+                            <br />
+                            → {fmt(R.wartekosten)} mehr pro Monat
+                          </div>
+                        </div>
+                      ) : null}
+              </div>
+
+              <div style={T.compareCard} id="kombination">
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "10px", marginBottom: "8px" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", minWidth: 0 }}>
+                          <span style={{ fontSize: "22px", lineHeight: 1 }} aria-hidden>⚖️</span>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                              <div style={{ ...T.compareCardTitle, marginBottom: 0 }}>Sicherheit + Rendite</div>
+                              {R.strategieEmpfohlen === "kombination" ? <span style={stratEmpfohlenBadge}>Empfohlen</span> : null}
+                            </div>
+                            <div style={{ fontSize: "11px", fontWeight: "600", color: "#6B7280", marginTop: "6px" }}>Für alle die beides wollen</div>
+                          </div>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: "12px", color: "#6B7280", lineHeight: 1.55, margin: 0 }}>
+                        50&nbsp;% in Rentenversicherung für Sicherheit, 50&nbsp;% in Fonds für Rendite — die häufigste Empfehlung in der Beratung.
+                      </p>
+                      <div style={{ marginTop: "12px", fontSize: "13px", fontWeight: "600", color: "#374151" }}>
+                        Orientierungs-Sparrate: {fmt(R.sparrateMonatlich)}/Mon.
+                      </div>
               </div>
             </div>
           </div>
@@ -1028,16 +870,16 @@ export default function RentenRechner() {
                   <p style={{ marginBottom: "10px" }}>
                     <strong>Inflation:</strong>{" "}
                     {p.inflation
-                      ? "Sie haben einen vereinfachten Aufschlag von +20 % auf die monatliche Lücke gewählt — als grobe Annäherung an höhere Kaufkraftanforderungen im Alter."
-                      : "Ohne Inflation gerechnet — die reale Kaufkraft Ihrer Rente kann im Alter geringer ausfallen als in heutigen Euro dargestellt."}
+                      ? "Sie haben einen vereinfachten Aufschlag von +20 % auf die Zielrente gewählt — die monatliche Lücke ergibt sich aus dieser Planungs-Zielrente minus den angegebenen Leistungen."
+                      : "Ohne Inflation gerechnet — Zielrente = Netto × gewählter Prozentsatz; die reale Kaufkraft kann im Alter geringer ausfallen als in heutigen Euro dargestellt."}
                   </p>
                   <p style={{ marginBottom: "10px" }}>
                     <strong>Steuer:</strong> Die Darstellung in Netto-Euro ersetzt keine steuerliche Beratung. Gesetzliche und private Renten können unterschiedlich zu versteuern sein.
                   </p>
                   <p style={{ marginBottom: "10px" }}>
-                    <strong>Formel:</strong> Zielrente = Netto × {p.zielProzent} %. Gesetzliche Rente ohne eigene Angabe: Schätzwert ca. 45 % des Nettos. Monatliche Lücke heute = Zielrente − Summe aus gesetzlicher Rente (bzw. Schätzung), bAV/Riester und privater Vorsorge.
-                    {p.inflation && R.lueckeAdjusted !== R.lueckeHeute && (
-                      <> Für Planungszwecke zusätzlich angezeigt: Lücke mit Inflationsfaktor ca. {fmt(R.lueckeAdjusted)} / Monat.</>
+                    <strong>Formel:</strong> Zielbasis = Netto × {p.zielProzent} %. Bei Inflation: Zielrente netto = Zielbasis × 1,2 (gerundet). Gesetzliche Rente ohne eigene Angabe: Schätzwert ca. 45 % des Nettos. Monatliche Lücke = Zielrente netto − Summe aus gesetzlicher Rente (bzw. Schätzung), bAV/Riester und privater Vorsorge.
+                    {p.inflation && R.zielRentenNetto !== R.zielBasis && (
+                      <> Zielbasis {fmt(R.zielBasis)}/Mon. → mit Inflationsaufschlag Planungs-Zielrente {fmt(R.zielRentenNetto)}/Mon.</>
                     )}
                   </p>
                   <p style={{ margin: 0 }}>
@@ -1081,18 +923,18 @@ export default function RentenRechner() {
 
       {scr === 1 && (
         <>
-          <CheckKitStoryHero
-            emoji="⏳"
-            title="Ihre Freiheit im Alter."
-            text="Wie viel ist Ihr Geld in 20 oder 30 Jahren noch wert? Wir berechnen in 2 Minuten Ihre reale Kaufkraft und zeigen Ihnen, wie Sie Ihren Lebensstandard sicher halten."
-          />
+          <CheckKitStoryHero emoji="⏳" title="Ihre Freiheit im Alter.">
+            <p style={{ ...CHECKKIT2026.storyBody, whiteSpace: "pre-line" }}>
+              {`Gut vorbereitet in den Ruhestand.\n\nBerechnen Sie jetzt Ihre persönliche Rentenlücke und sehen Sie, was Sie für Ihre Zukunft tun können.`}
+            </p>
+          </CheckKitStoryHero>
           <Footer onNext={nextScr} label="Analyse starten" T={T} />
         </>
       )}
 
       {scr === 2 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Vorsorge-Check · 2 / {TOTAL_SCR}</div>
             <div style={T.h1}>Wie alt sind Sie aktuell?</div>
             <div style={T.body}>Davon hängt ab, wie lange Sie noch für Ihre Rente ansparen können.</div>
@@ -1117,7 +959,7 @@ export default function RentenRechner() {
 
       {scr === 3 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Vorsorge-Check · 3 / {TOTAL_SCR}</div>
             <div style={T.h1}>Wann möchten Sie in Rente gehen?</div>
             <div style={T.body}>Das gesetzliche Rentenalter ist 67 — bei früherem Rentenbeginn sind Abschläge möglich.</div>
@@ -1148,7 +990,7 @@ export default function RentenRechner() {
 
       {scr === 4 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Vorsorge-Check · 4 / {TOTAL_SCR}</div>
             <div style={T.h1}>Wie viel verdienen Sie aktuell netto im Monat?</div>
           </div>
@@ -1172,7 +1014,7 @@ export default function RentenRechner() {
 
       {scr === 6 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Vorsorge-Check · 6 / {TOTAL_SCR}</div>
             <div style={T.h1}>Wie viel Rente möchten Sie später haben?</div>
             <div style={T.body}>Als Anteil Ihres heutigen Nettoeinkommens. Der übliche Anspruch liegt bei 70 %.</div>
@@ -1201,7 +1043,7 @@ export default function RentenRechner() {
             >
               <div style={{ fontSize: "12px", color: "#6B7280" }}>Ihre Zielrente</div>
               <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
-                {fmt(R.zielHeute)}/Mon.
+                {fmt(R.zielBasis)}/Mon.
               </div>
             </div>
           </div>
@@ -1212,7 +1054,7 @@ export default function RentenRechner() {
 
       {scr === 7 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Vorsorge-Check · 7 / {TOTAL_SCR}</div>
             <div style={T.h1}>Was haben Sie bereits für Ihre Rente angespart?</div>
             <div style={T.body}>Alle Felder sind optional — 0 €, wenn nichts vorhanden ist. Den genauen Betrag der gesetzlichen Rente entnehmen Sie Ihrem Rentenbescheid.</div>
@@ -1276,7 +1118,7 @@ export default function RentenRechner() {
               <div>
                 <div style={{ fontSize: "11px", color: "#6B7280", marginBottom: "2px" }}>Aktuell gedeckt</div>
                 <div style={{ fontSize: "11px", color: "#9CA3AF", lineHeight: 1.4 }}>
-                  {fmt(R.vorhanden)}/Mon. von {fmt(R.zielHeute)}/Mon. Zielrente
+                  {fmt(R.vorhanden)}/Mon. von {fmt(R.zielRentenNetto)}/Mon. Zielrente
                 </div>
               </div>
               <div
@@ -1299,16 +1141,16 @@ export default function RentenRechner() {
 
       {scr === 8 && (
         <>
-          <div style={{ ...T.hero, textAlign: "center" }}>
+          <div style={T.hero}>
             <div style={T.eyebrow}>Vorsorge-Check · 8 / {TOTAL_SCR}</div>
             <div style={T.h1}>Möchten Sie die Inflation berücksichtigen?</div>
-            <div style={T.body}>Mit Inflation wirkt Ihre Lücke höher — dafür näher an der künftigen Kaufkraft.</div>
+            <div style={T.body}>Mit Inflation steigt die Zielrente um ca. 20 % — die Lücke wird daraus berechnet (näher an höherer Kaufkraftanforderung).</div>
           </div>
           <div style={T.section}>
             <div className="check-selection-grid check-options-grid" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {[
-                { v: false, l: "Nein — einfach und direkt", d: "Die Lücke wird in heutigen Euro berechnet (Standard)", emoji: "🎯" },
-                { v: true, l: "Ja — realistischer", d: "Die Lücke wird um ca. 20 % Inflationsaufschlag erhöht", emoji: "📈" },
+                { v: false, l: "Nein — einfach und direkt", d: "Zielrente und Lücke in heutigen Euro ohne Aufschlag (Standard)", emoji: "🎯" },
+                { v: true, l: "Ja — realistischer", d: "Die Zielrente wird um ca. 20 % erhöht; die Lücke folgt daraus", emoji: "📈" },
               ].map(({ v, l, d, emoji }) => (
                 <SelectionCard
                   key={String(v)}

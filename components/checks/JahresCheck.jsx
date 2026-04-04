@@ -4,7 +4,10 @@ import { trackEvent } from "@/lib/trackEvent";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
+import { CheckHeaderPhoneButton } from "@/components/checks/CheckHeaderPhoneButton";
 import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
+import { useMakler } from "@/components/ui/MaklerContext";
 import { SelectionCard, SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
@@ -12,6 +15,7 @@ import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/component
 import { CheckLoader } from "@/components/checks/CheckLoader";
 import { CheckKitResultGrid } from "@/components/checks/CheckKitResultGrid";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
+import { checkStandardT } from "@/lib/checkStandardT";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
 (() => { const s=document.createElement("style");s.textContent=`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}html,body{height:100%;background:#fff;font-family:var(--font-sans),'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}button,input,select{font-family:inherit;border:none;background:none;cursor:pointer;}input,select{cursor:text;}::-webkit-scrollbar{display:none;}*{scrollbar-width:none;}@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}.fade-in{animation:fadeIn 0.28s ease both;}button:active{opacity:0.75;}a{text-decoration:none;}`;document.head.appendChild(s);})();
@@ -340,6 +344,8 @@ const JAHRES_RESULT_PRODUCT_PRIO = [
   "Pflegezusatzversicherung",
   "Krankenhauszusatzversicherung",
   "Zahnzusatzversicherung",
+  "Ambulante Zusatzversicherung",
+  "Unfallversicherung",
   "Hausratversicherung",
   "Wohngebäudeversicherung",
   "Kfz-Versicherung",
@@ -369,7 +375,8 @@ function jahresResultProductIcon(p) {
   if (/Privathaftpflicht|Haftpflicht/i.test(s)) return "🛡️";
   if (/Rechtsschutz/i.test(s)) return "⚖️";
   if (/PKV|Krankenversicherung/i.test(s)) return "⚕️";
-  if (/Krankenhaus|Zahn/i.test(s)) return "🦷";
+  if (/Krankenhaus|Zahn|Ambulante/i.test(s)) return "🦷";
+  if (/Unfall/i.test(s)) return "⚠️";
   if (/Pflege/i.test(s)) return "🏥";
   if (/Hausrat/i.test(s)) return "🛋️";
   if (/Wohngebäude/i.test(s)) return "🏡";
@@ -379,7 +386,7 @@ function jahresResultProductIcon(p) {
 }
 
 
-function makeJahresCheckT(C){return{page:{minHeight:"100vh",background:"#fff","--accent":C,fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid rgba(31,41,55,0.06)",padding:"0 24px",height:"56px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},hero:{padding:"32px 24px 16px"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",color:"#111",lineHeight:1.25,...CHECKKIT_HERO_TITLE_TYPO},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"18px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"rgba(255,255,255,0.88)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderTop:"1px solid rgba(31,41,55,0.06)",boxShadow:"0 -6px 20px rgba(17,24,39,0.05)",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"999px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer",letterSpacing:"-0.1px",boxShadow:d?"none":"0 8px 20px rgba(26,58,92,0.18)"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#F6F8FE",border:"1px solid #DCE6FF",borderRadius:"14px",fontSize:"12px",color:"#315AA8",lineHeight:1.6},hinweisCardWrap:{border:"1px solid rgba(26,58,92,0.15)",borderLeft:`3px solid ${C}`,borderRadius:"0 14px 14px 0",overflow:"hidden",background:"#fff"},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},
+function makeJahresCheckT(C){return{page:{minHeight:"100vh",background:"#fff","--accent":C,fontFamily:"var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif"},header:{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",borderBottom:"1px solid rgba(31,41,55,0.06)",padding:"0 24px",height:"56px",display:"flex",alignItems:"center",justifyContent:"space-between"},logo:{display:"flex",alignItems:"center",gap:"10px"},logoMk:{width:"28px",height:"28px",borderRadius:"6px",background:C,display:"flex",alignItems:"center",justifyContent:"center"},badge:{fontSize:"11px",fontWeight:"500",color:"#888",letterSpacing:"0.3px",textTransform:"uppercase"},hero:{padding:"32px 24px 16px",textAlign:"center"},eyebrow:{fontSize:"11px",fontWeight:"600",color:"#999",letterSpacing:"1px",textTransform:"uppercase",marginBottom:"6px"},h1:{fontSize:"22px",color:"#111",lineHeight:1.25,...CHECKKIT_HERO_TITLE_TYPO},body:{fontSize:"14px",color:"#666",lineHeight:1.65,marginTop:"6px"},section:{padding:"0 24px",marginBottom:"20px"},divider:{height:"1px",background:"#f0f0f0",margin:"0 24px 20px"},card:{border:"1px solid #e8e8e8",borderRadius:"18px",overflow:"hidden"},row:{padding:"14px 16px",borderBottom:"1px solid #f0f0f0"},rowLast:{padding:"14px 16px"},fldLbl:{fontSize:"12px",fontWeight:"600",color:"#444",display:"block",marginBottom:"8px"},fldHint:{fontSize:"11px",color:"#aaa",marginTop:"6px"},footer:{position:"sticky",bottom:0,background:"#ffffff",borderTop:"1px solid rgba(31,41,55,0.06)",padding:"14px 24px max(28px, env(safe-area-inset-bottom, 28px))"},btnPrim:(d)=>({width:"100%",padding:"13px 20px",background:d?"#e8e8e8":C,color:d?"#aaa":"#fff",borderRadius:"999px",fontSize:"14px",fontWeight:"600",cursor:d?"default":"pointer",letterSpacing:"-0.1px",boxShadow:d?"none":"0 8px 20px rgba(26,58,92,0.18)"}),btnSec:{width:"100%",padding:"10px",color:"#aaa",fontSize:"13px",marginTop:"6px",cursor:"pointer"},infoBox:{padding:"12px 14px",background:"#F6F8FE",border:"1px solid #DCE6FF",borderRadius:"14px",fontSize:"12px",color:"#315AA8",lineHeight:1.6},inputEl:{width:"100%",padding:"10px 12px",border:"1px solid #e8e8e8",borderRadius:"6px",fontSize:"14px",color:"#111",background:"#fff",outline:"none"},
 resultHero:{padding:"52px 24px 40px",textAlign:"center",background:"#fff"},
 resultHeroWarm:{padding:"40px 24px 32px",textAlign:"center",background:"#ffffff",borderBottom:"1px solid rgba(17,24,39,0.06)"},
 resultH1:{fontSize:"24px",color:"#111827",lineHeight:1.25,marginBottom:"10px",maxWidth:"420px",marginLeft:"auto",marginRight:"auto",...CHECKKIT_HERO_TITLE_TYPO},
@@ -397,7 +404,7 @@ sectionLbl:{fontSize:"13px",fontWeight:"600",color:"#6B7280",marginBottom:"12px"
 };}
 
 // ─── Screen 3: Bestand nach „Ordnern“ (Mehrfachauswahl → matrixNames fürs Cross-Check) ──
-/** Extern optional: sessionStorage.setItem(JAHRES_BESTAND_PREFILL_KEY, JSON.stringify(["bu","kv",…])) */
+/** Extern optional: sessionStorage.setItem(JAHRES_BESTAND_PREFILL_KEY, JSON.stringify(["privathaftpflicht","pkv",…])) — IDs wie im Bedarfscheck */
 export const JAHRES_BESTAND_PREFILL_KEY = "checkkit_jahrescheck_bestand_prefill";
 
 const JAHRES_HEADER_STEPS = ["Anlass", "Details", "Absicherung", "Ergebnis", "Kontakt"];
@@ -410,46 +417,74 @@ function jahresCheckHeaderStep(phase, scr) {
   return 0;
 }
 
+/** Gleiche Gruppen & Bausteine wie Bedarfscheck (`EX_GROUPS`) — `matrixNames` für Cross-Check mit der Ereignis-Matrix */
 const PRODUKT_GROUPS = [
   {
-    id: "einkommen",
+    id: "sachen_wohnen",
+    title: "Sachen & Wohnen",
+    items: [
+      { id: "privathaftpflicht", name: "Privathaftpflicht", icon: "🛡️", matrixNames: ["Privathaftpflicht"] },
+      { id: "hausrat", name: "Hausrat", icon: "🛋️", matrixNames: ["Hausratversicherung"] },
+      { id: "wohngebaeude", name: "Wohngebäude", icon: "🏡", matrixNames: ["Wohngebäudeversicherung"] },
+      { id: "rechtsschutz", name: "Rechtsschutz", icon: "⚖️", matrixNames: ["Rechtsschutzversicherung"] },
+    ],
+  },
+  {
+    id: "einkommen_zukunft",
     title: "Einkommen & Zukunft",
     items: [
-      { id: "bu", name: "Berufsunfähigkeit (BU)", icon: "💼", matrixNames: ["Berufsunfähigkeitsversicherung", "Erwerbsunfähigkeitsversicherung"] },
-      { id: "altersvorsorge", name: "Altersvorsorge (Rente / ETF)", icon: "🌱", matrixNames: ["Altersvorsorge / private Rentenversicherung", "Riester-Rente", "Rürup-Rente"] },
-      { id: "risikoleben", name: "Risikolebensversicherung (RLV)", icon: "❤️", matrixNames: ["Risikolebensversicherung"] },
-      { id: "krankentagegeld", name: "Krankentagegeld (KTG)", icon: "📋", matrixNames: ["Krankentagegeld"] },
-    ],
-  },
-  {
-    id: "haftung",
-    title: "Haftung & Recht",
-    items: [
-      { id: "haftpflicht", name: "Privathaftpflicht (PH)", icon: "🛡️", matrixNames: ["Privathaftpflicht"] },
-      { id: "rechtsschutz", name: "Rechtsschutz (RS)", icon: "📜", matrixNames: ["Rechtsschutzversicherung"] },
-      { id: "tierhalter", name: "Tierhalterhaftpflicht (THH)", icon: "🐕", matrixNames: [] },
-    ],
-  },
-  {
-    id: "wohnen",
-    title: "Wohnen & Eigentum",
-    items: [
-      { id: "hausrat", name: "Hausratversicherung (HR)", icon: "🛋️", matrixNames: ["Hausratversicherung"] },
-      { id: "wohngebaeude", name: "Wohngebäudeversicherung (WG)", icon: "🏡", matrixNames: ["Wohngebäudeversicherung"] },
+      { id: "berufsunfaehigkeit", name: "Berufsunfähigkeit (BU)", icon: "💼", matrixNames: ["Berufsunfähigkeitsversicherung"] },
+      { id: "erwerbsunfaehigkeit", name: "Erwerbsunfähigkeit (EU)", icon: "💼", matrixNames: ["Erwerbsunfähigkeitsversicherung"] },
+      { id: "krankentagegeld", name: "Krankentagegeld", icon: "📋", matrixNames: ["Krankentagegeld"] },
+      { id: "altersvorsorge", name: "Private Altersvorsorge", icon: "🌱", matrixNames: ["Altersvorsorge / private Rentenversicherung", "Riester-Rente", "Rürup-Rente"] },
     ],
   },
   {
     id: "gesundheit",
-    title: "Gesundheit & Pflege",
+    title: "Gesundheit",
     items: [
-      { id: "kv", name: "Private Krankenversicherung (PKV)", icon: "⚕️", matrixNames: ["Private Krankenversicherung (PKV)"] },
-      { id: "zahn_stationaer", name: "Zahnzusatz / Stationär (KH-Zusatz)", icon: "🦷", matrixNames: ["Krankenhauszusatzversicherung", "Zahnzusatzversicherung"] },
+      { id: "pkv", name: "Private Krankenversicherung", icon: "⚕️", matrixNames: ["Private Krankenversicherung (PKV)"] },
+      { id: "zahnzusatz", name: "Zahnzusatz", icon: "🦷", matrixNames: ["Zahnzusatzversicherung"] },
+      { id: "krankenhauszusatz", name: "Krankenhauszusatz", icon: "🦷", matrixNames: ["Krankenhauszusatzversicherung"] },
+      { id: "ambulante_zusatz", name: "Ambulante Zusatz", icon: "⚕️", matrixNames: [] },
+      { id: "pflegezusatz", name: "Pflegezusatz", icon: "🤲", matrixNames: ["Pflegezusatzversicherung"] },
+    ],
+  },
+  {
+    id: "familie_vermoegen",
+    title: "Familie & Vermögen",
+    items: [
+      { id: "unfall", name: "Unfallversicherung", icon: "⚠️", matrixNames: [] },
+      { id: "risikoleben", name: "Risikolebensversicherung", icon: "❤️", matrixNames: ["Risikolebensversicherung"] },
+      { id: "sparen_investieren", name: "Sparen & Investieren", icon: "🌱", matrixNames: ["Sparen & Investieren"] },
     ],
   },
 ];
 
 const ALL_PRODUKT_ITEMS = PRODUKT_GROUPS.flatMap((g) => g.items);
 const PRODUKT_ITEM_BY_ID = Object.fromEntries(ALL_PRODUKT_ITEMS.map((p) => [p.id, p]));
+
+/** Alte JahresCheck-Prefill-IDs → neue Bedarf-analoge IDs */
+function normalizeJahresBestandPrefillIds(rawIds) {
+  const out = [];
+  for (const id of rawIds) {
+    if (typeof id !== "string") continue;
+    if (id === "bu") {
+      out.push("berufsunfaehigkeit", "erwerbsunfaehigkeit");
+    } else if (id === "haftpflicht") {
+      out.push("privathaftpflicht");
+    } else if (id === "kv") {
+      out.push("pkv");
+    } else if (id === "zahn_stationaer") {
+      out.push("zahnzusatz", "krankenhauszusatz");
+    } else if (id === "tierhalter") {
+      /* entfällt in der Bedarf-Liste */
+    } else {
+      out.push(id);
+    }
+  }
+  return [...new Set(out)];
+}
 
 function buildProdsFromBestandIds(ids) {
   return ALL_PRODUKT_ITEMS.filter((p) => ids.includes(p.id)).flatMap((p) => p.matrixNames);
@@ -459,13 +494,24 @@ export default function JahresCheck(){
   const { isReady } = MAKLER;
   const C=MAKLER.primaryColor;
   const T=useMemo(()=>makeJahresCheckT(C),[C]);
+  const berechnungshinweisT = useMemo(() => {
+    const S = checkStandardT(C);
+    return {
+      ...S,
+      calcHintWrap: {
+        ...S.calcHintWrap,
+        border: "1px solid transparent",
+        boxShadow: "none",
+      },
+    };
+  }, [C]);
   const isDemo = isCheckDemoMode();
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[loading,setLoading]=useState(false);
   const[prods,setProds]=useState([]);
   const[kontaktConsent,setKontaktConsent]=useState(false);
   const[fd,setFd]=useState({name:"",email:"",tel:""});
   const[kontext,setKontext]=useState(emptyKontext);
-  const[scr,setScr]=useState(1);
+  const[scr,setScr]=useState(0);
   const[selEventIds,setSelEventIds]=useState([]);
   const[selProdukte,setSelProdukte]=useState([]);
   const toggleEvent=(id)=>{
@@ -490,7 +536,7 @@ export default function JahresCheck(){
     setPhase(ph);
     if (ph === 1) {
       setLoading(false);
-      setScr(1);
+      setScr(0);
     }
     if (ph === 3) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
@@ -521,6 +567,7 @@ export default function JahresCheck(){
   const resolvedMatrixEvents=useMemo(()=>resolveTriggerMatrixIds(selEventIds),[selEventIds]);
   const E=useMemo(()=>buildEmpfehlungen(resolvedMatrixEvents,prods,kontext),[resolvedMatrixEvents,prods,kontext]);
   const nextScr=()=>{
+    if(scr===0){setScr(1);return;}
     if(scr===1){if(qualNeeded)setScr(2);else setScr(3);return;}
     if(scr===2){if(!qualFormComplete)return;setScr(3);return;}
     if(scr===3)setLoading(true);
@@ -528,6 +575,7 @@ export default function JahresCheck(){
   const backScr=()=>{
     if(scr===3){if(qualNeeded)setScr(2);else setScr(1);return;}
     if(scr===2)setScr(1);
+    if(scr===1)setScr(0);
   };
   const backFromResult=()=>{
     setAk((k)=>k+1);
@@ -548,7 +596,7 @@ export default function JahresCheck(){
       if (!raw) return;
       const ids = JSON.parse(raw);
       if (!Array.isArray(ids) || ids.length === 0) return;
-      const valid = [...new Set(ids)].filter((id) => PRODUKT_ITEM_BY_ID[id]);
+      const valid = normalizeJahresBestandPrefillIds(ids).filter((id) => PRODUKT_ITEM_BY_ID[id]);
       if (valid.length === 0) return;
       setSelProdukte((prev) => {
         if (prev.length > 0) return prev;
@@ -570,10 +618,12 @@ export default function JahresCheck(){
   if (!isReady) return <CheckConfigLoadingShell />;
 
   const withStandalone = (el) => (
-    <StandaloneWrapper makler={MAKLER} checkLabel="Lebenssituations-Check">{el}</StandaloneWrapper>
+    <StandaloneWrapper makler={MAKLER}>{el}</StandaloneWrapper>
   );
 
   function Header({ currentStep = 0, showProgressBar = true }) {
+    const { embedInIframe } = useMakler();
+    if (embedInIframe) return null;
     return (
       <>
         <div
@@ -618,6 +668,7 @@ export default function JahresCheck(){
           >
             {MAKLER.firma}
           </span>
+          <CheckHeaderPhoneButton telefon={MAKLER.telefon} primaryColor={C} />
         </div>
         {showProgressBar ? (
           <CheckProgressBar steps={JAHRES_HEADER_STEPS} currentStep={currentStep} accent={C} />
@@ -790,9 +841,9 @@ export default function JahresCheck(){
         style={{
           ...CHECKKIT2026.resultColumnStack,
           background: bg,
-          border: "1px solid rgba(17,24,39,0.1)",
+          border: "1px solid transparent",
           borderRadius: 18,
-          boxShadow: "0 4px 18px rgba(17,24,39,0.06)",
+          boxShadow: "0 6px 24px rgba(17,24,39,0.08)",
         }}
       >
         <div style={{ marginBottom: "2px" }}>
@@ -830,7 +881,7 @@ export default function JahresCheck(){
 
         {/* Hero — H1, Zahl, Chips */}
         <div style={T.resultHeroWarm}>
-          <div style={T.resultH1}>Ihr persönlicher Check-up-Bericht</div>
+          <div style={T.resultH1}>Ihr persönlicher Check-up</div>
           <div className="check-result-hero-value" style={T.resultNumber(totalCount > 0 ? C : "#059669")}>{totalCount === 0 ? "✓" : totalCount}</div>
           <div style={T.resultLead}>
             {totalCount === 0
@@ -879,9 +930,9 @@ export default function JahresCheck(){
             style={{
               margin: "20px 20px 0",
               padding: "14px 16px",
-              background: `color-mix(in srgb, ${C} 6%, white)`,
+              background: "#ffffff",
               borderRadius: "18px",
-              border: `1px solid ${C}20`,
+              border: "1px solid transparent",
             }}
           >
             <div
@@ -916,7 +967,7 @@ export default function JahresCheck(){
                     padding: "8px",
                     background: warn ? "#FFF7F7" : "#ffffff",
                     borderRadius: "10px",
-                    border: warn ? "1px solid #F2CFCF" : "1px solid rgba(17,24,39,0.06)",
+                    border: warn ? "1px solid #F2CFCF" : "1px solid transparent",
                   }}
                 >
                   <div
@@ -950,10 +1001,58 @@ export default function JahresCheck(){
           </div>
         </div>
 
+        {bereitsGesichert.length > 0 ? (
+          <div style={{ padding: "0 24px", marginBottom: "16px", marginTop: "4px" }}>
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: "700",
+                color: "#1E7A46",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                marginBottom: "8px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                <circle cx="6" cy="6" r="5" fill="#F6FCF7" stroke="#CBE9D4" />
+                <path
+                  d="M3.5 6l2 2 3-3"
+                  stroke="#1E7A46"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Bereits gesichert
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              {bereitsGesichert.map((name) => (
+                <span
+                  key={name}
+                  style={{
+                    fontSize: "12px",
+                    color: "#237446",
+                    background: "#F6FCF7",
+                    border: "1px solid #CBE9D4",
+                    padding: "4px 10px",
+                    borderRadius: "999px",
+                    fontWeight: "500",
+                  }}
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         {/* 3-Spalten-Grid (Desktop) / Stack (schmal) — nur bei mindestens einer Empfehlung */}
         {totalCount > 0 && (
-          <div style={{ ...T.section, marginTop: "8px" }}>
-            <CheckKitResultGrid style={{ gap: 18 }}>
+          <div style={{ ...T.section, marginTop: bereitsGesichert.length > 0 ? "4px" : "8px" }}>
+            <CheckKitResultGrid style={{ gap: 24 }}>
               <ResultColumn
                 sectionLbl="Das sollten Sie jetzt prüfen"
                 sectionLblColor="#c0392b"
@@ -994,47 +1093,15 @@ export default function JahresCheck(){
           </div>
         )}
 
-        {/* Bereits gesichert (kein Handlungsbedarf laut Matrix) */}
-        {bereitsGesichert.length > 0 && (
-          <div style={T.section}>
-            <div style={T.sectionLbl}>Bereits gesichert</div>
-            <div
-              style={{
-                ...T.cardContext,
-                background: "#ffffff",
-                borderColor: "rgba(17,24,39,0.08)",
-              }}
-            >
-              <div style={{ fontSize: "13px", fontWeight: "600", color: "#6B7280", marginBottom: "12px", opacity: 0.92 }}>
-                Hier sind Sie bereits bestens aufgestellt.
-              </div>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
-                {bereitsGesichert.map((name) => (
-                  <li
-                    key={name}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      fontSize: "13px",
-                      color: "#6B7280",
-                      opacity: 0.72,
-                    }}
-                  >
-                    <span style={{ color: "#9CA3AF", fontSize: "16px", lineHeight: 1 }} aria-hidden>
-                      ✓
-                    </span>
-                    <span>{name}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-
         <div style={{ padding: "0 24px", marginBottom: "120px" }}>
-          <div style={T.hinweisCardWrap}>
-            <CheckBerechnungshinweis>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+            }}
+          >
+            <CheckBerechnungshinweis t={berechnungshinweisT}>
               <>
                 Wir gleichen Ihre Lebensereignisse mit typischen Absicherungsthemen ab und zeigen Ihnen, wo
                 Handlungsbedarf besteht. Das Ergebnis ist ein Gesprächsleitfaden — kein Ersatz für individuelle Beratung.
@@ -1042,14 +1109,13 @@ export default function JahresCheck(){
             </CheckBerechnungshinweis>
             <div
               style={{
-                ...T.infoBox,
-                borderLeft: "none",
-                borderRadius: "0 0 14px 0",
-                marginTop: 0,
-                borderTop: "1px solid rgba(26,58,92,0.12)",
+                padding: "12px 14px",
+                borderRadius: "14px",
+                border: "1px solid transparent",
                 fontSize: "10px",
                 color: "#9CA3AF",
-                background: "rgba(246,248,254,0.6)",
+                lineHeight: 1.6,
+                background: "#F9FAFB",
               }}
             >
               {CHECK_LEGAL_DISCLAIMER_FOOTER}
@@ -1081,6 +1147,21 @@ export default function JahresCheck(){
   return withStandalone(
     <div className="check-root fade-in" style={T.page} key={ak}>
       <Header currentStep={jahresCheckHeaderStep(1, scr)} />
+
+      {scr === 0 && (
+        <>
+          <CheckKitStoryHero emoji="📋" title="Ihr Leben verändert sich. Ihre Absicherung auch?">
+            <p style={{ ...CHECKKIT2026.storyBody, whiteSpace: "pre-line" }}>
+              {`Jobwechsel, Familienzuwachs, neue Wohnung —\n\nVeränderungen im Leben bedeuten oft neuen Absicherungsbedarf.\nMachen Sie jetzt Ihren persönlichen Check-up.`}
+            </p>
+          </CheckKitStoryHero>
+          <div style={T.footer} data-checkkit-footer>
+            <button type="button" style={T.btnPrim(false)} onClick={nextScr}>
+              Analyse starten
+            </button>
+          </div>
+        </>
+      )}
 
       {/* Screen 1: Was hat sich verändert? */}
       {scr === 1 && <>
@@ -1257,7 +1338,9 @@ export default function JahresCheck(){
         <div style={T.hero}>
           <div style={{ ...T.eyebrow, color: C }}>Bestehende Absicherung</div>
           <div style={T.h1}>Was haben Sie bereits abgesichert?</div>
-          <div style={{ ...T.body, marginTop: "8px" }}>Antippen zum Auswählen</div>
+          <div style={{ ...T.body, marginTop: "8px" }}>
+            Alles antippen, was bereits vorhanden ist — was fehlt, sehen Sie im Ergebnis.
+          </div>
         </div>
         <div style={{ padding: "0 20px", marginBottom: "16px" }}>
           {PRODUKT_GROUPS.map((group, gi) => (

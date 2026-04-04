@@ -4,7 +4,9 @@ import { trackEvent } from "@/lib/trackEvent";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { CheckHeaderPhoneButton } from "@/components/checks/CheckHeaderPhoneButton";
 import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
+import { useMakler } from "@/components/ui/MaklerContext";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
@@ -440,7 +442,7 @@ function makeBUKTGT(C) {
   badge:   { fontSize: "11px", fontWeight: "500", color: "#888", letterSpacing: "0.3px", textTransform: "uppercase" },
   prog:    { height: "2px", background: "#f0f0f0" },
   progFil: (w) => ({ height: "100%", width: `${w}%`, background: C, transition: "width 0.4s ease" }),
-  hero:    { padding: "32px 24px 16px" },
+  hero:    { padding: "32px 24px 16px", textAlign: "center" },
   label:   { fontSize: "11px", fontWeight: "600", color: "#999", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" },
   h1:      { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
   body:    { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
@@ -470,7 +472,7 @@ function makeBUKTGT(C) {
   fldVal:  { fontSize: "20px", fontWeight: "700", color: C, letterSpacing: "-0.5px", marginBottom: "8px" },
   fldHint: { fontSize: "11px", color: "#aaa", marginTop: "6px" },
   optRow:  { display: "grid", gap: "8px", marginTop: "6px" },
-  footer:  { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(31,41,55,0.06)", boxShadow: "0 -6px 20px rgba(17,24,39,0.05)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
+  footer:  { position: "sticky", bottom: 0, background: "#ffffff", borderTop: "1px solid rgba(31,41,55,0.06)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
   btnPrim: (dis) => ({
     width: "100%",
     padding: "13px 20px",
@@ -526,6 +528,8 @@ function buktgHeaderStep(phase, wizStep) {
 }
 
 function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
+  const { embedInIframe } = useMakler();
+  if (embedInIframe) return null;
   return (
     <>
       <div
@@ -570,6 +574,7 @@ function Header({ makler, C, currentStep = 0, showProgressBar = true }) {
         >
           {makler.firma}
         </span>
+        <CheckHeaderPhoneButton telefon={makler.telefon} primaryColor={C} />
       </div>
       {showProgressBar ? (
         <CheckProgressBar steps={BUKTG_HEADER_STEPS} currentStep={currentStep} accent={C} />
@@ -869,7 +874,7 @@ export default function BUKTGRechner() {
   })();
 
   const withStandalone = (el) => (
-    <StandaloneWrapper makler={MAKLER} checkLabel="BU & Krankentagegeld">{el}</StandaloneWrapper>
+    <StandaloneWrapper makler={MAKLER}>{el}</StandaloneWrapper>
   );
 
   if (danke) return withStandalone(
@@ -1023,57 +1028,8 @@ export default function BUKTGRechner() {
 
     const massiveUnterdeckung = p.buRente < R.netto * 0.5;
 
-    const detailHintRows = [];
-    if (p.kv === "gkv" && isAngLike && R.kgBasis > 0) {
-      detailHintRows.push({
-        key: "kgSozial",
-        text: "Vom Krankengeld behält die Kasse direkt Sozialbeiträge ein — Ihr ausgezahltes Krankengeld liegt deshalb unter den 70 % vom Brutto.",
-      });
-    }
-    if (p.beruf === "azubi" && p.szenario !== "unfall") {
-      detailHintRows.push({
-        key: "azubiWarte",
-        text: "Hinweis: Die fünfjährige Wartezeit für die EMR ist während der Ausbildung in der Regel noch nicht erfüllt — im Modell daher 0 € EMR (Ausnahme: Unfall-Szenario).",
-      });
-    }
-    if (p.beruf === "beamter" && p.beamterWiderruf && p.szenario !== "unfall") {
-      detailHintRows.push({
-        key: "beamterWiderruf",
-        text: "Bei Beamten auf Widerruf bzw. in der Probezeit entfällt das Ruhegeld bei Dienstunfähigkeit in der Regel — hier mit 0 € angenommen (Ausnahme z. B. Dienstunfall im gewählten Szenario).",
-      });
-    }
-    if (!R.isStudentModus && p.beruf !== "azubi" && p.brutto < 2500) {
-      detailHintRows.push({
-        key: "grusi",
-        text: "Bei niedrigem Krankengeld kann es zur Verrechnung mit Grundsicherung kommen — ein persönlicher Check lohnt sich.",
-      });
-    }
-    if (R.showPkvAgZuschussWarn && R.pkvAgZuschussSchaetzungMonat > 0) {
-      detailHintRows.push({
-        key: "pkvAgZuschuss",
-        text: `Achtung: Der Arbeitgeberzuschuss zur PKV von ca. ${fmt(R.pkvAgZuschussSchaetzungMonat)} entfällt nach 6 Wochen — Sie tragen die Kosten allein. Der geschätzte Mehrbedarf ist in den Szenario-Kosten berücksichtigt.`,
-      });
-    }
-    if (!R.isStudentModus && p.ktgTag === 0 && p.kv === "gkv") {
-      detailHintRows.push({
-        key: "ktgMin",
-        text: "Sie stützen sich nur auf das gesetzliche Krankengeld — ein zusätzliches Krankentagegeld schließt oft die größte Lücke in den ersten Monaten.",
-      });
-    }
-    if (R.luecke > 1500) {
-      detailHintRows.push({
-        key: "haus",
-        text: "Ihre langfristige Lücke entspricht in der Größenordnung einer typischen Finanzrate fürs Eigenheim — dieses Risiko tragen Sie ohne Absicherung allein.",
-      });
-    }
-
     const secondaryEinordnung = pickSecondaryEinordnungHint(p, R);
-    const omitDetailKeys = new Set();
-    if (secondaryEinordnung?.type === "emNull") omitDetailKeys.add("azubiWarte");
-    if (secondaryEinordnung?.type === "beamterWiderruf") omitDetailKeys.add("beamterWiderruf");
-    const accordionDetailHints = detailHintRows.filter((h) => !omitDetailKeys.has(h.key));
-
-    const showDetailsAccordion = accordionDetailHints.length > 0;
+    const showKrankengeldSozialHinweis = p.kv === "gkv" && isAngLike && R.kgBasis > 0;
 
     const toggleLegal = (id) => setLegalOpen((x) => (x === id ? null : id));
 
@@ -1131,7 +1087,8 @@ export default function BUKTGRechner() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               <div
                 style={{
-                  background: "rgba(31,41,55,0.04)",
+                  background: "#FFFFFF",
+                  border: "1px solid rgba(17,24,39,0.08)",
                   borderRadius: "12px",
                   padding: "12px 14px",
                 }}
@@ -1145,7 +1102,8 @@ export default function BUKTGRechner() {
               </div>
               <div
                 style={{
-                  background: "rgba(31,41,55,0.04)",
+                  background: "#FFFFFF",
+                  border: "1px solid rgba(17,24,39,0.08)",
                   borderRadius: "12px",
                   padding: "12px 14px",
                 }}
@@ -1156,30 +1114,6 @@ export default function BUKTGRechner() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* ── NEU: Breakdown-Balken ── */}
-          <div style={{ padding: "0 24px", marginBottom: "20px" }}>
-            {[
-              { label: p.beruf === "beamter" ? "Ruhegehalt" : "EU/EMR", value: R.emSchaetzung, color: "#9CA3AF" },
-              { label: p.beruf === "beamter" ? "DU-Rente" : "BU-Rente", value: R.p3.monatl - R.emSchaetzung, color: C },
-              { label: "Lücke", value: R.luecke, color: "#C0392B" },
-            ]
-              .filter((row) => row.value > 0)
-              .map((row) => {
-                const pct = R.netto > 0 ? Math.min(100, Math.round((row.value / R.netto) * 100)) : 0;
-                return (
-                  <div key={row.label} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                    <div style={{ fontSize: "11px", color: "#6B7280", width: "52px", flexShrink: 0 }}>{row.label}</div>
-                    <div style={{ flex: 1, height: "5px", background: "rgba(31,41,55,0.08)", borderRadius: "999px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${pct}%`, background: row.color, borderRadius: "999px", transition: "width 0.7s ease" }} />
-                    </div>
-                    <div style={{ fontSize: "11px", color: "#6B7280", width: "52px", textAlign: "right", flexShrink: 0 }}>
-                      {fmt(row.value)}
-                    </div>
-                  </div>
-                );
-              })}
           </div>
 
           {/* ── Phasen: kompakte Cards statt Swiper ── */}
@@ -1334,23 +1268,6 @@ export default function BUKTGRechner() {
                 )}
               </div>
             )}
-            {showDetailsAccordion && (
-              <div className="buktg-acc-item">
-                <button type="button" className="buktg-acc-btn" onClick={() => toggleLegal("details")} aria-expanded={legalOpen === "details"}>
-                  <span>Details zur Berechnung</span>
-                  <span style={{ color: "#9CA3AF", fontSize: "10px" }}>{legalOpen === "details" ? "▲" : "▼"}</span>
-                </button>
-                {legalOpen === "details" && (
-                  <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
-                    {accordionDetailHints.map((h) => (
-                      <p key={h.key} style={{ marginBottom: "10px" }}>
-                        {h.text}
-                      </p>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
             <div className="buktg-acc-item">
               <button type="button" className="buktg-acc-btn" onClick={() => toggleLegal("calc")} aria-expanded={legalOpen === "calc"}>
                 <span>Wie berechnen wir das?</span>
@@ -1358,9 +1275,16 @@ export default function BUKTGRechner() {
               </button>
               {legalOpen === "calc" && (
                 <div className="buktg-acc-panel" style={{ paddingTop: "12px" }}>
-                  Wir zeigen Ihnen, wie sich Ihr Einkommen bei längerer Krankheit oder Berufsunfähigkeit entwickelt: was der
-                  Staat leistet, was wegfällt und welche Lücke bleibt. Grundlage sind vereinfachte gesetzliche Regelwerte —
-                  kein Ersatz für individuelle Beratung.
+                  <p style={{ margin: 0 }}>
+                    Wir zeigen Ihnen, wie sich Ihr Einkommen bei längerer Krankheit oder Berufsunfähigkeit entwickelt: was der
+                    Staat leistet, was wegfällt und welche Lücke bleibt. Grundlage sind vereinfachte gesetzliche Regelwerte —
+                    kein Ersatz für individuelle Beratung.
+                  </p>
+                  {showKrankengeldSozialHinweis ? (
+                    <p style={{ margin: "10px 0 0" }}>
+                      Vom Krankengeld behält die Kasse direkt Sozialbeiträge ein — Ihr ausgezahltes Krankengeld liegt deshalb unter den 70 % vom Brutto.
+                    </p>
+                  ) : null}
                 </div>
               )}
             </div>

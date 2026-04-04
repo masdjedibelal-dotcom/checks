@@ -594,6 +594,10 @@ input[type="range"]::-webkit-slider-thumb {
 
 .check-result-grid-3col,
 .checkkit-result-grid-3 {
+  display: grid;
+  gap: 14px;
+  align-items: stretch;
+  grid-template-columns: 1fr;
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;

@@ -4,7 +4,9 @@ import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { CheckHeaderPhoneButton } from "@/components/checks/CheckHeaderPhoneButton";
 import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
+import { useMakler } from "@/components/ui/MaklerContext";
 import { SliderCard, SelectionCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
@@ -156,11 +158,13 @@ function berechne(p) {
   const kinderZahl = hatKinder ? Math.min(Math.max(1, p.kinderAnzahl || 1), 3) : 0;
   const waisenrente = hatKinder ? kinderZahl * (GRV_ANTEIL * 0.1) : 0;
   const staatlicheLeistungen = witwenrente + waisenrente;
-  const einnahmen = p.partnerEinkommen + staatlicheLeistungen + p.sonstiges;
+  const einnahmen = p.partnerEinkommen + witwenrente + waisenrente + p.sonstiges;
   const monatlLuecke = Math.max(
     0,
     p.monatsBedarf - p.partnerEinkommen - staatlicheLeistungen - p.sonstiges
   );
+  /** Laufender monatlicher Familienbedarf ohne Kredit (Kredit geht in VS einmalig ein) */
+  const familienbedarf = Math.max(0, p.monatsBedarf);
   const versorgungsjahre = hatKinder ? 20 : 10;
   const kapitalEinkommen = monatlLuecke * 12 * versorgungsjahre;
   const restschuld = p.kredite;
@@ -180,6 +184,7 @@ function berechne(p) {
     luecke > 0 ? Math.max(10, Math.round((gesamtBedarf * 0.002 / 12) / 5) * 5) : 0;
   return {
     einnahmen,
+    familienbedarf,
     luecke,
     bedarfKapital,
     gesamt,
@@ -260,6 +265,8 @@ export default function RisikolebenRechner() {
   const R = berechne(p);
 
   function Header({ currentStep = 0, showProgressBar = true }) {
+    const { embedInIframe } = useMakler();
+    if (embedInIframe) return null;
     return (
       <>
         <div
@@ -304,6 +311,7 @@ export default function RisikolebenRechner() {
           >
             {MAKLER.firma}
           </span>
+          <CheckHeaderPhoneButton telefon={MAKLER.telefon} primaryColor={C} />
         </div>
         {showProgressBar ? (
           <CheckProgressBar steps={RL_HEADER_STEPS} currentStep={currentStep} accent={C} />
@@ -321,7 +329,7 @@ export default function RisikolebenRechner() {
 
   const T = {
     root: { minHeight: "100vh", background: "#fff", fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif", "--accent": C },
-    hero: { padding: "32px 24px 16px" },
+    hero: { padding: "32px 24px 16px", textAlign: "center" },
     eyebrow: { fontSize: "11px", fontWeight: "600", letterSpacing: "1px", textTransform: "uppercase", color: "#999", marginBottom: "6px" },
     h1: { fontSize: "22px", color: "#111", lineHeight: 1.25, ...CHECKKIT_HERO_TITLE_TYPO },
     lead: { fontSize: "14px", color: "#666", lineHeight: 1.65, marginTop: "6px" },
@@ -332,7 +340,7 @@ export default function RisikolebenRechner() {
     fldVal: { fontSize: "21px", fontWeight: "700", color: C, letterSpacing: "-0.4px", marginBottom: "6px" },
     fldHint: { fontSize: "11px", color: "#aaa", marginTop: "4px" },
     fldWrap: { marginBottom: "20px" },
-    footer: { position: "sticky", bottom: 0, background: "rgba(255,255,255,0.88)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(31,41,55,0.06)", boxShadow: "0 -6px 20px rgba(17,24,39,0.05)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
+    footer: { position: "sticky", bottom: 0, background: "#ffffff", borderTop: "1px solid rgba(31,41,55,0.06)", padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))" },
     btnMain: (d) => ({
       width: "100%",
       padding: "13px 20px",
@@ -419,7 +427,7 @@ export default function RisikolebenRechner() {
   );
 
   const withStandalone = (el) => (
-    <StandaloneWrapper makler={MAKLER} checkLabel="Familienabsicherung">{el}</StandaloneWrapper>
+    <StandaloneWrapper makler={MAKLER}>{el}</StandaloneWrapper>
   );
 
   if (loading) {
@@ -784,16 +792,13 @@ export default function RisikolebenRechner() {
     );
   }
 
-  // ── Phase 2: Ergebnis (kompakt wie Renten/Pflege: Hero + Balken + Einordnung + Accordion) ──
+  // ── Phase 2: Ergebnis (Hero + KPI + Einnahmen + Accordion) ──
   if (phase === 2) {
     const {
       einnahmen,
+      familienbedarf,
       luecke,
-      gesamt,
       netto,
-      gesamtBedarf,
-      kapBedarf,
-      empfPraemie,
       versorgungsjahre,
       kapitalEinkommen,
       staatlicheLeistungen,
@@ -802,25 +807,6 @@ export default function RisikolebenRechner() {
       empfohleneVS,
     } = R;
     const gedeckt = netto <= 0;
-    const hatLuecke = netto > 0 || luecke > 0;
-
-    let segKap = 0;
-    let segKr = 0;
-    let segFe = 0;
-    if (gesamtBedarf > 0) {
-      if (p.vorhanden > 0 && netto > 0) {
-        const den = kapBedarf + p.kredite + netto;
-        if (den > 0) {
-          segKap = Math.round((kapBedarf / den) * 100);
-          segKr = Math.round((p.kredite / den) * 100);
-          segFe = Math.max(0, 100 - segKap - segKr);
-        }
-      } else {
-        segKap = Math.round((kapBedarf / gesamtBedarf) * 100);
-        segKr = Math.round((p.kredite / gesamtBedarf) * 100);
-        segFe = 0;
-      }
-    }
 
     const pillRl = gedeckt ? (
       <div style={T.statusOk}>Modell: keine zusätzliche Summe nötig</div>
@@ -906,19 +892,17 @@ export default function RisikolebenRechner() {
 
         <div style={T.section}>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
-            <div style={T.kpiKontaktLuecke}>
-              <div style={{ fontSize: "18px", fontWeight: "700", color: gedeckt ? "#059669" : WARN_RL, letterSpacing: "-0.5px" }}>
-                {gedeckt ? "—" : fmtK(netto)}
-              </div>
-              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Empfohlen (netto)</div>
+            <div style={T.kpiKontaktEu}>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#111", letterSpacing: "-0.5px" }}>{fmt(familienbedarf)}</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatl. Ziel</div>
             </div>
             <div style={T.kpiKontaktEu}>
-              <div style={{ fontSize: "18px", fontWeight: "700", color: "#111", letterSpacing: "-0.5px" }}>{fmtK(p.vorhanden)}</div>
-              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Vorhanden</div>
+              <div style={{ fontSize: "18px", fontWeight: "700", color: "#111", letterSpacing: "-0.5px" }}>{fmt(einnahmen)}</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Einnahmen</div>
             </div>
             <div style={T.kpiKontaktEu}>
               <div style={{ fontSize: "18px", fontWeight: "700", color: luecke > 0 ? WARN_RL : "#059669", letterSpacing: "-0.5px" }}>{fmt(luecke)}</div>
-              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatliche Lücke</div>
+              <div style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>Monatl. Lücke</div>
             </div>
           </div>
           <div
@@ -974,121 +958,6 @@ export default function RisikolebenRechner() {
             </div>
           </div>
         </div>
-
-        {hatLuecke ? (
-          <div style={{ ...T.section, marginTop: "-8px" }}>
-            <div
-              style={{
-                border: "1px solid rgba(192,57,43,0.27)",
-                borderLeft: "3px solid #c0392b",
-                borderRadius: "18px",
-                padding: "14px 16px",
-                background: "rgba(192,57,43,0.025)",
-                marginBottom: "20px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: "700",
-                  color: "#c0392b",
-                  letterSpacing: "0.5px",
-                  textTransform: "uppercase",
-                  marginBottom: "8px",
-                }}
-              >
-                Empfohlene Absicherung
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "12px" }}>
-                <div>
-                  <div style={{ fontSize: "36px", fontWeight: "700", color: C, letterSpacing: "-0.8px", lineHeight: 1 }}>{fmtK(gesamtBedarf)}</div>
-                  <div style={{ fontSize: "13px", color: "#9CA3AF", marginTop: "4px" }}>
-                    Bruttosumme vor Abzug bestehender VS · {versorgungsjahre} Jahre Versorgungsdauer
-                  </div>
-                </div>
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontSize: "18px", fontWeight: "700", color: C, letterSpacing: "-0.3px" }}>
-                    {empfPraemie > 0 ? <>ab ca. {fmt(empfPraemie)}/Mon.</> : <>Prämie n. a.</>}
-                  </div>
-                  <div style={{ fontSize: "11px", color: "#9CA3AF", marginTop: "2px" }}>Schätzwert — abhängig von Alter &amp; Gesundheit</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {hatLuecke ? (
-          <div style={T.section}>
-            <div
-              style={{
-                fontSize: "11px",
-                fontWeight: "600",
-                color: "#9CA3AF",
-                letterSpacing: "0.5px",
-                textTransform: "uppercase",
-                marginBottom: "10px",
-              }}
-            >
-              Zusammensetzung des Bedarfs
-            </div>
-            <div
-              style={{
-                height: "8px",
-                background: "rgba(31,41,55,0.08)",
-                borderRadius: "999px",
-                overflow: "hidden",
-                display: "flex",
-                marginBottom: "10px",
-              }}
-            >
-              {segKap > 0 && (
-                <div
-                  style={{
-                    width: `${segKap}%`,
-                    background: C,
-                    minWidth: segKap > 0 ? "2px" : 0,
-                    transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                  }}
-                />
-              )}
-              {p.kredite > 0 && segKr > 0 && (
-                <div
-                  style={{
-                    width: `${segKr}%`,
-                    background: "#f59e0b",
-                    minWidth: segKr > 0 ? "2px" : 0,
-                    transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                  }}
-                />
-              )}
-              {netto > 0 && segFe > 0 && (
-                <div
-                  style={{
-                    width: `${segFe}%`,
-                    background: "#c0392b",
-                    minWidth: segFe > 0 ? "2px" : 0,
-                    transition: "width 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                  }}
-                />
-              )}
-            </div>
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-              {[
-                { farbe: C, label: "Lebenshaltung (Lücke kapitalisiert)", wert: fmtK(kapBedarf) },
-                ...(p.kredite > 0 ? [{ farbe: "#f59e0b", label: "Kredite", wert: fmtK(p.kredite) }] : []),
-                ...(netto > 0 ? [{ farbe: "#c0392b", label: "Fehlende Absicherung", wert: fmtK(netto) }] : []),
-              ].map(({ farbe, label, wert }, i) => (
-                <div key={label + i} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: farbe, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: "11px", fontWeight: "600", color: "#1F2937" }}>{wert}</div>
-                    <div style={{ fontSize: "10px", color: "#9CA3AF" }}>{label}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
 
         <div style={{ ...T.section, marginBottom: "16px" }}>
           <div style={T.sectionLbl}>Details zur Berechnung</div>

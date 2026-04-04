@@ -11,7 +11,7 @@ type Props = {
 };
 
 /**
- * Phase-3-Ergebnis: 1 Spalte mobil, exakt drei gleich breite Spalten ab 900px.
+ * Phase-3-Ergebnis: drei Säulen-Bereiche immer untereinander (alle Viewports).
  */
 export function CheckKitResultGrid({ children, className = "", style }: Props) {
   useLayoutEffect(() => {

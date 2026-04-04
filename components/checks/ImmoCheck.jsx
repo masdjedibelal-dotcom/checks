@@ -5,11 +5,14 @@ import { useCheckScrollToTop } from "@/lib/checkScrollToTop";
 import { isCheckDemoMode } from "@/lib/isCheckDemoMode";
 import { useCheckConfig } from "@/lib/useCheckConfig";
 import { CheckConfigLoadingShell } from "@/components/checks/CheckConfigLoadingShell";
+import { CheckHeaderPhoneButton } from "@/components/checks/CheckHeaderPhoneButton";
 import { StandaloneWrapper } from "@/components/checks/StandaloneWrapper";
+import { useMakler } from "@/components/ui/MaklerContext";
 import { SelectionCard, SliderCard } from "@/components/ui/CheckComponents";
 import { CHECK_LEGAL_DISCLAIMER_FOOTER } from "@/components/checks/checkLegalCopy";
 import { CheckBerechnungshinweis } from "@/components/checks/CheckBerechnungshinweis";
 import { CheckKontaktBeforeSubmitBlock, CheckKontaktLeadLine } from "@/components/checks/CheckKontaktLegalFields";
+import { CheckKitStoryHero } from "@/components/checks/CheckKitStoryHero";
 import { CheckKitResultGrid } from "@/components/checks/CheckKitResultGrid";
 import { CHECKKIT2026, CHECKKIT_HERO_TITLE_TYPO } from "@/lib/checkKitStandard2026";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
@@ -490,38 +493,7 @@ function makeImmoCheckT(C) {
       background: "#fff",
       fontFamily: "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif",
     },
-    header: {
-      position: "sticky",
-      top: 0,
-      zIndex: 100,
-      background: "rgba(255,255,255,0.95)",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
-      borderBottom: "1px solid #e8e8e8",
-      padding: "0 24px",
-      height: "56px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-    },
-    logo: { display: "flex", alignItems: "center", gap: "10px" },
-    logoMk: {
-      width: "28px",
-      height: "28px",
-      borderRadius: "6px",
-      background: C,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    badge: {
-      fontSize: "11px",
-      fontWeight: "500",
-      color: "#888",
-      letterSpacing: "0.3px",
-      textTransform: "uppercase",
-    },
-    hero: { padding: "32px 24px 16px" },
+    hero: { padding: "32px 24px 16px", textAlign: "center" },
     eyebrow: {
       fontSize: "11px",
       fontWeight: "600",
@@ -552,10 +524,8 @@ function makeImmoCheckT(C) {
     footer: {
       position: "sticky",
       bottom: 0,
-      background: "rgba(255,255,255,0.97)",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
-      borderTop: "1px solid #e8e8e8",
+      background: "#ffffff",
+      borderTop: "1px solid rgba(31,41,55,0.06)",
       padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))",
     },
     btnPrim: (d) => ({
@@ -595,30 +565,17 @@ function makeImmoCheckT(C) {
       outline: "none",
     },
     resultHeroWarm: {
-      padding: "36px 24px 28px",
+      padding: "24px 24px 28px",
       textAlign: "center",
       background: "#ffffff",
       borderBottom: "1px solid rgba(17,24,39,0.06)",
     },
-    resultBadge: (accent) => ({
-      display: "inline-block",
-      fontSize: "11px",
-      fontWeight: "700",
-      color: accent,
-      letterSpacing: "0.08em",
-      textTransform: "uppercase",
-      marginBottom: "12px",
-      padding: "6px 14px",
-      borderRadius: "999px",
-      background: `${accent}18`,
-      border: `1px solid ${accent}40`,
-    }),
     resultH1: {
       fontSize: "23px",
       color: "#111827",
       lineHeight: 1.2,
       marginBottom: "10px",
-      maxWidth: "400px",
+      maxWidth: "min(100%, 440px)",
       marginLeft: "auto",
       marginRight: "auto",
       ...CHECKKIT_HERO_TITLE_TYPO,
@@ -697,6 +654,8 @@ export default function ImmoCheck() {
   const [loading, setLoading] = useState(false);
   /** Nach Weg-Wahl: Story-Screen vor Phase 2 */
   const [pathIntroDone, setPathIntroDone] = useState(false);
+  /** Einstiegs-Story vor Weg-Wahl (wie CheckKitStoryHero bei anderen Checks) */
+  const [immoIntroDone, setImmoIntroDone] = useState(false);
   const [fd, setFd] = useState({ name: "", email: "", tel: "" });
   const [kontaktConsent, setKontaktConsent] = useState(false);
 
@@ -718,6 +677,7 @@ export default function ImmoCheck() {
     if (ph === 1) {
       setLoading(false);
       setPathIntroDone(false);
+      setImmoIntroDone(false);
     }
     if (ph === 3) {
       const t = new URLSearchParams(window.location.search).get("token") ?? undefined;
@@ -790,22 +750,61 @@ export default function ImmoCheck() {
 
   if (!isReady) return <CheckConfigLoadingShell />;
 
-  const Header = ({ showProgressBar = true }) => (
-    <>
-      <div className="check-header check-sticky-header" style={T.header}>
-        <div style={T.logo}>
-          <div style={T.logoMk}>
+  const Header = ({ showProgressBar = true }) => {
+    const { embedInIframe } = useMakler();
+    if (embedInIframe) return null;
+    return (
+      <>
+        <div
+          className="check-header check-sticky-header"
+          style={{
+            background: "rgba(255,255,255,0.9)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            borderBottom: "1px solid rgba(31,41,55,0.06)",
+            padding: "16px 20px 12px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "6px",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+          }}
+        >
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              background: C,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(26,58,92,0.2)",
+            }}
+          >
             <MaklerFirmaAvatarInitials firma={MAKLER.firma} />
           </div>
-          <span style={{ fontSize: "13px", fontWeight: "600", color: "#111" }}>{MAKLER.firma}</span>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: "700",
+              color: "#1F2937",
+              letterSpacing: "-0.1px",
+              textAlign: "center",
+            }}
+          >
+            {MAKLER.firma}
+          </span>
+          <CheckHeaderPhoneButton telefon={MAKLER.telefon} primaryColor={C} />
         </div>
-        <span style={T.badge}>Immobilienabsicherung</span>
-      </div>
-      {showProgressBar ? (
-        <CheckProgressBar steps={IMMO_HEADER_STEPS} currentStep={immoHeaderStep} accent={C} />
-      ) : null}
-    </>
-  );
+        {showProgressBar ? (
+          <CheckProgressBar steps={IMMO_HEADER_STEPS} currentStep={immoHeaderStep} accent={C} />
+        ) : null}
+      </>
+    );
+  };
 
   const nextP2 = () => {
     if (scr2 < 2) {
@@ -843,7 +842,7 @@ export default function ImmoCheck() {
   );
 
   const withStandalone = (el) => (
-    <StandaloneWrapper makler={MAKLER} checkLabel="Immobilienabsicherung">{el}</StandaloneWrapper>
+    <StandaloneWrapper makler={MAKLER}>{el}</StandaloneWrapper>
   );
 
   if (danke) {
@@ -1020,26 +1019,7 @@ export default function ImmoCheck() {
       <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
         <Header />
         <div style={T.resultHeroWarm}>
-          <div
-            style={{
-              width: "56px",
-              height: "56px",
-              borderRadius: "16px",
-              margin: "0 auto 14px",
-              background: `${C}16`,
-              border: `2px solid ${C}40`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "28px",
-              lineHeight: 1,
-            }}
-            aria-hidden
-          >
-            🛡️
-          </div>
-          <div style={T.resultBadge(C)}>Immobilienabsicherung · Priorisierte Empfehlungen</div>
-          <div style={T.resultH1}>Ihr Plan für ein sorgenfreies Zuhause.</div>
+          <div style={T.resultH1}>Immobilienabsicherung - Priorisierte Empfehlungen</div>
           <div style={T.resultNum(C)}>{totalEmpf}</div>
           <div style={T.resultLead}>
             Priorisiert nach Dringlichkeit — abgeleitet aus Ihren Angaben im Risiko-Scanner.
@@ -1274,6 +1254,31 @@ export default function ImmoCheck() {
             }}
           >
             Zurück
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 1 && !immoIntroDone) {
+    return withStandalone(
+      <div className="check-root fade-in" style={{ ...T.page, "--accent": C }} key={ak}>
+        <Header />
+        <CheckKitStoryHero emoji="🏠" title="Ihr Zuhause. Richtig abgesichert.">
+          <p style={{ ...CHECKKIT2026.storyBody, whiteSpace: "pre-line" }}>
+            {`Eine Immobilie ist oft die größte Investition im Leben —\nund die am häufigsten falsch abgesicherte.\nWir zeigen Ihnen in 3 Minuten wo Ihre Lücken sind.`}
+          </p>
+        </CheckKitStoryHero>
+        <div style={T.footer} data-checkkit-footer>
+          <button
+            type="button"
+            style={T.btnPrim(false)}
+            onClick={() => {
+              setAk((k) => k + 1);
+              setImmoIntroDone(true);
+            }}
+          >
+            Analyse starten
           </button>
         </div>
       </div>

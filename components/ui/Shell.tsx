@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { MaklerContext, MAKLER_DEFAULT, type MaklerConfig } from './MaklerContext';
 
 // ─── Hex-Validierung (Security: kein Script-Injection via Farbe) ───────────────
@@ -45,6 +45,11 @@ export default function ShellWrapper({
   const token = params.get('token')?.trim() ?? '';
 
   const [licensed, setLicensed] = useState<LicensedMakler | null>(null);
+  const [embedInIframe, setEmbedInIframe] = useState(false);
+
+  useLayoutEffect(() => {
+    setEmbedInIframe(typeof window !== 'undefined' && window.self !== window.top);
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -96,6 +101,7 @@ export default function ShellWrapper({
         primaryColor: licensed.primaryColor,
         isDemoMode: false,
         slug,
+        embedInIframe,
       };
     }
 
@@ -113,8 +119,9 @@ export default function ShellWrapper({
       primaryColor: farbe,
       isDemoMode,
       slug,
+      embedInIframe,
     };
-  }, [params, isDemoMode, slug, licensed]);
+  }, [params, isDemoMode, slug, licensed, embedInIframe]);
 
   return (
     <MaklerContext.Provider value={makler}>

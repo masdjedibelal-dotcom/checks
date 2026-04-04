@@ -11,6 +11,8 @@ export type MaklerConfig = {
   primaryColor: string;
   isDemoMode:   boolean;
   slug:         string;
+  /** true wenn Check in einem iFrame eingebettet ist — kein sticky Header */
+  embedInIframe: boolean;
 };
 
 // ─── Default (Fallback wenn kein URL-Parameter) ────────────────────────────────
@@ -22,6 +24,7 @@ export const MAKLER_DEFAULT: MaklerConfig = {
   primaryColor: '#1a3a5c',
   isDemoMode:   false,
   slug:         '',
+  embedInIframe: false,
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────

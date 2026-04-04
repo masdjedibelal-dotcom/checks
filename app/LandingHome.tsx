@@ -282,7 +282,6 @@ function HowAnfragenTimelineSection() {
     <section id="how" className="how-section">
       <div className="how-section-inner">
         <header className="how-tl-header fade-up">
-          <p className="how-tl-eyebrow">Ablauf</p>
           <h2 className="how-h2">So wird aus Interesse eine Anfrage</h2>
           <p className="how-tl-sub">
             Storytelling und interaktive Microsites machen aus erstem Interesse einen klaren Handlungsimpuls.
@@ -336,7 +335,6 @@ function FactsSection() {
   return (
     <section className="facts-section" aria-labelledby="facts-heading">
       <div className="facts-inner">
-        <p className="facts-bridge fade-up">Für Versicherungsagenturen.</p>
         <h2 id="facts-heading" className="facts-h2 fade-up d1">
           Was das konkret bedeutet
         </h2>
@@ -465,18 +463,12 @@ export default function LandingHome() {
         </div>
 
         {!navScrolled && (
-          <>
-            <div className="nav-links">
-              <a href="#how">Wie es funktioniert</a>
-              <a href="#tools">Microsites</a>
-              <a href="#faq">FAQ</a>
-            </div>
-            <div className="nav-right">
-              <a href="#tools" className="btn-cta">
-                Microsites ansehen
-              </a>
-            </div>
-          </>
+          <div className="nav-links">
+            <a href="#how">Wie es funktioniert</a>
+            <a href="#tools">Microsites</a>
+            <a href="#faq">FAQ</a>
+            <a href="#kontakt">Kontakt</a>
+          </div>
         )}
 
         {navScrolled && (
@@ -575,7 +567,6 @@ export default function LandingHome() {
       {/* ── CHECKS ────────────────────────────────────────────────────────── */}
       <section id="tools" className="checks-section">
         <div className="inner">
-          <div className="s-label fade-up">Acht Microsites</div>
           <h2 className="checks-section-headline fade-up d1">
             Microsites die<br />Anfragen erzeugen
           </h2>
@@ -688,7 +679,6 @@ export default function LandingHome() {
       <section className="vertrieb-ec">
         <div className="vertrieb-ec-inner">
           <div className="vertrieb-ec-head fade-up">
-            <p className="vertrieb-ec-eyebrow">Einsatz im Vertrieb</p>
             <h2 className="vertrieb-ec-h2">So nutzen Sie Microsites im Alltag</h2>
             <p className="vertrieb-ec-sub">
               Einmal erstellt und flexibel einsetzbar — genau dort, wo Ihre Kunden sind.
@@ -717,7 +707,6 @@ export default function LandingHome() {
       <section className="vertrieb-ec testimonials-band" aria-labelledby="testimonials-heading">
         <div className="vertrieb-ec-inner">
           <div className="vertrieb-ec-head fade-up">
-            <p className="vertrieb-ec-eyebrow">Aus der Praxis</p>
             <h2 id="testimonials-heading" className="vertrieb-ec-h2">
               Was Makler über FlowLeads sagen
             </h2>
@@ -775,7 +764,6 @@ export default function LandingHome() {
                 </linearGradient>
               </defs>
             </svg>
-            <p className="benefits-premium-eyebrow">Warum FlowLeads</p>
             <h2 className="benefits-premium-h2">Mehr Anfragen ohne Setup</h2>
             <div className="benefits-premium-sub">
               <p>
@@ -822,7 +810,6 @@ export default function LandingHome() {
       <section id="faq" className="faq-section">
         <div className="faq-inner">
           <div>
-            <div className="s-label fade-up">FAQ</div>
             <h2 className="checks-section-headline fade-up d1">Häufige Fragen</h2>
             <div className="checks-section-taglines fade-up d2">
               <p className="checks-section-tagline">Alles Wichtige auf einen Blick.</p>
@@ -857,10 +844,13 @@ export default function LandingHome() {
         </div>
       </section>
 
-      <section className="faq-section custom-order-band" aria-labelledby="custom-order-heading">
+      <section
+        id="kontakt"
+        className="faq-section custom-order-band"
+        aria-labelledby="custom-order-heading"
+      >
         <div className="inner custom-order-inner">
           <div className="vertrieb-ec-head fade-up">
-            <p className="vertrieb-ec-eyebrow">Individuelle Lösung</p>
             <h2 id="custom-order-heading" className="vertrieb-ec-h2">
               Ihre Microsite.<br />Ihr Thema. Ihr Stil.
             </h2>

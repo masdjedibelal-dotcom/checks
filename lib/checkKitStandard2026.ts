@@ -97,8 +97,8 @@ export const CHECKKIT2026 = {
   } satisfies CSSProperties,
 
   /**
-   * Fallback ohne Media Query (z. B. PDF): drei Spalten.
-   * Für responsives Layout `CheckKitResultGrid` + `ensureCheckKitResultGridStyles` nutzen.
+   * Fallback ohne injiziertes CSS (z. B. PDF): drei Spalten.
+   * Im Browser: `CheckKitResultGrid` + `ensureCheckKitResultGridStyles` → eine Spalte.
    */
   resultGrid: {
     display: "grid",
@@ -144,30 +144,29 @@ export const CHECKKIT_HERO_TITLE_TYPO = {
   letterSpacing: "-1.2px" as const,
 } satisfies Pick<CSSProperties, "fontWeight" | "letterSpacing">;
 
-/** CSS-Klasse: eine Spalte unter 900px, `repeat(3, 1fr)` ab 900px */
+/** CSS-Klasse: Ergebnis-Säulen immer eine Spalte (untereinander). */
 export const CHECKKIT_RESULT_GRID_CLASS = "checkkit-result-grid-3";
 
 const CHECKKIT_RESULT_GRID_STYLE_ID = "checkkit-2026-result-grid";
 
+/** Setzt Ergebnis-Grid-CSS; überschreibt ein vorhandenes Tag (wichtig: ältere Bundles hatten 3 Spalten ab 900px). */
 export function ensureCheckKitResultGridStyles(): void {
   if (typeof document === "undefined") return;
-  if (document.getElementById(CHECKKIT_RESULT_GRID_STYLE_ID)) return;
-  const el = document.createElement("style");
-  el.id = CHECKKIT_RESULT_GRID_STYLE_ID;
-  el.textContent = `
+  const css = `
 .${CHECKKIT_RESULT_GRID_CLASS} {
   display: grid;
   gap: 14px;
   align-items: stretch;
   grid-template-columns: 1fr;
 }
-@media (min-width: 900px) {
-  .${CHECKKIT_RESULT_GRID_CLASS} {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
 `;
-  document.head.appendChild(el);
+  let el = document.getElementById(CHECKKIT_RESULT_GRID_STYLE_ID) as HTMLStyleElement | null;
+  if (!el) {
+    el = document.createElement("style");
+    el.id = CHECKKIT_RESULT_GRID_STYLE_ID;
+    document.head.appendChild(el);
+  }
+  el.textContent = css;
 }
 
 /** Score-Buckets für globale Ergebnis-Priorisierung */

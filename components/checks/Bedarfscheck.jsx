@@ -379,7 +379,7 @@ const WIZARD_TOTAL = 7;
 
 const STEPS = ["Über Sie", "Bestand", "Ergebnis", "Kontakt"];
 
-function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
+function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,telefon,result}){
   const[scr,setScr]=useState(1);
   const[microTransition,setMicroTransition]=useState(null);
   const jobTypeSectionRef = useRef(null);
@@ -461,7 +461,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
   const step = scr <= 6 ? 0 : 1;
   return(
     <div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
+      <CheckHeader firma={firma} telefon={telefon} steps={STEPS} currentStep={step} accent={C} />
 
       {scr===1&&<>
         <div style={T.hero}>
@@ -620,7 +620,7 @@ function Phase1({profil,set,existing,toggle,onWeiter,C,T,firma,result}){
 }
 
 // ── Story: Übergang vor Paketen ──────────────────────────────────────────────
-function BedarfStoryScreen({ profil, onContinue, C, T, firma }) {
+function BedarfStoryScreen({ profil, onContinue, C, T, firma, telefon }) {
   let body =
     "Wir haben Ihre Angaben mit typischen Risiken abgeglichen. Als Nächstes zeigen wir Ihre drei Pakete — von Basis bis Premium.";
   if (profil.employmentStatus === "ausbildung_studium") {
@@ -636,7 +636,7 @@ function BedarfStoryScreen({ profil, onContinue, C, T, firma }) {
 
   return (
     <div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={0} showProgressBar={false} accent={C} />
+      <CheckHeader firma={firma} telefon={telefon} steps={STEPS} currentStep={0} showProgressBar={false} accent={C} />
       <div style={{ ...CHECKKIT2026.storyRoot, background: "#ffffff" }}>
         <div style={{ ...CHECKKIT2026.storySection, background: "transparent" }}>
           <div style={CHECKKIT2026.storyContentWrap}>
@@ -664,7 +664,7 @@ function BedarfStoryScreen({ profil, onContinue, C, T, firma }) {
 }
 
 // ── Phase 3: Ergebnis — 3 Pakete (Level-up, Anker-Reihenfolge) ────────────────
-function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, onTogglePaket }) {
+function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, telefon, gewaehltePakete, onTogglePaket }) {
   const phase = 3;
   const step = phase === 1 ? 0 : phase === 3 ? 2 : phase === 4 ? 3 : 0;
   const { basis, komfort, premium, alreadyCovered, showKinderHint, schutzProzent, topVierAnzahl, abgedecktInTopVier, empfBU, anzahlLuecken } = result;
@@ -706,7 +706,7 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
 
   return (
     <div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
-      <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
+      <CheckHeader firma={firma} telefon={telefon} steps={STEPS} currentStep={step} accent={C} />
 
       <div style={{ ...CHECKKIT2026.storySection, textAlign: "center", background: "#ffffff" }}>
         <div style={{ fontSize: "12px", fontWeight: "600", color: "#6B7280", letterSpacing: "0.04em", marginBottom: "10px" }}>
@@ -864,16 +864,9 @@ function Phase3({ result, onCTA, onReset, isDemo, C, T, firma, gewaehltePakete, 
               border: `2px solid ${C}`,
               boxShadow: `0 0 0 1px ${C}29, 0 4px 12px rgba(0,0,0,0.08)`,
             };
-            const komfortUnselectedStyle =
-              col.key === "komfort" && !gewaehltePakete.includes("komfort")
-                ? {
-                    border: "2px solid #F59E0B",
-                    boxShadow: "0 0 0 1px #F59E0B29",
-                  }
-                : {};
             const finalWrapStyle = {
               ...baseStyle,
-              ...(paketAn ? selectedStyle : komfortUnselectedStyle),
+              ...(paketAn ? selectedStyle : {}),
             };
             return (
               <button
@@ -1048,7 +1041,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
   const phase = 4;
   const step = phase === 1 ? 0 : phase === 3 ? 2 : phase === 4 ? 3 : 0;
   return(<div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={step} accent={C} />
+    <CheckHeader firma={firma} telefon={makler.telefon} steps={STEPS} currentStep={step} accent={C} />
     <div style={T.hero}>
       <div style={T.eyebrow}>Fast geschafft</div>
       <div style={T.h1}>Wo können wir Sie erreichen?</div>
@@ -1124,7 +1117,7 @@ function Phase4({ onAbsenden, onZurueck, isDemo, makler, C, T, firma, gewaehlteP
 // Danke
 function DankeScreen({ name, onReset, makler, C, T, firma }) {
   return(<div className="check-root fade-in" style={{ ...T.page, ...T.fadeIn }}>
-    <CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={STEPS.length} accent={C} />
+    <CheckHeader firma={firma} telefon={makler.telefon} steps={STEPS} currentStep={STEPS.length} accent={C} />
     <div style={T.dankeScreen}>
       <div style={T.dankeRing(C)}>
         <svg width="22" height="22" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -1154,6 +1147,7 @@ export default function Bedarfscheck(){
   const C = makler.primaryColor;
   const T = useMemo(() => checkStandardT(C), [C]);
   const firma = makler.firma;
+  const telefon = makler.telefon;
   const[phase,setPhase]=useState(1);const[ak,setAk]=useState(0);const[danke,setDanke]=useState(false);const[loading,setLoading]=useState(false);const[storyScreen,setStoryScreen]=useState(false);const[kontaktName,setKontaktName]=useState("");
   const emptyProfil = () => ({
     age: 18,
@@ -1192,7 +1186,7 @@ export default function Bedarfscheck(){
   if (!isReady) return <CheckConfigLoadingShell />;
 
   const withStandalone = (el) => (
-    <StandaloneWrapper makler={makler} checkLabel="Bedarfscheck">{el}</StandaloneWrapper>
+    <StandaloneWrapper makler={makler}>{el}</StandaloneWrapper>
   );
 
   const reset=()=>{setPhase(1);setAk(k=>k+1);setDanke(false);setLoading(false);setStoryScreen(false);setProfil(emptyProfil());setExisting([]);setKontaktName("");setGewaehltePakete([...BEDARF_PAKET_DEFAULT_KEYS]);};
@@ -1206,8 +1200,8 @@ export default function Bedarfscheck(){
     profil.housingStatus;
   const result=profilReady?buildPackageScoringResult(profil,existing):null;
   if(danke)return withStandalone(<DankeScreen name={kontaktName} onReset={reset} makler={makler} C={C} T={T} firma={firma}/>);
-  if(loading)return withStandalone(<div className="check-root" style={T.page} key={ak}><CheckHeader T={T} firma={firma} badge="Bedarfscheck" steps={STEPS} currentStep={0} showProgressBar={false} accent={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>);
-  if(storyScreen&&result)return withStandalone(<BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma}/>);
+  if(loading)return withStandalone(<div className="check-root" style={T.page} key={ak}><CheckHeader firma={firma} telefon={telefon} steps={STEPS} currentStep={0} showProgressBar={false} accent={C} /><CheckLoader type="bedarf" checkmarkColor={C} bedarfContext={{ age:profil.age,jobType:profil.jobType,familyStatus:profil.familyStatus,employmentStatus:profil.employmentStatus }} onComplete={()=>{setLoading(false);setStoryScreen(true);}}/></div>);
+  if(storyScreen&&result)return withStandalone(<BedarfStoryScreen key={`${ak}-story`} profil={profil} onContinue={()=>{setStoryScreen(false);goTo(3);}} C={C} T={T} firma={firma} telefon={telefon}/>);
   if(phase===4){
     const leadHighlights=result?[
       {label:"Schutzquote (Top 4)",value:`${result.schutzProzent}%`},
@@ -1217,6 +1211,6 @@ export default function Bedarfscheck(){
     ]:[];
     return withStandalone(<Phase4 key={ak} isDemo={isDemo} gewaehltePakete={gewaehltePakete} leadHighlights={leadHighlights} onAbsenden={async (fd,highlights)=>{const token=new URLSearchParams(window.location.search).get("token");if(token){const res=await fetch("/api/lead",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token,slug,kundenName:fd.name,kundenEmail:fd.email,kundenTel:fd.tel||"",gewaehltePakete,highlights:highlights||[]})}).catch(()=>null);if(res?.ok)void trackEvent({event_type:"lead_submitted",slug,token,firma:makler.firma});}setKontaktName(fd.name);setDanke(true);}} onZurueck={()=>goTo(3)} makler={makler} C={C} T={T} firma={firma}/>);
   }
-  if(phase===3&&result)return withStandalone(<Phase3 key={ak} isDemo={isDemo} result={result} gewaehltePakete={gewaehltePakete} onTogglePaket={togglePaket} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma}/>);
-  return withStandalone(<Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} result={result}/>);
+  if(phase===3&&result)    return withStandalone(<Phase3 key={ak} isDemo={isDemo} result={result} gewaehltePakete={gewaehltePakete} onTogglePaket={togglePaket} onCTA={()=>goTo(4)} onReset={reset} C={C} T={T} firma={firma} telefon={telefon}/>);
+  return withStandalone(<Phase1 key={ak} profil={profil} set={set} existing={existing} toggle={toggle} onWeiter={()=>setLoading(true)} C={C} T={T} firma={firma} telefon={telefon} result={result}/>);
 }

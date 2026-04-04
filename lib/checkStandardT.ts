@@ -33,14 +33,14 @@ export const checkStandardT = (C: string) => {
 
   const input = {
     width: "100%",
-    padding: "14px 16px",
+    padding: "10px 12px",
     border: "1px solid rgba(31,41,55,0.08)",
-    borderRadius: "14px",
-    fontSize: "15px",
+    borderRadius: "6px",
+    fontSize: "14px",
     color: "#1F2937",
     background: "rgba(255,255,255,0.96)",
     outline: "none",
-    fontFamily: "'DM Sans', system-ui, sans-serif",
+    fontFamily: "inherit",
     transition: "border-color 0.15s ease, box-shadow 0.15s ease",
     boxShadow: "inset 0 1px 2px rgba(17,24,39,0.03)",
   };
@@ -52,11 +52,9 @@ export const checkStandardT = (C: string) => {
   };
 
   const hint = {
-    fontSize: "15px",
-    color: "#6B7280",
+    fontSize: "14px",
+    color: "#666",
     lineHeight: 1.65,
-    maxWidth: "30ch",
-    margin: "0 auto",
   };
 
   const progFillFn = (pct: number) => ({
@@ -79,7 +77,8 @@ export const checkStandardT = (C: string) => {
     page: {
       minHeight: "100vh",
       background: "#ffffff",
-      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontFamily:
+        "var(--font-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif",
       WebkitFontSmoothing: "antialiased" as const,
       ...( { ["--accent"]: C } as Record<string, string> ),
     },
@@ -90,7 +89,7 @@ export const checkStandardT = (C: string) => {
       backdropFilter: "blur(10px)",
       WebkitBackdropFilter: "blur(10px)",
       borderBottom: "1px solid rgba(31,41,55,0.06)",
-      padding: "0 20px",
+      padding: "0 24px",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
@@ -124,7 +123,7 @@ export const checkStandardT = (C: string) => {
       display: "flex",
       justifyContent: "center",
       gap: "6px",
-      padding: "6px 20px 8px",
+      padding: "6px 24px 8px",
       fontSize: "12px",
       fontWeight: "500" as const,
       color: "#9CA3AF",
@@ -132,21 +131,22 @@ export const checkStandardT = (C: string) => {
 
     // ── HERO ──────────────────────────────────
     hero: {
-      padding: "44px 24px 32px",
-      textAlign: "center" as const,
+      padding: "32px 24px 16px",
       background: "#ffffff",
+      textAlign: "center" as const,
     },
     eyebrow: {
-      fontSize: "12px",
-      fontWeight: "500" as const,
-      color: "#9CA3AF",
-      letterSpacing: "0.3px",
-      marginBottom: "12px",
+      fontSize: "11px",
+      fontWeight: "600" as const,
+      color: "#999",
+      letterSpacing: "1px",
+      textTransform: "uppercase" as const,
+      marginBottom: "6px",
     },
     h1: {
-      fontSize: "26px",
-      color: "#1F2937",
-      lineHeight: 1.15,
+      fontSize: "22px",
+      color: "#111",
+      lineHeight: 1.25,
       marginBottom: "12px",
       ...CHECKKIT_HERO_TITLE_TYPO,
     },
@@ -154,7 +154,7 @@ export const checkStandardT = (C: string) => {
 
     // ── SCREEN BODY ───────────────────────────
     screenBody: {
-      padding: "20px 20px 140px",
+      padding: "20px 24px 140px",
       background: "#ffffff",
     },
 
@@ -471,15 +471,15 @@ export const checkStandardT = (C: string) => {
     // ── BUTTONS ───────────────────────────────
     btnPrim: (disabled: boolean) => ({
       width: "100%",
-      padding: "16px 24px",
-      background: disabled ? "#E7E3DB" : C,
-      color: disabled ? "#A0A7B4" : "#FFFFFF",
+      padding: "13px 20px",
+      background: disabled ? "#e8e8e8" : C,
+      color: disabled ? "#aaa" : "#FFFFFF",
       borderRadius: "999px",
-      fontSize: "15px",
+      fontSize: "14px",
       fontWeight: "700" as const,
       border: "none",
       cursor: disabled ? "default" : "pointer",
-      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontFamily: "inherit",
       boxShadow: disabled ? "none" : "0 8px 20px rgba(26,58,92,0.18)",
       transition:
         "transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease",
@@ -494,7 +494,7 @@ export const checkStandardT = (C: string) => {
       border: "none",
       background: "none",
       cursor: "pointer",
-      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontFamily: "inherit",
       marginTop: "8px",
     },
 
@@ -502,13 +502,10 @@ export const checkStandardT = (C: string) => {
     footer: {
       position: "sticky" as const,
       bottom: 0,
-      background: "rgba(255,255,255,0.88)",
-      backdropFilter: "blur(16px)",
-      WebkitBackdropFilter: "blur(16px)",
+      background: "#ffffff",
       borderTop: "1px solid rgba(31,41,55,0.06)",
-      padding: "16px 20px max(28px, env(safe-area-inset-bottom, 28px))",
+      padding: "14px 24px max(28px, env(safe-area-inset-bottom, 28px))",
       zIndex: 50,
-      boxShadow: "0 -6px 20px rgba(17,24,39,0.05)",
     },
 
     // ── LOADER ────────────────────────────────
@@ -616,7 +613,7 @@ export const checkStandardT = (C: string) => {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontFamily: "inherit",
     },
     calcHintBody: {
       padding: "14px 18px",
@@ -855,7 +852,7 @@ export const checkStandardT = (C: string) => {
 
     // ── SECTION PADDING ───────────────────────
     section: {
-      padding: "0 20px",
+      padding: "0 24px",
       marginBottom: "20px",
     },
 
@@ -877,7 +874,7 @@ export const checkStandardT = (C: string) => {
     divider: {
       height: "1px",
       background: "#E5E7EB",
-      margin: "0 20px 20px",
+      margin: "0 24px 20px",
     },
     card: {
       border: "1px solid rgba(17,24,39,0.06)",

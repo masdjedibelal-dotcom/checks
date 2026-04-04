@@ -1,24 +1,27 @@
 "use client";
 
-import type { CheckT } from "@/lib/checkStandardT";
+import { useMakler } from "@/components/ui/MaklerContext";
 import { MaklerFirmaAvatarInitials } from "@/components/checks/MaklerFirmaAvatarInitials";
 import { CheckProgressBar } from "@/components/checks/CheckProgressBar";
+import { CheckHeaderPhoneButton } from "@/components/checks/CheckHeaderPhoneButton";
 
 type Props = {
-  T: CheckT;
   firma: string;
-  /** Wird nicht mehr im Header angezeigt (Eyebrow im Hero) */
-  badge: string;
+  telefon?: string;
+  /** @deprecated ungenutzt; Eyebrow im Hero */
+  badge?: string;
   steps: readonly string[];
   currentStep: number;
-  /** Primärfarbe (MAKLER.primaryColor) */
   accent: string;
-  /** Loader- und Bridge-Screens: nur Logo/Firma, keine Schritt-Leiste */
   showProgressBar?: boolean;
 };
 
 export function CheckHeader(props: Props) {
-  const { firma, steps, currentStep, accent, showProgressBar = true } = props;
+  const { firma, telefon = "", steps, currentStep, accent, showProgressBar = true } = props;
+  const { embedInIframe } = useMakler();
+
+  if (embedInIframe) return null;
+
   return (
     <>
       <div
@@ -63,6 +66,7 @@ export function CheckHeader(props: Props) {
         >
           {firma}
         </span>
+        <CheckHeaderPhoneButton telefon={telefon} primaryColor={accent} />
       </div>
       {showProgressBar ? <CheckProgressBar steps={steps} currentStep={currentStep} accent={accent} /> : null}
     </>
