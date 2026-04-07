@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleTag } from "@/components/analytics/GoogleTag";
 import LandingHome from "./LandingHome";
 import "./flow-leads-landing.css";
 
@@ -9,5 +10,10 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
-  return <LandingHome />;
+  return (
+    <>
+      <GoogleTag />
+      <LandingHome />
+    </>
+  );
 }
