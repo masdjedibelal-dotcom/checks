@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+const COOKIEBOT_CBID = "b175685a-b0b3-4e0a-a7b5-5bed0522d786";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -47,6 +50,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <Script
+          id="Cookiebot"
+          src="https://consent.cookiebot.com/uc.js"
+          strategy="beforeInteractive"
+          data-cbid={COOKIEBOT_CBID}
+          data-blockingmode="auto"
+        />
         <meta name="color-scheme" content="light" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
